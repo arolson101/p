@@ -1,0 +1,38 @@
+{
+  // Use IntelliSense to learn about possible Node.js debug attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Main Process",
+      "cwd": "${workspaceRoot}/app",
+      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd",
+      "program": "${workspaceRoot}/app/main.js",
+      "outFiles": [],
+      "sourceMaps": true
+    },
+    {
+      "name": "Debug Renderer Process",
+      "type": "chrome",
+      "request": "launch",
+      //"runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
+      // Use the following for Windows
+      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd",
+      "runtimeArgs": [
+        "${workspaceRoot}/app/main.js",
+        "--enable-logging",
+        "--remote-debugging-port=9222"
+      ],
+      "webRoot": "${workspaceRoot}",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "webpack:///./*":   "${webRoot}/src/*", // Example: "webpack:///./src/app.js" -> "/users/me/project/src/app.js"
+        "webpack:///../~/*":   "${webRoot}/node_modules/*", // Example: "webpack:///./src/app.js" -> "/users/me/project/src/app.js"
+        "webpack:///*":     "*"             // Example: "webpack:///C:/project/app.ts" -> "C:/project/app.ts"
+      }
+    }
+  ]
+}

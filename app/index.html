@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script type="text/javascript">
+      // if(typeof process !== "undefined") {
+      //   process.on('uncaughtException', function(e) {});
+      // }
+      if (typeof module != "undefined") {
+        // ensure p.js can find node modules
+        const path = require("path");
+        module.paths.push(path.resolve(process.cwd(), 'node_modules'));
+      }
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script src="p.js"></script>
+    <script>
+      p.main(document.getElementById("root"));
+    </script>
+  </body>
+</html>
