@@ -30,9 +30,9 @@ PouchDB.plugin(CryptoPouch);
 var db = new PouchDB("foo");
 db.crypto("password");
 
-export function main() {
-	console.log("main");
-}
+// export function main() {
+// 	console.log("main");
+// }
 
 // var remote = new PouchDB('http://localhost:5984/foo');
 // (db as any).replicate.to(remote);

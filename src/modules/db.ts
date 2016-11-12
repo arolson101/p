@@ -1,5 +1,4 @@
-import ReduxThunk from 'redux-thunk';
-import { Dispatch, Action } from 'redux';
+import { Dispatch, Action, ThunkAction } from 'redux';
 import * as PouchDB from 'pouchdb-browser';
 
 export interface DbState {
