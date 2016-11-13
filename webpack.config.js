@@ -7,16 +7,16 @@ var ForkCheckerPlugin = require('awesome-typescript-loader').ForkCheckerPlugin;
 const __DEVELOPMENT__ = 1;//(process.env.NODE_ENV == 'development');
 
 
-var nodeModules = {};
-fs.readdirSync('node_modules')
-//["sqlite3", "filist", "i18next", "rrule", "faker", "sockjs-client"]
-//	.concat(["electron", "fs", "path"])
-  .filter(function(x) {
-    return ['.bin', 'react-fa'].indexOf(x) === -1;
-  })
-  .forEach(function(mod) {
-    nodeModules[mod] = 'commonjs ' + mod;
-  });
+// var nodeModules = 
+// //fs.readdirSync('node_modules')
+// //["sqlite3", "filist", "i18next", "rrule", "faker", "sockjs-client"]
+// //	.concat(["electron", "fs", "path"])
+//   .filter(function(x) {
+//     return ['.bin', 'react-fa'].indexOf(x) === -1;
+//   })
+//   .map(function(mod) {
+//     return 'commonjs ' + mod;
+//   });
 
 
 module.exports = {
@@ -31,6 +31,7 @@ module.exports = {
   },
 
   //externals: nodeModules,
+  externals: ['ws'],
 
   target: 'electron',
 
@@ -43,6 +44,8 @@ module.exports = {
   },
 
   module: {
+    noParse: ['ws'],
+
     loaders: [
       { test: /\.tsx?$/, loaders: ['react-hot-loader/webpack', 'awesome-typescript-loader?forkChecker=true'] },
       { test: /\.css$/, loader: "style-loader!css-loader" },
