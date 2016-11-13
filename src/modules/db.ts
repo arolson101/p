@@ -1,7 +1,7 @@
 import * as CryptoPouch from 'crypto-pouch'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
-import { Dispatch, Action } from 'redux'
+import { Dispatch, Action, ThunkAction } from 'redux'
 
 require('pouchdb-all-dbs')(PouchDB)
 PouchDB.plugin(PouchFind)
@@ -29,8 +29,11 @@ const setAllDbs = (all: string[]): SetAllDbsAction => ({
   all
 })
 
-export function LoadAllDbs() {
-  return async function (dispatch: Dispatch<Action>) {
+type State = DbSlice
+type Thunk = ThunkAction<any, State, any>
+
+export const LoadAllDbs = (): Thunk => {
+  return async (dispatch: Dispatch<State>) => {
     const all = await PouchDB.allDbs()
     dispatch(setAllDbs(all))
   }
@@ -40,7 +43,7 @@ interface SetCurrentDbAction extends Action {
   current: PouchDB.Database<{}>
 }
 
-export function LoadDb(name: string, password: string) {
+export const LoadDb = (name: string, password: string): SetCurrentDbAction => {
   const current = new PouchDB(name)
   current.crypto(password)
   return {
@@ -49,7 +52,7 @@ export function LoadDb(name: string, password: string) {
   }
 }
 
-function reducer(state: DbState = initialState, action: Action) {
+const reducer = (state: DbState = initialState, action: Action): DbState => {
   switch (action.type) {
     case SET_ALL_DBS:
       return Object.assign({}, state, {all: (action as SetAllDbsAction).all})

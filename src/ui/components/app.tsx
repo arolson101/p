@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { bindActionCreators } from 'redux'
-import { connect, Dispatch } from 'react-redux'
-import { AppState, LoadAllDbs } from '../../modules'
+import { connect } from 'react-redux'
+import { AppState, AppDispatch, LoadAllDbs } from '../../modules'
 
 interface Props {
   all: string[]
@@ -20,5 +20,5 @@ export const App = connect(
   (state: AppState) => ({
     all: state.db.all
   }),
-  (dispatch: Dispatch<AppState>) => bindActionCreators( { LoadAllDbs }, dispatch ),
+  (dispatch: AppDispatch) => bindActionCreators( { LoadAllDbs }, dispatch ),
 )(AppComponent)

@@ -7,7 +7,7 @@ import ReduxThunk from 'redux-thunk'
 import { AppState } from './modules'
 import { App } from './ui/components/app'
 
-export function main(element: Element) {
+export const main = (element: Element) => {
   const store = createStore(
     AppState,
     composeWithDevTools(
