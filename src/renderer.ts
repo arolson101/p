@@ -5,6 +5,7 @@ import * as CryptoPouch from 'crypto-pouch';
 //import * as replication from "pouchdb-replication";
 //import * as express from 'express';
 
+
 PouchDB.plugin(PouchFind);
 PouchDB.plugin(CryptoPouch);
 

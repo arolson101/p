@@ -1,5 +1,12 @@
-import { Dispatch, Action, ThunkAction } from 'redux';
+import * as CryptoPouch from 'crypto-pouch';
 import * as PouchDB from 'pouchdb-browser';
+import * as PouchFind from 'pouchdb-find';
+import { Dispatch, Action, ThunkAction } from 'redux';
+
+require('pouchdb-all-dbs')(PouchDB);
+PouchDB.plugin(PouchFind);
+PouchDB.plugin(CryptoPouch);
+
 
 export interface DbState {
   current: PouchDB.Database<{}> | undefined;
@@ -27,7 +34,7 @@ const setAllDbs = (all: string[]): SetAllDbsAction => ({
 
 export function LoadAllDbs() {
   return async function (dispatch: Dispatch<Action>) {
-    const all = ['a', 'b', 'c'];
+    const all = await PouchDB.allDbs();
     dispatch(setAllDbs(all));
   }
 }

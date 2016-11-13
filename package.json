@@ -16,6 +16,7 @@
     "@types/react-dom": "^0.14.18",
     "crypto-pouch": "arolson101/crypto-pouch",
     "docuri": "^4.2.1",
+    "pouchdb-all-dbs": "^1.0.2",
     "pouchdb-browser": "^6.0.7",
     "pouchdb-find": "^0.10.3",
     "react": "^15.3.2",
