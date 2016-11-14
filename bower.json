@@ -1,0 +1,21 @@
+{
+  "name": "p",
+  "description": "",
+  "main": "main.js",
+  "authors": [
+    "arolson101 <andrew@olsononline.org>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/arolson101/p",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "app/components/",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "semantic": "semantic-ui#^2.2.6"
+  }
+}

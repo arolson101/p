@@ -1,3 +1,4 @@
 node_modules
 app/p.js*
+app/components
 *.log

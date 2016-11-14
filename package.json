@@ -25,7 +25,8 @@
     "redux": "^3.6.0",
     "redux-thunk": "^2.1.0",
     "remote-redux-devtools": "^0.5.3",
-    "requirejs": "^2.3.2"
+    "requirejs": "^2.3.2",
+    "semantic-ui-react": "^0.60.4"
   },
   "devDependencies": {
     "@types/electron": "^1.4.26",
