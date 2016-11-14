@@ -18,8 +18,12 @@ const BrowserWindow = electron.BrowserWindow
 
 let indexURL = `file://${__dirname}/index.html`;
 
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'development'
+}
+const __DEVELOPMENT__ = (process.env.NODE_ENV == 'development');
 
-if (process.env.NODE_ENV == 'development') {
+if (__DEVELOPMENT__) {
   const port = 3000;
   const WebpackDevServer = require('webpack-dev-server');
   const webpack = require('webpack');
@@ -30,7 +34,7 @@ if (process.env.NODE_ENV == 'development') {
   config.plugins.push(new webpack.HotModuleReplacementPlugin());
   const compiler = webpack(config);
   const server = new WebpackDevServer(compiler, {
-		contentBase: "app",
+		contentBase: __dirname,
     hot: true,
     historyApiFallback: true,
     //stats: { colors: true }
@@ -57,8 +61,8 @@ function createWindow () {
   mainWindow.loadURL(indexURL)
 
   // Open the DevTools.
-  if (process.env.NODE_ENV == 'development') {
-    mainWindow.webContents.openDevTools();
+  if (__DEVELOPMENT__) {
+    //mainWindow.webContents.openDevTools();
   }
 
   mainWindow.on('close', function() {

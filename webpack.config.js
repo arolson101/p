@@ -4,11 +4,14 @@ var path = require("path");
 var ForkCheckerPlugin = require('awesome-typescript-loader').ForkCheckerPlugin;
 
 
-const __DEVELOPMENT__ = 1;//(process.env.NODE_ENV == 'development');
+if (!process.env.NODE_ENV) {
+  process.env.NODE_ENV = 'development'
+}
+const __DEVELOPMENT__ = (process.env.NODE_ENV == 'development');
 
 
 var nodeModules = {};
-fs.readdirSync('node_modules')
+fs.readdirSync(path.join(__dirname, 'node_modules'))
 //["sqlite3", "filist", "i18next", "rrule", "faker", "sockjs-client"]
 //	.concat(["electron", "fs", "path"])
   .filter(function(x) {
@@ -25,6 +28,7 @@ module.exports = {
     "./index.ts"
   ],
   output: {
+    devtoolModuleFilenameTemplate: (info) => `file:///${path.normalize(info.resourcePath).replace(/\\/g, '/')}`,
     path: path.join(__dirname, "app"),
     filename: "p.js",
     library: "p"
