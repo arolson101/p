@@ -28,7 +28,7 @@ module.exports = {
     "./index.ts"
   ],
   output: {
-    devtoolModuleFilenameTemplate: (info) => `file:///${path.normalize(info.resourcePath).replace(/\\/g, '/')}`,
+    devtoolModuleFilenameTemplate: (info) => `file:///${path.normalize(info.absoluteResourcePath).replace(/\\/g, '/')}`,
     path: path.join(__dirname, "app"),
     filename: "p.js",
     library: "p"

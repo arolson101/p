@@ -15,9 +15,10 @@
       "sourceMaps": true
     },
     {
-      "name": "Debug Renderer Process",
+      "name": "Attach to Renderer Process",
       "type": "chrome",
-      "request": "launch",
+      "request": "attach",
+      "port": 9222,
       //"runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
       // Use the following for Windows
       "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd",

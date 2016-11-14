@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=development electron app",
+    "start": "cross-env NODE_ENV=development electron app --remote-debugging-port=9222",
     "prod": "cross-env NODE_ENV=production electron app",
     "postinstall": "rimraf node_modules/webpack/node_modules/uglify-js",
     "test": "echo \"Error: no test specified\" && exit 1"
