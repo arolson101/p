@@ -2,7 +2,6 @@
   "name": "p",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
   "scripts": {
     "start": "cross-env NODE_ENV=development electron app --remote-debugging-port=9222",
     "prod": "cross-env NODE_ENV=production electron app",
@@ -41,6 +40,7 @@
     "@types/webpack-dev-server": "^1.12.2",
     "awesome-typescript-loader": "^2.2.4",
     "cross-env": "^3.1.3",
+    "css-loader": "^0.25.0",
     "electron": "^1.4.4",
     "electron-devtools-installer": "^2.0.1",
     "express": "^4.14.0",
@@ -50,6 +50,7 @@
     "pouchdb-server": "^1.2.1",
     "react-hot-loader": "^3.0.0-beta.6",
     "rimraf": "^2.5.4",
+    "semantic-ui": "^2.2.6",
     "source-map-loader": "^0.1.5",
     "style-loader": "^0.13.1",
     "ts-loader": "^1.1.0",

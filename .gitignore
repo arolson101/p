@@ -1,4 +1,5 @@
 node_modules
 app/p.js*
-app/components
+app/fonts
+app/images
 *.log
