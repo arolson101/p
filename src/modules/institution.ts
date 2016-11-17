@@ -38,8 +38,8 @@ const initialState: InstitutionState = {
   accounts: []
 }
 
-const SET_INSTITUTION = 'institution/set'
 type SET_INSTITUTION = 'institution/set'
+const SET_INSTITUTION = 'institution/set' as SET_INSTITUTION
 
 interface SetAction {
   type: SET_INSTITUTION
@@ -75,12 +75,11 @@ export const reloadInstitution = (): Thunk => {
   }
 }
 
-type NullAction = { type: '' }
-type Actions = SetAction | NullAction
+type Actions = SetAction | { type: '' }
 
 const institution = (state: InstitutionState = initialState, action: Actions): InstitutionState => {
   switch (action.type) {
-    case (SET_INSTITUTION as SET_INSTITUTION):
+    case SET_INSTITUTION:
       return Object.assign({}, state, { current: action.current, accounts: action.accounts } as InstitutionState)
 
     default:
