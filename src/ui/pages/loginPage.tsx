@@ -1,6 +1,7 @@
 import * as React from 'react'
-import { connect } from 'react-redux'
 import { FormattedMessage, defineMessages } from 'react-intl'
+import { connect } from 'react-redux'
+import { Link } from 'react-router'
 import { bindActionCreators } from 'redux'
 import { List } from 'semantic-ui-react'
 import { AppState, AppDispatch, LoadAllDbs } from '../../modules'
@@ -37,7 +38,9 @@ export const LoginPageComponent = (props: Props) => {
       <List.Item>
         <List.Icon name={icons.newDb} />
         <List.Content>
-        <FormattedMessage {...translations.newDb}/>
+          <Link to='/new'>
+            <FormattedMessage {...translations.newDb}/>
+          </Link>
         </List.Content>
       </List.Item>
     </List>
@@ -49,4 +52,4 @@ export const LoginPage = connect(
     allDbs: state.db.all
   }),
   (dispatch: AppDispatch) => bindActionCreators( { LoadAllDbs }, dispatch ),
-)(LoginPageComponent)
+)(LoginPageComponent) as React.ComponentClass<Props>
