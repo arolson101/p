@@ -1,7 +1,7 @@
-export * from './account';
-export * from './db';
-export * from './institution';
-export * from './transaction';
+export * from './account'
+export * from './db'
+export * from './institution'
+export * from './transaction'
 
 import { combineReducers, Dispatch } from 'redux'
 import { DbSlice } from './db'

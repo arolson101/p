@@ -61,7 +61,7 @@ module.exports = {
       { test: /\.tsx?$/, loader: "tslint" },
 
       // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-      { test: /\.js$/, loader: "source-map-loader" }
+      { test: /\.js$/, exclude: /intl-/, loader: "source-map-loader" }
     ]
   },
 
