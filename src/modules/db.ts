@@ -19,8 +19,6 @@ const initialState: DbState = {
 
 type SET_ALL_DBS = 'db/setAll'
 const SET_ALL_DBS = 'db/setAll' as SET_ALL_DBS
-type SET_CURRENT_DB = 'db/setCurrent'
-const SET_CURRENT_DB = 'db/setCurrent' as SET_CURRENT_DB
 
 interface SetAllDbsAction {
   type: SET_ALL_DBS
@@ -41,6 +39,9 @@ export const LoadAllDbs = (): Thunk => {
     dispatch(setAllDbs(all))
   }
 }
+
+type SET_CURRENT_DB = 'db/setCurrent'
+const SET_CURRENT_DB = 'db/setCurrent' as SET_CURRENT_DB
 
 interface SetCurrentDbAction {
   type: SET_CURRENT_DB
