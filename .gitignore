@@ -1,5 +1,5 @@
 node_modules
-app/p.js*
+app/p.*
 app/fonts
 app/images
-*.log
+*.log*

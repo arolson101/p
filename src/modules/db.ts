@@ -8,7 +8,7 @@ PouchDB.plugin(PouchFind)
 PouchDB.plugin(CryptoPouch)
 
 export interface DbState {
-  current: PouchDB.Database<{}> | undefined
+  current: PouchDB.Database<any> | undefined
   changes: PouchDB.ChangeEmitter | undefined
   seq: number
   all: string[]
@@ -49,7 +49,7 @@ const SET_CURRENT_DB = 'db/setCurrent' as SET_CURRENT_DB
 
 interface SetCurrentDbAction {
   type: SET_CURRENT_DB
-  current: PouchDB.Database<{}> | undefined
+  current: PouchDB.Database<any> | undefined
   changes: PouchDB.ChangeEmitter | undefined
 }
 

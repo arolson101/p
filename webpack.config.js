@@ -2,6 +2,7 @@ var webpack = require("webpack");
 var fs = require("fs");
 var path = require("path");
 var ForkCheckerPlugin = require('awesome-typescript-loader').ForkCheckerPlugin;
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 
 if (!process.env.NODE_ENV) {
@@ -10,17 +11,17 @@ if (!process.env.NODE_ENV) {
 const __DEVELOPMENT__ = (process.env.NODE_ENV == 'development');
 
 
-// var nodeModules =
-// //fs.readdirSync(path.join(__dirname, 'node_modules'))
-// //["sqlite3", "filist", "i18next", "rrule", "faker", "sockjs-client"]
-// //	.concat(["electron", "fs", "path"])
-//   .filter(function(x) {
-//     return ['.bin', 'react-fa'].indexOf(x) === -1;
-//   })
-//   .map(function(mod) {
-//     return 'commonjs ' + mod;
-//   });
-
+var nodeModules = {};
+fs.readdirSync(path.join(__dirname, 'node_modules'))
+//["sqlite3", "filist", "i18next", "rrule", "faker", "sockjs-client"]
+//	.concat(["electron", "fs", "path"])
+  .filter(function(x) {
+    return ['.bin', 'react-fa'].indexOf(x) === -1;
+  })
+  .forEach(function(mod) {
+    nodeModules[mod] = 'commonjs ' + mod;
+  });
+//console.log(nodeModules)
 
 module.exports = {
   context: path.join(__dirname, 'src'),
@@ -52,7 +53,7 @@ module.exports = {
 
     loaders: [
       { test: /\.tsx?$/, loaders: ['react-hot-loader/webpack', 'awesome-typescript-loader?forkChecker=true'] },
-      { test: /\.css$/, loader: "style-loader!css-loader" },
+      { test: /\.css$/, loader: ExtractTextPlugin.extract('style-loader', 'css-loader') },
       { test: /\.(svg|woff|woff2|ttf|eot)($|\?)/, loader: "file?name=fonts/[name].[ext]" },
       { test: /\.(png|gif|jpg)($|\?)/, loader: "file?name=images/[name].[ext]" },
     ],
@@ -89,6 +90,8 @@ module.exports = {
       __DEVELOPMENT__,
       __TEST__: 0
     }),
+
+    new ExtractTextPlugin('p.css'),
   ],
 
   // When importing a module whose path matches one of the following, just
