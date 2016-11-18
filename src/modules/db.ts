@@ -37,12 +37,12 @@ const setAllDbs = (all: string[]): SetAllDbsAction => ({
 type State = DbSlice
 type Thunk = ThunkAction<any, State, any>
 
-export const LoadAllDbs = (): Thunk => {
-  return async (dispatch: Dispatch<State>) => {
+export const LoadAllDbs = (): Thunk => (
+  async (dispatch: Dispatch<State>) => {
     const all = await PouchDB.allDbs()
     dispatch(setAllDbs(all))
   }
-}
+)
 
 type SET_CURRENT_DB = 'db/setCurrent'
 const SET_CURRENT_DB = 'db/setCurrent' as SET_CURRENT_DB

@@ -15,19 +15,19 @@ const UserIsAuthenticated = UserAuthWrapper({
   wrapperDisplayName: 'UserIsAuthenticated' // a nice name for this auth check
 })
 
-const Root = (props: Router.RouteComponentProps<any, any>) => {
-  return <div>
+const Root = (props: Router.RouteComponentProps<any, any>) => (
+  <div>
     [{props.location!.pathname + ' ' + props.location!.search}]{' '}
     <Link to='/'>/</Link>{' '}
     <Link to='/dash'>/dash</Link>{' '}
     <Link to='/login'>/login</Link>{' '}
     {props.children}
   </div>
-}
+)
 
-const Dashboard = () => {
-  return <div>dash</div>
-}
+const Dashboard = () => (
+  <div>dash</div>
+)
 
 interface Props {
   history: History.History
@@ -37,19 +37,17 @@ interface ConnectedProps {
   locale: string
 }
 
-export const AppComponent = (props: Props & ConnectedProps) => {
-  return (
-    <IntlProvider locale={props.locale}>
-      <Router history={props.history}>
-        <Route path='/' component={Root}>
-          <IndexRedirect to='/login'/>
-          <Route path='login' component={LoginPage}/>
-          <Route path='dash' component={UserIsAuthenticated(Dashboard)}/>
-        </Route>
-      </Router>
-    </IntlProvider>
-  )
-}
+export const AppComponent = (props: Props & ConnectedProps) => (
+  <IntlProvider locale={props.locale}>
+    <Router history={props.history}>
+      <Route path='/' component={Root}>
+        <IndexRedirect to='/login'/>
+        <Route path='login' component={LoginPage}/>
+        <Route path='dash' component={UserIsAuthenticated(Dashboard)}/>
+      </Route>
+    </Router>
+  </IntlProvider>
+)
 
 export const App = connect(
   (state: AppState) => ({ locale: state.i18n.locale }) as ConnectedProps,

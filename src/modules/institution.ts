@@ -50,8 +50,8 @@ interface SetAction {
 type State = InstitutionSlice & DbSlice
 type Thunk = ThunkAction<any, State, any>
 
-export const loadInstitution = (id: string): Thunk => {
-  return async (dispatch: Dispatch<State>, getState: () => State) => {
+export const loadInstitution = (id: string): Thunk => (
+  async (dispatch: Dispatch<State>, getState: () => State) => {
     const { db } = getState()
     if (!db.current) {
       throw new Error('no current db')
@@ -64,16 +64,23 @@ export const loadInstitution = (id: string): Thunk => {
       accounts
     } as SetAction)
   }
+)
+
+export const allInstitutions = async (db: PouchDB.Database<Institution>) => {
+  const startkey = createInstitutionDocId({institution: ''})
+  const endkey = createInstitutionDocId({institution: '\uffff'})
+  const all = await db.allDocs({startkey, endkey})
+  return all
 }
 
-export const reloadInstitution = (): Thunk => {
-  return async (dispatch: Dispatch<State>, getState: () => State) => {
+export const reloadInstitution = (): Thunk => (
+  async (dispatch: Dispatch<State>, getState: () => State) => {
     const { institution } = getState()
     if (institution.current) {
       return loadInstitution(institution.current._id)(dispatch, getState, undefined)
     }
   }
-}
+)
 
 type Actions = SetAction | { type: '' }
 
