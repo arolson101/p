@@ -4,7 +4,7 @@ import { IndexRedirect, Router, Route, Link } from 'react-router'
 import { routerActions } from 'react-router-redux'
 import { bindActionCreators } from 'redux'
 import { UserAuthWrapper } from 'redux-auth-wrapper'
-import { connect } from 'react-redux'
+import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
 import { AppState, AppDispatch } from '../../modules'
 import { LoginPage } from '../pages'
@@ -31,24 +31,30 @@ const Dashboard = () => {
 
 interface Props {
   history: History.History
+  store: Redux.Store<any>
 }
 
 interface ConnectedProps {
   locale: string
 }
 
-export const AppComponent = (props: Props & ConnectedProps) => {
-  return (
-    <IntlProvider locale={props.locale}>
-      <Router history={props.history}>
-        <Route path='/' component={Root}>
-          <IndexRedirect to='/login'/>
-          <Route path='login' component={LoginPage}/>
-          <Route path='dash' component={UserIsAuthenticated(Dashboard)}/>
-        </Route>
-      </Router>
-    </IntlProvider>
-  )
+class AppComponent extends React.Component<Props & ConnectedProps, any> {
+  render() {
+    const { store, locale, history } = this.props
+    return (
+      <Provider store={store}>
+        <IntlProvider locale={locale}>
+          <Router history={history}>
+            <Route path='/' component={Root}>
+              <IndexRedirect to='/login'/>
+              <Route path='login' component={LoginPage}/>
+              <Route path='dash' component={UserIsAuthenticated(Dashboard)}/>
+            </Route>
+          </Router>
+        </IntlProvider>
+      </Provider>
+    )
+  }
 }
 
 export const App = connect(

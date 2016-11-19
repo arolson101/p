@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { Link } from 'react-router'
+// import { Link } from 'react-router'
 import { bindActionCreators } from 'redux'
-import { AppState, AppDispatch, LoadAllDbs } from '../../modules'
+import { AppState, AppDispatch } from '../../modules'
 import {Icon} from 'react-fa'
 
 const icons = {
@@ -30,7 +30,6 @@ interface State {
 
 export class LoginPageComponent extends React.Component<Props, State> {
 
-
   handleItemClick = (e: Event, args: { name: string }) => this.setState({ activeItem: args.name })
 
   render() {
@@ -40,7 +39,7 @@ export class LoginPageComponent extends React.Component<Props, State> {
           <li key={dbName}>{dbName}</li>
         )}
         <li>
-          <form onSubmit={()=>{}}>
+          <form onSubmit={(event) => { event.preventDefault() }}>
             <label>name
               <input type='text'></input>
             </label>

@@ -32,13 +32,14 @@ module.exports = {
     devtoolModuleFilenameTemplate: (info) => `file:///${path.normalize(info.absoluteResourcePath).replace(/\\/g, '/')}`,
     path: path.join(__dirname, "app"),
     filename: "p.js",
-    library: "p"
+    library: "p",
+    publicPath: "/"
   },
 
   //externals: nodeModules,
   externals: ['ws'],
 
-  target: 'electron',
+  target: 'electron-renderer',
 
   // Enable sourcemaps for debugging webpack's output.
   devtool: "source-map",

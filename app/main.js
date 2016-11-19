@@ -30,7 +30,8 @@ if (__DEVELOPMENT__) {
   const config = require('../webpack.config.js');
   indexURL = `http://localhost:${port}`;
   config.entry.unshift(`webpack-dev-server/client?${indexURL}`);
-  config.entry.unshift('webpack/hot/dev-server');
+  config.entry.unshift('webpack/hot/only-dev-server');
+  config.entry.unshift('react-hot-loader/patch');
   config.plugins.push(new webpack.HotModuleReplacementPlugin());
   const compiler = webpack(config);
   const server = new WebpackDevServer(compiler, {
