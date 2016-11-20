@@ -1,15 +1,14 @@
 import * as React from 'react'
 import { render } from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
-import { hashHistory } from 'react-router'
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux'
 import { createStore, applyMiddleware } from 'redux'
 import ReduxThunk from 'redux-thunk'
 import { composeWithDevTools } from 'remote-redux-devtools'
-import { AppState } from './modules'
+import { AppState, history } from './modules'
 import { App } from './ui'
 
-const routingMiddleware = routerMiddleware(hashHistory)
+const routingMiddleware = routerMiddleware(history)
 
 export const main = (element: Element) => {
   const store = createStore(
@@ -19,7 +18,7 @@ export const main = (element: Element) => {
     )
   )
 
-  const history = syncHistoryWithStore(hashHistory, store)
+  const syncedHistory = syncHistoryWithStore(history, store)
 
   if ((module as any).hot) {
     (module as any).hot.accept('./modules', () => {
@@ -31,7 +30,7 @@ export const main = (element: Element) => {
   render(
     (
       <AppContainer>
-        <App store={store} history={history}/>
+        <App store={store} history={syncedHistory}/>
       </AppContainer>
     ),
     element

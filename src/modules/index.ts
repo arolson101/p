@@ -2,6 +2,7 @@ export * from './account'
 export * from './db'
 export * from './i18n'
 export * from './institution'
+export * from './router'
 export * from './transaction'
 
 import { combineReducers, Dispatch } from 'redux'

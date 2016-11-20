@@ -1,5 +1,6 @@
 import * as History from 'history'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
+import getMuiTheme from 'material-ui/styles/getMuiTheme'
 import * as React from 'react'
 import { IndexRedirect, Router, Route, Link } from 'react-router'
 import { routerActions } from 'react-router-redux'
@@ -8,7 +9,7 @@ import { UserAuthWrapper } from 'redux-auth-wrapper'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
 import { AppState, AppDispatch } from '../../modules'
-import { LoginPage } from '../pages'
+import { CreatePage, LoginPage } from '../pages'
 
 const UserIsAuthenticated = UserAuthWrapper({
   authSelector: (state: AppState) => state.db.current,
@@ -45,10 +46,11 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
     return (
       <Provider store={store}>
         <IntlProvider locale={locale}>
-          <MuiThemeProvider>
+          <MuiThemeProvider muiTheme={getMuiTheme()}>
             <Router history={history}>
               <Route path='/' component={Root}>
                 <IndexRedirect to='/login'/>
+                <Route path='create' component={CreatePage}/>
                 <Route path='login' component={LoginPage}/>
                 <Route path='dash' component={UserIsAuthenticated(Dashboard)}/>
               </Route>
@@ -61,6 +63,6 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
 }
 
 export const App = connect(
-  (state: AppState) => ({ locale: state.i18n.locale }) as ConnectedProps,
+  (state: AppState): ConnectedProps => ({ locale: state.i18n.locale }),
   (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
 )(AppComponent) as React.ComponentClass<Props>

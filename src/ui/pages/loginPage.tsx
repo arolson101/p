@@ -1,14 +1,18 @@
+import Divider from 'material-ui/Divider'
+import FontIcon from 'material-ui/FontIcon'
+import IconButton from 'material-ui/IconButton'
+import IconMenu from 'material-ui/IconMenu'
+import { List, ListItem } from 'material-ui/List'
+import MenuItem from 'material-ui/MenuItem'
+import { grey400 } from 'material-ui/styles/colors'
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
+import Paper from 'material-ui/Paper'
 import * as React from 'react'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 // import { Link } from 'react-router'
 import { bindActionCreators } from 'redux'
-import { AppState, AppDispatch } from '../../modules'
-import Paper from 'material-ui/Paper'
-import Menu from 'material-ui/Menu'
-import MenuItem from 'material-ui/MenuItem'
-import FontIcon from 'material-ui/FontIcon'
-import Divider from 'material-ui/Divider'
+import { AppState, AppDispatch, history } from '../../modules'
 
 const icons = {
   newDb: {
@@ -22,16 +26,19 @@ const icons = {
 const translations = defineMessages({
   newDb: {
     id: 'newDb',
-    defaultMessage: 'Create',
-    description: 'new database login page option'
+    defaultMessage: 'New'
+  },
+  newDbDescription: {
+    id: 'newDbDescription',
+    defaultMessage: 'Create a new data store'
   }
 })
 
-interface Props {
+interface ConnectedProps {
   allDbs: string[]
 }
 
-interface State {
+interface Props {
 }
 
 const style = {
@@ -39,39 +46,49 @@ const style = {
   margin: '16px 32px 16px 0'
 }
 
-export class LoginPageComponent extends React.Component<Props, State> {
+const iconButtonElement = (
+  <IconButton
+    touch={true}
+  >
+    <MoreVertIcon color={grey400} />
+  </IconButton>
+)
 
-  handleItemClick = (e: Event, args: { name: string }) => this.setState({ activeItem: args.name })
+const rightIconMenu = (
+  <IconMenu iconButtonElement={iconButtonElement}>
+    <MenuItem>Delete</MenuItem>
+  </IconMenu>
+)
 
-  render() {
-    return (
-      <div>
-        <Paper style={style}>
-          <Menu>
-            {this.props.allDbs.map(dbName =>
-              <MenuItem
-                key={dbName}
-                primaryText={dbName}
-                leftIcon={<FontIcon {...icons.openDb} />}
-              />
-            )}
-            {this.props.allDbs.length &&
-              <Divider/>
-            }
-            <MenuItem
-              primaryText={<FormattedMessage {...translations.newDb}/>}
-              leftIcon={<FontIcon {...icons.newDb} />}
-              onTouchTap={() => console.log('item')}
-            />
-          </Menu>
-        </Paper>
-      </div>
-    )
-  }
-}
+export const LoginPageComponent = (props: Props & ConnectedProps) => (
+  <div>
+    <Paper style={style}>
+      <List>
+        {props.allDbs.map(dbName =>
+          <ListItem
+            key={dbName}
+            primaryText={dbName}
+            leftIcon={<FontIcon {...icons.openDb} />}
+            rightIconButton={rightIconMenu}
+          />
+        )}
+        {props.allDbs.length > 0 &&
+          <Divider/>
+        }
+        <ListItem
+          primaryText={<FormattedMessage {...translations.newDb}/>}
+          secondaryText={<p><FormattedMessage {...translations.newDbDescription}/></p>}
+          secondaryTextLines={1}
+          leftIcon={<FontIcon {...icons.newDb} />}
+          onTouchTap={() => history.push('/create')}
+        />
+      </List>
+    </Paper>
+  </div>
+)
 
 export const LoginPage = connect(
-  (state: AppState) => ({
+  (state: AppState): ConnectedProps => ({
     allDbs: state.db.all
   }),
   (dispatch: AppDispatch) => bindActionCreators( { }, dispatch ),
