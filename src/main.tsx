@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { render } from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
-import { browserHistory } from 'react-router'
+import { hashHistory } from 'react-router'
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux'
 import { createStore, applyMiddleware } from 'redux'
 import ReduxThunk from 'redux-thunk'
@@ -9,7 +9,7 @@ import { composeWithDevTools } from 'remote-redux-devtools'
 import { AppState } from './modules'
 import { App } from './ui'
 
-const routingMiddleware = routerMiddleware(browserHistory)
+const routingMiddleware = routerMiddleware(hashHistory)
 
 export const main = (element: Element) => {
   const store = createStore(
@@ -19,7 +19,7 @@ export const main = (element: Element) => {
     )
   )
 
-  const history = syncHistoryWithStore(browserHistory, store)
+  const history = syncHistoryWithStore(hashHistory, store)
 
   if ((module as any).hot) {
     (module as any).hot.accept('./modules', () => {
