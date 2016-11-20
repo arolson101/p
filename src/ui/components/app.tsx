@@ -1,4 +1,5 @@
 import * as History from 'history'
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import * as React from 'react'
 import { IndexRedirect, Router, Route, Link } from 'react-router'
 import { routerActions } from 'react-router-redux'
@@ -44,13 +45,15 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
     return (
       <Provider store={store}>
         <IntlProvider locale={locale}>
-          <Router history={history}>
-            <Route path='/' component={Root}>
-              <IndexRedirect to='/login'/>
-              <Route path='login' component={LoginPage}/>
-              <Route path='dash' component={UserIsAuthenticated(Dashboard)}/>
-            </Route>
-          </Router>
+          <MuiThemeProvider>
+            <Router history={history}>
+              <Route path='/' component={Root}>
+                <IndexRedirect to='/login'/>
+                <Route path='login' component={LoginPage}/>
+                <Route path='dash' component={UserIsAuthenticated(Dashboard)}/>
+              </Route>
+            </Router>
+          </MuiThemeProvider>
         </IntlProvider>
       </Provider>
     )

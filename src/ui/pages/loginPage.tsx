@@ -4,19 +4,25 @@ import { connect } from 'react-redux'
 // import { Link } from 'react-router'
 import { bindActionCreators } from 'redux'
 import { AppState, AppDispatch } from '../../modules'
-import {Icon} from 'react-fa'
+import Paper from 'material-ui/Paper'
+import Menu from 'material-ui/Menu'
+import MenuItem from 'material-ui/MenuItem'
+import FontIcon from 'material-ui/FontIcon'
+import Divider from 'material-ui/Divider'
 
 const icons = {
   newDb: {
-    name: 'user-plus'
+    className: 'fa fa-user-plus'
   },
-  openDb: 'sign-in'
+  openDb: {
+    className: 'fa fa-sign-in'
+  }
 }
 
 const translations = defineMessages({
   newDb: {
     id: 'newDb',
-    defaultMessage: 'New Database',
+    defaultMessage: 'Create',
     description: 'new database login page option'
   }
 })
@@ -28,32 +34,38 @@ interface Props {
 interface State {
 }
 
+const style = {
+  display: 'inline-block',
+  margin: '16px 32px 16px 0'
+}
+
 export class LoginPageComponent extends React.Component<Props, State> {
 
   handleItemClick = (e: Event, args: { name: string }) => this.setState({ activeItem: args.name })
 
   render() {
     return (
-      <ul>
-        {this.props.allDbs.map(dbName =>
-          <li key={dbName}>{dbName}</li>
-        )}
-        <li>
-          <form onSubmit={(event) => { event.preventDefault() }}>
-            <label>name
-              <input type='text'></input>
-            </label>
-            <label>password
-              <input type='text'></input>
-            </label>
-            <button type='submit'>
-              <Icon {...icons.newDb} />
-              {' '}
-              <FormattedMessage {...translations.newDb}/>
-            </button>
-          </form>
-        </li>
-      </ul>
+      <div>
+        <Paper style={style}>
+          <Menu>
+            {this.props.allDbs.map(dbName =>
+              <MenuItem
+                key={dbName}
+                primaryText={dbName}
+                leftIcon={<FontIcon {...icons.openDb} />}
+              />
+            )}
+            {this.props.allDbs.length &&
+              <Divider/>
+            }
+            <MenuItem
+              primaryText={<FormattedMessage {...translations.newDb}/>}
+              leftIcon={<FontIcon {...icons.newDb} />}
+              onTouchTap={() => console.log('item')}
+            />
+          </Menu>
+        </Paper>
+      </div>
     )
   }
 }
