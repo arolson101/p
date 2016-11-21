@@ -1,7 +1,7 @@
 import * as CryptoPouch from 'crypto-pouch'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
-import { Dispatch, ThunkAction } from 'redux'
+import { ThunkAction } from 'redux'
 
 require('pouchdb-all-dbs')(PouchDB)
 PouchDB.plugin(PouchFind)

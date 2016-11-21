@@ -1,5 +1,5 @@
 import * as docURI from 'docuri'
-import { Dispatch, ThunkAction } from 'redux'
+import { ThunkAction } from 'redux'
 import { createSelector } from 'reselect'
 import { DbSlice } from './db'
 import { AccountDoc, allAccountsForInstitution } from './account'
@@ -65,7 +65,6 @@ export const loadInstitution = (id: string): Thunk => async (dispatch, getState)
   } as SetAction)
 }
 
-
 export const allInstitutions = async (db: PouchDB.Database<Institution>) => {
   const startkey = createInstitutionDocId({institution: ''})
   const endkey = createInstitutionDocId({institution: '\uffff'})
@@ -80,9 +79,6 @@ export const allInstitutionsSelector = createSelector(
     return seq
   }
 )
-
-// allInstitutionsSelector()
-
 
 export const reloadInstitution = (): Thunk => async (dispatch, getState) => {
   const { institution } = getState()
