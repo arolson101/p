@@ -37,12 +37,10 @@ const setAllDbs = (all: string[]): SetAllDbsAction => ({
 type State = DbSlice
 type Thunk = ThunkAction<any, State, any>
 
-export const LoadAllDbs = (): Thunk => (
-  async (dispatch: Dispatch<State>) => {
-    const all = await PouchDB.allDbs()
-    dispatch(setAllDbs(all))
-  }
-)
+export const LoadAllDbs = (): Thunk => async (dispatch) => {
+  const all = await PouchDB.allDbs()
+  dispatch(setAllDbs(all))
+}
 
 type SET_CURRENT_DB = 'db/setCurrent'
 const SET_CURRENT_DB = 'db/setCurrent' as SET_CURRENT_DB
@@ -74,20 +72,19 @@ const ChangeEvent = (db: PouchDB.Database<any>, seq: number): ChangeEventAction 
   seq
 })
 
-export const LoadDb = (name: string, password: string): Thunk => {
-  return async (dispatch: Dispatch<State>) => {
-    const db = new PouchDB(name)
-    db.crypto(password)
-    const changes = db.changes({
-      since: 'now',
-      live: true
-    })
-    .on('change', (change) => {
-      dispatch(ChangeEvent(db, change.seq))
-    })
+export const LoadDb = (name: string, password: string): Thunk => async (dispatch) => {
+  const db = new PouchDB(name)
+  db.crypto(password)
+  const changes = db.changes({
+    since: 'now',
+    live: true
+  })
+  .on('change', (change) => {
+    dispatch(ChangeEvent(db, change.seq))
+  })
 
-    dispatch(SetCurrentDb(db, changes))
-  }
+  dispatch(SetCurrentDb(db, changes))
+  dispatch(LoadAllDbs())
 }
 
 export const UnloadDb = (): SetCurrentDbAction => SetCurrentDb(undefined, undefined)
@@ -127,3 +124,7 @@ export interface DbSlice {
 export const DbSlice = {
   db: reducer
 }
+
+export const DbInit = [
+  LoadAllDbs
+]

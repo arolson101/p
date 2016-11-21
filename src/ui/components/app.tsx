@@ -11,11 +11,19 @@ import { IntlProvider } from 'react-intl'
 import { AppState, AppDispatch } from '../../modules'
 import { CreatePage, LoginPage } from '../pages'
 
-const UserIsAuthenticated = UserAuthWrapper({
+const DbIsOpen = UserAuthWrapper({
+  failureRedirectPath: '/login',
   authSelector: (state: AppState) => state.db.current,
   redirectAction: routerActions.replace, // the redux action to dispatch for redirect
-  wrapperDisplayName: 'UserIsAuthenticated' // a nice name for this auth check
+  wrapperDisplayName: 'DbIsOpen' // a nice name for this auth check
 })
+
+// const DbsExist = UserAuthWrapper({
+//   failureRedirectPath: '/create',
+//   authSelector: (state: AppState) => state.db.all.length > 0,
+//   redirectAction: routerActions.replace, // the redux action to dispatch for redirect
+//   wrapperDisplayName: 'DbsExist' // a nice name for this auth check
+// })
 
 const Root = (props: Router.RouteComponentProps<any, any>) => (
   <div>
@@ -40,6 +48,10 @@ interface ConnectedProps {
   locale: string
 }
 
+const NotFoundRoute = (params: Router.RouteComponentProps<any, any>) => (
+  <div>not found: {params.location ? params.location.pathname : '(no location)'}</div>
+)
+
 class AppComponent extends React.Component<Props & ConnectedProps, any> {
   render() {
     const { store, locale, history } = this.props
@@ -49,10 +61,12 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
           <MuiThemeProvider muiTheme={getMuiTheme()}>
             <Router history={history}>
               <Route path='/' component={Root}>
-                <IndexRedirect to='/login'/>
+                <IndexRedirect to='login'/>
                 <Route path='create' component={CreatePage}/>
                 <Route path='login' component={LoginPage}/>
-                <Route path='dash' component={UserIsAuthenticated(Dashboard)}/>
+                <Route path='dash' component={DbIsOpen(Dashboard)}/>
+
+                <Route path='*' component={NotFoundRoute} />
               </Route>
             </Router>
           </MuiThemeProvider>

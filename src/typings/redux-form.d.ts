@@ -194,7 +194,7 @@ export interface ReduxFormProps<T> {
      */
     handleSubmit?(event: SyntheticEvent<T>): void;
     handleSubmit?(event: React.MouseEvent<HTMLButtonElement>): void;
-    handleSubmit?(submit: (data: FormData, dispatch?: Dispatch<any>) => Promise<any> | void): FormEventHandler<T>;
+    handleSubmit?(submit: (data: FormData, dispatch?: Dispatch<any>, props?: any) => Promise<any> | void): FormEventHandler<T>;
 
     /**
      * Initializes the form data to the given values. All dirty and pristine

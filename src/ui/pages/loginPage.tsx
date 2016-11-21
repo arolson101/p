@@ -12,7 +12,7 @@ import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 // import { Link } from 'react-router'
 import { bindActionCreators } from 'redux'
-import { AppState, AppDispatch, history } from '../../modules'
+import { AppState, AppDispatch, historyAPI } from '../../modules'
 
 const icons = {
   newDb: {
@@ -42,8 +42,10 @@ interface Props {
 }
 
 const style = {
-  display: 'inline-block',
-  margin: '16px 32px 16px 0'
+  paper: {
+    display: 'inline-block',
+    margin: '16px 32px 16px 0'
+  }
 }
 
 const iconButtonElement = (
@@ -62,7 +64,7 @@ const rightIconMenu = (
 
 export const LoginPageComponent = (props: Props & ConnectedProps) => (
   <div>
-    <Paper style={style}>
+    <Paper style={style.paper}>
       <List>
         {props.allDbs.map(dbName =>
           <ListItem
@@ -80,7 +82,7 @@ export const LoginPageComponent = (props: Props & ConnectedProps) => (
           secondaryText={<p><FormattedMessage {...translations.newDbDescription}/></p>}
           secondaryTextLines={1}
           leftIcon={<FontIcon {...icons.newDb} />}
-          onTouchTap={() => history.push('/create')}
+          onTouchTap={() => historyAPI.push('/create')}
         />
       </List>
     </Paper>

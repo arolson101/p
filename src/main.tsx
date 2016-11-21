@@ -5,12 +5,12 @@ import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux'
 import { createStore, applyMiddleware } from 'redux'
 import ReduxThunk from 'redux-thunk'
 import { composeWithDevTools } from 'remote-redux-devtools'
-import { AppState, history } from './modules'
+import { AppState, AppInit, historyAPI } from './modules'
 import { App } from './ui'
 
-const routingMiddleware = routerMiddleware(history)
+const routingMiddleware = routerMiddleware(historyAPI)
 
-export const main = (element: Element) => {
+export const main = async (element: Element) => {
   const store = createStore(
     AppState,
     composeWithDevTools(
@@ -18,7 +18,7 @@ export const main = (element: Element) => {
     )
   )
 
-  const syncedHistory = syncHistoryWithStore(history, store)
+  const syncedHistory = syncHistoryWithStore(historyAPI, store)
 
   if ((module as any).hot) {
     (module as any).hot.accept('./modules', () => {
@@ -27,10 +27,12 @@ export const main = (element: Element) => {
     })
   }
 
+  await store.dispatch(AppInit())
+
   render(
     (
       <AppContainer>
-        <App store={store} history={syncedHistory}/>
+        <App store={store} history={syncedHistory} />
       </AppContainer>
     ),
     element

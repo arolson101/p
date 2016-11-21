@@ -9,10 +9,10 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 import Paper from 'material-ui/Paper'
 import * as React from 'react'
 import { injectIntl, InjectedIntlProps, defineMessages } from 'react-intl'
-import { bindActionCreators } from 'redux'
-import { reduxForm, Field } from 'redux-form'
+import { bindActionCreators, Dispatch } from 'redux'
+import { reduxForm, Field, ReduxFormProps } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
-import { AppState, AppDispatch } from '../../modules'
+import { AppState, AppDispatch, historyAPI, LoadDb } from '../../modules'
 
 const translations = defineMessages({
   welcome: {
@@ -38,10 +38,22 @@ const translations = defineMessages({
   passwordsMatch: {
     id: 'passwordsMatch',
     defaultMessage: 'Passwords must match'
+  },
+  cancel: {
+    id: 'cancel',
+    defaultMessage: 'Cancel'
+  },
+  submit: {
+    id: 'submit',
+    defaultMessage: 'Create'
   }
 })
 
-interface ConnectedProps {
+interface ConnectedProps extends ReduxFormProps<any> {
+}
+
+interface DispatchedProps {
+  LoadDb: (name: string, password: string) => any
 }
 
 interface IntlProps {
@@ -51,12 +63,35 @@ interface IntlProps {
 interface Props {
 }
 
-export const CreatePageComponent = (props: Props & IntlProps & ConnectedProps) => {
+type AllProps = Props & IntlProps & ConnectedProps & DispatchedProps
+
+const style = {
+  button: {
+    margin: '16px 32px 16px 0'
+  }
+}
+
+
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
+  console.log('submit')
+  await wait(1000)
+
+  console.log('dispatching')
+  await dispatch(LoadDb(values.name!, values.password!))
+
+  console.log('redirect')
+  historyAPI.push('/dash')
+}
+
+export const CreatePageComponent = (props: AllProps) => {
   const formatMessage = props.intl.formatMessage!
+  const { handleSubmit } = props
   return (
     <div>
       <p>{formatMessage(translations.welcome)}</p>
-        <form>
+        <form onSubmit={handleSubmit!(submit)}>
           <div>
             <Field
               name='name'
@@ -64,7 +99,6 @@ export const CreatePageComponent = (props: Props & IntlProps & ConnectedProps) =
               component={TextField}
               hintText={formatMessage(translations.name)}
               floatingLabelText={formatMessage(translations.name)}
-              // ref={(input: HTMLInputElement) => input && input.focus()}
             />
           </div>
           <div>
@@ -86,7 +120,18 @@ export const CreatePageComponent = (props: Props & IntlProps & ConnectedProps) =
             />
           </div>
           <div>
-            <RaisedButton type='submit' label='submit' />
+            <RaisedButton
+              type='button'
+              label={formatMessage(translations.cancel)}
+              style={style.button}
+              onTouchTap={() => historyAPI.go(-1)}
+            />
+            <RaisedButton
+              type='submit'
+              label={formatMessage(translations.submit)}
+              style={style.button}
+              primary
+            />
           </div>
         </form>
     </div>
@@ -123,5 +168,5 @@ export const CreatePage = injectIntl(reduxForm(
     destroyOnUnmount: !(module as any).hot
   },
   (state: AppState): ConnectedProps => ({}),
-  (dispatch: AppDispatch) => bindActionCreators( { }, dispatch ),
+  (dispatch: AppDispatch) => bindActionCreators( { LoadDb }, dispatch ) as DispatchedProps,
 )(CreatePageComponent)) as React.ComponentClass<Props>

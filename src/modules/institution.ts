@@ -51,21 +51,20 @@ interface SetAction {
 type State = InstitutionSlice & DbSlice
 type Thunk = ThunkAction<any, State, any>
 
-export const loadInstitution = (id: string): Thunk => (
-  async (dispatch: Dispatch<State>, getState: () => State) => {
-    const { db } = getState()
-    if (!db.current) {
-      throw new Error('no current db')
-    }
-    const current = await db.current.get(id) as InstitutionDoc
-    const accounts = await allAccountsForInstitution(db.current, id)
-    dispatch({
-      type: SET_INSTITUTION,
-      current,
-      accounts
-    } as SetAction)
+export const loadInstitution = (id: string): Thunk => async (dispatch, getState) => {
+  const { db } = getState()
+  if (!db.current) {
+    throw new Error('no current db')
   }
-)
+  const current = await db.current.get(id) as InstitutionDoc
+  const accounts = await allAccountsForInstitution(db.current, id)
+  dispatch({
+    type: SET_INSTITUTION,
+    current,
+    accounts
+  } as SetAction)
+}
+
 
 export const allInstitutions = async (db: PouchDB.Database<Institution>) => {
   const startkey = createInstitutionDocId({institution: ''})
@@ -85,14 +84,12 @@ export const allInstitutionsSelector = createSelector(
 // allInstitutionsSelector()
 
 
-export const reloadInstitution = (): Thunk => (
-  async (dispatch: Dispatch<State>, getState: () => State) => {
-    const { institution } = getState()
-    if (institution.current) {
-      return loadInstitution(institution.current._id)(dispatch, getState, undefined)
-    }
+export const reloadInstitution = (): Thunk => async (dispatch, getState) => {
+  const { institution } = getState()
+  if (institution.current) {
+    return loadInstitution(institution.current._id)(dispatch, getState, undefined)
   }
-)
+}
 
 type Actions = SetAction | { type: '' }
 
