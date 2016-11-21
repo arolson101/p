@@ -2,23 +2,27 @@ export * from './account'
 export * from './db'
 export * from './i18n'
 export * from './institution'
+export * from './router'
 export * from './transaction'
 
 import { combineReducers, Dispatch } from 'redux'
-import { I18nSlice } from './i18n'
 import { DbSlice } from './db'
+import { FormSlice } from './form'
+import { I18nSlice } from './i18n'
 import { InstitutionSlice } from './institution'
 import { RouterSlice } from './router'
 
 export type AppState =
-  I18nSlice &
   DbSlice &
+  FormSlice &
+  I18nSlice &
   InstitutionSlice &
   RouterSlice;
 
 export const AppState = combineReducers<AppState>(Object.assign(
   {},
   DbSlice,
+  FormSlice,
   InstitutionSlice,
   I18nSlice,
   RouterSlice
