@@ -2,6 +2,7 @@ import * as CryptoPouch from 'crypto-pouch'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction } from 'redux'
+import { spread } from '../util'
 
 require('pouchdb-all-dbs')(PouchDB)
 PouchDB.plugin(PouchFind)
@@ -98,19 +99,19 @@ type Actions
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
   switch (action.type) {
     case SET_ALL_DBS:
-      return Object.assign({}, state, { all: action.all } as DbState)
+      return spread(state, { all: action.all } as DbState)
 
     case SET_CURRENT_DB:
       if (state.changes && state.changes !== action.changes) {
         state.changes.cancel()
       }
-      return Object.assign({}, state, { current: action.current, changes: action.changes } as DbState)
+      return spread(state, { current: action.current, changes: action.changes } as DbState)
 
     case DB_CHANGE:
       if (state.current !== action.db) {
         return state
       }
-      return Object.assign({}, state, { seq: action.seq })
+      return spread(state, { seq: action.seq } as DbState)
 
     default:
       return state

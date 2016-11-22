@@ -1,5 +1,6 @@
 import { addLocaleData } from 'react-intl'
 import * as en from 'react-intl/locale-data/en'
+import { spread } from '../util'
 
 addLocaleData(en)
 
@@ -29,7 +30,7 @@ type Actions = SetLocaleAction | { type: '' }
 const reducer = (state: I18nState = defaultState, action: Actions) => {
   switch (action.type) {
     case SET_LOCALE:
-      return Object.assign({}, state, { locale: action.locale } as I18nState)
+      return spread(state, { locale: action.locale } as I18nState)
     default:
       return state
   }
