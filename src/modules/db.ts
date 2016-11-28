@@ -24,7 +24,7 @@ export interface DbState {
 
 const initialState: DbState = {
   current: undefined,
-  meta: undefined,
+  meta: undefined
 }
 
 type SET_DB = 'db/setDb'
@@ -42,11 +42,6 @@ const setDb = (db?: OpenDb): SetDbAction => ({
 
 type State = DbSlice
 type Thunk = ThunkAction<any, State, any>
-
-const LoadMetaDb = (): Thunk => async (dispatch) => {
-  const meta = new PouchDB(METADB_NAME)
-  dispatch(LoadDb(METADB_NAME, undefined))
-}
 
 type DB_CHANGE = 'db/changeEvent'
 const DB_CHANGE = 'db/changeEvent' as DB_CHANGE
@@ -94,8 +89,7 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
           throw new Error('meta db is already loaded')
         }
         return spread(state, { meta: action.db } as DbState)
-      }
-      else {
+      } else {
         if (state.current) {
           state.current.changes.cancel()
         }
@@ -105,8 +99,7 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
     case DB_CHANGE:
       if (state.meta && state.meta.handle === action.handle) {
         return spread(state, { meta: spread(state.meta, { seq: action.seq } as OpenDb) } as DbState)
-      }
-      else if (state.current && state.current.handle === action.handle) {
+      } else if (state.current && state.current.handle === action.handle) {
         return spread(state, { current: spread(state.current, { seq: action.seq } as OpenDb) } as DbState)
       }
 
@@ -124,5 +117,5 @@ export const DbSlice = {
 }
 
 export const DbInit = [
-  LoadMetaDb
+  () => LoadDb(METADB_NAME, undefined)
 ]

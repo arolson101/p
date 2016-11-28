@@ -4,6 +4,7 @@
     "no-unused-variable":  [
       true,
       "react"
-    ]
+    ],
+    "no-switch-case-fall-through": false
   }
 }
