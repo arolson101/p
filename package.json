@@ -53,6 +53,7 @@
     "@types/react-router-redux": "^4.0.34",
     "@types/redux": "^3.6.31",
     "@types/redux-thunk": "^2.1.31",
+    "@types/reselect": "^2.0.27",
     "@types/webpack-dev-server": "^1.12.3",
     "awesome-typescript-loader": "^2.2.4",
     "cross-env": "^3.1.3",

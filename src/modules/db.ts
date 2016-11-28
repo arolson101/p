@@ -4,114 +4,111 @@ import * as PouchFind from 'pouchdb-find'
 import { ThunkAction } from 'redux'
 import { spread } from '../util'
 
-require('pouchdb-all-dbs')(PouchDB)
+// require('pouchdb-all-dbs')(PouchDB)
 PouchDB.plugin(PouchFind)
 PouchDB.plugin(CryptoPouch)
 
-export interface DbState {
-  current: PouchDB.Database<any> | undefined
-  changes: PouchDB.ChangeEmitter | undefined
+const METADB_NAME = 'meta'
+
+export interface OpenDb {
+  name: string
+  handle: PouchDB.Database<any>
+  changes: PouchDB.ChangeEmitter
   seq: number
-  all: string[]
+}
+
+export interface DbState {
+  current: OpenDb | undefined
+  meta: OpenDb | undefined
 }
 
 const initialState: DbState = {
   current: undefined,
-  changes: undefined,
-  seq: 0,
-  all: []
+  meta: undefined,
 }
 
-type SET_ALL_DBS = 'db/setAll'
-const SET_ALL_DBS = 'db/setAll' as SET_ALL_DBS
+type SET_DB = 'db/setDb'
+const SET_DB = 'db/setDb' as SET_DB
 
-interface SetAllDbsAction {
-  type: SET_ALL_DBS
-  all: string[]
+interface SetDbAction {
+  type: SET_DB
+  db?: OpenDb
 }
 
-const setAllDbs = (all: string[]): SetAllDbsAction => ({
-  type: SET_ALL_DBS,
-  all
+const setDb = (db?: OpenDb): SetDbAction => ({
+  type: SET_DB,
+  db
 })
 
 type State = DbSlice
 type Thunk = ThunkAction<any, State, any>
 
-export const LoadAllDbs = (): Thunk => async (dispatch) => {
-  const all = await PouchDB.allDbs()
-  dispatch(setAllDbs(all))
+const LoadMetaDb = (): Thunk => async (dispatch) => {
+  const meta = new PouchDB(METADB_NAME)
+  dispatch(LoadDb(METADB_NAME, undefined))
 }
-
-type SET_CURRENT_DB = 'db/setCurrent'
-const SET_CURRENT_DB = 'db/setCurrent' as SET_CURRENT_DB
-
-interface SetCurrentDbAction {
-  type: SET_CURRENT_DB
-  current: PouchDB.Database<any> | undefined
-  changes: PouchDB.ChangeEmitter | undefined
-}
-
-const SetCurrentDb = (current?: PouchDB.Database<any>, changes?: PouchDB.ChangeEmitter): SetCurrentDbAction => ({
-  type: SET_CURRENT_DB,
-  current,
-  changes
-})
 
 type DB_CHANGE = 'db/changeEvent'
 const DB_CHANGE = 'db/changeEvent' as DB_CHANGE
 
 interface ChangeEventAction {
   type: DB_CHANGE
-  db: PouchDB.Database<any>
+  handle: PouchDB.Database<any>
   seq: number
 }
 
-const ChangeEvent = (db: PouchDB.Database<any>, seq: number): ChangeEventAction => ({
+const ChangeEvent = (handle: PouchDB.Database<any>, seq: number): ChangeEventAction => ({
   type: DB_CHANGE,
-  db,
+  handle,
   seq
 })
 
-export const LoadDb = (name: string, password: string): Thunk => async (dispatch) => {
-  const db = new PouchDB(name)
-  db.crypto(password)
-  const changes = db.changes({
+export const LoadDb = (name: string, password?: string): Thunk => async (dispatch) => {
+  const handle = new PouchDB(name)
+  if (password) {
+    handle.crypto(password)
+  }
+  const changes = handle.changes({
     since: 'now',
     live: true
   })
   .on('change', (change) => {
-    dispatch(ChangeEvent(db, change.seq))
+    dispatch(ChangeEvent(handle, change.seq))
   })
 
-  dispatch(SetCurrentDb(db, changes))
-  dispatch(LoadAllDbs())
+  dispatch(setDb({name, handle, changes, seq: 0}))
 }
 
-export const UnloadDb = (): SetCurrentDbAction => SetCurrentDb(undefined, undefined)
+export const UnloadDb = (): SetDbAction => setDb(undefined)
 
 type Actions
-  = SetAllDbsAction
-  | SetCurrentDbAction
+  = SetDbAction
   | ChangeEventAction
   | { type: '' }
 
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
   switch (action.type) {
-    case SET_ALL_DBS:
-      return spread(state, { all: action.all } as DbState)
-
-    case SET_CURRENT_DB:
-      if (state.changes && state.changes !== action.changes) {
-        state.changes.cancel()
+    case SET_DB:
+      if (action.db && action.db.name === METADB_NAME) {
+        if (state.meta) {
+          throw new Error('meta db is already loaded')
+        }
+        return spread(state, { meta: action.db } as DbState)
       }
-      return spread(state, { current: action.current, changes: action.changes } as DbState)
+      else {
+        if (state.current) {
+          state.current.changes.cancel()
+        }
+        return spread(state, { current: action.db } as DbState)
+      }
 
     case DB_CHANGE:
-      if (state.current !== action.db) {
-        return state
+      if (state.meta && state.meta.handle === action.handle) {
+        return spread(state, { meta: spread(state.meta, { seq: action.seq } as OpenDb) } as DbState)
       }
-      return spread(state, { seq: action.seq } as DbState)
+      else if (state.current && state.current.handle === action.handle) {
+        return spread(state, { current: spread(state.current, { seq: action.seq } as OpenDb) } as DbState)
+      }
 
     default:
       return state
@@ -127,5 +124,5 @@ export const DbSlice = {
 }
 
 export const DbInit = [
-  LoadAllDbs
+  LoadMetaDb
 ]

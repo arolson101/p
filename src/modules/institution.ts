@@ -56,8 +56,8 @@ export const loadInstitution = (id: string): Thunk => async (dispatch, getState)
   if (!db.current) {
     throw new Error('no current db')
   }
-  const current = await db.current.get(id) as InstitutionDoc
-  const accounts = await allAccountsForInstitution(db.current, id)
+  const current = await db.current.handle.get(id) as InstitutionDoc
+  const accounts = await allAccountsForInstitution(db.current.handle, id)
   dispatch({
     type: SET_INSTITUTION,
     current,
@@ -74,9 +74,8 @@ export const allInstitutions = async (db: PouchDB.Database<Institution>) => {
 
 export const allInstitutionsSelector = createSelector(
   (state: State) => state.db.current,
-  (state: State) => state.db.seq,
-  async (db: PouchDB.Database<Institution>, seq: number) => {
-    return seq
+  async (db) => {
+    return db!.seq
   }
 )
 
