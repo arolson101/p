@@ -2,13 +2,17 @@ import * as CryptoPouch from 'crypto-pouch'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction } from 'redux'
-import { spread } from '../util'
+import { spread, makeid } from '../util'
 
-// require('pouchdb-all-dbs')(PouchDB)
 PouchDB.plugin(PouchFind)
 PouchDB.plugin(CryptoPouch)
 
 const METADB_NAME = 'meta'
+
+export interface MetaDoc {
+  _id: string
+  name: string
+}
 
 export interface OpenDb {
   name: string
@@ -57,6 +61,30 @@ const ChangeEvent = (handle: PouchDB.Database<any>, seq: number): ChangeEventAct
   handle,
   seq
 })
+
+export const CreateDb = (name: string, password?: string): Thunk => async (dispatch, getState) => {
+  const _id = makeid()
+
+  const handle = new PouchDB(_id)
+  if (password) {
+    handle.crypto(password)
+  }
+  const changes = handle.changes({
+    since: 'now',
+    live: true
+  })
+  .on('change', (change) => {
+    dispatch(ChangeEvent(handle, change.seq))
+  })
+
+  dispatch(setDb({name, handle, changes, seq: 0}))
+
+  const meta = getState().db.meta!
+  await meta.handle.put({
+    _id,
+    name
+  })
+}
 
 export const LoadDb = (name: string, password?: string): Thunk => async (dispatch) => {
   const handle = new PouchDB(name)

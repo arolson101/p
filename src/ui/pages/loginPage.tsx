@@ -71,38 +71,34 @@ const rightIconMenu = (
   </IconMenu>
 )
 
-export const LoginPageComponent = (props: ResolvedProps & Props) => {
-  const { allDbs } = props
-
-  if (!allDbs) {
-    return <div>Loading</div>
-  }
-
-  return <div>
-    <Paper style={style.paper}>
-      <List>
-        {allDbs.map(dbName =>
+export const LoginPageComponent = (props: ResolvedProps & Props) => (
+  <div>
+    {props.allDbs &&
+      <Paper style={style.paper}>
+        <List>
+          {props.allDbs.map(dbName =>
+            <ListItem
+              key={dbName}
+              primaryText={dbName}
+              leftIcon={<FontIcon {...icons.openDb} />}
+              rightIconButton={rightIconMenu}
+            />
+          )}
+          {props.allDbs.length > 0 &&
+            <Divider/>
+          }
           <ListItem
-            key={dbName}
-            primaryText={dbName}
-            leftIcon={<FontIcon {...icons.openDb} />}
-            rightIconButton={rightIconMenu}
+            primaryText={<FormattedMessage {...translations.newDb}/>}
+            secondaryText={<p><FormattedMessage {...translations.newDbDescription}/></p>}
+            secondaryTextLines={1}
+            leftIcon={<FontIcon {...icons.newDb} />}
+            onTouchTap={() => historyAPI.push('/create')}
           />
-        )}
-        {allDbs.length > 0 &&
-          <Divider/>
-        }
-        <ListItem
-          primaryText={<FormattedMessage {...translations.newDb}/>}
-          secondaryText={<p><FormattedMessage {...translations.newDbDescription}/></p>}
-          secondaryTextLines={1}
-          leftIcon={<FontIcon {...icons.newDb} />}
-          onTouchTap={() => historyAPI.push('/create')}
-        />
-      </List>
-    </Paper>
+        </List>
+      </Paper>
+    }
   </div>
-}
+)
 
 const queryAllDbs = createSelector(
   (state: AppState) => state.db.meta!,

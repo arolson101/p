@@ -12,7 +12,7 @@ import { injectIntl, InjectedIntlProps, defineMessages } from 'react-intl'
 import { bindActionCreators, Dispatch } from 'redux'
 import { reduxForm, Field, ReduxFormProps } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
-import { AppState, AppDispatch, historyAPI, LoadDb } from '../../modules'
+import { AppState, AppDispatch, historyAPI, CreateDb } from '../../modules'
 
 const translations = defineMessages({
   welcome: {
@@ -79,7 +79,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   await wait(1000)
 
   console.log('dispatching')
-  await dispatch(LoadDb(values.name!, values.password!))
+  await dispatch(CreateDb(values.name!, values.password!))
 
   console.log('redirect')
   historyAPI.push('/dash')
@@ -91,49 +91,49 @@ export const CreatePageComponent = (props: AllProps) => {
   return (
     <div>
       <p>{formatMessage(translations.welcome)}</p>
-        <form onSubmit={handleSubmit!(submit)}>
-          <div>
-            <Field
-              name='name'
-              autoFocus
-              component={TextField}
-              hintText={formatMessage(translations.name)}
-              floatingLabelText={formatMessage(translations.name)}
-            />
-          </div>
-          <div>
-            <Field
-              name='password'
-              type='password'
-              component={TextField}
-              hintText={formatMessage(translations.password)}
-              floatingLabelText={formatMessage(translations.password)}
-            />
-          </div>
-          <div>
-            <Field
-              name='confirmPassword'
-              type='password'
-              component={TextField}
-              hintText={formatMessage(translations.confirmPassword)}
-              floatingLabelText={formatMessage(translations.confirmPassword)}
-            />
-          </div>
-          <div>
-            <RaisedButton
-              type='button'
-              label={formatMessage(translations.cancel)}
-              style={style.button}
-              onTouchTap={() => historyAPI.go(-1)}
-            />
-            <RaisedButton
-              type='submit'
-              label={formatMessage(translations.submit)}
-              style={style.button}
-              primary
-            />
-          </div>
-        </form>
+      <form onSubmit={handleSubmit!(submit)}>
+        <div>
+          <Field
+            name='name'
+            autoFocus
+            component={TextField}
+            hintText={formatMessage(translations.name)}
+            floatingLabelText={formatMessage(translations.name)}
+          />
+        </div>
+        <div>
+          <Field
+            name='password'
+            type='password'
+            component={TextField}
+            hintText={formatMessage(translations.password)}
+            floatingLabelText={formatMessage(translations.password)}
+          />
+        </div>
+        <div>
+          <Field
+            name='confirmPassword'
+            type='password'
+            component={TextField}
+            hintText={formatMessage(translations.confirmPassword)}
+            floatingLabelText={formatMessage(translations.confirmPassword)}
+          />
+        </div>
+        <div>
+          <RaisedButton
+            type='button'
+            label={formatMessage(translations.cancel)}
+            style={style.button}
+            onTouchTap={() => historyAPI.go(-1)}
+          />
+          <RaisedButton
+            type='submit'
+            label={formatMessage(translations.submit)}
+            style={style.button}
+            primary
+          />
+        </div>
+      </form>
     </div>
   )
 }
