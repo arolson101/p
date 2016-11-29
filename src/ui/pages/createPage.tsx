@@ -9,7 +9,7 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 import Paper from 'material-ui/Paper'
 import * as React from 'react'
 import { injectIntl, InjectedIntlProps, defineMessages } from 'react-intl'
-import { bindActionCreators, Dispatch } from 'redux'
+import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, Field, ReduxFormProps } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
 import { AppState, AppDispatch, historyAPI, CreateDb } from '../../modules'
@@ -52,10 +52,6 @@ const translations = defineMessages({
 interface ConnectedProps extends ReduxFormProps<any> {
 }
 
-interface DispatchedProps {
-  LoadDb: (name: string, password: string) => any
-}
-
 interface IntlProps {
   intl: InjectedIntlProps
 }
@@ -63,7 +59,7 @@ interface IntlProps {
 interface Props {
 }
 
-type AllProps = Props & IntlProps & ConnectedProps & DispatchedProps
+type AllProps = Props & IntlProps & ConnectedProps
 
 const style = {
   button: {
@@ -161,12 +157,15 @@ const validate = (values: Values, props: IntlProps) => {
   return errors
 }
 
-export const CreatePage = injectIntl(reduxForm(
-  {
-    form: 'createPage',
-    validate,
-    destroyOnUnmount: !(module as any).hot
-  },
-  (state: AppState): ConnectedProps => ({}),
-  (dispatch: AppDispatch) => bindActionCreators( { LoadDb }, dispatch ) as DispatchedProps,
-)(CreatePageComponent)) as React.ComponentClass<Props>
+export const CreatePage = compose(
+  injectIntl,
+  reduxForm(
+    {
+      form: 'createPage',
+      validate,
+      destroyOnUnmount: !(module as any).hot
+    },
+    (state: AppState): ConnectedProps => ({}),
+    (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
+  )
+)(CreatePageComponent) as React.ComponentClass<Props>

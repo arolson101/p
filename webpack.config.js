@@ -1,7 +1,6 @@
 var webpack = require("webpack");
 var fs = require("fs");
 var path = require("path");
-var ForkCheckerPlugin = require('awesome-typescript-loader').ForkCheckerPlugin;
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 
@@ -53,7 +52,7 @@ module.exports = {
     noParse: ['ws'],
 
     loaders: [
-      { test: /\.tsx?$/, loaders: ['react-hot-loader/webpack', 'awesome-typescript-loader?forkChecker=true'] },
+      { test: /\.tsx?$/, loaders: ['react-hot-loader/webpack', 'ts-loader'] },
       { test: /\.css$/, loader: ExtractTextPlugin.extract('style-loader', 'css-loader') },
       { test: /\.(svg|woff|woff2|ttf|eot)($|\?)/, loader: "file?name=fonts/[name].[ext]" },
       { test: /\.(png|gif|jpg)($|\?)/, loader: "file?name=images/[name].[ext]" },
@@ -73,8 +72,6 @@ module.exports = {
   },
 
   plugins: [
-    new ForkCheckerPlugin(),
-
     // globals
     new webpack.ProvidePlugin({
       //_: "lodash",

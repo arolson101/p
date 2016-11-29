@@ -30,10 +30,12 @@ const isPromise = (obj: any): boolean => {
   return obj && typeof(obj) === 'object' && typeof(obj.then) === 'function'
 }
 
-// TODO: use typescript mapped types once 2.1 comes out
+export type Promised<T> = {
+    [P in keyof T]: Promise<T[P]> | T[P]
+}
 
 export function promisedConnect<TStateProps, TDispatchProps, TOwnProps>(
-    mapStateToProps: FuncOrSelf<MapStateToProps<TStateProps, TOwnProps>>,
+    mapStateToProps: FuncOrSelf<MapStateToProps<Promised<TStateProps>, TOwnProps>>,
     mapDispatchToProps?: FuncOrSelf<MapDispatchToPropsFunction<TDispatchProps, TOwnProps> | MapDispatchToPropsObject>
 ): ComponentDecorator<TStateProps & TDispatchProps, TOwnProps> {
 
@@ -77,6 +79,6 @@ export function promisedConnect<TStateProps, TDispatchProps, TOwnProps>(
       }
     }
 
-    return connect<TStateProps, TDispatchProps, TOwnProps>(mapStateToProps, mapDispatchToProps)(c)
+    return connect(mapStateToProps, mapDispatchToProps)(c)
   }
 }

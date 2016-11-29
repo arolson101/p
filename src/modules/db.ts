@@ -14,16 +14,16 @@ export interface MetaDoc {
   name: string
 }
 
-export interface OpenDb {
+export interface OpenDb<T> {
   name: string
-  handle: PouchDB.Database<any>
+  handle: PouchDB.Database<T>
   changes: PouchDB.ChangeEmitter
   seq: number
 }
 
 export interface DbState {
-  current: OpenDb | undefined
-  meta: OpenDb | undefined
+  current: OpenDb<any> | undefined
+  meta: OpenDb<MetaDoc> | undefined
 }
 
 const initialState: DbState = {
@@ -36,10 +36,10 @@ const SET_DB = 'db/setDb'
 
 interface SetDbAction {
   type: SET_DB
-  db?: OpenDb
+  db?: OpenDb<any>
 }
 
-const setDb = (db?: OpenDb): SetDbAction => ({
+const setDb = (db?: OpenDb<any>): SetDbAction => ({
   type: SET_DB,
   db
 })

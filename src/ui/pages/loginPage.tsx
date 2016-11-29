@@ -12,25 +12,14 @@ import { FormattedMessage, defineMessages } from 'react-intl'
 // import { Link } from 'react-router'
 import { createSelector } from 'reselect'
 import { AppState, historyAPI } from '../../modules'
-import { promisedConnect } from '../../util'
-
-interface Doc {
-  _id: string
-  name: string
-}
+import { promisedConnect, Promised } from '../../util'
 
 interface Props {
 }
 
-interface ResolvedProps {
+interface AsyncProps {
   allDbs: string[]
 }
-
-type Promised<T> = {
-    [P in keyof T]: Promise<T[P]>
-}
-
-type PromisedProps = Promised<ResolvedProps>
 
 const icons = {
   newDb: {
@@ -73,7 +62,7 @@ const rightIconMenu = (
   </IconMenu>
 )
 
-export const LoginPageComponent = (props: ResolvedProps & Props) => (
+export const LoginPageComponent = (props: AsyncProps & Props) => (
   <div>
     {props.allDbs &&
       <Paper style={style.paper}>
@@ -106,13 +95,13 @@ const queryAllDbs = createSelector(
   (state: AppState) => state.db.meta!,
   async (meta) => {
     const docs = await meta.handle.allDocs({include_docs: true})
-    const names = docs.rows.map(row => (row.doc as Doc).name)
+    const names = docs.rows.map(row => row.doc!.name)
     return names
   }
 )
 
 export const LoginPage = promisedConnect(
-  (state: AppState): PromisedProps => ({
+  (state: AppState): Promised<AsyncProps> => ({
     allDbs: queryAllDbs(state)
   })
 )(LoginPageComponent) as React.ComponentClass<Props>

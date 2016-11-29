@@ -31,12 +31,14 @@ export const accountDoc = (institution: InstitutionDoc, account: Account): Accou
   return Object.assign({ _id }, account)
 }
 
-export const allAccountsForInstitution = (db: PouchDB.Database<{}>, institution: string): Promise<AccountDoc[]> => {
-  const iroute = createInstitutionDocId(institution)
-  if (!iroute) {
-    throw new Error(`invalid institution id: ${institution}`)
+export const allAccountsForInstitution =
+  async (db: PouchDB.Database<AccountDoc>, institution: string): Promise<AccountDoc[]> => {
+    const iroute = createInstitutionDocId(institution)
+    if (!iroute) {
+      throw new Error(`invalid institution id: ${institution}`)
+    }
+    const startkey = createAccountDocId({institution: iroute.institution, account: ''})
+    const endkey = createAccountDocId({institution: iroute.institution, account: '\uffff'})
+    const docs = await db.allDocs({startkey, endkey, include_docs: true})
+    return docs.rows.map(row => row.doc!)
   }
-  const startkey = createAccountDocId({institution: iroute.institution, account: ''})
-  const endkey = createAccountDocId({institution: iroute.institution, account: '\uffff'})
-  return db.allDocs({startkey, endkey})
-}
