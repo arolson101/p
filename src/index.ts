@@ -1,4 +1,5 @@
 require('font-awesome/css/font-awesome.css')
+require('roboto-fontface/css/roboto/roboto-fontface.css')
 
 import { main } from './main'
 
