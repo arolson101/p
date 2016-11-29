@@ -1,3 +1,5 @@
+require('font-awesome/css/font-awesome.css')
+
 import { main } from './main'
 
 if (!(global as any).tapEventInstalled) {
