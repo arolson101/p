@@ -163,7 +163,7 @@ export const CreatePage = compose(
     {
       form: 'createPage',
       validate,
-      destroyOnUnmount: !(module as any).hot
+      // destroyOnUnmount: !(module as any).hot
     },
     (state: AppState): ConnectedProps => ({}),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),

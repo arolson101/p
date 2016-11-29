@@ -10,8 +10,9 @@ import Paper from 'material-ui/Paper'
 import * as React from 'react'
 import { FormattedMessage, defineMessages } from 'react-intl'
 // import { Link } from 'react-router'
+import { bindActionCreators, Dispatch } from 'redux'
 import { createSelector } from 'reselect'
-import { AppState, historyAPI, OpenDb, MetaDoc } from '../../modules'
+import { AppState, AppDispatch, historyAPI, OpenDb, MetaDoc, LoadDb } from '../../modules'
 import { promisedConnect, Promised } from '../../util'
 
 interface Props {
@@ -23,6 +24,10 @@ interface AsyncProps {
 
 interface ConnectedProps {
   metaDb: OpenDb<MetaDoc>
+}
+
+interface DispatchedProps {
+  dispatch: AppDispatch
 }
 
 const icons = {
@@ -60,7 +65,7 @@ const iconButtonElement = (
   </IconButton>
 )
 
-export const LoginPageComponent = (props: AsyncProps & Props & ConnectedProps) => (
+export const LoginPageComponent = (props: AsyncProps & Props & ConnectedProps & DispatchedProps) => (
   <div>
     {props.allDbs &&
       <Paper style={style.paper}>
@@ -75,6 +80,10 @@ export const LoginPageComponent = (props: AsyncProps & Props & ConnectedProps) =
                   <MenuItem onTouchTap={() => props.metaDb.handle.remove(db)}>Delete</MenuItem>
                 </IconMenu>
               }
+              onTouchTap={async () => {
+                await props.dispatch(LoadDb(db._id, db.title, 'password'))
+                historyAPI.push('/dash')
+              }}
             />
           )}
           {props.allDbs.length > 0 &&
@@ -107,4 +116,6 @@ export const LoginPage = promisedConnect(
     allDbs: queryAllDbs(state),
     metaDb: state.db.meta!
   })
+  // ,
+  // (dispatch: AppDispatch) => bindActionCreators( { LoadDb }, dispatch ) as any as DispatchedProps,
 )(LoginPageComponent) as React.ComponentClass<Props>
