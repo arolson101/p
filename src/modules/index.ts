@@ -19,14 +19,13 @@ export type AppState =
   InstitutionSlice &
   RouterSlice;
 
-export const AppState = combineReducers<AppState>(Object.assign(
-  {},
-  DbSlice,
-  FormSlice,
-  InstitutionSlice,
-  I18nSlice,
-  RouterSlice
-))
+export const AppState = combineReducers<AppState>({
+  ...DbSlice,
+  ...FormSlice,
+  ...InstitutionSlice,
+  ...I18nSlice,
+  ...RouterSlice
+})
 
 export type AppDispatch = Dispatch<AppState>
 export type AppThunk = ThunkAction<any, AppState, any>

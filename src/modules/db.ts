@@ -2,7 +2,7 @@ import * as CryptoPouch from 'crypto-pouch'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction } from 'redux'
-import { spread, makeid } from '../util'
+import { makeid } from '../util'
 
 PouchDB.plugin(PouchFind)
 PouchDB.plugin(CryptoPouch)
@@ -32,7 +32,7 @@ const initialState: DbState = {
 }
 
 type SET_DB = 'db/setDb'
-const SET_DB = 'db/setDb' as SET_DB
+const SET_DB = 'db/setDb'
 
 interface SetDbAction {
   type: SET_DB
@@ -48,7 +48,7 @@ type State = DbSlice
 type Thunk = ThunkAction<any, State, any>
 
 type DB_CHANGE = 'db/changeEvent'
-const DB_CHANGE = 'db/changeEvent' as DB_CHANGE
+const DB_CHANGE = 'db/changeEvent'
 
 interface ChangeEventAction {
   type: DB_CHANGE
@@ -116,19 +116,19 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
         if (state.meta) {
           throw new Error('meta db is already loaded')
         }
-        return spread(state, { meta: action.db } as DbState)
+        return { ...state, meta: action.db }
       } else {
         if (state.current) {
           state.current.changes.cancel()
         }
-        return spread(state, { current: action.db } as DbState)
+        return { ...state, current: action.db }
       }
 
     case DB_CHANGE:
       if (state.meta && state.meta.handle === action.handle) {
-        return spread(state, { meta: spread(state.meta, { seq: action.seq } as OpenDb) } as DbState)
+        return { ...state, meta: { ...state.meta, seq: action.seq } }
       } else if (state.current && state.current.handle === action.handle) {
-        return spread(state, { current: spread(state.current, { seq: action.seq } as OpenDb) } as DbState)
+        return { ...state, current: { ...state.current, seq: action.seq } }
       }
 
     default:

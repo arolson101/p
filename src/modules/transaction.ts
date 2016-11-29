@@ -26,17 +26,17 @@ export const transactionDoc = (account: AccountDoc, transaction: Transaction): T
   return Object.assign({ _id }, transaction)
 }
 
-export const transactionsForAccount = (
-    db: PouchDB.Database<{}>,
-    account: string,
-    start: Date,
-    end: Date
-  ): Promise<AccountDoc[]> => {
-  const aroute = createAccountDocId(account)
-  if (!aroute) {
-    throw new Error('invalid account id: ' + account)
-  }
-  const startkey = createTransactionDocId(Object.assign({ time: start.valueOf().toString() }, aroute))
-  const endkey = createTransactionDocId(Object.assign({ time: end.valueOf().toString() }, aroute))
-  return db.allDocs({startkey, endkey})
-}
+// export const transactionsForAccount = (
+//     db: PouchDB.Database<{}>,
+//     account: string,
+//     start: Date,
+//     end: Date
+//   ): Promise<AccountDoc[]> => {
+//   const aroute = createAccountDocId(account)
+//   if (!aroute) {
+//     throw new Error('invalid account id: ' + account)
+//   }
+//   const startkey = createTransactionDocId(Object.assign({ time: start.valueOf().toString() }, aroute))
+//   const endkey = createTransactionDocId(Object.assign({ time: end.valueOf().toString() }, aroute))
+//   return db.allDocs({startkey, endkey})
+// }

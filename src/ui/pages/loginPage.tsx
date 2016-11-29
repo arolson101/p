@@ -22,13 +22,15 @@ interface Doc {
 interface Props {
 }
 
-interface PromisedProps {
-  allDbs: Promise<string[]>
+interface ResolvedProps {
+  allDbs: string[]
 }
 
-interface ResolvedProps {
-  allDbs?: string[]
+type Promised<T> = {
+    [P in keyof T]: Promise<T[P]>
 }
+
+type PromisedProps = Promised<ResolvedProps>
 
 const icons = {
   newDb: {
