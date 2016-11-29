@@ -80,8 +80,8 @@ export const LoginPageComponent = (props: AsyncProps & Props & ConnectedProps & 
                 </IconMenu>
               }
               onTouchTap={async () => {
-                await props.dispatch(LoadDb(db._id, db.title, 'password'))
-                historyAPI.push('/dash')
+                // await props.dispatch(LoadDb(db._id, db.title, 'password'))
+                historyAPI.push(`/${db._id}/foo`)
               }}
             />
           )}

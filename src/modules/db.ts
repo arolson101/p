@@ -72,6 +72,8 @@ export const CreateDb = (title: string, password?: string): Thunk => async (disp
     _id,
     title
   })
+
+  return _id
 }
 
 export const LoadDb = (_id: string, title?: string, password?: string): Thunk => async (dispatch) => {

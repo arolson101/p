@@ -75,10 +75,10 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   await wait(1000)
 
   console.log('dispatching')
-  await dispatch(CreateDb(values.name!, values.password!))
+  const id = await dispatch(CreateDb(values.name!, values.password!))
 
   console.log('redirect')
-  historyAPI.push('/dash')
+  historyAPI.push(`/${id}/`)
 }
 
 export const CreatePageComponent = (props: AllProps) => {
