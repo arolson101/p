@@ -1,5 +1,6 @@
 import * as docURI from 'docuri'
-import { InstitutionDoc, createInstitutionDocId } from './institution'
+import { InstitutionId } from './institution'
+import { makeid } from '../util'
 
 // see ofx4js.domain.data.banking.AccountType
 export enum AccountType {
@@ -11,6 +12,7 @@ export enum AccountType {
 }
 
 export interface Account {
+  institution: InstitutionId
   name: string
   type: AccountType
   number: string
@@ -18,27 +20,39 @@ export interface Account {
   balance: number
 }
 
-export const createAccountDocId = docURI.route<{institution: string, account: string}>('account/:institution/:account')
 export type AccountDoc = PouchDB.Core.Document<Account>
 
-export const accountDoc = (institution: InstitutionDoc, account: Account): AccountDoc => {
-  const iroute = createInstitutionDocId(institution._id)
-  if (!iroute) {
-    throw new Error(`invalid institution id: ${institution._id}`)
-  }
-  const info = Object.assign({}, iroute, { account: account.number })
-  const _id = createAccountDocId(info)
-  return Object.assign({ _id }, account)
-}
+export type AccountId = '<account>' | makeid | '' | '\uffff'
 
-export const allAccountsForInstitution =
-  async (db: PouchDB.Database<AccountDoc>, institution: string): Promise<AccountDoc[]> => {
-    const iroute = createInstitutionDocId(institution)
-    if (!iroute) {
-      throw new Error(`invalid institution id: ${institution}`)
-    }
-    const startkey = createAccountDocId({institution: iroute.institution, account: ''})
-    const endkey = createAccountDocId({institution: iroute.institution, account: '\uffff'})
-    const docs = await db.allDocs({startkey, endkey, include_docs: true})
-    return docs.rows.map(row => row.doc!)
+export class Account {
+  static readonly docId = docURI.route<{account: AccountId}, AccountId>('account/:account')
+  static readonly startkey = Account.docId({account: ''})
+  static readonly endkey = Account.docId({account: '\uffff'})
+  static readonly all: PouchDB.Selector = {
+    $and: [
+      { _id: { $gt: Account.startkey } },
+      { _id: { $lt: Account.endkey } }
+    ]
   }
+
+  static readonly allForInstitution = (institutionId: InstitutionId): PouchDB.Selector => ({
+    $and: [
+      { _id: { $gt: Account.startkey } },
+      { _id: { $lt: Account.endkey } },
+      { institution: institutionId }
+    ]
+  })
+
+  static readonly doc = (account: Account): AccountDoc => {
+    const _id = Account.docId({ account: makeid() })
+    return { _id, ...account }
+  }
+
+  static readonly createIndices = (db: PouchDB.Database<any>) => {
+    return db.createIndex({
+      index: {
+        fields: ['institution']
+      }
+    })
+  }
+}

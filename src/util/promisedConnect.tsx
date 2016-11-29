@@ -35,7 +35,7 @@ export type Promised<T> = {
 }
 
 export function promisedConnect<TStateProps, TDispatchProps, TOwnProps>(
-    mapStateToProps: FuncOrSelf<MapStateToProps<Promised<TStateProps>, TOwnProps>>,
+    mapStateToProps: FuncOrSelf<MapStateToProps<TStateProps, Promised<TOwnProps>>>,
     mapDispatchToProps?: FuncOrSelf<MapDispatchToPropsFunction<TDispatchProps, TOwnProps> | MapDispatchToPropsObject>
 ): ComponentDecorator<TStateProps & TDispatchProps, TOwnProps> {
 
@@ -79,6 +79,6 @@ export function promisedConnect<TStateProps, TDispatchProps, TOwnProps>(
       }
     }
 
-    return connect(mapStateToProps, mapDispatchToProps)(c)
+    return connect<TStateProps, TDispatchProps, TOwnProps>(mapStateToProps, mapDispatchToProps)(c)
   }
 }

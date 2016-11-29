@@ -10,7 +10,6 @@ import Paper from 'material-ui/Paper'
 import * as React from 'react'
 import { FormattedMessage, defineMessages } from 'react-intl'
 // import { Link } from 'react-router'
-import { bindActionCreators, Dispatch } from 'redux'
 import { createSelector } from 'reselect'
 import { AppState, AppDispatch, historyAPI, OpenDb, MetaDoc, LoadDb } from '../../modules'
 import { promisedConnect, Promised } from '../../util'
@@ -116,6 +115,4 @@ export const LoginPage = promisedConnect(
     allDbs: queryAllDbs(state),
     metaDb: state.db.meta!
   })
-  // ,
-  // (dispatch: AppDispatch) => bindActionCreators( { LoadDb }, dispatch ) as any as DispatchedProps,
 )(LoginPageComponent) as React.ComponentClass<Props>

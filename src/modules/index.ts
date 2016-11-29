@@ -6,23 +6,21 @@ export * from './router'
 export * from './transaction'
 
 import { combineReducers, Dispatch, ThunkAction } from 'redux'
+import { Account } from './account'
 import { DbSlice, DbInit } from './db'
 import { FormSlice } from './form'
 import { I18nSlice } from './i18n'
-import { InstitutionSlice } from './institution'
 import { RouterSlice } from './router'
 
 export type AppState =
   DbSlice &
   FormSlice &
   I18nSlice &
-  InstitutionSlice &
   RouterSlice;
 
 export const AppState = combineReducers<AppState>({
   ...DbSlice,
   ...FormSlice,
-  ...InstitutionSlice,
   ...I18nSlice,
   ...RouterSlice
 })
@@ -37,5 +35,15 @@ export const AppInit = (): AppThunk => async (dispatch) => {
   ]
   for (let init of initializers) {
     await dispatch(init())
+  }
+}
+
+export const createIndices = async (db: PouchDB.Database<any>) => {
+  type Indexer = (db: PouchDB.Database<any>) => Promise<any>
+  const indexers: Indexer[] = [
+    Account.createIndices
+  ]
+  for (let index of indexers) {
+    await index(db)
   }
 }

@@ -5,6 +5,10 @@
       true,
       "react"
     ],
-    "no-switch-case-fall-through": false
+    "no-switch-case-fall-through": false,
+    "max-line-length": [
+      true,
+      140
+    ]
   }
 }

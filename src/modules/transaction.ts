@@ -1,5 +1,6 @@
 import * as docURI from 'docuri'
-import { AccountDoc, createAccountDocId } from './account'
+import { AccountId } from './account'
+import { makeid } from '../util'
 
 export interface Transaction {
   time: Date
@@ -7,36 +8,24 @@ export interface Transaction {
   amount: number
 }
 
-export const createTransactionDocId = docURI.route<
-  {
-    institution: string,
-    account: string,
-    time: string
-  }>('transaction/:institution/:account/:time')
 export type TransactionDoc = PouchDB.Core.Document<Transaction>;
 
-export const transactionDoc = (account: AccountDoc, transaction: Transaction): TransactionDoc => {
-  const aroute = createAccountDocId(account._id)
-  if (!aroute) {
-    throw new Error(`invalid account id: ${account._id}`)
-  }
-  const time = transaction.time.valueOf().toString()
-  const info = Object.assign({}, aroute, { time })
-  const _id = createTransactionDocId(info)
-  return Object.assign({ _id }, transaction)
-}
+export type TransactionId = '<transaction>' | makeid | '' | '\uffff'
 
-// export const transactionsForAccount = (
-//     db: PouchDB.Database<{}>,
-//     account: string,
-//     start: Date,
-//     end: Date
-//   ): Promise<AccountDoc[]> => {
-//   const aroute = createAccountDocId(account)
-//   if (!aroute) {
-//     throw new Error('invalid account id: ' + account)
-//   }
-//   const startkey = createTransactionDocId(Object.assign({ time: start.valueOf().toString() }, aroute))
-//   const endkey = createTransactionDocId(Object.assign({ time: end.valueOf().toString() }, aroute))
-//   return db.allDocs({startkey, endkey})
-// }
+export class Transaction {
+  static readonly docId = docURI.route<{account: AccountId, time: string}, TransactionId>('transaction/:account/:time')
+  static readonly startkeyForAccount = (account: AccountId) => Transaction.docId({account, time: ''})
+  static readonly endkeyForAccount = (account: AccountId) => Transaction.docId({account, time: '\uffff'})
+  static readonly allForAccount = (account: AccountId): PouchDB.Selector => ({
+    $and: [
+      { _id: { $gt: Transaction.startkeyForAccount(account) } },
+      { _id: { $lt: Transaction.endkeyForAccount(account) } }
+    ]
+  })
+
+  static readonly doc = (account: AccountId, transaction: Transaction): TransactionDoc => {
+    const time = transaction.time.valueOf().toString()
+    const _id = Transaction.docId({account, time})
+    return { _id, ...transaction }
+  }
+}
