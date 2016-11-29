@@ -11,14 +11,18 @@ import * as React from 'react'
 import { FormattedMessage, defineMessages } from 'react-intl'
 // import { Link } from 'react-router'
 import { createSelector } from 'reselect'
-import { AppState, historyAPI } from '../../modules'
+import { AppState, historyAPI, OpenDb, MetaDoc } from '../../modules'
 import { promisedConnect, Promised } from '../../util'
 
 interface Props {
 }
 
 interface AsyncProps {
-  allDbs: string[]
+  allDbs: MetaDoc[]
+}
+
+interface ConnectedProps {
+  metaDb: OpenDb<MetaDoc>
 }
 
 const icons = {
@@ -56,23 +60,21 @@ const iconButtonElement = (
   </IconButton>
 )
 
-const rightIconMenu = (
-  <IconMenu iconButtonElement={iconButtonElement}>
-    <MenuItem>Delete</MenuItem>
-  </IconMenu>
-)
-
-export const LoginPageComponent = (props: AsyncProps & Props) => (
+export const LoginPageComponent = (props: AsyncProps & Props & ConnectedProps) => (
   <div>
     {props.allDbs &&
       <Paper style={style.paper}>
         <List>
-          {props.allDbs.map(dbName =>
+          {props.allDbs.map(db =>
             <ListItem
-              key={dbName}
-              primaryText={dbName}
+              key={db._id}
+              primaryText={db.title}
               leftIcon={<FontIcon {...icons.openDb} />}
-              rightIconButton={rightIconMenu}
+              rightIconButton={
+                <IconMenu iconButtonElement={iconButtonElement}>
+                  <MenuItem onTouchTap={() => props.metaDb.handle.remove(db)}>Delete</MenuItem>
+                </IconMenu>
+              }
             />
           )}
           {props.allDbs.length > 0 &&
@@ -95,13 +97,14 @@ const queryAllDbs = createSelector(
   (state: AppState) => state.db.meta!,
   async (meta) => {
     const docs = await meta.handle.allDocs({include_docs: true})
-    const names = docs.rows.map(row => row.doc!.name)
+    const names = docs.rows.map(row => row.doc!)
     return names
   }
 )
 
 export const LoginPage = promisedConnect(
-  (state: AppState): Promised<AsyncProps> => ({
-    allDbs: queryAllDbs(state)
+  (state: AppState): Promised<AsyncProps> & ConnectedProps => ({
+    allDbs: queryAllDbs(state),
+    metaDb: state.db.meta!
   })
 )(LoginPageComponent) as React.ComponentClass<Props>

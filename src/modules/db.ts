@@ -11,11 +11,12 @@ const METADB_NAME = 'meta'
 
 export interface MetaDoc {
   _id: string
-  name: string
+  title: string
 }
 
 export interface OpenDb<T> {
-  name: string
+  title: string
+  _id: string
   handle: PouchDB.Database<T>
   changes: PouchDB.ChangeEmitter
   seq: number
@@ -62,9 +63,19 @@ const ChangeEvent = (handle: PouchDB.Database<any>, seq: number): ChangeEventAct
   seq
 })
 
-export const CreateDb = (name: string, password?: string): Thunk => async (dispatch, getState) => {
+export const CreateDb = (title: string, password?: string): Thunk => async (dispatch, getState) => {
   const _id = makeid()
+  dispatch(LoadDb(_id, title, password))
 
+  const meta = getState().db.meta!
+  await meta.handle.put({
+    _id,
+    title
+  })
+}
+
+export const LoadDb = (_id: string, title?: string, password?: string): Thunk => async (dispatch) => {
+  title = title || _id
   const handle = new PouchDB(_id)
   if (password) {
     handle.crypto(password)
@@ -77,29 +88,7 @@ export const CreateDb = (name: string, password?: string): Thunk => async (dispa
     dispatch(ChangeEvent(handle, change.seq))
   })
 
-  dispatch(setDb({name, handle, changes, seq: 0}))
-
-  const meta = getState().db.meta!
-  await meta.handle.put({
-    _id,
-    name
-  })
-}
-
-export const LoadDb = (name: string, password?: string): Thunk => async (dispatch) => {
-  const handle = new PouchDB(name)
-  if (password) {
-    handle.crypto(password)
-  }
-  const changes = handle.changes({
-    since: 'now',
-    live: true
-  })
-  .on('change', (change) => {
-    dispatch(ChangeEvent(handle, change.seq))
-  })
-
-  dispatch(setDb({name, handle, changes, seq: 0}))
+  dispatch(setDb({title, _id, handle, changes, seq: 0}))
 }
 
 export const UnloadDb = (): SetDbAction => setDb(undefined)
@@ -112,7 +101,7 @@ type Actions
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
   switch (action.type) {
     case SET_DB:
-      if (action.db && action.db.name === METADB_NAME) {
+      if (action.db && action.db.title === METADB_NAME) {
         if (state.meta) {
           throw new Error('meta db is already loaded')
         }
@@ -145,5 +134,5 @@ export const DbSlice = {
 }
 
 export const DbInit = [
-  () => LoadDb(METADB_NAME, undefined)
+  () => LoadDb(METADB_NAME)
 ]
