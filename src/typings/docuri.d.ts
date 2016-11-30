@@ -1,15 +1,15 @@
 
 declare module "docuri" {
-    interface Route<T, S> {
+    interface Route<T> {
         // parse DocURI string to object
-        (str: S): T | false;
+        (str: string): T | false;
 
         // generate DocURI string from object
-        (obj: T): S;
+        (obj: T): string;
 
         // change DocURI string parts with values provided by object returning a string
-        (str: S, obj: T): S;
+        (str: string, obj: T): string;
     }
 
-    export function route<T, S>(route: string): Route<T, S>;
+    export function route<T, S>(route: string): Route<T>;
 }

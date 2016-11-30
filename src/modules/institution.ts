@@ -19,14 +19,15 @@ export interface Institution {
   }
 }
 
-export type InstitutionDoc = PouchDB.Core.Document<Institution>
-
-export type InstitutionId = '<institution>' | makeid | '' | '\uffff'
+export namespace Institution {
+  export type Doc = PouchDB.Core.Document<Institution>
+  export type Id = '<institution>' | makeid | '' | '\uffff'
+}
 
 export class Institution {
-  static readonly docId = docURI.route<{institution: InstitutionId}, InstitutionId>('institution/:institution')
+  static readonly docId = docURI.route<{institution: Institution.Id}, Institution.Id>('institution/:institution')
   static readonly startkey = Institution.docId({institution: ''})
-  static readonly endkey = Institution.docId({institution: '\uffff'})
+  static readonly endkey = Institution.docId({institution: ''}) + '\uffff'
   static readonly all: PouchDB.Selector = {
     $and: [
       { _id: { $gt: Institution.startkey } },
@@ -34,7 +35,15 @@ export class Institution {
     ]
   }
 
-  static doc = (institution: Institution): InstitutionDoc => {
+  static readonly idFromDoc = (institution: Institution.Doc): Institution.Id => {
+    const iparts = Institution.docId(institution._id)
+    if (!iparts) {
+      throw new Error('not an institution id: ' + institution._id)
+    }
+    return iparts.institution
+  }
+
+  static readonly doc = (institution: Institution): Institution.Doc => {
     const _id = Institution.docId({ institution: makeid() })
     return { _id, ...institution }
   }

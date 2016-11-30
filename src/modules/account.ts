@@ -1,49 +1,43 @@
 import * as docURI from 'docuri'
-import { InstitutionId } from './institution'
+import { Institution } from './institution'
 import { makeid } from '../util'
 
-// see ofx4js.domain.data.banking.AccountType
-export enum AccountType {
-  CHECKING,
-  SAVINGS,
-  MONEYMRKT,
-  CREDITLINE,
-  CREDITCARD,
-}
-
 export interface Account {
-  institution: InstitutionId
+  institution: string
   name: string
-  type: AccountType
+  type: Account.Type
   number: string
   visible: boolean
   balance: number
 }
 
-export type AccountDoc = PouchDB.Core.Document<Account>
-
-export type AccountId = '<account>' | makeid | '' | '\uffff'
-
 export class Account {
-  static readonly docId = docURI.route<{account: AccountId}, AccountId>('account/:account')
+  static readonly docId = docURI.route<{account: Account.Id}, Account.Id>('account/:account')
   static readonly startkey = Account.docId({account: ''})
-  static readonly endkey = Account.docId({account: '\uffff'})
+  static readonly endkey = Account.docId({account: ''}) + '\uffff'
   static readonly all: PouchDB.Selector = {
-    $and: [
-      { _id: { $gt: Account.startkey } },
-      { _id: { $lt: Account.endkey } }
-    ]
+    _id: {
+      $in: [ Account.startkey, Account.endkey ]
+    }
   }
 
-  static readonly allForInstitution = (institutionId: InstitutionId): PouchDB.Selector => ({
+  static readonly allForInstitution = (institution: Institution.Doc): PouchDB.Selector => ({
     $and: [
       { _id: { $gt: Account.startkey } },
       { _id: { $lt: Account.endkey } },
-      { institution: institutionId }
+      { institution: institution._id }
     ]
   })
 
-  static readonly doc = (account: Account): AccountDoc => {
+  static readonly idFromDoc = (account: Account.Doc): Account.Id => {
+    const aparts = Account.docId(account._id)
+    if (!aparts) {
+      throw new Error('not an account id: ' + account._id)
+    }
+    return aparts.account
+  }
+
+  static readonly doc = (account: Account): Account.Doc => {
     const _id = Account.docId({ account: makeid() })
     return { _id, ...account }
   }
@@ -54,5 +48,18 @@ export class Account {
         fields: ['institution']
       }
     })
+  }
+}
+
+export namespace Account {
+  export type Doc = PouchDB.Core.Document<Account>
+  export type Id = '<account>' | makeid | '' | '\uffff'
+  // see ofx4js.domain.data.banking.AccountType
+  export enum Type {
+    CHECKING,
+    SAVINGS,
+    MONEYMRKT,
+    CREDITLINE,
+    CREDITCARD,
   }
 }

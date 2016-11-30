@@ -84,8 +84,7 @@ const passwordCheckDoc = {
 
 const checkPassword = async (handle: PouchDB.Database<any>) => {
   try {
-    const doc = await handle.get(passwordCheckDoc._id)
-    console.log(doc)
+    await handle.get(passwordCheckDoc._id)
   } catch (err) {
     if (err.status === 404) {
       await handle.put(passwordCheckDoc)

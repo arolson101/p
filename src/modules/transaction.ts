@@ -1,5 +1,5 @@
 import * as docURI from 'docuri'
-import { AccountId } from './account'
+import { Account } from './account'
 import { makeid } from '../util'
 
 export interface Transaction {
@@ -8,22 +8,28 @@ export interface Transaction {
   amount: number
 }
 
-export type TransactionDoc = PouchDB.Core.Document<Transaction>;
-
-export type TransactionId = '<transaction>' | makeid | '' | '\uffff'
+export namespace Transaction {
+  export type Doc = PouchDB.Core.Document<Transaction>
+  export type Id = '<transaction>' | makeid | '' | '\uffff'
+}
 
 export class Transaction {
-  static readonly docId = docURI.route<{account: AccountId, time: string}, TransactionId>('transaction/:account/:time')
-  static readonly startkeyForAccount = (account: AccountId) => Transaction.docId({account, time: ''})
-  static readonly endkeyForAccount = (account: AccountId) => Transaction.docId({account, time: '\uffff'})
-  static readonly allForAccount = (account: AccountId): PouchDB.Selector => ({
-    $and: [
-      { _id: { $gt: Transaction.startkeyForAccount(account) } },
-      { _id: { $lt: Transaction.endkeyForAccount(account) } }
-    ]
-  })
+  static readonly docId = docURI.route<{account: Account.Id, time: string}, Transaction.Id>('transaction/:account/:time')
+  static readonly startkeyForAccount = (account: Account.Id) => Transaction.docId({account, time: ''})
+  static readonly endkeyForAccount = (account: Account.Id) => Transaction.docId({account, time: ''}) + '\uffff'
+  static readonly allForAccount = (account: Account.Doc): PouchDB.Selector => {
+    const accountId = Account.idFromDoc(account)
+    return ({
+      _id: {
+        $and: [
+          { $gt: Transaction.startkeyForAccount(accountId) },
+          { $lt: Transaction.endkeyForAccount(accountId) }
+        ]
+      }
+    })
+  }
 
-  static readonly doc = (account: AccountId, transaction: Transaction): TransactionDoc => {
+  static readonly doc = (account: Account.Id, transaction: Transaction): Transaction.Doc => {
     const time = transaction.time.valueOf().toString()
     const _id = Transaction.docId({account, time})
     return { _id, ...transaction }

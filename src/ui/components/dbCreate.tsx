@@ -79,7 +79,7 @@ export const DbCreateComponent = (props: AllProps) => {
           />
           <RaisedButton
             type='submit'
-            label={formatMessage(forms.translations.submit)}
+            label={formatMessage(forms.translations.create)}
             style={style.button}
             primary
           />
