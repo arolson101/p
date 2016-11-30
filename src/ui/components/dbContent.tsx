@@ -16,13 +16,16 @@ interface RouteProps {
   }
 }
 
-export const DbContentComponent = (props: Props & ConnectedProps & RouteProps) => {
+type AllProps = React.Props<any> & Props & ConnectedProps & RouteProps
+
+export const DbContentComponent = (props: AllProps) => {
   if (!props.current) {
     return <DbLogin {...props}/>
   }
 
   return (
     <div>db is {props.params.db}
+      {props.children}
     </div>
   )
 }

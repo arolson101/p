@@ -17,6 +17,10 @@ export type FieldValue = any;
 
 export type FormData = { [fieldName: string]: FieldValue };
 
+export class SubmissionError<T> {
+    constructor(errors: T);
+}
+
 export interface FieldProp<T> {
     /**
      * true if this field currently has focus. It will only work if you are

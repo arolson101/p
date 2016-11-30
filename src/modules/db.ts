@@ -1,4 +1,4 @@
-import * as CryptoPouch from 'crypto-pouch'
+import * as CryptoPouch from 'crypto-pouch/nativeOnly'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction } from 'redux'
@@ -63,35 +63,56 @@ const ChangeEvent = (handle: PouchDB.Database<any>, seq: number): ChangeEventAct
   seq
 })
 
-export const CreateDb = (title: string, password?: string): Thunk => async (dispatch, getState) => {
-  const _id = makeid()
-  dispatch(LoadDb(_id, title, password))
+export const CreateDb = (title: string, password?: string): Thunk =>
+  async (dispatch, getState) => {
+    const _id = makeid()
+    dispatch(LoadDb(_id, title, password))
 
-  const meta = getState().db.meta!
-  await meta.handle.put({
-    _id,
-    title
-  })
+    const meta = getState().db.meta!
+    await meta.handle.put({
+      _id,
+      title
+    })
 
-  return _id
-}
-
-export const LoadDb = (_id: string, title?: string, password?: string): Thunk => async (dispatch) => {
-  title = title || _id
-  const handle = new PouchDB(_id)
-  if (password) {
-    handle.crypto(password)
+    return _id
   }
-  const changes = handle.changes({
-    since: 'now',
-    live: true
-  })
-  .on('change', (change) => {
-    dispatch(ChangeEvent(handle, change.seq))
-  })
 
-  dispatch(setDb({title, _id, handle, changes, seq: 0}))
+const passwordCheckDoc = {
+  _id: 'pwcheck',
+  data: 'ok'
 }
+
+const checkPassword = async (handle: PouchDB.Database<any>) => {
+  try {
+    const doc = await handle.get(passwordCheckDoc._id)
+    console.log(doc)
+  } catch (err) {
+    if (err.status === 404) {
+      await handle.put(passwordCheckDoc)
+    } else {
+      throw err
+    }
+  }
+}
+
+export const LoadDb = (_id: string, title?: string, password?: string): Thunk =>
+  async (dispatch) => {
+    title = title || _id
+    const handle = new PouchDB(_id)
+    if (password) {
+      handle.crypto(password)
+      await checkPassword(handle)
+    }
+    const changes = handle.changes({
+      since: 'now',
+      live: true
+    })
+    .on('change', (change) => {
+      dispatch(ChangeEvent(handle, change.seq))
+    })
+
+    dispatch(setDb({title, _id, handle, changes, seq: 0}))
+  }
 
 export const UnloadDb = (): SetDbAction => setDb(undefined)
 

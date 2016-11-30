@@ -1,12 +1,13 @@
 import RaisedButton from 'material-ui/RaisedButton'
 import * as React from 'react'
-import { injectIntl, InjectedIntlProps, defineMessages } from 'react-intl'
-import { Dispatch, compose } from 'redux'
-import { reduxForm, Field, ReduxFormProps } from 'redux-form'
+import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
+import { bindActionCreators, Dispatch, compose } from 'redux'
+import { reduxForm, Field, ReduxFormProps, SubmissionError } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
 import { createSelector } from 'reselect'
 import { AppState, AppDispatch, MetaDoc, historyAPI, LoadDb } from '../../modules'
 import { promisedConnect, Promised } from '../../util'
+import { forms } from './forms'
 
 interface Props {
 }
@@ -38,32 +39,12 @@ const translations = defineMessages({
   login: {
     id: 'login',
     defaultMessage: 'Enter password for database {db}'
-  },
-  password: {
-    id: 'password',
-    defaultMessage: 'Password'
-  },
-  cancel: {
-    id: 'cancel',
-    defaultMessage: 'Cancel'
-  },
-  submit: {
-    id: 'submit',
-    defaultMessage: 'Create'
-  },
-  required: {
-    id: 'required',
-    defaultMessage: 'Required'
   }
 })
 
 const style = {
-  paper: {
-    display: 'inline-block',
-    margin: '16px 32px 16px 0'
-  },
   button: {
-    margin: '16px 32px 16px 0'
+    margin: '16px 16px 16px 16px'
   }
 }
 
@@ -76,7 +57,9 @@ export const DbLoginComponent = (props: AllProps) => {
   const { handleSubmit } = props
   return (
     <div>
-      <p>{formatMessage(translations.login, {db})}</p>
+      <p>
+        <FormattedMessage {...translations.login} values={{db}}/>
+      </p>
       <form onSubmit={handleSubmit!(submit)}>
         <div>
           <Field
@@ -84,20 +67,20 @@ export const DbLoginComponent = (props: AllProps) => {
             type='password'
             autoFocus
             component={TextField}
-            hintText={formatMessage(translations.password)}
-            floatingLabelText={formatMessage(translations.password)}
+            hintText={formatMessage(forms.translations.password)}
+            floatingLabelText={formatMessage(forms.translations.password)}
           />
         </div>
         <div>
           <RaisedButton
             type='button'
-            label={formatMessage(translations.cancel)}
+            label={formatMessage(forms.translations.cancel)}
             style={style.button}
             onTouchTap={() => historyAPI.go(-1)}
           />
           <RaisedButton
             type='submit'
-            label={formatMessage(translations.submit)}
+            label={formatMessage(forms.translations.login)}
             style={style.button}
             primary
           />
@@ -116,9 +99,7 @@ const queryDbDoc = createSelector(
 )
 
 interface Values {
-  name?: string
   password?: string
-  confirmPassword?: string
 
   [key: string]: string | undefined
 }
@@ -129,7 +110,7 @@ const validate = (values: Values, props: IntlProps) => {
   const requiredFields = [ 'password' ]
   requiredFields.forEach(field => {
     if (!values[ field ]) {
-      errors[ field ] = formatMessage(translations.required)
+      errors[ field ] = formatMessage(forms.translations.required)
     }
   })
   return errors
@@ -137,23 +118,26 @@ const validate = (values: Values, props: IntlProps) => {
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
   const { dbDoc } = props
-  dispatch(LoadDb(dbDoc!._id, dbDoc!.title, values.password!))
+  try {
+    await dispatch(LoadDb(dbDoc!._id, dbDoc!.title, values.password!))
+  } catch (error) {
+    throw new SubmissionError<Values>({password: error.message})
+  }
 }
 
 export const DbLogin = compose(
   injectIntl,
   promisedConnect(
     (state: AppState, props: RouteProps): Promised<AsyncProps> => ({
-      dbDoc: queryDbDoc(state, props),
+      dbDoc: queryDbDoc(state, props)
     })
   ) as any,
   reduxForm(
     {
       form: 'DbLogin',
-      validate,
-      // destroyOnUnmount: !(module as any).hot
+      validate
     },
-    // (state: AppState): ConnectedProps => ({}),
-    // (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
+    (state: AppState): ConnectedProps => ({}),
+    (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   )
 )(DbLoginComponent) as React.ComponentClass<Props>

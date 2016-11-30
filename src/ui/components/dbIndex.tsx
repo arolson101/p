@@ -7,6 +7,7 @@ import MenuItem from 'material-ui/MenuItem'
 import { grey400 } from 'material-ui/styles/colors'
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 import Paper from 'material-ui/Paper'
+import * as PouchDB from 'pouchdb-browser'
 import * as React from 'react'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { Link } from 'react-router'
@@ -77,7 +78,10 @@ export const DbIndexComponent = (props: AsyncProps & Props & ConnectedProps & Di
               containerElement={<Link to={`/${db._id}/`}/>}
               rightIconButton={
                 <IconMenu iconButtonElement={iconButtonElement}>
-                  <MenuItem onTouchTap={() => props.metaDb.handle.remove(db)}>Delete</MenuItem>
+                  <MenuItem onTouchTap={() => {
+                    props.metaDb.handle.remove(db)
+                    new PouchDB(db._id).destroy()
+                  }}>Delete</MenuItem>
                 </IconMenu>
               }
             />
