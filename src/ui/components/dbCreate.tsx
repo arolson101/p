@@ -81,7 +81,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   historyAPI.push(`/${id}/`)
 }
 
-export const CreatePageComponent = (props: AllProps) => {
+export const DbCreateComponent = (props: AllProps) => {
   const formatMessage = props.intl.formatMessage!
   const { handleSubmit } = props
   return (
@@ -157,15 +157,15 @@ const validate = (values: Values, props: IntlProps) => {
   return errors
 }
 
-export const CreatePage = compose(
+export const DbCreate = compose(
   injectIntl,
   reduxForm(
     {
-      form: 'createPage',
+      form: 'DbCreate',
       validate,
       // destroyOnUnmount: !(module as any).hot
     },
     (state: AppState): ConnectedProps => ({}),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   )
-)(CreatePageComponent) as React.ComponentClass<Props>
+)(DbCreateComponent) as React.ComponentClass<Props>

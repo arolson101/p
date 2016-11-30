@@ -9,9 +9,9 @@ import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
 import Paper from 'material-ui/Paper'
 import * as React from 'react'
 import { FormattedMessage, defineMessages } from 'react-intl'
-// import { Link } from 'react-router'
+import { Link } from 'react-router'
 import { createSelector } from 'reselect'
-import { AppState, AppDispatch, historyAPI, OpenDb, MetaDoc, LoadDb } from '../../modules'
+import { AppState, AppDispatch, OpenDb, MetaDoc } from '../../modules'
 import { promisedConnect, Promised } from '../../util'
 
 interface Props {
@@ -64,7 +64,7 @@ const iconButtonElement = (
   </IconButton>
 )
 
-export const LoginPageComponent = (props: AsyncProps & Props & ConnectedProps & DispatchedProps) => (
+export const DbIndexComponent = (props: AsyncProps & Props & ConnectedProps & DispatchedProps) => (
   <div>
     {props.allDbs &&
       <Paper style={style.paper}>
@@ -74,15 +74,12 @@ export const LoginPageComponent = (props: AsyncProps & Props & ConnectedProps & 
               key={db._id}
               primaryText={db.title}
               leftIcon={<FontIcon {...icons.openDb} />}
+              containerElement={<Link to={`/${db._id}/`}/>}
               rightIconButton={
                 <IconMenu iconButtonElement={iconButtonElement}>
                   <MenuItem onTouchTap={() => props.metaDb.handle.remove(db)}>Delete</MenuItem>
                 </IconMenu>
               }
-              onTouchTap={async () => {
-                // await props.dispatch(LoadDb(db._id, db.title, 'password'))
-                historyAPI.push(`/${db._id}/foo`)
-              }}
             />
           )}
           {props.allDbs.length > 0 &&
@@ -93,7 +90,7 @@ export const LoginPageComponent = (props: AsyncProps & Props & ConnectedProps & 
             secondaryText={<p><FormattedMessage {...translations.newDbDescription}/></p>}
             secondaryTextLines={1}
             leftIcon={<FontIcon {...icons.newDb} />}
-            onTouchTap={() => historyAPI.push('/create')}
+            containerElement={<Link to='/create'/>}
           />
         </List>
       </Paper>
@@ -110,9 +107,9 @@ const queryAllDbs = createSelector(
   }
 )
 
-export const LoginPage = promisedConnect(
+export const DbIndex = promisedConnect(
   (state: AppState): Promised<AsyncProps> & ConnectedProps => ({
     allDbs: queryAllDbs(state),
     metaDb: state.db.meta!
   })
-)(LoginPageComponent) as React.ComponentClass<Props>
+)(DbIndexComponent) as React.ComponentClass<Props>

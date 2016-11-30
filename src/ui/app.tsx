@@ -8,22 +8,8 @@ import { bindActionCreators } from 'redux'
 import { UserAuthWrapper } from 'redux-auth-wrapper'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
-import { AppState, AppDispatch, historyAPI } from '../../modules'
-import { CreatePage, LoginPage } from '../pages'
-
-const DbIsOpen = UserAuthWrapper({
-  failureRedirectPath: '/login',
-  authSelector: (state: AppState) => state.db.current,
-  redirectAction: routerActions.replace, // the redux action to dispatch for redirect
-  wrapperDisplayName: 'DbIsOpen' // a nice name for this auth check
-})
-
-// const DbsExist = UserAuthWrapper({
-//   failureRedirectPath: '/create',
-//   authSelector: (state: AppState) => state.db.all.length > 0,
-//   redirectAction: routerActions.replace, // the redux action to dispatch for redirect
-//   wrapperDisplayName: 'DbsExist' // a nice name for this auth check
-// })
+import { AppState, AppDispatch, historyAPI } from '../modules'
+import * as Components from './components'
 
 const Root = (props: Router.RouteComponentProps<any, any>) => (
   <div>
@@ -67,34 +53,6 @@ const DbRoot = (props: Router.RouteComponentProps<any, any>) => (
 const Institution = (props: Router.RouteComponentProps<any, any>) => (
   <div>Institution {props.params.institution}{props.children}</div>
 )
-const PasswordPage = (props: Router.RouteComponentProps<any, any>) => (
-  <div>PasswordPage {props.params.institution}{props.children}</div>
-)
-
-const checkValidDb = (store: Redux.Store<AppState>): Router.EnterHook =>
-  async (nextState, replace, callback) => {
-    const { db } = nextState.params
-    const { current, meta } = store.getState().db
-    if (!current || current._id !== db) {
-      try {
-        await meta!.handle.get(db)
-        replace({ pathname: `/${db}/password`, query: { pathname: nextState.location.pathname } })
-      } catch (ex) {
-        replace({ pathname: '/missing', query: { pathname: nextState.location.pathname } })
-      }
-    }
-    callback!()
-}
-
-const checkAuthenticated = (store: Redux.Store<AppState>): Router.EnterHook =>
-  (nextState, replace, callback) => {
-    const { db } = nextState.params
-    const { current } = store.getState().db
-    if (!current || current._id !== db) {
-      replace({ pathname: `/${db}/` })
-    }
-    callback!()
-}
 
 class AppComponent extends React.Component<Props & ConnectedProps, any> {
   render() {
@@ -106,14 +64,10 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
           <MuiThemeProvider muiTheme={getMuiTheme()}>
             <Router history={history}>
               <Route path='/' component={Root}>
-                <IndexRoute component={LoginPage}/>
-                <Route path='create' component={CreatePage}/>
-                <Route path='missing' component={NotFoundRoute}/>
-
-                <Route path=':db' component={DbRoot} onEnter={checkValidDb(store)}>
-                  <Route path='password' component={PasswordPage}/>
-                  <IndexRoute component={DbRoot}/>
-                  <Route path=':institution' component={Institution} onEnter={checkAuthenticated(store)}/>
+                <IndexRoute component={Components.DbIndex}/>
+                <Route path='create' component={Components.DbCreate}/>
+                <Route path=':db' component={Components.DbContent}>
+                  <Route path=':institution' component={Institution}/>
                 </Route>
 
                 <Route path='*' component={NotFoundRoute}/>
