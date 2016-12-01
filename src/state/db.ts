@@ -2,18 +2,12 @@ import * as CryptoPouch from 'crypto-pouch/forward'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction } from 'redux'
-import { makeid } from '../util'
-import { createIndices } from '../docs'
+import { createIndices, DbInfo } from '../docs'
 
 PouchDB.plugin(PouchFind)
 PouchDB.plugin(CryptoPouch)
 
-const METADB_NAME = 'meta'
-
-export interface MetaDoc {
-  _id: string
-  title: string
-}
+const METADB_NAME = 'meta' as DbInfo.Id
 
 export interface OpenDb<T> {
   title: string
@@ -25,7 +19,7 @@ export interface OpenDb<T> {
 
 export interface DbState {
   current: OpenDb<any> | undefined
-  meta: OpenDb<MetaDoc> | undefined
+  meta: OpenDb<any> | undefined
 }
 
 const initialState: DbState = {
@@ -66,16 +60,13 @@ const ChangeEvent = (handle: PouchDB.Database<any>, seq: number): ChangeEventAct
 
 export const CreateDb = (title: string, password?: string): Thunk =>
   async (dispatch, getState) => {
-    const _id = makeid()
-    dispatch(LoadDb(_id, title, password))
+    const info = DbInfo.doc({ title })
+    dispatch(LoadDb(DbInfo.idFromDocId(info._id), title, password))
 
     const meta = getState().db.meta!
-    await meta.handle.put({
-      _id,
-      title
-    })
+    await meta.handle.put(info)
 
-    return _id
+    return info
   }
 
 const passwordCheckDoc = {
@@ -95,7 +86,7 @@ const checkPassword = async (handle: PouchDB.Database<any>) => {
   }
 }
 
-export const LoadDb = (_id: string, title?: string, password?: string): Thunk =>
+export const LoadDb = (_id: DbInfo.Id, title?: string, password?: string): Thunk =>
   async (dispatch) => {
     title = title || _id
     const handle = new PouchDB(_id)

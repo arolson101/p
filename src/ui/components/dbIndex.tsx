@@ -12,18 +12,19 @@ import * as React from 'react'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { Link } from 'react-router'
 import { createSelector } from 'reselect'
-import { AppState, AppDispatch, OpenDb, MetaDoc } from '../../state'
-import { promisedConnect, Promised } from '../../util'
+import { DbInfo } from '../../docs'
+import { AppState, AppDispatch, OpenDb } from '../../state'
+import { promisedConnect, Promised, Lookup } from '../../util'
 
 interface Props {
 }
 
 interface AsyncProps {
-  allDbs: MetaDoc[]
+  dbInfos: Lookup<DbInfo.Doc>
 }
 
 interface ConnectedProps {
-  metaDb: OpenDb<MetaDoc>
+  metaDb: OpenDb<DbInfo.Doc>
 }
 
 interface DispatchedProps {
@@ -67,26 +68,26 @@ const iconButtonElement = (
 
 export const DbIndexComponent = (props: AsyncProps & Props & ConnectedProps & DispatchedProps) => (
   <div>
-    {props.allDbs &&
+    {props.dbInfos &&
       <Paper style={style.paper}>
         <List>
-          {props.allDbs.map(db =>
+          {Lookup.map(props.dbInfos, dbInfo =>
             <ListItem
-              key={db._id}
-              primaryText={db.title}
+              key={dbInfo._id}
+              primaryText={dbInfo.title}
               leftIcon={<FontIcon {...icons.openDb} />}
-              containerElement={<Link to={`/${db._id}/`}/>}
+              containerElement={<Link to={DbInfo.path(dbInfo)}/>}
               rightIconButton={
                 <IconMenu iconButtonElement={iconButtonElement}>
                   <MenuItem onTouchTap={() => {
-                    props.metaDb.handle.remove(db)
-                    new PouchDB(db._id).destroy()
+                    props.metaDb.handle.remove(dbInfo)
+                    new PouchDB(dbInfo._id).destroy()
                   }}>Delete</MenuItem>
                 </IconMenu>
               }
             />
           )}
-          {props.allDbs.length > 0 &&
+          {Lookup.hasAny(props.dbInfos) &&
             <Divider/>
           }
           <ListItem
@@ -94,7 +95,7 @@ export const DbIndexComponent = (props: AsyncProps & Props & ConnectedProps & Di
             secondaryText={<p><FormattedMessage {...translations.newDbDescription}/></p>}
             secondaryTextLines={1}
             leftIcon={<FontIcon {...icons.newDb} />}
-            containerElement={<Link to='/create'/>}
+            containerElement={<Link to='/?create'/>}
           />
         </List>
       </Paper>
@@ -102,18 +103,17 @@ export const DbIndexComponent = (props: AsyncProps & Props & ConnectedProps & Di
   </div>
 )
 
-const queryAllDbs = createSelector(
+const queryDbs = createSelector(
   (state: AppState) => state.db.meta!,
-  async (meta) => {
-    const docs = await meta.handle.allDocs({include_docs: true})
-    const names = docs.rows.map(row => row.doc!)
-    return names
+  async (meta: OpenDb<DbInfo>): Promise<Lookup<DbInfo>> => {
+    const results = await meta.handle.find({selector: DbInfo.all})
+    return Lookup.create(results.docs)
   }
 )
 
 export const DbIndex = promisedConnect(
   (state: AppState): Promised<AsyncProps> & ConnectedProps => ({
-    allDbs: queryAllDbs(state),
+    dbInfos: queryDbs(state),
     metaDb: state.db.meta!
   })
 )(DbIndexComponent) as React.ComponentClass<Props>

@@ -5,7 +5,8 @@ import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, Field, ReduxFormProps, SubmissionError } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
 import { createSelector } from 'reselect'
-import { AppState, AppDispatch, MetaDoc, historyAPI, LoadDb } from '../../state'
+import { DbInfo } from '../../docs'
+import { AppState, AppDispatch, historyAPI, LoadDb } from '../../state'
 import { promisedConnect, Promised } from '../../util'
 import { forms } from './forms'
 
@@ -19,7 +20,7 @@ interface RouteProps {
 }
 
 interface AsyncProps {
-  dbDoc: MetaDoc
+  dbDoc: DbInfo.Doc
 }
 
 interface ConnectedProps extends ReduxFormProps<any> {
@@ -93,8 +94,9 @@ export const DbLoginComponent = (props: AllProps) => {
 const queryDbDoc = createSelector(
   (state: AppState, props: RouteProps) => state.db.meta!,
   (state: AppState, props: RouteProps) => props.params.db,
-  async (meta, db): Promise<MetaDoc> => {
-    return await meta.handle.get(db)
+  async (meta, dbInfo: DbInfo.Id): Promise<DbInfo> => {
+    const dbDoc = await meta.handle.get(DbInfo.docId({dbInfo}))
+    return dbDoc
   }
 )
 
@@ -119,7 +121,7 @@ const validate = (values: Values, props: IntlProps) => {
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
   const { dbDoc } = props
   try {
-    await dispatch(LoadDb(dbDoc!._id, dbDoc!.title, values.password!))
+    await dispatch(LoadDb(DbInfo.idFromDocId(dbDoc!._id), dbDoc!.title, values.password!))
   } catch (error) {
     throw new SubmissionError<Values>({password: error.message})
   }

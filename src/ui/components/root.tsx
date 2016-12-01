@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Router, Link } from 'react-router'
 import { historyAPI } from '../../state'
+import { Body } from './body'
 
 export const Root = (props: Router.RouteComponentProps<any, any>) => (
   <div>
@@ -14,6 +15,8 @@ export const Root = (props: Router.RouteComponentProps<any, any>) => (
     }}>&gt;</a>{' '}
     [ {props.location!.pathname + ' ' + props.location!.search} ]{' '}
     <Link to='/'>/</Link>{' '}
-    {props.children}
+    <div>
+      <Body {...props}/>
+    </div>
   </div>
 )

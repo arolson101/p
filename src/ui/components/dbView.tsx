@@ -48,7 +48,7 @@ export const DbViewComponent = (props: AllProps) => {
           </li>
         )}
       </ul>
-      <Link to={`/${db}/create`}>add institution</Link>
+      <Link to={`/${db}/?create`}>add institution</Link>
     </div>
   )
 }

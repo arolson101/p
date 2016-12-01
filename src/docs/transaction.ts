@@ -8,7 +8,7 @@ export interface Transaction {
 }
 
 export namespace Transaction {
-  export type DocId = '/transaction/:account/:time'
+  export type DocId = 'transaction/:account/:time'
   export type Doc = PouchDB.Core.Document<Transaction> & { _id: DocId }
 }
 

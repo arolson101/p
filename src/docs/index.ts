@@ -1,4 +1,5 @@
 export * from './account'
+export * from './dbInfo'
 export * from './institution'
 export * from './transaction'
 

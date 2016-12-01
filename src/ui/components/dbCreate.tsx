@@ -4,6 +4,7 @@ import { injectIntl, InjectedIntlProps, defineMessages } from 'react-intl'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, Field, ReduxFormProps } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
+import { DbInfo } from '../../docs'
 import { AppState, AppDispatch, historyAPI, CreateDb } from '../../state'
 import { forms } from './forms'
 
@@ -113,8 +114,8 @@ const validate = (values: Values, props: IntlProps) => {
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-  const id = await dispatch(CreateDb(values.name!, values.password!))
-  historyAPI.push(`/${id}/`)
+  const dbInfo = await dispatch(CreateDb(values.name!, values.password!))
+  historyAPI.push(DbInfo.path(dbInfo))
 }
 
 export const DbCreate = compose(

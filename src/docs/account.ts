@@ -72,6 +72,6 @@ export namespace Account {
   }
 
   export type Id = ':account' | makeid | ''
-  export type DocId = '/account/:account'
+  export type DocId = 'account/:account'
   export type Doc = PouchDB.Core.Document<Account> & { _id: DocId }
 }

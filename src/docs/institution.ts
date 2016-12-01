@@ -21,7 +21,7 @@ export interface Institution {
 
 export namespace Institution {
   export type Id = ':institution' | makeid | ''
-  export type DocId = '/institution/:institution'
+  export type DocId = 'institution/:institution'
   export type Doc = PouchDB.Core.Document<Institution> & { _id: DocId }
 }
 
