@@ -11,56 +11,6 @@ export interface Account {
   balance: number
 }
 
-export class Account {
-  static readonly docId = docURI.route<{account: Account.Id}, Account.DocId>('account/:account')
-  static readonly startkey = Account.docId({account: ''})
-  static readonly endkey = Account.docId({account: ''}) + '\uffff'
-  static readonly all: PouchDB.Selector = {
-    _id: {
-      $in: [ Account.startkey, Account.endkey ]
-    }
-  }
-
-  static readonly allForInstitution = (institution: Institution.Doc): PouchDB.Selector => ({
-    $and: [
-      { _id: { $gt: Account.startkey } },
-      { _id: { $lt: Account.endkey } },
-      { institution: institution._id }
-    ]
-  })
-
-  static readonly path = (db: string, account: Account.Doc, path: string = ''): string => {
-    const institutionId = Institution.idFromDocId(account.institution)
-    const accountId = Account.idFromDocId(account._id)
-    return `/${db}/${institutionId}/${accountId}/${path}`
-  }
-
-  static readonly isDocId = (id: string): boolean => {
-    return !!Account.docId(id as Account.DocId)
-  }
-
-  static readonly idFromDocId = (account: Account.DocId): Account.Id => {
-    const aparts = Account.docId(account)
-    if (!aparts) {
-      throw new Error('not an account id: ' + account)
-    }
-    return aparts.account
-  }
-
-  static readonly doc = (account: Account): Account.Doc => {
-    const _id = Account.docId({ account: makeid() })
-    return { _id, ...account }
-  }
-
-  static readonly createIndices = (db: PouchDB.Database<any>) => {
-    return db.createIndex({
-      index: {
-        fields: ['institution']
-      }
-    })
-  }
-}
-
 export namespace Account {
   // see ofx4js.domain.data.banking.AccountType
   export enum Type {
@@ -74,4 +24,52 @@ export namespace Account {
   export type Id = ':account' | makeid | ''
   export type DocId = 'account/:account'
   export type Doc = PouchDB.Core.Document<Account> & { _id: DocId }
+
+  export const docId = docURI.route<{account: Id}, DocId>('account/:account')
+  export const startkey = docId({account: ''})
+  export const endkey = docId({account: ''}) + '\uffff'
+  export const all: PouchDB.Selector = {
+    _id: {
+      $in: [ startkey, endkey ]
+    }
+  }
+
+  export const allForInstitution = (institution: Institution.Doc): PouchDB.Selector => ({
+    $and: [
+      { _id: { $gt: startkey } },
+      { _id: { $lt: endkey } },
+      { institution: institution._id }
+    ]
+  })
+
+  export const path = (db: string, account: Doc, path: string = ''): string => {
+    const institutionId = Institution.idFromDocId(account.institution)
+    const accountId = idFromDocId(account._id)
+    return `/${db}/${institutionId}/${accountId}/${path}`
+  }
+
+  export const isDocId = (id: string): boolean => {
+    return !!docId(id as DocId)
+  }
+
+  export const idFromDocId = (account: DocId): Id => {
+    const aparts = docId(account)
+    if (!aparts) {
+      throw new Error('not an account id: ' + account)
+    }
+    return aparts.account
+  }
+
+  export const doc = (account: Account): Doc => {
+    const _id = docId({ account: makeid() })
+    return { _id, ...account }
+  }
+
+  export const createIndices = (db: PouchDB.Database<any>) => {
+    return db.createIndex({
+      index: {
+        fields: ['institution']
+      }
+    })
+  }
 }

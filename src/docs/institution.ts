@@ -23,38 +23,36 @@ export namespace Institution {
   export type Id = ':institution' | makeid | ''
   export type DocId = 'institution/:institution'
   export type Doc = PouchDB.Core.Document<Institution> & { _id: DocId }
-}
 
-export class Institution {
-  static readonly docId = docURI.route<{institution: Institution.Id}, Institution.DocId>('institution/:institution')
-  static readonly startkey = Institution.docId({institution: ''})
-  static readonly endkey = Institution.docId({institution: ''}) + '\uffff'
-  static readonly all: PouchDB.Selector = {
+  export const docId = docURI.route<{institution: Id}, DocId>('institution/:institution')
+  export const startkey = docId({institution: ''})
+  export const endkey = docId({institution: ''}) + '\uffff'
+  export const all: PouchDB.Selector = {
     $and: [
-      { _id: { $gt: Institution.startkey } },
-      { _id: { $lt: Institution.endkey } }
+      { _id: { $gt: startkey } },
+      { _id: { $lt: endkey } }
     ]
   }
 
-  static readonly path = (db: string, institution: Institution.Doc, path: string = ''): string => {
-    const institutionId = Institution.idFromDocId(institution._id)
+  export const path = (db: string, institution: Doc, path: string = ''): string => {
+    const institutionId = idFromDocId(institution._id)
     return `/${db}/${institutionId}/${path}`
   }
 
-  static readonly isDocId = (id: string): boolean => {
-    return !!Institution.docId(id as Institution.DocId)
+  export const isDocId = (id: string): boolean => {
+    return !!docId(id as DocId)
   }
 
-  static readonly idFromDocId = (institution: Institution.DocId): Institution.Id => {
-    const iparts = Institution.docId(institution)
+  export const idFromDocId = (institution: DocId): Id => {
+    const iparts = docId(institution)
     if (!iparts) {
       throw new Error('not an institution id: ' + institution)
     }
     return iparts.institution
   }
 
-  static readonly doc = (institution: Institution): Institution.Doc => {
-    const _id = Institution.docId({ institution: makeid() })
+  export const doc = (institution: Institution): Doc => {
+    const _id = docId({ institution: makeid() })
     return { _id, ...institution }
   }
 }

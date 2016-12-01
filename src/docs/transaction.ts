@@ -10,29 +10,27 @@ export interface Transaction {
 export namespace Transaction {
   export type DocId = 'transaction/:account/:time'
   export type Doc = PouchDB.Core.Document<Transaction> & { _id: DocId }
-}
 
-export class Transaction {
-  static readonly docId = docURI.route<{account: Account.Id, time: string}, Transaction.DocId>('transaction/:account/:time')
-  static readonly startkeyForAccount = (account: Account.Id) => Transaction.docId({account, time: ''})
-  static readonly endkeyForAccount = (account: Account.Id) => Transaction.docId({account, time: ''}) + '\uffff'
-  static readonly allForAccount = (account: Account.Doc): PouchDB.Selector => {
-    const accountId = Account.idFromDocId(account._id)
+  export const docId = docURI.route<{account: Account.Id, time: string}, DocId>('transaction/:account/:time')
+  export const startkeyForAccount = (account: Account.Id) => docId({account, time: ''})
+  export const endkeyForAccount = (account: Account.Id) => docId({account, time: ''}) + '\uffff'
+  export const allForAccount = (accountDocId: Account.DocId): PouchDB.Selector => {
+    const accountId = Account.idFromDocId(accountDocId)
     return ({
       $and: [
-        { _id: { $gt: Transaction.startkeyForAccount(accountId) } },
-        { _id: { $lt: Transaction.endkeyForAccount(accountId) } }
+        { _id: { $gt: startkeyForAccount(accountId) } },
+        { _id: { $lt: endkeyForAccount(accountId) } }
       ]
     })
   }
 
-  static readonly isDocId = (id: string): boolean => {
-    return !!Transaction.docId(id as Transaction.DocId)
+  export const isDocId = (id: string): boolean => {
+    return !!docId(id as DocId)
   }
 
-  static readonly doc = (account: Account.Id, transaction: Transaction): Transaction.Doc => {
+  export const doc = (account: Account.Id, transaction: Transaction): Doc => {
     const time = transaction.time.valueOf().toString()
-    const _id = Transaction.docId({account, time})
+    const _id = docId({account, time})
     return { _id, ...transaction }
   }
 }
