@@ -34,6 +34,31 @@ export type Promised<T> = {
     [P in keyof T]: Promise<T[P]> | T[P]
 }
 
+interface CancelablePromise {
+  promise: Promise<any>
+  cancel(): void
+}
+
+const makeCancelable = (promise: Promise<any>): CancelablePromise => {
+  let hasCanceled = false
+
+  const wrappedPromise = new Promise((resolve, reject) => {
+    promise.then((val) =>
+      hasCanceled ? reject({isCanceled: true}) : resolve(val)
+    )
+    promise.catch((error) =>
+      hasCanceled ? reject({isCanceled: true}) : reject(error)
+    )
+  })
+
+  return {
+    promise: wrappedPromise,
+    cancel() {
+      hasCanceled = true
+    }
+  }
+}
+
 export function promisedConnect<TStateProps, TDispatchProps, TOwnProps>(
     mapStateToProps: FuncOrSelf<MapStateToProps<TStateProps, Promised<TOwnProps>>>,
     mapDispatchToProps?: FuncOrSelf<MapDispatchToPropsFunction<TDispatchProps, TOwnProps> | MapDispatchToPropsObject>
@@ -41,10 +66,12 @@ export function promisedConnect<TStateProps, TDispatchProps, TOwnProps>(
 
   return function(Wrapped: ComponentType<any>) {
     const c = class Resolver extends React.Component<any, any> {
+      private promises: { [key: string]: CancelablePromise }
+
       constructor(props: any) {
         super(props)
-
         this.state = {}
+        this.promises = {}
         for (let key in this.props) {
           if (isPromise(this.props[key])) {
             this.state[key] = undefined
@@ -55,9 +82,11 @@ export function promisedConnect<TStateProps, TDispatchProps, TOwnProps>(
       componentDidMount() {
         for (let key in this.props) {
           if (isPromise(this.props[key])) {
-            this.props[key].then(
+            const p = makeCancelable(this.props[key])
+            this.promises[key] = p
+            p.promise.then(
               (value: any) => this.setState({ [key]: value }),
-              (error: Error) => this.setState({ value: error })
+              (error: any) => { if (!error.isCanceled) { throw error } }
             )
           }
         }
@@ -66,11 +95,22 @@ export function promisedConnect<TStateProps, TDispatchProps, TOwnProps>(
       componentWillReceiveProps(nextProps: any) {
         for (let key in nextProps) {
           if (this.props[key] !== nextProps[key] && isPromise(nextProps[key])) {
-            nextProps[key].then(
+            if (this.promises[key]) {
+              this.promises[key].cancel()
+            }
+            const p = makeCancelable(nextProps[key])
+            this.promises[key] = p
+            p.promise.then(
               (value: any) => this.setState({ [key]: value }),
-              (error: Error) => this.setState({ value: error })
+              (error: any) => { if (!error.isCanceled) { throw error } }
             )
           }
+        }
+      }
+
+      componentWillUnmount() {
+        for (let key in this.promises) {
+          this.promises[key].cancel()
         }
       }
 
