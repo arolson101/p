@@ -4,6 +4,7 @@ export * from './i18n'
 export * from './institution'
 export * from './router'
 export * from './transaction'
+export * from './ui'
 
 import { combineReducers, Dispatch, ThunkAction } from 'redux'
 import { Account } from './account'
@@ -11,18 +12,21 @@ import { DbSlice, DbInit } from './db'
 import { FormSlice } from './form'
 import { I18nSlice } from './i18n'
 import { RouterSlice } from './router'
+import { UiSlice } from './ui'
 
 export type AppState =
   DbSlice &
   FormSlice &
   I18nSlice &
-  RouterSlice;
+  RouterSlice &
+  UiSlice
 
 export const AppState = combineReducers<AppState>({
   ...DbSlice,
   ...FormSlice,
   ...I18nSlice,
-  ...RouterSlice
+  ...RouterSlice,
+  ...UiSlice
 })
 
 export type AppDispatch = Dispatch<AppState>

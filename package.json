@@ -33,6 +33,7 @@
     "redux-form": "^6.2.0",
     "redux-form-material-ui": "^4.1.0",
     "redux-thunk": "^2.1.0",
+    "redux-ui": "0.0.15",
     "remote-redux-devtools": "^0.5.4",
     "reselect": "^2.5.4",
     "roboto-fontface": "^0.6.0",
