@@ -120,6 +120,10 @@ const validate = (values: Values, props: IntlProps) => {
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
   const { dbDoc } = props
+  const errors = validate(values, props)
+  if (Object.keys(errors).length) {
+    throw new SubmissionError<Values>(errors)
+  }
   try {
     await dispatch(LoadDb(DbInfo.idFromDocId(dbDoc!._id), dbDoc!.title, values.password!))
   } catch (error) {
@@ -136,8 +140,7 @@ export const DbLogin = compose(
   ) as any,
   reduxForm(
     {
-      form: 'DbLogin',
-      validate
+      form: 'DbLogin'
     },
     (state: AppState): ConnectedProps => ({}),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),

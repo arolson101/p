@@ -2,7 +2,7 @@ import RaisedButton from 'material-ui/RaisedButton'
 import * as React from 'react'
 import { injectIntl, InjectedIntlProps, defineMessages } from 'react-intl'
 import { bindActionCreators, Dispatch, compose } from 'redux'
-import { reduxForm, Field, ReduxFormProps } from 'redux-form'
+import { reduxForm, Field, ReduxFormProps, SubmissionError } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
 import { DbInfo } from '../../docs'
 import { AppState, AppDispatch, historyAPI, CreateDb } from '../../state'
@@ -114,6 +114,10 @@ const validate = (values: Values, props: IntlProps) => {
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
+  const errors = validate(values, props)
+  if (Object.keys(errors).length) {
+    throw new SubmissionError<Values>(errors)
+  }
   const dbInfo = await dispatch(CreateDb(values.name!, values.password!))
   historyAPI.push(DbInfo.path(dbInfo))
 }
@@ -123,7 +127,6 @@ export const DbCreate = compose(
   reduxForm(
     {
       form: 'DbCreate',
-      validate
     },
     (state: AppState): ConnectedProps => ({}),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
