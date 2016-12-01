@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Link } from 'react-router'
 import { createSelector } from 'reselect'
 import { Institution, Account } from '../../docs'
-import { AppState, OpenDb } from '../../modules'
+import { AppState, OpenDb } from '../../state'
 import { promisedConnect, Promised } from '../../util'
 
 interface Props {

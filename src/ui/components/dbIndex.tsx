@@ -12,7 +12,7 @@ import * as React from 'react'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { Link } from 'react-router'
 import { createSelector } from 'reselect'
-import { AppState, AppDispatch, OpenDb, MetaDoc } from '../../modules'
+import { AppState, AppDispatch, OpenDb, MetaDoc } from '../../state'
 import { promisedConnect, Promised } from '../../util'
 
 interface Props {

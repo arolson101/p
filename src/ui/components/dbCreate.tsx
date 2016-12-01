@@ -4,7 +4,7 @@ import { injectIntl, InjectedIntlProps, defineMessages } from 'react-intl'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, Field, ReduxFormProps } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
-import { AppState, AppDispatch, historyAPI, CreateDb } from '../../modules'
+import { AppState, AppDispatch, historyAPI, CreateDb } from '../../state'
 import { forms } from './forms'
 
 const translations = defineMessages({

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Institution, Account } from '../../docs'
-import { AppState, OpenDb } from '../../modules'
+import { AppState, OpenDb } from '../../state'
 import { connect } from 'react-redux'
 import { DbLogin } from './dbLogin'
 

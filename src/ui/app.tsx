@@ -6,7 +6,7 @@ import { IndexRoute, Router, Route } from 'react-router'
 import { bindActionCreators } from 'redux'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
-import { AppState, AppDispatch } from '../modules'
+import { AppState, AppDispatch } from '../state'
 import * as Components from './components'
 
 interface Props {

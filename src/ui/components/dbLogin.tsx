@@ -5,7 +5,7 @@ import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, Field, ReduxFormProps, SubmissionError } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
 import { createSelector } from 'reselect'
-import { AppState, AppDispatch, MetaDoc, historyAPI, LoadDb } from '../../modules'
+import { AppState, AppDispatch, MetaDoc, historyAPI, LoadDb } from '../../state'
 import { promisedConnect, Promised } from '../../util'
 import { forms } from './forms'
 

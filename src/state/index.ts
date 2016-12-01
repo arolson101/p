@@ -1,13 +1,18 @@
+import { routerMiddleware } from 'react-router-redux'
+import { createStore, applyMiddleware, combineReducers, Dispatch, ThunkAction } from 'redux'
+import ReduxThunk from 'redux-thunk'
+import { composeWithDevTools } from 'remote-redux-devtools'
+
 export * from './db'
+export * from './form'
 export * from './i18n'
 export * from './router'
 export * from './ui'
 
-import { combineReducers, Dispatch, ThunkAction } from 'redux'
 import { DbSlice, DbInit } from './db'
 import { FormSlice } from './form'
 import { I18nSlice } from './i18n'
-import { RouterSlice } from './router'
+import { RouterSlice, historyAPI } from './router'
 import { UiSlice } from './ui'
 
 export type AppState =
@@ -37,3 +42,13 @@ export const AppInit = (): AppThunk => async (dispatch) => {
     await dispatch(init())
   }
 }
+
+const routingMiddleware = routerMiddleware(historyAPI)
+
+export const createAppStore = () =>
+  createStore<AppState>(
+    AppState,
+    composeWithDevTools(
+      applyMiddleware(ReduxThunk, routingMiddleware)
+    )
+  )

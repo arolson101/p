@@ -1,29 +1,18 @@
 import * as React from 'react'
 import { render } from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
-import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux'
-import { createStore, applyMiddleware } from 'redux'
-import ReduxThunk from 'redux-thunk'
-import { composeWithDevTools } from 'remote-redux-devtools'
-import { AppState, AppInit, historyAPI } from './modules'
+import { syncHistoryWithStore } from 'react-router-redux'
+import { createAppStore, historyAPI, AppInit } from './state'
 import { App } from './ui'
 
-const routingMiddleware = routerMiddleware(historyAPI)
-
 export const main = async (element: Element) => {
-  const store = createStore(
-    AppState,
-    composeWithDevTools(
-      applyMiddleware(ReduxThunk, routingMiddleware)
-    )
-  )
-
+  const store = createAppStore()
   const syncedHistory = syncHistoryWithStore(historyAPI, store)
 
   if ((module as any).hot) {
-    (module as any).hot.accept('./modules', () => {
-      console.log('---- modules change')
-      store.replaceReducer(require('./modules').AppState)
+    (module as any).hot.accept('./state', () => {
+      console.log('---- redux change')
+      store.replaceReducer(require('./state').AppState)
     })
   }
 

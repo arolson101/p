@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Router, Link } from 'react-router'
-import { historyAPI } from '../../modules'
+import { historyAPI } from '../../state'
 
 export const Root = (props: Router.RouteComponentProps<any, any>) => (
   <div>
