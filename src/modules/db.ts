@@ -3,6 +3,7 @@ import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction } from 'redux'
 import { makeid } from '../util'
+import { createIndices } from '../docs'
 
 PouchDB.plugin(PouchFind)
 PouchDB.plugin(CryptoPouch)
@@ -102,6 +103,7 @@ export const LoadDb = (_id: string, title?: string, password?: string): Thunk =>
       handle.crypto(password)
       await checkPassword(handle)
     }
+    await createIndices(handle)
     const changes = handle.changes({
       since: 'now',
       live: true

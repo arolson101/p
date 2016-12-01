@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { Link } from 'react-router'
 import { createSelector } from 'reselect'
-import { AppState, OpenDb, Institution, Account } from '../../modules'
+import { Institution, Account } from '../../docs'
+import { AppState, OpenDb } from '../../modules'
 import { promisedConnect, Promised } from '../../util'
 
 interface Props {
