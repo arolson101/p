@@ -3,7 +3,7 @@ import { Institution } from './institution'
 import { makeid } from '../util'
 
 export interface Account {
-  institution: string
+  institution: Institution.DocId
   name: string
   type: Account.Type
   number: string
@@ -12,7 +12,7 @@ export interface Account {
 }
 
 export class Account {
-  static readonly docId = docURI.route<{account: Account.Id}, Account.Id>('account/:account')
+  static readonly docId = docURI.route<{account: Account.Id}, Account.DocId>('account/:account')
   static readonly startkey = Account.docId({account: ''})
   static readonly endkey = Account.docId({account: ''}) + '\uffff'
   static readonly all: PouchDB.Selector = {
@@ -29,13 +29,17 @@ export class Account {
     ]
   })
 
-  static readonly path = (db: string, account: Account.Doc, path?: string): string => {
+  static readonly path = (db: string, account: Account.Doc, path: string = ''): string => {
     const institutionId = Institution.idFromDocId(account.institution)
     const accountId = Account.idFromDocId(account._id)
-    return `/${db}/${institutionId}/${accountId}/` + (path || '')
+    return `/${db}/${institutionId}/${accountId}/${path}`
   }
 
-  static readonly idFromDocId = (account: string): Account.Id => {
+  static readonly isDocId = (id: string): boolean => {
+    return !!Account.docId(id as Account.DocId)
+  }
+
+  static readonly idFromDocId = (account: Account.DocId): Account.Id => {
     const aparts = Account.docId(account)
     if (!aparts) {
       throw new Error('not an account id: ' + account)
@@ -58,8 +62,6 @@ export class Account {
 }
 
 export namespace Account {
-  export type Doc = PouchDB.Core.Document<Account>
-  export type Id = '<account>' | makeid | '' | '\uffff'
   // see ofx4js.domain.data.banking.AccountType
   export enum Type {
     CHECKING,
@@ -68,4 +70,8 @@ export namespace Account {
     CREDITLINE,
     CREDITCARD,
   }
+
+  export type Id = ':account' | makeid | ''
+  export type DocId = '/account/:account'
+  export type Doc = PouchDB.Core.Document<Account> & { _id: DocId }
 }

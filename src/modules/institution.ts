@@ -20,12 +20,13 @@ export interface Institution {
 }
 
 export namespace Institution {
-  export type Doc = PouchDB.Core.Document<Institution>
-  export type Id = '<institution>' | makeid | '' | '\uffff'
+  export type Id = ':institution' | makeid | ''
+  export type DocId = '/institution/:institution'
+  export type Doc = PouchDB.Core.Document<Institution> & { _id: DocId }
 }
 
 export class Institution {
-  static readonly docId = docURI.route<{institution: Institution.Id}, Institution.Id>('institution/:institution')
+  static readonly docId = docURI.route<{institution: Institution.Id}, Institution.DocId>('institution/:institution')
   static readonly startkey = Institution.docId({institution: ''})
   static readonly endkey = Institution.docId({institution: ''}) + '\uffff'
   static readonly all: PouchDB.Selector = {
@@ -35,12 +36,16 @@ export class Institution {
     ]
   }
 
-  static readonly path = (db: string, institution: Institution.Doc, path?: string): string => {
+  static readonly path = (db: string, institution: Institution.Doc, path: string = ''): string => {
     const institutionId = Institution.idFromDocId(institution._id)
-    return `/${db}/${institutionId}/` + (path || '')
+    return `/${db}/${institutionId}/${path}`
   }
 
-  static readonly idFromDocId = (institution: string): Institution.Id => {
+  static readonly isDocId = (id: string): boolean => {
+    return !!Institution.docId(id as Institution.DocId)
+  }
+
+  static readonly idFromDocId = (institution: Institution.DocId): Institution.Id => {
     const iparts = Institution.docId(institution)
     if (!iparts) {
       throw new Error('not an institution id: ' + institution)
