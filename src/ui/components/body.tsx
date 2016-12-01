@@ -50,7 +50,7 @@ export const BodyComponent = (props: AllProps) => {
     }
   }
 
-  if (!props.current) {
+  if (!props.current || props.current._id !== db) {
     return <DbLogin {...props}/>
   }
 
