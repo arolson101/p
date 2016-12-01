@@ -18,7 +18,7 @@ export class Transaction {
   static readonly startkeyForAccount = (account: Account.Id) => Transaction.docId({account, time: ''})
   static readonly endkeyForAccount = (account: Account.Id) => Transaction.docId({account, time: ''}) + '\uffff'
   static readonly allForAccount = (account: Account.Doc): PouchDB.Selector => {
-    const accountId = Account.idFromDoc(account)
+    const accountId = Account.idFromDocId(account._id)
     return ({
       _id: {
         $and: [

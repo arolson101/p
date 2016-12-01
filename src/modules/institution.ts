@@ -35,10 +35,15 @@ export class Institution {
     ]
   }
 
-  static readonly idFromDoc = (institution: Institution.Doc): Institution.Id => {
-    const iparts = Institution.docId(institution._id)
+  static readonly path = (db: string, institution: Institution.Doc, path?: string): string => {
+    const institutionId = Institution.idFromDocId(institution._id)
+    return `/${db}/${institutionId}/` + (path || '')
+  }
+
+  static readonly idFromDocId = (institution: string): Institution.Id => {
+    const iparts = Institution.docId(institution)
     if (!iparts) {
-      throw new Error('not an institution id: ' + institution._id)
+      throw new Error('not an institution id: ' + institution)
     }
     return iparts.institution
   }

@@ -29,10 +29,16 @@ export class Account {
     ]
   })
 
-  static readonly idFromDoc = (account: Account.Doc): Account.Id => {
-    const aparts = Account.docId(account._id)
+  static readonly path = (db: string, account: Account.Doc, path?: string): string => {
+    const institutionId = Institution.idFromDocId(account.institution)
+    const accountId = Account.idFromDocId(account._id)
+    return `/${db}/${institutionId}/${accountId}/` + (path || '')
+  }
+
+  static readonly idFromDocId = (account: string): Account.Id => {
+    const aparts = Account.docId(account)
     if (!aparts) {
-      throw new Error('not an account id: ' + account._id)
+      throw new Error('not an account id: ' + account)
     }
     return aparts.account
   }

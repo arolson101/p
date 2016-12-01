@@ -1,14 +1,13 @@
 import * as React from 'react'
+import { Link } from 'react-router'
 import { createSelector } from 'reselect'
 import { AppState, OpenDb, Institution, Account } from '../../modules'
 import { promisedConnect, Promised } from '../../util'
-import { DbLogin } from './dbLogin'
 
 interface Props {
 }
 
 interface ConnectedProps {
-  current?: OpenDb<any>
 }
 
 interface RouteProps {
@@ -27,34 +26,28 @@ type InstitutionWithAccounts = Institution.Doc & {
   accounts: Account.Doc[]
 }
 
-export const DbContentComponent = (props: AllProps) => {
-  if (!props.current || props.current._id !== props.params.db) {
-    return <DbLogin {...props}/>
-  }
-
+export const DbViewComponent = (props: AllProps) => {
   if (!props.institutions) {
     return <div>loading...</div>
   }
+  const { db } = props.params
 
   return (
-    <div>db is {props.params.db}
-      <div>institutions:
-        <ul>
-          {props.institutions.map(institution =>
-            <li key={institution._id}>
-              {institution.name}
-              <ul>
-                {institution.accounts.map(account =>
-                  <li key={account._id}>{account.name}</li>
-                )}
-                <li><button onClick={() => addAccount(institution, props.current!)}>add account</button></li>
-              </ul>
-            </li>
-          )}
-        </ul>
-        <button onClick={() => addInstitution(props.current!)}>add institution</button>
-      </div>
-      {props.children}
+    <div>institutions:
+      <ul>
+        {props.institutions.map(institution =>
+          <li key={institution._id}>
+            <Link to={Institution.path(db, institution)}>{institution.name}</Link>
+            <ul>
+              {institution.accounts.map(account =>
+                <li key={account._id}><Link to={Account.path(db, account)}>{account.name}</Link></li>
+              )}
+              <li><Link to={Institution.path(db, institution, 'create')}>add account</Link></li>
+            </ul>
+          </li>
+        )}
+      </ul>
+      <Link to={`/${db}/create`}>add institution</Link>
     </div>
   )
 }
@@ -90,9 +83,8 @@ const queryInstitutions = createSelector(
   }
 )
 
-export const DbContent = promisedConnect(
+export const DbView = promisedConnect(
   (state: AppState, props: RouteProps): ConnectedProps & Promised<AsyncProps> => ({
-    current: state.db.current,
     institutions: queryInstitutions(state, props)
   })
-)(DbContentComponent as any) as React.ComponentClass<Props>
+)(DbViewComponent as any) as React.ComponentClass<Props>
