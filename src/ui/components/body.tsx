@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Institution, Account } from '../../docs'
-import { AppState, OpenDb, UnloadDb } from '../../state'
+import { AppState, OpenDb } from '../../state'
 import { connect } from 'react-redux'
 import { DbLogin } from './dbLogin'
 import { DbCreate } from './dbCreate'
@@ -41,11 +41,6 @@ type InstitutionWithAccounts = Institution.Doc & {
 export const BodyComponent = (props: AllProps) => {
   const { db, institution } = props.params
   const create = typeof props.location.query.create !== 'undefined'
-
-  if (props.current && props.current._id !== db) {
-    props.dispatch(UnloadDb())
-    return null as any
-  }
 
   if (!db) {
     if (create) {
