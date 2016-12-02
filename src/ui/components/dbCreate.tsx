@@ -3,10 +3,11 @@ import * as React from 'react'
 import { injectIntl, InjectedIntlProps, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
-import { reduxForm, Field, ReduxFormProps, SubmissionError } from 'redux-form'
+import { reduxForm, Field, ReduxFormProps } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
 import { DbInfo } from '../../docs'
 import { AppState, AppDispatch, historyAPI, CreateDb } from '../../state'
+import { Validator } from '../../util'
 import { forms } from './forms'
 
 const translations = defineMessages({
@@ -95,30 +96,21 @@ interface Values {
   name?: string
   password?: string
   confirmPassword?: string
-
-  [key: string]: string | undefined
 }
 
 const validate = (values: Values, props: IntlProps) => {
   const formatMessage = props.intl.formatMessage!
-  const errors: Values = {}
-  const requiredFields = [ 'name', 'password', 'confirmPassword' ]
-  requiredFields.forEach(field => {
-    if (!values[ field ]) {
-      errors[ field ] = formatMessage(forms.translations.required)
-    }
-  })
-  if (values.confirmPassword !== values.password) {
-    errors.confirmPassword = formatMessage(forms.translations.passwordsMatch)
-  }
-  return errors
+  const v = new Validator(values)
+  v.equal('confirmPassword', 'password', formatMessage(forms.translations.passwordsMatch))
+  return v.errors
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-  const errors = validate(values, props)
-  if (Object.keys(errors).length) {
-    throw new SubmissionError<Values>(errors)
-  }
+  const formatMessage = props.intl.formatMessage!
+  const v = new Validator(values)
+  v.required(['name', 'password', 'confirmPassword'], formatMessage(forms.translations.required))
+  v.maybeThrowSubmissionError()
+
   const dbInfo = await dispatch(CreateDb(values.name!, values.password!))
   historyAPI.push(DbInfo.path(dbInfo))
 }
@@ -129,9 +121,8 @@ export const DbCreate = compose(
     (state: AppState): ConnectedProps => ({}),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   ),
-  reduxForm<AllProps>(
-    {
-      form: 'DbCreate'
-    }
-  )
+  reduxForm<AllProps>({
+    form: 'DbCreate',
+    validate
+  })
 )(DbCreateComponent) as React.ComponentClass<Props>

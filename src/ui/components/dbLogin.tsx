@@ -1,15 +1,15 @@
 import RaisedButton from 'material-ui/RaisedButton'
 import * as React from 'react'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
+import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, Field, ReduxFormProps, SubmissionError } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
-import { createSelector } from 'reselect'
 import { DbInfo } from '../../docs'
 import { AppState, AppDispatch, historyAPI, loadDb } from '../../state'
+import { Validator } from '../../util'
 import { RouteProps, IntlProps } from './props'
 import { forms } from './forms'
-import { connect } from 'react-redux'
 
 interface Props {
 }
@@ -91,28 +91,20 @@ const selectDbDoc = (state: AppState, props: RouteProps) => {
 
 interface Values {
   password?: string
-
-  [key: string]: string | undefined
 }
 
 const validate = (values: Values, props: IntlProps) => {
-  const formatMessage = props.intl.formatMessage!
-  const errors: Values = {}
-  const requiredFields = [ 'password' ]
-  requiredFields.forEach(field => {
-    if (!values[ field ]) {
-      errors[ field ] = formatMessage(forms.translations.required)
-    }
-  })
-  return errors
+  const v = new Validator(values)
+  return v.errors
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
+  const formatMessage = props.intl.formatMessage!
+  const v = new Validator(values)
+  v.required(['password'], formatMessage(forms.translations.required))
+  v.maybeThrowSubmissionError()
+
   const { dbDoc } = props
-  const errors = validate(values, props)
-  if (Object.keys(errors).length) {
-    throw new SubmissionError<Values>(errors)
-  }
   try {
     await dispatch(loadDb(DbInfo.idFromDocId(dbDoc!._id), values.password!))
   } catch (error) {
@@ -128,9 +120,8 @@ export const DbLogin = compose(
     }),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   ),
-  reduxForm<AllProps>(
-    {
-      form: 'DbLogin'
-    }
-  )
+  reduxForm<AllProps>({
+    form: 'DbLogin',
+    validate
+  })
 )(DbLoginComponent) as React.ComponentClass<Props>

@@ -14,8 +14,10 @@ export type FieldValue = any;
 
 export type FormData = { [fieldName: string]: FieldValue };
 
+export type ErrorsFor<TValues> = { [P in keyof TValues] ?: string }
+
 export class SubmissionError<T> {
-    constructor(errors: T);
+    constructor(errors: ErrorsFor<T>);
 }
 
 export interface FieldProp<T> {
