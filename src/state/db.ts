@@ -1,67 +1,63 @@
 import * as CryptoPouch from 'crypto-pouch/forward'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
-import { ThunkAction } from 'redux'
-import { createIndices, DbInfo } from '../docs'
+import { ThunkAction, Dispatch } from 'redux'
+import { createIndices, DbInfo, docChangeActionTesters, docChangeAction } from '../docs'
 
 PouchDB.plugin(PouchFind)
 PouchDB.plugin(CryptoPouch)
 
 const METADB_NAME = 'meta' as DbInfo.Id
 
-export interface OpenDb {
-  title: string
-  _id: string
-  handle: PouchDB.Database<PouchDB.Core.Document<any>>
+export interface OpenDb<T extends PouchDB.Core.Document<any>> {
+  _id: DbInfo.Id
+  handle: PouchDB.Database<T>
   changes: PouchDB.ChangeEmitter
-  seq: number
 }
 
 export interface DbState {
-  current?: OpenDb
-  meta?: OpenDb
+  current?: OpenDb<any>
+  meta: OpenDb<DbInfo.Doc>
 }
 
 const initialState: DbState = {
   current: undefined,
-  meta: undefined
+  meta: undefined as any
 }
-
-type SET_DB = 'db/setDb'
-const SET_DB = 'db/setDb'
-
-interface SetDbAction {
-  type: SET_DB
-  db?: OpenDb
-}
-
-const setDb = (db?: OpenDb): SetDbAction => ({
-  type: SET_DB,
-  db
-})
 
 type State = DbSlice
 type Thunk = ThunkAction<any, State, any>
 
-type DB_CHANGE = 'db/changeEvent'
-const DB_CHANGE = 'db/changeEvent'
+export type DB_SET_CURRENT = 'db/setCurrent'
+export const DB_SET_CURRENT = 'db/setCurrent'
 
-interface ChangeEventAction {
-  type: DB_CHANGE
-  handle: PouchDB.Database<any>
-  seq: number
+export interface SetDbAction {
+  type: DB_SET_CURRENT
+  current?: OpenDb<any>
 }
 
-const ChangeEvent = (handle: PouchDB.Database<any>, seq: number): ChangeEventAction => ({
-  type: DB_CHANGE,
-  handle,
-  seq
+const setDb = (current?: OpenDb<any>): SetDbAction => ({
+  type: DB_SET_CURRENT,
+  current
+})
+
+export type DB_SET_META = 'db/setMeta'
+export const DB_SET_META = 'db/setMeta'
+
+export interface SetMetaDbAction {
+  type: DB_SET_META
+  meta: OpenDb<DbInfo.Doc>
+}
+
+const setMetaDb = (meta: OpenDb<DbInfo.Doc>): SetMetaDbAction => ({
+  type: DB_SET_META,
+  meta
 })
 
 export const CreateDb = (title: string, password?: string): Thunk =>
   async (dispatch, getState) => {
     const info = DbInfo.doc({ title })
-    dispatch(LoadDb(DbInfo.idFromDocId(info._id), title, password))
+    dispatch(loadDb(DbInfo.idFromDocId(info._id), password))
 
     const meta = getState().db.meta!
     await meta.handle.put(info)
@@ -86,9 +82,31 @@ const checkPassword = async (handle: PouchDB.Database<any>) => {
   }
 }
 
-export const LoadDb = (_id: DbInfo.Id, title?: string, password?: string): Thunk =>
+const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>) =>
+  (change: PouchDB.ChangeInfo<{}>) => {
+    for (let type in docChangeActionTesters) {
+      const tester = docChangeActionTesters[type]
+      if (tester(change.id)) {
+        dispatch(docChangeAction(type, handle))
+        break
+      }
+    }
+  }
+
+export const loadMetaDb = (): Thunk =>
   async (dispatch) => {
-    title = title || _id
+    const handle = new PouchDB(METADB_NAME)
+    const changes = handle.changes({
+      since: 'now',
+      live: true
+    })
+    .on('change', handleChange(handle, dispatch))
+
+    dispatch(setMetaDb({_id: METADB_NAME, handle, changes}))
+  }
+
+export const loadDb = (_id: DbInfo.Id, password?: string): Thunk =>
+  async (dispatch) => {
     const handle = new PouchDB(_id)
     if (password) {
       handle.crypto(password)
@@ -99,41 +117,31 @@ export const LoadDb = (_id: DbInfo.Id, title?: string, password?: string): Thunk
       since: 'now',
       live: true
     })
-    .on('change', (change) => {
-      dispatch(ChangeEvent(handle, change.seq))
-    })
+    .on('change', handleChange(handle, dispatch))
 
-    dispatch(setDb({title, _id, handle, changes, seq: 0}))
+    dispatch(setDb({_id, handle, changes}))
   }
 
-export const UnloadDb = (): SetDbAction => setDb(undefined)
+export const unloadDb = (): SetDbAction => setDb(undefined)
 
-type Actions
-  = SetDbAction
-  | ChangeEventAction
-  | { type: '' }
+type Actions =
+  SetMetaDbAction |
+  SetDbAction |
+  { type: '' }
 
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
   switch (action.type) {
-    case SET_DB:
-      if (action.db && action.db.title === METADB_NAME) {
-        if (state.meta) {
-          throw new Error('meta db is already loaded')
-        }
-        return { ...state, meta: action.db }
-      } else {
-        if (state.current) {
-          state.current.changes.cancel()
-        }
-        return { ...state, current: action.db }
+    case DB_SET_META:
+      if (state.meta) {
+        throw new Error('meta db is already loaded')
       }
+      return { ...state, meta: action.meta }
 
-    case DB_CHANGE:
-      if (state.meta && state.meta.handle === action.handle) {
-        return { ...state, meta: { ...state.meta, seq: action.seq } }
-      } else if (state.current && state.current.handle === action.handle) {
-        return { ...state, current: { ...state.current, seq: action.seq } }
+    case DB_SET_CURRENT:
+      if (state.current) {
+        state.current.changes.cancel()
       }
+      return { ...state, current: action.current }
 
     default:
       return state
@@ -149,5 +157,5 @@ export const DbSlice = {
 }
 
 export const DbInit = [
-  () => LoadDb(METADB_NAME)
+  () => loadMetaDb()
 ]

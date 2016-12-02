@@ -1,6 +1,7 @@
 import RaisedButton from 'material-ui/RaisedButton'
 import * as React from 'react'
 import { injectIntl, InjectedIntlProps, defineMessages } from 'react-intl'
+import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, Field, ReduxFormProps, SubmissionError } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
@@ -124,11 +125,13 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
 
 export const DbCreate = compose(
   injectIntl,
-  reduxForm(
-    {
-      form: 'DbCreate',
-    },
+  connect(
     (state: AppState): ConnectedProps => ({}),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
+  ),
+  reduxForm<AllProps>(
+    {
+      form: 'DbCreate'
+    }
   )
 )(DbCreateComponent) as React.ComponentClass<Props>

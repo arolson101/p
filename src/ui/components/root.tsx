@@ -1,50 +1,10 @@
 import * as React from 'react'
-import { Router, Link } from 'react-router'
-import { createSelector } from 'reselect'
-import { DbInfo, Institution, Account } from '../../docs'
-import { AppState, historyAPI, OpenDb } from '../../state'
-import { promisedConnect, Promised, Lookup } from '../../util'
+import { Link } from 'react-router'
+import { historyAPI } from '../../state'
 import { Body } from './body'
+import { RouteProps } from './props'
 
-interface Props {}
-
-interface Params {
-  db: DbInfo.Id
-  institution: Institution.Id
-  account: Account.Id
-}
-
-type RouteProps = Router.RouteComponentProps<Params, any>
-
-interface ConnectedProps {
-  metaDb: OpenDb
-  current?: OpenDb
-}
-
-interface DispatchedProps {
-  dispatch: Redux.Dispatch<AppState>
-}
-
-interface DbQueryResults {
-  institutions: Lookup<Institution.DocId, Institution.Doc>
-  accounts: Lookup<Account.DocId, Account.Doc>
-}
-
-interface AsyncProps {
-  dbInfos: Lookup<DbInfo.Doc>
-  dbq?: DbQueryResults
-}
-
-export type RootProps =
-  React.Props<any>
-  & RouteProps
-  & Props
-  & ConnectedProps
-  & DispatchedProps
-  & DbQueryResults
-  & AsyncProps
-
-export const RootComponent = (props: RootProps) => (
+export const Root = (props: RouteProps) => (
   <div>
     <a href='#' onClick={(event) => {
       event.preventDefault()
@@ -61,33 +21,3 @@ export const RootComponent = (props: RootProps) => (
     </div>
   </div>
 )
-
-const queryDbInfos = createSelector(
-  (state: AppState) => state.db.meta!,
-  async (meta) => {
-    const results = await meta.handle.find({selector: DbInfo.all})
-    return Lookup.create(results.docs)
-  }
-)
-
-const queryCurrentDb = createSelector(
-  (state: AppState) => state.db.current,
-  async (current): Promise<DbQueryResults | undefined> => {
-    if (current) {
-      const iresults = await current.handle.find({selector: Institution.all})
-      const institutions = Lookup.create<Institution.DocId, Institution.Doc>(iresults.docs)
-      const aresults = await current.handle.find({selector: Account.all})
-      const accounts = Lookup.create<Account.DocId, Account.Doc>(aresults.docs)
-      return { institutions, accounts }
-    }
-  }
-)
-
-export const Root = promisedConnect(
-  (state: AppState, props: RouteProps): ConnectedProps & Promised<AsyncProps> => ({
-    metaDb: state.db.meta!,
-    dbInfos: queryDbInfos(state),
-    dbq: queryCurrentDb(state, props),
-    current: state.db.current
-  })
-)(RootComponent as any) as React.ComponentClass<Props>

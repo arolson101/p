@@ -1,40 +1,24 @@
 import RaisedButton from 'material-ui/RaisedButton'
 import * as React from 'react'
-import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
+import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, Field, ReduxFormProps, SubmissionError } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
 import { createSelector } from 'reselect'
 import { DbInfo } from '../../docs'
-import { AppState, AppDispatch, historyAPI, LoadDb } from '../../state'
-import { promisedConnect, Promised } from '../../util'
+import { AppState, AppDispatch, historyAPI, loadDb } from '../../state'
+import { RouteProps, IntlProps } from './props'
 import { forms } from './forms'
+import { connect } from 'react-redux'
 
 interface Props {
 }
 
-interface RouteProps {
-  params: {
-    db: string
-  }
-}
-
-interface AsyncProps {
+interface ConnectedProps extends ReduxFormProps<any> {
   dbDoc: DbInfo.Doc
 }
 
-interface ConnectedProps extends ReduxFormProps<any> {
-}
-
-interface DispatchedProps {
-  dispatch: AppDispatch
-}
-
-interface IntlProps {
-  intl: InjectedIntlProps
-}
-
-type AllProps = Props & RouteProps & AsyncProps & ConnectedProps & DispatchedProps & IntlProps
+type AllProps = Props & RouteProps & ConnectedProps & IntlProps
 
 const translations = defineMessages({
   login: {
@@ -91,14 +75,19 @@ export const DbLoginComponent = (props: AllProps) => {
   )
 }
 
-const queryDbDoc = createSelector(
-  (state: AppState, props: RouteProps) => state.db.meta!,
-  (state: AppState, props: RouteProps) => props.params.db,
-  async (meta, dbInfo: DbInfo.Id): Promise<DbInfo> => {
-    const dbDoc = await meta.handle.get(DbInfo.docId({dbInfo}))
-    return dbDoc
-  }
-)
+const selectDbDoc = (state: AppState, props: RouteProps) => {
+  const dbs = state.cache.dbs
+  const db = props.params!.db
+  return dbs.get(DbInfo.docId({db}))!
+}
+
+// const selectDbDoc = createSelector(
+//   (state: AppState, props: RouteProps) => state.cache.dbs,
+//   (state: AppState, props: RouteProps) => props.params!.db,
+//   (dbs, db) => {
+//     return dbs.get(DbInfo.docId({db}))!
+//   }
+// )
 
 interface Values {
   password?: string
@@ -125,7 +114,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
     throw new SubmissionError<Values>(errors)
   }
   try {
-    await dispatch(LoadDb(DbInfo.idFromDocId(dbDoc!._id), dbDoc!.title, values.password!))
+    await dispatch(loadDb(DbInfo.idFromDocId(dbDoc!._id), values.password!))
   } catch (error) {
     throw new SubmissionError<Values>({password: error.message})
   }
@@ -133,16 +122,15 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
 
 export const DbLogin = compose(
   injectIntl,
-  promisedConnect(
-    (state: AppState, props: RouteProps): Promised<AsyncProps> => ({
-      dbDoc: queryDbDoc(state, props)
-    })
-  ) as any,
-  reduxForm(
+  connect(
+    (state: AppState, props: RouteProps): ConnectedProps => ({
+      dbDoc: selectDbDoc(state, props)
+    }),
+    (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
+  ),
+  reduxForm<AllProps>(
     {
       form: 'DbLogin'
-    },
-    (state: AppState): ConnectedProps => ({}),
-    (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
+    }
   )
 )(DbLoginComponent) as React.ComponentClass<Props>

@@ -10,10 +10,12 @@ import Paper from 'material-ui/Paper'
 import * as PouchDB from 'pouchdb-browser'
 import * as React from 'react'
 import { FormattedMessage, defineMessages } from 'react-intl'
+import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { DbInfo } from '../../docs'
+import { AppState, OpenDb } from '../../state'
 import { Lookup } from '../../util'
-import { RootProps } from './root'
+import { RouteProps } from './props'
 
 const icons = {
   newDb: {
@@ -50,7 +52,12 @@ const iconButtonElement = (
   </IconButton>
 )
 
-export const DbIndex = (props: RootProps) => (
+interface ConnectedProps {
+  dbInfos: DbInfo.Cache
+  metaDb: OpenDb<DbInfo.Doc>
+}
+
+export const DbIndexComponent = (props: RouteProps & ConnectedProps) => (
   <div>
     {props.dbInfos &&
       <Paper style={style.paper}>
@@ -86,3 +93,10 @@ export const DbIndex = (props: RootProps) => (
     }
   </div>
 )
+
+export const DbIndex = connect(
+  (state: AppState): ConnectedProps => ({
+    dbInfos: state.cache.dbs,
+    metaDb: state.db.meta
+  })
+)(DbIndexComponent) as React.ComponentClass<RouteProps>

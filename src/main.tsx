@@ -2,6 +2,7 @@ import * as React from 'react'
 import { render } from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
 import { syncHistoryWithStore } from 'react-router-redux'
+import { sagaMiddleware, appSaga } from './sagas'
 import { createAppStore, historyAPI, AppInit } from './state'
 import { App } from './ui'
 
@@ -15,6 +16,8 @@ export const main = async (element: Element) => {
       store.replaceReducer(require('./state').AppState)
     })
   }
+
+  sagaMiddleware.run(appSaga)
 
   await store.dispatch(AppInit())
 

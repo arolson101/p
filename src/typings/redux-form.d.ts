@@ -1,4 +1,4 @@
-// Type definitions for redux-form v4.0.3
+// Type definitions for redux-form v6.0.0
 // Project: https://github.com/erikras/redux-form
 // Definitions by: Daniel Lytkin <https://github.com/aikoven>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
@@ -7,9 +7,6 @@ declare module 'redux-form' {
 import * as React from 'react';
 import { Component, SyntheticEvent, FormEventHandler } from 'react';
 import { Dispatch, ActionCreator, Reducer } from 'redux';
-
-type ComponentClass<P> = React.ComponentClass<P>;
-type StatelessComponent<P> = React.StatelessComponent<P>;
 
 export const actionTypes: {[actionName:string]: string};
 
@@ -279,27 +276,13 @@ export interface ReduxFormProps<T> {
     values?: FormData;
 }
 
-interface ComponentDecorator<TOriginalProps, TOwnProps> {
-    (component: ComponentClass<TOriginalProps> | StatelessComponent<TOriginalProps>): ComponentClass<TOwnProps>;
+interface ComponentDecorator<T> {
+    (component: React.ComponentClass<T> | React.StatelessComponent<T>): React.ComponentClass<T>;
 }
 
-interface MapStateToProps<TStateProps, TOwnProps> {
-    (state: any, ownProps?: TOwnProps): TStateProps;
-}
-
-interface MapDispatchToPropsFunction<TDispatchProps, TOwnProps> {
-    (dispatch: Dispatch<any>, ownProps?: TOwnProps): TDispatchProps;
-}
-
-interface MapDispatchToPropsObject {
-    [name: string]: ActionCreator<any>;
-}
-
-export function reduxForm<TStateProps, TDispatchProps, TOwnProps>(
-    config: ReduxFormConfig<TOwnProps>,
-    mapStateToProps?: FuncOrSelf<MapStateToProps<TStateProps, TOwnProps>>,
-    mapDispatchToProps?: FuncOrSelf<MapDispatchToPropsFunction<TDispatchProps, TOwnProps> | MapDispatchToPropsObject>
-): ComponentDecorator<TStateProps & TDispatchProps, TOwnProps>;
+export function reduxForm<T>(
+    config: ReduxFormConfig<T>
+): ComponentDecorator<T>;
 
 type FuncOrSelf<T> = T | (() => T);
 

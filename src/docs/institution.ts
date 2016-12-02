@@ -1,5 +1,6 @@
 import * as docURI from 'docuri'
-import { makeid } from '../util'
+import { makeid, Lookup } from '../util'
+import { TCacheSetAction } from './index'
 
 export interface Institution {
   name: string
@@ -59,4 +60,17 @@ export namespace Institution {
     const _id = docId({ institution: makeid() })
     return { _id, ...institution }
   }
+
+  export const CHANGE_ACTION = 'institution/change'
+
+  export type Cache = Lookup<DocId, Doc>
+  export const createCache = Lookup.create as (docs: Doc[]) => Lookup<DocId, Doc>
+
+  export type CACHE_SET_ACTION = 'institution/cacheSet'
+  export const CACHE_SET_ACTION = 'institution/cacheSet'
+  export type CacheSetAction = TCacheSetAction<CACHE_SET_ACTION, DocId, Doc>
+  export const cacheSetAction = (cache: Cache): CacheSetAction => ({
+    type: CACHE_SET_ACTION,
+    cache
+  })
 }

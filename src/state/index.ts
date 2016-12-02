@@ -2,6 +2,7 @@ import { routerMiddleware } from 'react-router-redux'
 import { createStore, applyMiddleware, combineReducers, Dispatch, ThunkAction } from 'redux'
 import ReduxThunk from 'redux-thunk'
 import { composeWithDevTools } from 'remote-redux-devtools'
+import { sagaMiddleware } from '../sagas'
 
 export * from './db'
 export * from './form'
@@ -10,6 +11,7 @@ export * from './router'
 export * from './ui'
 
 import { DbSlice, DbInit } from './db'
+import { CacheSlice } from './cache'
 import { FormSlice } from './form'
 import { I18nSlice } from './i18n'
 import { RouterSlice, historyAPI } from './router'
@@ -17,6 +19,7 @@ import { UiSlice } from './ui'
 
 export type AppState =
   DbSlice &
+  CacheSlice &
   FormSlice &
   I18nSlice &
   RouterSlice &
@@ -24,6 +27,7 @@ export type AppState =
 
 export const AppState = combineReducers<AppState>({
   ...DbSlice,
+  ...CacheSlice,
   ...FormSlice,
   ...I18nSlice,
   ...RouterSlice,
@@ -49,6 +53,6 @@ export const createAppStore = () =>
   createStore<AppState>(
     AppState,
     composeWithDevTools(
-      applyMiddleware(ReduxThunk, routingMiddleware)
+      applyMiddleware(ReduxThunk, routingMiddleware, sagaMiddleware)
     )
   )

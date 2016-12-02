@@ -1,19 +1,25 @@
 import * as React from 'react'
-import { Institution, Account, DbInfo } from '../../docs'
-import { AppState } from '../../state'
+import { Institution, DbInfo } from '../../docs'
+import { AppState, OpenDb } from '../../state'
 import { connect } from 'react-redux'
 import { DbLogin } from './dbLogin'
 import { DbCreate } from './dbCreate'
 import { DbView } from './dbView'
 import { InCreate } from './inCreate'
 import { DbIndex } from './dbIndex'
-import { RootProps } from './root'
+import { RouteProps } from './props'
 
 interface Props {}
 
-type AllProps = Props & RootProps
+interface ConnectedProps {
+  dbInfos: DbInfo.Cache
+  current?: OpenDb<any>
+  institutions: Institution.Cache
+}
 
-export const Body = (props: AllProps) => {
+type AllProps = Props & RouteProps & ConnectedProps
+
+export const BodyComponent = (props: AllProps) => {
   const { db, institution } = props.params!
   const create = 'create' in props.location!.query
 
@@ -29,14 +35,10 @@ export const Body = (props: AllProps) => {
     return <DbLogin {...props}/>
   }
 
-  if (!props.dbq) {
-    return null as any
-  }
-
   return (
-    <div>db '{props.dbInfos.get(DbInfo.docId({dbInfo: db}))!.title}'
+    <div>db '{props.dbInfos.get(DbInfo.docId({db: db}))!.title}'
       {institution ? (
-        <div>institution '{props.dbq.institutions.get(Institution.docId({institution}))!.name}'</div>
+        <div>institution '{props.institutions.get(Institution.docId({institution}))!.name}'</div>
       ) : (
         create ? (
           <InCreate {...props}/>
@@ -47,3 +49,11 @@ export const Body = (props: AllProps) => {
     </div>
   )
 }
+
+export const Body = connect(
+  (state: AppState): ConnectedProps => ({
+    dbInfos: state.cache.dbs,
+    current: state.db.current,
+    institutions: state.cache.institutions
+  })
+)(BodyComponent) as React.ComponentClass<RouteProps>
