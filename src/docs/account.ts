@@ -29,9 +29,10 @@ export namespace Account {
   export const startkey = docId({account: ''})
   export const endkey = docId({account: ''}) + '\uffff'
   export const all: PouchDB.Selector = {
-    _id: {
-      $in: [ startkey, endkey ]
-    }
+    $and: [
+      { _id: { $gt: startkey } },
+      { _id: { $lt: endkey } }
+    ]
   }
 
   export const allForInstitution = (institution: Institution.Doc): PouchDB.Selector => ({
@@ -50,6 +51,10 @@ export namespace Account {
 
   export const isDocId = (id: string): boolean => {
     return !!docId(id as DocId)
+  }
+
+  export const isDoc = (doc: Doc): boolean => {
+    return !!docId(doc._id)
   }
 
   export const idFromDocId = (account: DocId): Id => {

@@ -11,25 +11,9 @@ import * as PouchDB from 'pouchdb-browser'
 import * as React from 'react'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { Link } from 'react-router'
-import { createSelector } from 'reselect'
 import { DbInfo } from '../../docs'
-import { AppState, AppDispatch, OpenDb } from '../../state'
-import { promisedConnect, Promised, Lookup } from '../../util'
-
-interface Props {
-}
-
-interface AsyncProps {
-  dbInfos: Lookup<DbInfo.Doc>
-}
-
-interface ConnectedProps {
-  metaDb: OpenDb<DbInfo.Doc>
-}
-
-interface DispatchedProps {
-  dispatch: AppDispatch
-}
+import { Lookup } from '../../util'
+import { RootProps } from './root'
 
 const icons = {
   newDb: {
@@ -66,7 +50,7 @@ const iconButtonElement = (
   </IconButton>
 )
 
-export const DbIndexComponent = (props: AsyncProps & Props & ConnectedProps & DispatchedProps) => (
+export const DbIndex = (props: RootProps) => (
   <div>
     {props.dbInfos &&
       <Paper style={style.paper}>
@@ -102,18 +86,3 @@ export const DbIndexComponent = (props: AsyncProps & Props & ConnectedProps & Di
     }
   </div>
 )
-
-const queryDbs = createSelector(
-  (state: AppState) => state.db.meta!,
-  async (meta: OpenDb<DbInfo>): Promise<Lookup<DbInfo>> => {
-    const results = await meta.handle.find({selector: DbInfo.all})
-    return Lookup.create(results.docs)
-  }
-)
-
-export const DbIndex = promisedConnect(
-  (state: AppState): Promised<AsyncProps> & ConnectedProps => ({
-    dbInfos: queryDbs(state),
-    metaDb: state.db.meta!
-  })
-)(DbIndexComponent) as React.ComponentClass<Props>

@@ -43,6 +43,10 @@ export namespace Institution {
     return !!docId(id as DocId)
   }
 
+  export const isDoc = (doc: Doc): boolean => {
+    return !!docId(doc._id)
+  }
+
   export const idFromDocId = (institution: DocId): Id => {
     const iparts = docId(institution)
     if (!iparts) {

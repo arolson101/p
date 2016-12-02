@@ -1,46 +1,21 @@
 import * as React from 'react'
-import { Institution, Account } from '../../docs'
-import { AppState, OpenDb } from '../../state'
+import { Institution, Account, DbInfo } from '../../docs'
+import { AppState } from '../../state'
 import { connect } from 'react-redux'
 import { DbLogin } from './dbLogin'
 import { DbCreate } from './dbCreate'
 import { DbView } from './dbView'
 import { InCreate } from './inCreate'
 import { DbIndex } from './dbIndex'
+import { RootProps } from './root'
 
-interface Props {
-}
+interface Props {}
 
-interface ConnectedProps {
-  current?: OpenDb<any>
-}
+type AllProps = Props & RootProps
 
-interface DispatchedProps {
-  dispatch: Redux.Dispatch<AppState>
-}
-
-interface RouteProps {
-  params: {
-    db: string
-    institution: string
-    account: string
-  }
-  location: {
-    query: {
-      create?: boolean
-    }
-  }
-}
-
-type AllProps = React.Props<any> & Props & ConnectedProps & DispatchedProps & RouteProps
-
-type InstitutionWithAccounts = Institution.Doc & {
-  accounts: Account.Doc[]
-}
-
-export const BodyComponent = (props: AllProps) => {
-  const { db, institution } = props.params
-  const create = typeof props.location.query.create !== 'undefined'
+export const Body = (props: AllProps) => {
+  const { db, institution } = props.params!
+  const create = 'create' in props.location!.query
 
   if (!db) {
     if (create) {
@@ -54,10 +29,14 @@ export const BodyComponent = (props: AllProps) => {
     return <DbLogin {...props}/>
   }
 
+  if (!props.dbq) {
+    return null as any
+  }
+
   return (
-    <div>db is {db}
+    <div>db '{props.dbInfos[DbInfo.docId({dbInfo: db})].title}'
       {institution ? (
-        <div>institution {institution}</div>
+        <div>institution '{props.dbq.institutions[Institution.docId({institution})].name}'</div>
       ) : (
         create ? (
           <InCreate {...props}/>
@@ -68,9 +47,3 @@ export const BodyComponent = (props: AllProps) => {
     </div>
   )
 }
-
-export const Body = connect(
-  (state: AppState): ConnectedProps => ({
-    current: state.db.current
-  })
-)(BodyComponent) as React.ComponentClass<Props>

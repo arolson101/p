@@ -9,17 +9,17 @@ PouchDB.plugin(CryptoPouch)
 
 const METADB_NAME = 'meta' as DbInfo.Id
 
-export interface OpenDb<T> {
+export interface OpenDb {
   title: string
   _id: string
-  handle: PouchDB.Database<T>
+  handle: PouchDB.Database<PouchDB.Core.Document<any>>
   changes: PouchDB.ChangeEmitter
   seq: number
 }
 
 export interface DbState {
-  current: OpenDb<any> | undefined
-  meta: OpenDb<any> | undefined
+  current?: OpenDb
+  meta?: OpenDb
 }
 
 const initialState: DbState = {
@@ -32,10 +32,10 @@ const SET_DB = 'db/setDb'
 
 interface SetDbAction {
   type: SET_DB
-  db?: OpenDb<any>
+  db?: OpenDb
 }
 
-const setDb = (db?: OpenDb<any>): SetDbAction => ({
+const setDb = (db?: OpenDb): SetDbAction => ({
   type: SET_DB,
   db
 })

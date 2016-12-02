@@ -53,7 +53,7 @@ export const DbViewComponent = (props: AllProps) => {
   )
 }
 
-const addAccount = async (institution: InstitutionWithAccounts, current: OpenDb<any>) => {
+const addAccount = async (institution: InstitutionWithAccounts, current: OpenDb) => {
   const account: Account = {
     name: 'Account ' + institution.accounts.length,
     institution: institution._id,
@@ -65,7 +65,7 @@ const addAccount = async (institution: InstitutionWithAccounts, current: OpenDb<
   current.handle.put(Account.doc(account))
 }
 
-const addInstitution = async (current: OpenDb<any>) => {
+const addInstitution = async (current: OpenDb) => {
   current.handle.put(Institution.doc({name: '1st bank'}))
 }
 
