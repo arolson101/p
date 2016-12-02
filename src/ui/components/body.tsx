@@ -34,9 +34,9 @@ export const Body = (props: AllProps) => {
   }
 
   return (
-    <div>db '{props.dbInfos[DbInfo.docId({dbInfo: db})].title}'
+    <div>db '{props.dbInfos.get(DbInfo.docId({dbInfo: db}))!.title}'
       {institution ? (
-        <div>institution '{props.dbq.institutions[Institution.docId({institution})].name}'</div>
+        <div>institution '{props.dbq.institutions.get(Institution.docId({institution}))!.name}'</div>
       ) : (
         create ? (
           <InCreate {...props}/>

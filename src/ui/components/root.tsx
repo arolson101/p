@@ -26,8 +26,8 @@ interface DispatchedProps {
 }
 
 interface DbQueryResults {
-  institutions: Lookup<Institution>
-  accounts: Lookup<Account>
+  institutions: Lookup<Institution.DocId, Institution.Doc>
+  accounts: Lookup<Account.DocId, Account.Doc>
 }
 
 interface AsyncProps {
@@ -64,7 +64,7 @@ export const RootComponent = (props: RootProps) => (
 
 const queryDbInfos = createSelector(
   (state: AppState) => state.db.meta!,
-  async (meta): Promise<Lookup<DbInfo>> => {
+  async (meta) => {
     const results = await meta.handle.find({selector: DbInfo.all})
     return Lookup.create(results.docs)
   }
@@ -75,9 +75,9 @@ const queryCurrentDb = createSelector(
   async (current): Promise<DbQueryResults | undefined> => {
     if (current) {
       const iresults = await current.handle.find({selector: Institution.all})
-      const institutions = Lookup.create<Institution>(iresults.docs)
+      const institutions = Lookup.create<Institution.DocId, Institution.Doc>(iresults.docs)
       const aresults = await current.handle.find({selector: Account.all})
-      const accounts = Lookup.create<Account>(aresults.docs)
+      const accounts = Lookup.create<Account.DocId, Account.Doc>(aresults.docs)
       return { institutions, accounts }
     }
   }

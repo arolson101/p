@@ -1,40 +1,38 @@
 
-export interface Lookup<T> {
-  [id: string]: T
-}
+export type Lookup<K, T> = Map<K, T>
 
 export namespace Lookup {
-  export const create = <T extends PouchDB.Core.Document<any>>(items: T[]): Lookup<T> => (
+  export const create = <K, T extends PouchDB.Core.Document<any>>(items: T[]): Lookup<K, T> => (
     items.reduce(
       (map, item) => {
-        map[item._id] = item
+        map.set(item._id, item)
         return map
       },
-      {} as Lookup<T>
+      new Map<K,T>()
     )
   )
 
-  export const values = <T>(lookup: Lookup<T>): T[] => (
+  export const values = <K, T>(lookup: Lookup<K, T>) => (
     lookup
-    ? Object.keys(lookup).map(id => lookup[id])
+    ? lookup.values()
     : []
   )
 
-  export const map = <T, V>(lookup: Lookup<T>, cb: (item: T) => V): V[] => (
+  export const map = <K, T, V>(lookup: Lookup<K, T>, cb: (item: T) => V): V[] => (
     lookup
-    ? Object.keys(lookup).map(id => cb(lookup[id]))
+    ? Array.from(lookup, (elt) => cb(elt[1]))
     : []
   )
 
-  export const hasAny = (lookup: Lookup<any>): boolean => (
+  export const hasAny = (lookup: Lookup<any, any>): boolean => (
     lookup
-    ? Object.keys(lookup).length !== 0
+    ? lookup.size !== 0
     : false
   )
 
-  export const isEmpty = (lookup: Lookup<any>): boolean => (
+  export const isEmpty = (lookup: Lookup<any, any>): boolean => (
     lookup
-    ? Object.keys(lookup).length === 0
+    ? lookup.size === 0
     : true
   )
 }
