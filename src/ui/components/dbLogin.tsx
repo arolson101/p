@@ -15,7 +15,7 @@ interface Props {
 }
 
 interface ConnectedProps extends ReduxFormProps<any> {
-  dbDoc: DbInfo.Doc
+  dbDoc?: DbInfo.Doc
 }
 
 type AllProps = Props & RouteProps & ConnectedProps & IntlProps
@@ -23,7 +23,7 @@ type AllProps = Props & RouteProps & ConnectedProps & IntlProps
 const translations = defineMessages({
   login: {
     id: 'login',
-    defaultMessage: 'Enter password for database {db}'
+    defaultMessage: 'Enter password for database {dbTitle}'
   }
 })
 
@@ -36,14 +36,14 @@ const style = {
 export const DbLoginComponent = (props: AllProps) => {
   const formatMessage = props.intl.formatMessage!
   if (!props.dbDoc) {
-    return null as any as JSX.Element
+    return null as any
   }
-  const db = props.dbDoc.title
+  const dbTitle = props.dbDoc.title
   const { handleSubmit } = props
   return (
     <div>
       <p>
-        <FormattedMessage {...translations.login} values={{db}}/>
+        <FormattedMessage {...translations.login} values={{dbTitle}}/>
       </p>
       <form onSubmit={handleSubmit!(submit)}>
         <div>
@@ -78,24 +78,11 @@ export const DbLoginComponent = (props: AllProps) => {
 const selectDbDoc = (state: AppState, props: RouteProps) => {
   const dbs = state.cache.dbs
   const db = props.params!.db
-  return dbs.get(DbInfo.docId({db}))!
+  return dbs.get(DbInfo.docId({db}))
 }
-
-// const selectDbDoc = createSelector(
-//   (state: AppState, props: RouteProps) => state.cache.dbs,
-//   (state: AppState, props: RouteProps) => props.params!.db,
-//   (dbs, db) => {
-//     return dbs.get(DbInfo.docId({db}))!
-//   }
-// )
 
 interface Values {
   password?: string
-}
-
-const validate = (values: Values, props: IntlProps) => {
-  const v = new Validator(values)
-  return v.errors
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
@@ -104,9 +91,9 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.required(['password'], formatMessage(forms.translations.required))
   v.maybeThrowSubmissionError()
 
-  const { dbDoc } = props
+  const { db } = props.params!
   try {
-    await dispatch(loadDb(DbInfo.idFromDocId(dbDoc!._id), values.password!))
+    await dispatch(loadDb(db, values.password!))
   } catch (error) {
     throw new SubmissionError<Values>({password: error.message})
   }
@@ -121,7 +108,6 @@ export const DbLogin = compose(
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   ),
   reduxForm<AllProps>({
-    form: 'DbLogin',
-    validate
+    form: 'DbLogin'
   })
 )(DbLoginComponent) as React.ComponentClass<Props>
