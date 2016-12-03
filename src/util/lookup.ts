@@ -2,7 +2,7 @@
 export type Lookup<K, T> = Map<K, T>
 
 export namespace Lookup {
-  export const create = <K, T extends PouchDB.Core.Document<any>>(items: T[]): Lookup<K, T> => (
+  export const create = <K, T extends PouchDB.Core.Document<any>>(items: T[] = []): Lookup<K, T> => (
     items.reduce(
       (map, item) => {
         map.set(item._id, item)

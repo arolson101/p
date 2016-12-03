@@ -1,5 +1,6 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
+import { AppThunk } from '../state'
 import { TCacheSetAction } from './index'
 
 export interface Institution {
@@ -64,13 +65,20 @@ export namespace Institution {
   export const CHANGE_ACTION = 'institution/change'
 
   export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs: Doc[]) => Lookup<DocId, Doc>
+  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
-  export type CACHE_SET_ACTION = 'institution/cacheSet'
-  export const CACHE_SET_ACTION = 'institution/cacheSet'
-  export type CacheSetAction = TCacheSetAction<CACHE_SET_ACTION, DocId, Doc>
+  export type CACHE_SET = 'institution/cacheSet'
+  export const CACHE_SET = 'institution/cacheSet'
+  export type CacheSetAction = TCacheSetAction<CACHE_SET, DocId, Doc>
   export const cacheSetAction = (cache: Cache): CacheSetAction => ({
-    type: CACHE_SET_ACTION,
+    type: CACHE_SET,
     cache
   })
+
+  export const cacheUpdateAction = (handle?: PouchDB.Database<any>): AppThunk =>
+    async (dispatch) => {
+      const results = handle ? await handle.find({selector: all}) : { docs: [] }
+      const cache = createCache(results.docs)
+      dispatch(cacheSetAction(cache))
+    }
 }

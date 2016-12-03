@@ -2,7 +2,7 @@ import * as CryptoPouch from 'crypto-pouch/forward'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction, Dispatch } from 'redux'
-import { createIndices, DbInfo, docChangeActionTesters, docChangeAction } from '../docs'
+import { createIndices, DbInfo, docChangeActionTesters } from '../docs'
 
 PouchDB.plugin(PouchFind)
 PouchDB.plugin(CryptoPouch)
@@ -84,10 +84,9 @@ const checkPassword = async (handle: PouchDB.Database<any>) => {
 
 const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>) =>
   (change: PouchDB.ChangeInfo<{}>) => {
-    for (let type in docChangeActionTesters) {
-      const tester = docChangeActionTesters[type]
+    for (let [tester, action] of docChangeActionTesters) {
       if (tester(change.id)) {
-        dispatch(docChangeAction(type, handle))
+        dispatch(action(handle))
         break
       }
     }
@@ -157,5 +156,5 @@ export const DbSlice = {
 }
 
 export const DbInit = [
-  () => loadMetaDb()
+  loadMetaDb
 ]
