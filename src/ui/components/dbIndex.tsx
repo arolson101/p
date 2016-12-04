@@ -13,7 +13,7 @@ import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { DbInfo } from '../../docs'
-import { AppState, OpenDb } from '../../state'
+import { AppState, MetaDb } from '../../state'
 import { Lookup } from '../../util'
 import { RouteProps } from './props'
 
@@ -54,7 +54,7 @@ const iconButtonElement = (
 
 interface ConnectedProps {
   dbInfos: DbInfo.Cache
-  metaDb: OpenDb<DbInfo.Doc>
+  metaDb: MetaDb
 }
 
 export const DbIndexComponent = (props: RouteProps & ConnectedProps) => (
@@ -71,7 +71,7 @@ export const DbIndexComponent = (props: RouteProps & ConnectedProps) => (
               rightIconButton={
                 <IconMenu iconButtonElement={iconButtonElement}>
                   <MenuItem onTouchTap={() => {
-                    props.metaDb.handle.remove(dbInfo)
+                    props.metaDb.db.remove(dbInfo)
                     new PouchDB(dbInfo._id).destroy()
                   }}>Delete</MenuItem>
                 </IconMenu>
@@ -96,7 +96,7 @@ export const DbIndexComponent = (props: RouteProps & ConnectedProps) => (
 
 export const DbIndex = connect(
   (state: AppState): ConnectedProps => ({
-    dbInfos: state.cache.dbs,
+    dbInfos: state.db.meta.infos,
     metaDb: state.db.meta
   })
 )(DbIndexComponent) as React.ComponentClass<RouteProps>

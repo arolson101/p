@@ -10,7 +10,6 @@ export * from './router'
 export * from './ui'
 
 import { DbSlice, DbInit } from './db'
-import { CacheSlice, CacheInit, CacheSubscribe } from './cache'
 import { FormSlice } from './form'
 import { I18nSlice } from './i18n'
 import { RouterSlice, historyAPI } from './router'
@@ -18,7 +17,6 @@ import { UiSlice } from './ui'
 
 export type AppState =
   DbSlice &
-  CacheSlice &
   FormSlice &
   I18nSlice &
   RouterSlice &
@@ -26,7 +24,6 @@ export type AppState =
 
 export const AppState = combineReducers<AppState>({
   ...DbSlice,
-  ...CacheSlice,
   ...FormSlice,
   ...I18nSlice,
   ...RouterSlice,
@@ -39,8 +36,7 @@ export type AppThunk = ThunkAction<any, AppState, any>
 export const AppInit = (): AppThunk => async (dispatch) => {
   type Initializer = () => AppThunk
   const initializers: Initializer[] = [
-    ...DbInit,
-    ...CacheInit
+    ...DbInit
   ]
   for (let init of initializers) {
     await dispatch(init())
@@ -56,6 +52,5 @@ export const createAppStore = () => {
       applyMiddleware(ReduxThunk, routingMiddleware)
     )
   )
-  CacheSubscribe(store)
   return store
 }

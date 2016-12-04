@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Institution, DbInfo } from '../../docs'
-import { AppState, OpenDb } from '../../state'
+import { AppState, CurrentDb } from '../../state'
 import { connect } from 'react-redux'
 import { DbLogin } from './dbLogin'
 import { DbCreate } from './dbCreate'
@@ -13,8 +13,8 @@ interface Props {}
 
 interface ConnectedProps {
   dbInfos: DbInfo.Cache
-  current?: OpenDb<any>
-  institutions: Institution.Cache
+  current?: CurrentDb
+  institutions?: Institution.Cache
 }
 
 type AllProps = Props & RouteProps & ConnectedProps
@@ -31,14 +31,16 @@ export const BodyComponent = (props: AllProps) => {
     }
   }
 
-  if (!props.current || props.current._id !== db) {
+  if (!props.current || DbInfo.idFromDocId(props.current.info._id) !== db) {
     return <DbLogin {...props}/>
   }
+
+  const institutions = props.current.cache.institutions
 
   return (
     <div>db '{props.dbInfos.get(DbInfo.docId({db: db}))!.title}'
       {institution ? (
-        <div>institution '{props.institutions.get(Institution.docId({institution}))!.name}'</div>
+        <div>institution '{institutions.get(Institution.docId({institution}))!.name}'</div>
       ) : (
         create ? (
           <InCreate {...props}/>
@@ -52,8 +54,7 @@ export const BodyComponent = (props: AllProps) => {
 
 export const Body = connect(
   (state: AppState): ConnectedProps => ({
-    dbInfos: state.cache.dbs,
-    current: state.db.current,
-    institutions: state.cache.institutions
+    dbInfos: state.db.meta.infos,
+    current: state.db.current
   })
 )(BodyComponent) as React.ComponentClass<RouteProps>

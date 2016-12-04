@@ -15,7 +15,7 @@ interface Props {
 }
 
 interface ConnectedProps extends ReduxFormProps<any> {
-  dbDoc?: DbInfo.Doc
+  dbDoc: DbInfo.Doc
 }
 
 type AllProps = Props & RouteProps & ConnectedProps & IntlProps
@@ -76,9 +76,9 @@ export const DbLoginComponent = (props: AllProps) => {
 }
 
 const selectDbDoc = (state: AppState, props: RouteProps) => {
-  const dbs = state.cache.dbs
+  const dbs = state.db.meta.infos
   const db = props.params!.db
-  return dbs.get(DbInfo.docId({db}))
+  return dbs.get(DbInfo.docId({db}))!
 }
 
 interface Values {
@@ -91,9 +91,8 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.required(['password'], formatMessage(forms.translations.required))
   v.maybeThrowSubmissionError()
 
-  const { db } = props.params!
   try {
-    await dispatch(loadDb(db, values.password!))
+    await dispatch(loadDb(props.dbDoc, values.password!))
   } catch (error) {
     throw new SubmissionError<Values>({password: error.message})
   }

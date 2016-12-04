@@ -2,22 +2,31 @@ import * as CryptoPouch from 'crypto-pouch/forward'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction, Dispatch } from 'redux'
-import { createIndices, DbInfo, docChangeActionTesters } from '../docs'
+import { createIndices, DbInfo, docChangeActionTesters, Institution, Account } from '../docs'
 
 PouchDB.plugin(PouchFind)
 PouchDB.plugin(CryptoPouch)
 
 const METADB_NAME = 'meta' as DbInfo.Id
 
-export interface OpenDb<T extends PouchDB.Core.Document<any>> {
-  _id: DbInfo.Id
-  handle: PouchDB.Database<T>
+export interface MetaDb {
+  db: PouchDB.Database<DbInfo.Doc>
+  infos: DbInfo.Cache
+}
+
+export interface CurrentDb {
+  info: DbInfo.Doc
+  db: PouchDB.Database<any>
   changes: PouchDB.ChangeEmitter
+  cache: {
+    institutions: Institution.Cache
+    accounts: Account.Cache
+  }
 }
 
 export interface DbState {
-  current?: OpenDb<any>
-  meta: OpenDb<DbInfo.Doc>
+  meta: MetaDb
+  current?: CurrentDb
 }
 
 const initialState: DbState = {
@@ -33,10 +42,10 @@ export const DB_SET_CURRENT = 'db/setCurrent'
 
 export interface SetDbAction {
   type: DB_SET_CURRENT
-  current?: OpenDb<any>
+  current?: CurrentDb
 }
 
-const setDb = (current?: OpenDb<any>): SetDbAction => ({
+const setDb = (current?: CurrentDb): SetDbAction => ({
   type: DB_SET_CURRENT,
   current
 })
@@ -46,10 +55,10 @@ export const DB_SET_META = 'db/setMeta'
 
 export interface SetMetaDbAction {
   type: DB_SET_META
-  meta: OpenDb<DbInfo.Doc>
+  meta: MetaDb
 }
 
-const setMetaDb = (meta: OpenDb<DbInfo.Doc>): SetMetaDbAction => ({
+const setMetaDb = (meta: MetaDb): SetMetaDbAction => ({
   type: DB_SET_META,
   meta
 })
@@ -57,10 +66,10 @@ const setMetaDb = (meta: OpenDb<DbInfo.Doc>): SetMetaDbAction => ({
 export const CreateDb = (title: string, password?: string): Thunk =>
   async (dispatch, getState) => {
     const info = DbInfo.doc({ title })
-    dispatch(loadDb(DbInfo.idFromDocId(info._id), password))
+    dispatch(loadDb(info, password))
 
     const meta = getState().db.meta!
-    await meta.handle.put(info)
+    await meta.db.put(info)
 
     return info
   }
@@ -94,31 +103,42 @@ const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>
 
 export const loadMetaDb = (): Thunk =>
   async (dispatch) => {
-    const handle = new PouchDB(METADB_NAME)
-    const changes = handle.changes({
+    const db = new PouchDB<DbInfo.Doc>(METADB_NAME)
+    db.changes({
       since: 'now',
       live: true
     })
-    .on('change', handleChange(handle, dispatch))
+    .on('change', handleChange(db, dispatch))
 
-    dispatch(setMetaDb({_id: METADB_NAME, handle, changes}))
+    const results = await db.find({selector: DbInfo.all})
+    const infos = await DbInfo.createCache(results.docs)
+
+    dispatch(setMetaDb({db, infos}))
   }
 
-export const loadDb = (_id: DbInfo.Id, password?: string): Thunk =>
+export const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
   async (dispatch) => {
-    const handle = new PouchDB(_id)
+    const db = new PouchDB<any>(info._id)
     if (password) {
-      handle.crypto(password)
-      await checkPassword(handle)
+      db.crypto(password)
+      await checkPassword(db)
     }
-    await createIndices(handle)
-    const changes = handle.changes({
+    await createIndices(db)
+    const changes = db.changes({
       since: 'now',
       live: true
     })
-    .on('change', handleChange(handle, dispatch))
+    .on('change', handleChange(db, dispatch))
 
-    dispatch(setDb({_id, handle, changes}))
+    let results = await db.find({selector: Institution.all})
+    const institutions = Institution.createCache(results.docs)
+
+    results = await db.find({selector: Account.all})
+    const accounts = Account.createCache(results.docs)
+
+    const cache = { institutions, accounts }
+
+    dispatch(setDb({info, db, changes, cache}))
   }
 
 export const unloadDb = (): SetDbAction => setDb(undefined)
@@ -126,6 +146,9 @@ export const unloadDb = (): SetDbAction => setDb(undefined)
 type Actions =
   SetMetaDbAction |
   SetDbAction |
+  DbInfo.CacheSetAction |
+  Institution.CacheSetAction |
+  Account.CacheSetAction |
   { type: '' }
 
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
@@ -141,6 +164,15 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
         state.current.changes.cancel()
       }
       return { ...state, current: action.current }
+
+    case DbInfo.CACHE_SET:
+      return { ...state, meta: { ...state.meta, infos: action.cache } }
+
+    case Institution.CACHE_SET:
+      return { ...state, current: { ...state.current!, institutions: action.cache } }
+
+    case Account.CACHE_SET:
+      return { ...state, current: { ...state.current!, accounts: action.cache } }
 
     default:
       return state

@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { createSelector } from 'reselect'
 import { Institution, Account } from '../../docs'
-import { AppState, OpenDb } from '../../state'
+import { AppState, CurrentDb } from '../../state'
 import { Lookup } from '../../util'
 
 interface Props {
@@ -27,9 +27,6 @@ type InstitutionWithAccounts = Institution.Doc & {
 }
 
 export const DbViewComponent = (props: AllProps) => {
-  if (!props.institutions) {
-    return <div>loading...</div>
-  }
   const { db } = props.params
 
   return (
@@ -54,7 +51,7 @@ export const DbViewComponent = (props: AllProps) => {
   )
 }
 
-const addAccount = async (institution: InstitutionWithAccounts, current: OpenDb<any>) => {
+const addAccount = async (institution: InstitutionWithAccounts, current: CurrentDb) => {
   const account: Account = {
     name: 'Account ' + institution.accounts.length,
     institution: institution._id,
@@ -63,16 +60,16 @@ const addAccount = async (institution: InstitutionWithAccounts, current: OpenDb<
     visible: true,
     balance: 0
   }
-  current.handle.put(Account.doc(account))
+  current.db.put(Account.doc(account))
 }
 
-const addInstitution = async (current: OpenDb<any>) => {
-  current.handle.put(Institution.doc({name: '1st bank'}))
+const addInstitution = async (current: CurrentDb) => {
+  current.db.put(Institution.doc({name: '1st bank'}))
 }
 
 export const DbView = connect(
   (state: AppState, props: RouteProps): ConnectedProps => ({
-    institutions: state.cache.institutions,
-    accounts: state.cache.accounts
+    institutions: state.db.current!.cache.institutions,
+    accounts: state.db.current!.cache.accounts
   })
 )(DbViewComponent as any) as React.ComponentClass<Props>
