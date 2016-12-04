@@ -66,11 +66,9 @@ const setMetaDb = (meta: MetaDb): SetMetaDbAction => ({
 export const CreateDb = (title: string, password?: string): Thunk =>
   async (dispatch, getState) => {
     const info = DbInfo.doc({ title })
-    dispatch(loadDb(info, password))
-
     const meta = getState().db.meta!
     await meta.db.put(info)
-
+    await dispatch(loadDb(info, password))
     return info
   }
 
