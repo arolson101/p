@@ -11,13 +11,13 @@ import { Validator } from '../../util'
 import { forms } from './forms'
 import { IntlProps } from './props'
 
-const translations = defineMessages({
+const messages = defineMessages({
   welcome: {
-    id: 'welcome',
+    id: 'dbCreate.welcome',
     defaultMessage: 'Welcome!  Please give your database a name and set the password'
   },
   name: {
-    id: 'name',
+    id: 'dbCreate.name',
     defaultMessage: 'Database Name'
   }
 })
@@ -41,15 +41,15 @@ export const DbCreateComponent = (props: AllProps) => {
   const { handleSubmit } = props
   return (
     <div>
-      <p>{formatMessage(translations.welcome)}</p>
+      <p>{formatMessage(messages.welcome)}</p>
       <form onSubmit={handleSubmit(submit)}>
         <div>
           <Field
             name='name'
             autoFocus
             component={TextField}
-            hintText={formatMessage(translations.name)}
-            floatingLabelText={formatMessage(translations.name)}
+            hintText={formatMessage(messages.name)}
+            floatingLabelText={formatMessage(messages.name)}
           />
         </div>
         <div>

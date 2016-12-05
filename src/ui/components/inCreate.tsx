@@ -11,9 +11,9 @@ import { Validator } from '../../util'
 import { forms } from './forms'
 import { IntlProps } from './props'
 
-const translations = defineMessages({
+const messages = defineMessages({
   name: {
-    id: 'in.name',
+    id: 'inCreate.name',
     defaultMessage: 'Institution'
   }
 })
@@ -43,8 +43,8 @@ export const InCreateComponent = (props: AllProps) => {
             name='name'
             autoFocus
             component={TextField}
-            hintText={formatMessage(translations.name)}
-            floatingLabelText={formatMessage(translations.name)}
+            hintText={formatMessage(messages.name)}
+            floatingLabelText={formatMessage(messages.name)}
           />
         </div>
         <div>

@@ -1,36 +1,32 @@
 import { defineMessages } from 'react-intl'
 
-const translations = defineMessages({
+export const forms = defineMessages({
   password: {
-    id: 'password',
+    id: 'forms.password',
     defaultMessage: 'Password'
   },
   confirmPassword: {
-    id: 'confirmPassword',
+    id: 'forms.confirmPassword',
     defaultMessage: 'Confirm Password'
   },
   cancel: {
-    id: 'cancel',
+    id: 'forms.cancel',
     defaultMessage: 'Cancel'
   },
   create: {
-    id: 'create',
+    id: 'forms.create',
     defaultMessage: 'Create'
   },
   login: {
-    id: 'login',
+    id: 'forms.login',
     defaultMessage: 'Login'
   },
   required: {
-    id: 'required',
+    id: 'forms.required',
     defaultMessage: 'Required'
   },
   passwordsMatch: {
-    id: 'passwordsMatch',
+    id: 'forms.passwordsMatch',
     defaultMessage: 'Passwords must match'
   }
 })
-
-export const forms = {
-  translations
-}

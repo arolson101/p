@@ -20,9 +20,9 @@ interface ConnectedProps {
 
 type AllProps = Props & RouteProps & ConnectedProps & IntlProps & ReduxFormProps<any>
 
-const translations = defineMessages({
-  login: {
-    id: 'login',
+const messages = defineMessages({
+  intro: {
+    id: 'dbLogin.intro',
     defaultMessage: 'Enter password for database {dbTitle}'
   }
 })
@@ -43,7 +43,7 @@ export const DbLoginComponent = (props: AllProps) => {
   return (
     <div>
       <p>
-        <FormattedMessage {...translations.login} values={{dbTitle}}/>
+        <FormattedMessage {...messages.intro} values={{dbTitle}}/>
       </p>
       <form onSubmit={handleSubmit(submit)}>
         <div>
@@ -52,20 +52,20 @@ export const DbLoginComponent = (props: AllProps) => {
             type='password'
             autoFocus
             component={TextField}
-            hintText={formatMessage(forms.translations.password)}
-            floatingLabelText={formatMessage(forms.translations.password)}
+            hintText={formatMessage(forms.password)}
+            floatingLabelText={formatMessage(forms.password)}
           />
         </div>
         <div>
           <RaisedButton
             type='button'
-            label={formatMessage(forms.translations.cancel)}
+            label={formatMessage(forms.cancel)}
             style={style.button}
             onTouchTap={() => historyAPI.go(-1)}
           />
           <RaisedButton
             type='submit'
-            label={formatMessage(forms.translations.login)}
+            label={formatMessage(forms.login)}
             style={style.button}
             primary
           />
@@ -88,7 +88,7 @@ interface Values {
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
   const formatMessage = props.intl.formatMessage
   const v = new Validator(values)
-  v.required(['password'], formatMessage(forms.translations.required))
+  v.required(['password'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
 
   try {

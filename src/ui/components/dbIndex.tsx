@@ -26,13 +26,13 @@ const icons = {
   }
 }
 
-const translations = defineMessages({
+const messages = defineMessages({
   newDb: {
-    id: 'newDb',
+    id: 'dbIndex.newDb',
     defaultMessage: 'New'
   },
   newDbDescription: {
-    id: 'newDbDescription',
+    id: 'dbIndex.newDbDescription',
     defaultMessage: 'Create a new data store'
   }
 })
@@ -82,8 +82,8 @@ export const DbIndexComponent = (props: RouteProps & ConnectedProps) => (
             <Divider/>
           }
           <ListItem
-            primaryText={<FormattedMessage {...translations.newDb}/>}
-            secondaryText={<p><FormattedMessage {...translations.newDbDescription}/></p>}
+            primaryText={<FormattedMessage {...messages.newDb}/>}
+            secondaryText={<p><FormattedMessage {...messages.newDbDescription}/></p>}
             secondaryTextLines={1}
             leftIcon={<FontIcon {...icons.newDb} />}
             containerElement={<Link to='/?create'/>}
