@@ -18,12 +18,12 @@ export class SubmissionError<T> {
     constructor(errors: ErrorsFor<T>);
 }
 
-export interface FieldProp<T> {
+export interface FieldProp {
     /**
      * true if this field currently has focus. It will only work if you are
      * passing onFocus to your input element.
      */
-    active: boolean;
+    active?: boolean;
 
     /**
      * An alias for value only when value is a boolean. Provided for
@@ -36,7 +36,7 @@ export interface FieldProp<T> {
      * true if the field value has changed from its initialized value.
      * Opposite of pristine.
      */
-    dirty: boolean;
+    dirty?: boolean;
 
     /**
      * The error for this field if its value is not passing validation. Both
@@ -47,13 +47,13 @@ export interface FieldProp<T> {
     /**
      * The value for this field as supplied in initialValues to the form.
      */
-    initialValue: FieldValue;
+    initialValue?: FieldValue;
 
     /**
      * true if the field value fails validation (has a validation error).
      * Opposite of valid.
      */
-    invalid: boolean;
+    invalid?: boolean;
 
     /**
      * The name of the field. It will be the same as the key in the fields
@@ -67,68 +67,68 @@ export interface FieldProp<T> {
      * either receive the React SyntheticEvent or the current value of the
      * field.
      */
-    onBlur(eventOrValue: SyntheticEvent<T> | FieldValue): void;
+    onBlur?(eventOrValue: SyntheticEvent<any> | FieldValue): void;
 
     /**
      * A function to call when the form field is changed. It expects to either
      * receive the React SyntheticEvent or the new value of the field.
      * @param eventOrValue
      */
-    onChange(eventOrValue: SyntheticEvent<T> | FieldValue): void;
+    onChange?(eventOrValue: SyntheticEvent<any> | FieldValue): void;
 
     /**
      * A function to call when the form field receives a 'dragStart' event.
      * Saves the field value in the event for giving the field it is dropped
      * into.
      */
-    onDragStart(): void;
+    onDragStart?(): void;
 
     /**
      * A function to call when the form field receives a drop event.
      */
-    onDrop(): void;
+    onDrop?(): void;
 
     /**
      * A function to call when the form field receives focus.
      */
-    onFocus(): void;
+    onFocus?(): void;
 
     /**
      * An alias for onChange. Provided for convenience of destructuring the
      * whole field object into the props of a form element. Added to provide
      * out-of-the-box support for Belle components' onUpdate API.
      */
-    onUpdate(): void;
+    onUpdate?(): void;
 
     /**
      * true if the field value is the same as its initialized value. Opposite
      * of dirty.
      */
-    pristine: boolean;
+    pristine?: boolean;
 
     /**
      * true if the field has been touched. By default this will be set when
      * the field is blurred.
      */
-    touched: boolean;
+    touched?: boolean;
 
     /**
      * true if the field value passes validation (has no validation errors).
      * Opposite of invalid.
      */
-    valid: boolean;
+    valid?: boolean;
 
     /**
      * The value of this form field. It will be a boolean for checkboxes, and
      * a string for all other input types.
      */
-    value: FieldValue;
+    value?: FieldValue;
 
     /**
      * true if this field has ever had focus. It will only work if you are
      * passing onFocus to your input element.
      */
-    visited: boolean;
+    visited?: boolean;
 }
 
 export interface ReduxFormProps<TValues> {
