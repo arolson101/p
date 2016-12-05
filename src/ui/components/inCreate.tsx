@@ -5,8 +5,8 @@ import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, Field, ReduxFormProps } from 'redux-form'
 import { TextField } from 'redux-form-material-ui'
-import { DbInfo } from '../../docs'
-import { AppState, AppDispatch, historyAPI, CreateDb } from '../../state'
+import { Institution } from '../../docs'
+import { AppState, AppDispatch, historyAPI } from '../../state'
 import { Validator } from '../../util'
 import { forms } from './forms'
 import { IntlProps } from './props'
@@ -32,6 +32,8 @@ const style = {
   }
 }
 
+type Values = Institution
+
 export const InCreateComponent = (props: AllProps) => {
   const { formatMessage } = props.intl
   const { handleSubmit } = props
@@ -45,24 +47,6 @@ export const InCreateComponent = (props: AllProps) => {
             component={TextField}
             hintText={formatMessage(messages.name)}
             floatingLabelText={formatMessage(messages.name)}
-          />
-        </div>
-        <div>
-          <Field
-            name='password'
-            type='password'
-            component={TextField}
-            hintText={formatMessage(forms.password)}
-            floatingLabelText={formatMessage(forms.password)}
-          />
-        </div>
-        <div>
-          <Field
-            name='confirmPassword'
-            type='password'
-            component={TextField}
-            hintText={formatMessage(forms.confirmPassword)}
-            floatingLabelText={formatMessage(forms.confirmPassword)}
           />
         </div>
         <div>
@@ -84,27 +68,17 @@ export const InCreateComponent = (props: AllProps) => {
   )
 }
 
-interface Values {
-  name: string
-  password: string
-  confirmPassword: string
-}
-
 const validate = (values: Values, props: IntlProps) => {
   const { formatMessage } = props.intl
   const v = new Validator(values)
-  v.equal('confirmPassword', 'password', formatMessage(forms.passwordsMatch))
   return v.errors
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
   const { formatMessage } = props.intl
   const v = new Validator(values)
-  v.required(['name', 'password', 'confirmPassword'], formatMessage(forms.required))
+  v.required(['name'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
-
-  const dbInfo = await dispatch(CreateDb(values.name, values.password))
-  historyAPI.push(DbInfo.path(dbInfo))
 }
 
 export const InCreate = compose(
