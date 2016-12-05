@@ -9,7 +9,7 @@ import { DbInfo } from '../../docs'
 import { AppState, AppDispatch, historyAPI, CreateDb } from '../../state'
 import { Validator } from '../../util'
 import { forms } from './forms'
-import { IntlProps } from './props'
+import { IntlProps, RouteProps } from './props'
 
 const messages = defineMessages({
   welcome: {
@@ -28,7 +28,13 @@ interface ConnectedProps {
 interface Props {
 }
 
-type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<any>
+type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps
+
+interface Values {
+  name: string
+  password: string
+  confirmPassword: string
+}
 
 const style = {
   button: {
@@ -37,8 +43,8 @@ const style = {
 }
 
 export const DbCreateComponent = (props: AllProps) => {
-  const formatMessage = props.intl.formatMessage
   const { handleSubmit } = props
+  const { formatMessage } = props.intl
   return (
     <div>
       <p>{formatMessage(messages.welcome)}</p>
@@ -89,21 +95,15 @@ export const DbCreateComponent = (props: AllProps) => {
   )
 }
 
-interface Values {
-  name: string
-  password: string
-  confirmPassword: string
-}
-
 const validate = (values: Values, props: IntlProps) => {
-  const formatMessage = props.intl.formatMessage
+  const { formatMessage } = props.intl
   const v = new Validator(values)
   v.equal('confirmPassword', 'password', formatMessage(forms.passwordsMatch))
   return v.errors
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-  const formatMessage = props.intl.formatMessage
+  const { formatMessage } = props.intl
   const v = new Validator(values)
   v.required(['name', 'password', 'confirmPassword'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
@@ -118,7 +118,7 @@ export const DbCreate = compose(
     (state: AppState): ConnectedProps => ({}),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   ),
-  reduxForm<AllProps>({
+  reduxForm<AllProps, Values>({
     form: 'DbCreate',
     validate
   })

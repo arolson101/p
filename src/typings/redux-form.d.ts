@@ -12,8 +12,6 @@ export const actionTypes: {[actionName:string]: string};
 
 export type FieldValue = any;
 
-export type FormData = { [fieldName: string]: FieldValue };
-
 export type ErrorsFor<TValues> = { [P in keyof TValues] ?: string }
 
 export class SubmissionError<T> {
@@ -133,7 +131,7 @@ export interface FieldProp<T> {
     visited: boolean;
 }
 
-export interface ReduxFormProps<T> {
+export interface ReduxFormProps<TValues> {
     /**
      * The name of the currently active (with focus) field.
      */
@@ -171,14 +169,6 @@ export interface ReduxFormProps<T> {
     error: any;
 
     /**
-     * The form data, in the form { field1: <Object>, field2: <Object> }. The
-     * field objects are meant to be destructured into your input component as
-     * props, e.g. <input type="text" {...field.name}/>. Each field Object has
-     * the following properties:
-     */
-    fields: { [field: string]: FieldProp<T> };
-
-    /**
      * A function meant to be passed to <form onSubmit={handleSubmit}> or to
      * <button onClick={handleSubmit}>. It will run validation, both sync and
      * async, and, if the form is valid, it will call
@@ -195,9 +185,9 @@ export interface ReduxFormProps<T> {
      * that as if it were the error for a field called _error, and it will be
      * given as the error prop.
      */
-    handleSubmit(event: SyntheticEvent<T>): void;
+    handleSubmit(event: SyntheticEvent<any>): void;
     handleSubmit(event: React.MouseEvent<HTMLButtonElement>): void;
-    handleSubmit(submit: (data: FormData, dispatch?: Dispatch<any>, props?: any) => Promise<any> | void): FormEventHandler<T>;
+    handleSubmit(submit: (data: TValues, dispatch?: Dispatch<any>, props?: any) => Promise<any> | void): FormEventHandler<any>;
 
     /**
      * Initializes the form data to the given values. All dirty and pristine
@@ -205,7 +195,7 @@ export interface ReduxFormProps<T> {
      * initialized values.
      * @param data
      */
-    initializeForm(data: FormData): void;
+    initializeForm(data: TValues): void;
 
     /**
      * true if the form has validation errors. Opposite of valid.
@@ -275,21 +265,21 @@ export interface ReduxFormProps<T> {
     /**
      * All of your values in the form { field1: <string>, field2: <string> }.
      */
-    values: FormData;
+    values: TValues;
 }
 
 interface ComponentDecorator<T> {
     (component: React.ComponentClass<T> | React.StatelessComponent<T>): React.ComponentClass<T>;
 }
 
-export function reduxForm<T>(
-    config: ReduxFormConfig<T>
+export function reduxForm<T, TValues>(
+    config: ReduxFormConfig<T, TValues>
 ): ComponentDecorator<T>;
 
 type FuncOrSelf<T> = T | (() => T);
 
 
-export interface ReduxFormConfig<TOwnProps> {
+export interface ReduxFormConfig<TOwnProps, TValues> {
     /**
      * a list of all your fields in your form. You may change these dynamically
      * at runtime.
@@ -330,7 +320,7 @@ export interface ReduxFormConfig<TOwnProps> {
      *
      * See Asynchronous Blur Validation Example for more details.
      */
-    asyncValidate?(values: FormData, dispatch: Dispatch<any>, props: Object): Promise<any>;
+    asyncValidate?(values: TValues, dispatch: Dispatch<any>, props: Object): Promise<any>;
 
     /**
      * Whether or not to automatically destroy your form's state in the Redux
@@ -369,7 +359,7 @@ export interface ReduxFormConfig<TOwnProps> {
      * you must pass it as a parameter to handleSubmit() inside your form
      * component.
      */
-    onSubmit?(values: FormData, dispatch?: Dispatch<any>): any;
+    onSubmit?(values: TValues, dispatch?: Dispatch<any>): any;
 
     /**
      * If true, the form values will be overwritten whenever the initialValues
@@ -429,7 +419,7 @@ export interface ReduxFormConfig<TOwnProps> {
      * { field1: <String>, field2: <String> }.
      * Defaults to (values, props) => ({}).
      */
-    validate?(values: FormData, props: TOwnProps): Object;
+    validate?(values: TValues, props: TOwnProps): Object;
 }
 
 /**
@@ -440,9 +430,9 @@ export interface ReduxFormConfig<TOwnProps> {
  * @param previousAllValues All the values of the form before the current
  * change. Useful to change one field based on a change in another.
  */
-export type Normalizer =
+export type Normalizer<TValues> =
     (value: FieldValue, previousValue: FieldValue,
-        allValues: FormData, previousAllValues: FormData) => any;
+        allValues: TValues, previousAllValues: TValues) => any;
 
 export const reducer: {
     (state: any, action: any): any;
@@ -454,9 +444,9 @@ export const reducer: {
      * The normalizer function is given four parameters and expected to return
      * the normalized value of the field.
      */
-    normalize(normalizers: {
+    normalize<TValues>(normalizers: {
         [formName: string]: {
-            [fieldName: string]: Normalizer
+            [P in keyof TValues]: Normalizer<TValues>
         }
     }): Reducer<any>;
 

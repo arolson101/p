@@ -18,7 +18,11 @@ interface ConnectedProps {
   dbDoc: DbInfo.Doc
 }
 
-type AllProps = Props & RouteProps & ConnectedProps & IntlProps & ReduxFormProps<any>
+type AllProps = Props & RouteProps & ConnectedProps & IntlProps & ReduxFormProps<Values>
+
+interface Values {
+  password: string
+}
 
 const messages = defineMessages({
   intro: {
@@ -34,12 +38,12 @@ const style = {
 }
 
 export const DbLoginComponent = (props: AllProps) => {
-  const formatMessage = props.intl.formatMessage
   if (!props.dbDoc) {
     return null as any
   }
   const dbTitle = props.dbDoc.title
   const { handleSubmit } = props
+  const { formatMessage } = props.intl
   return (
     <div>
       <p>
@@ -81,12 +85,8 @@ const selectDbDoc = (state: AppState, props: RouteProps) => {
   return dbs.get(DbInfo.docId({db}))!
 }
 
-interface Values {
-  password?: string
-}
-
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-  const formatMessage = props.intl.formatMessage
+  const { formatMessage } = props.intl
   const v = new Validator(values)
   v.required(['password'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
@@ -106,7 +106,7 @@ export const DbLogin = compose(
     }),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   ),
-  reduxForm<AllProps>({
+  reduxForm<AllProps, Values>({
     form: 'DbLogin'
   })
 )(DbLoginComponent) as React.ComponentClass<Props>

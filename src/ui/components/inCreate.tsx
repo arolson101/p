@@ -1,6 +1,6 @@
 import RaisedButton from 'material-ui/RaisedButton'
 import * as React from 'react'
-import { injectIntl, InjectedIntlProps, defineMessages } from 'react-intl'
+import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, Field, ReduxFormProps } from 'redux-form'
@@ -24,7 +24,7 @@ interface ConnectedProps {
 interface Props {
 }
 
-type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<any>
+type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<Values>
 
 const style = {
   button: {
@@ -33,7 +33,7 @@ const style = {
 }
 
 export const InCreateComponent = (props: AllProps) => {
-  const formatMessage = props.intl.formatMessage
+  const { formatMessage } = props.intl
   const { handleSubmit } = props
   return (
     <div>
@@ -91,14 +91,14 @@ interface Values {
 }
 
 const validate = (values: Values, props: IntlProps) => {
-  const formatMessage = props.intl.formatMessage
+  const { formatMessage } = props.intl
   const v = new Validator(values)
   v.equal('confirmPassword', 'password', formatMessage(forms.passwordsMatch))
   return v.errors
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-  const formatMessage = props.intl.formatMessage
+  const { formatMessage } = props.intl
   const v = new Validator(values)
   v.required(['name', 'password', 'confirmPassword'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
@@ -113,7 +113,7 @@ export const InCreate = compose(
     (state: AppState): ConnectedProps => ({}),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   ),
-  reduxForm<AllProps>({
+  reduxForm<AllProps, Values>({
     form: 'InCreate',
     validate
   })
