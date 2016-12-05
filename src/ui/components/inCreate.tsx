@@ -52,8 +52,8 @@ export const InCreateComponent = (props: AllProps) => {
             name='password'
             type='password'
             component={TextField}
-            hintText={formatMessage(forms.translations.password)}
-            floatingLabelText={formatMessage(forms.translations.password)}
+            hintText={formatMessage(forms.password)}
+            floatingLabelText={formatMessage(forms.password)}
           />
         </div>
         <div>
@@ -61,20 +61,20 @@ export const InCreateComponent = (props: AllProps) => {
             name='confirmPassword'
             type='password'
             component={TextField}
-            hintText={formatMessage(forms.translations.confirmPassword)}
-            floatingLabelText={formatMessage(forms.translations.confirmPassword)}
+            hintText={formatMessage(forms.confirmPassword)}
+            floatingLabelText={formatMessage(forms.confirmPassword)}
           />
         </div>
         <div>
           <RaisedButton
             type='button'
-            label={formatMessage(forms.translations.cancel)}
+            label={formatMessage(forms.cancel)}
             style={style.button}
             onTouchTap={() => historyAPI.go(-1)}
           />
           <RaisedButton
             type='submit'
-            label={formatMessage(forms.translations.create)}
+            label={formatMessage(forms.create)}
             style={style.button}
             primary
           />
@@ -93,14 +93,14 @@ interface Values {
 const validate = (values: Values, props: IntlProps) => {
   const formatMessage = props.intl.formatMessage
   const v = new Validator(values)
-  v.equal('confirmPassword', 'password', formatMessage(forms.translations.passwordsMatch))
+  v.equal('confirmPassword', 'password', formatMessage(forms.passwordsMatch))
   return v.errors
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
   const formatMessage = props.intl.formatMessage
   const v = new Validator(values)
-  v.required(['name', 'password', 'confirmPassword'], formatMessage(forms.translations.required))
+  v.required(['name', 'password', 'confirmPassword'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
 
   const dbInfo = await dispatch(CreateDb(values.name, values.password))
