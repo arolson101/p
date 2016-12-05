@@ -20,8 +20,8 @@ interface ConnectedProps {
 type AllProps = Props & RouteProps & ConnectedProps
 
 export const BodyComponent = (props: AllProps) => {
-  const { db, institution } = props.params!
-  const create = 'create' in props.location!.query
+  const { db, institution } = props.params
+  const create = 'create' in props.location.query
 
   if (!db) {
     if (create) {

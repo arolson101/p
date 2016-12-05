@@ -14,7 +14,7 @@ export const Root = (props: RouteProps) => (
       event.preventDefault()
       historyAPI.goForward()
     }}>&gt;</a>{' '}
-    [ {props.location!.pathname + props.location!.search} ]{' '}
+    [ {props.location.pathname + props.location.search} ]{' '}
     <Link to='/'>/</Link>{' '}
     <div>
       <Body {...props}/>

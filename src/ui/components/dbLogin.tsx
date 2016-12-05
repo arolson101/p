@@ -14,11 +14,11 @@ import { forms } from './forms'
 interface Props {
 }
 
-interface ConnectedProps extends ReduxFormProps<any> {
+interface ConnectedProps {
   dbDoc: DbInfo.Doc
 }
 
-type AllProps = Props & RouteProps & ConnectedProps & IntlProps
+type AllProps = Props & RouteProps & ConnectedProps & IntlProps & ReduxFormProps<any>
 
 const translations = defineMessages({
   login: {
@@ -34,7 +34,7 @@ const style = {
 }
 
 export const DbLoginComponent = (props: AllProps) => {
-  const formatMessage = props.intl.formatMessage!
+  const formatMessage = props.intl.formatMessage
   if (!props.dbDoc) {
     return null as any
   }
@@ -45,7 +45,7 @@ export const DbLoginComponent = (props: AllProps) => {
       <p>
         <FormattedMessage {...translations.login} values={{dbTitle}}/>
       </p>
-      <form onSubmit={handleSubmit!(submit)}>
+      <form onSubmit={handleSubmit(submit)}>
         <div>
           <Field
             name='password'
@@ -77,7 +77,7 @@ export const DbLoginComponent = (props: AllProps) => {
 
 const selectDbDoc = (state: AppState, props: RouteProps) => {
   const dbs = state.db.meta.infos
-  const db = props.params!.db
+  const db = props.params.db
   return dbs.get(DbInfo.docId({db}))!
 }
 
@@ -86,13 +86,13 @@ interface Values {
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-  const formatMessage = props.intl.formatMessage!
+  const formatMessage = props.intl.formatMessage
   const v = new Validator(values)
   v.required(['password'], formatMessage(forms.translations.required))
   v.maybeThrowSubmissionError()
 
   try {
-    await dispatch(loadDb(props.dbDoc, values.password!))
+    await dispatch(loadDb(props.dbDoc, values.password))
   } catch (error) {
     throw new SubmissionError<Values>({password: error.message})
   }

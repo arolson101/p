@@ -1,6 +1,6 @@
 import RaisedButton from 'material-ui/RaisedButton'
 import * as React from 'react'
-import { injectIntl, InjectedIntlProps, defineMessages } from 'react-intl'
+import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, Field, ReduxFormProps } from 'redux-form'
@@ -9,6 +9,7 @@ import { DbInfo } from '../../docs'
 import { AppState, AppDispatch, historyAPI, CreateDb } from '../../state'
 import { Validator } from '../../util'
 import { forms } from './forms'
+import { IntlProps } from './props'
 
 const translations = defineMessages({
   welcome: {
@@ -21,17 +22,13 @@ const translations = defineMessages({
   }
 })
 
-interface ConnectedProps extends ReduxFormProps<any> {
-}
-
-interface IntlProps {
-  intl: InjectedIntlProps
+interface ConnectedProps {
 }
 
 interface Props {
 }
 
-type AllProps = Props & IntlProps & ConnectedProps
+type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<any>
 
 const style = {
   button: {
@@ -40,12 +37,12 @@ const style = {
 }
 
 export const DbCreateComponent = (props: AllProps) => {
-  const formatMessage = props.intl.formatMessage!
+  const formatMessage = props.intl.formatMessage
   const { handleSubmit } = props
   return (
     <div>
       <p>{formatMessage(translations.welcome)}</p>
-      <form onSubmit={handleSubmit!(submit)}>
+      <form onSubmit={handleSubmit(submit)}>
         <div>
           <Field
             name='name'
@@ -93,25 +90,25 @@ export const DbCreateComponent = (props: AllProps) => {
 }
 
 interface Values {
-  name?: string
-  password?: string
-  confirmPassword?: string
+  name: string
+  password: string
+  confirmPassword: string
 }
 
 const validate = (values: Values, props: IntlProps) => {
-  const formatMessage = props.intl.formatMessage!
+  const formatMessage = props.intl.formatMessage
   const v = new Validator(values)
   v.equal('confirmPassword', 'password', formatMessage(forms.translations.passwordsMatch))
   return v.errors
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-  const formatMessage = props.intl.formatMessage!
+  const formatMessage = props.intl.formatMessage
   const v = new Validator(values)
   v.required(['name', 'password', 'confirmPassword'], formatMessage(forms.translations.required))
   v.maybeThrowSubmissionError()
 
-  const dbInfo = await dispatch(CreateDb(values.name!, values.password!))
+  const dbInfo = await dispatch(CreateDb(values.name, values.password))
   historyAPI.push(DbInfo.path(dbInfo))
 }
 

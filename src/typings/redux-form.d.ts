@@ -137,38 +137,38 @@ export interface ReduxFormProps<T> {
     /**
      * The name of the currently active (with focus) field.
      */
-    active?: string;
+    active: string;
 
     /**
      * A function that may be called to initiate asynchronous validation if
      * asynchronous validation is enabled.
      */
-    asyncValidate?: Function;
+    asyncValidate: Function;
 
     /**
      * true if the asynchronous validation function has been called but has not
      * yet returned.
      */
-    asyncValidating?: boolean;
+    asyncValidating: boolean;
 
     /**
      * Destroys the form state in the Redux store. By default, this will be
      * called for you in componentWillUnmount().
      */
-    destroyForm?(): void;
+    destroyForm(): void;
 
     /**
      * true if the form data has changed from its initialized values. Opposite
      * of pristine.
      */
-    dirty?: boolean;
+    dirty: boolean;
 
     /**
      * A generic error for the entire form given by the _error key in the
      * result from the synchronous validation function, the asynchronous
      * validation, or the rejected promise from onSubmit.
      */
-    error?: any;
+    error: any;
 
     /**
      * The form data, in the form { field1: <Object>, field2: <Object> }. The
@@ -176,7 +176,7 @@ export interface ReduxFormProps<T> {
      * props, e.g. <input type="text" {...field.name}/>. Each field Object has
      * the following properties:
      */
-    fields?: { [field: string]: FieldProp<T> };
+    fields: { [field: string]: FieldProp<T> };
 
     /**
      * A function meant to be passed to <form onSubmit={handleSubmit}> or to
@@ -195,9 +195,9 @@ export interface ReduxFormProps<T> {
      * that as if it were the error for a field called _error, and it will be
      * given as the error prop.
      */
-    handleSubmit?(event: SyntheticEvent<T>): void;
-    handleSubmit?(event: React.MouseEvent<HTMLButtonElement>): void;
-    handleSubmit?(submit: (data: FormData, dispatch?: Dispatch<any>, props?: any) => Promise<any> | void): FormEventHandler<T>;
+    handleSubmit(event: SyntheticEvent<T>): void;
+    handleSubmit(event: React.MouseEvent<HTMLButtonElement>): void;
+    handleSubmit(submit: (data: FormData, dispatch?: Dispatch<any>, props?: any) => Promise<any> | void): FormEventHandler<T>;
 
     /**
      * Initializes the form data to the given values. All dirty and pristine
@@ -205,77 +205,77 @@ export interface ReduxFormProps<T> {
      * initialized values.
      * @param data
      */
-    initializeForm?(data: FormData): void;
+    initializeForm(data: FormData): void;
 
     /**
      * true if the form has validation errors. Opposite of valid.
      */
-    invalid?: boolean;
+    invalid: boolean;
 
     /**
      * true if the form data is the same as its initialized values. Opposite
      * of dirty.
      */
-    pristine?: boolean;
+    pristine: boolean;
 
     /**
      * Resets all the values in the form to the initialized state, making it
      * pristine again.
      */
-    resetForm?(): void;
+    resetForm(): void;
 
     /**
      * The same formKey prop that was passed in. See Editing Multiple Records.
      */
-    formKey?: string;
+    formKey: string;
 
     /**
      * Whether or not your form is currently submitting. This prop will only
      * work if you have passed an onSubmit function that returns a promise. It
      * will be true until the promise is resolved or rejected.
      */
-    submitting?: boolean;
+    submitting: boolean;
 
     /**
      * Starts as false. If onSubmit is called, and fails to submit for any
      * reason, submitFailed will be set to true. A subsequent successful
      * submit will set it back to false.
      */
-    submitFailed?: boolean;
+    submitFailed: boolean;
 
     /**
      * Marks the given fields as "touched" to show errors.
      * @param field
      */
-    touch?(...field: string[]): void;
+    touch(...field: string[]): void;
 
     /**
      * Marks all fields as "touched" to show errors. This will automatically
      * happen on form submission.
      */
-    touchAll?(): void;
+    touchAll(): void;
 
     /**
      * Clears the "touched" flag for the given fields
      * @param field
      */
-    untouch?(...field: string[]): void;
+    untouch(...field: string[]): void;
 
     /**
      * Clears the "touched" flag for the all fields
      */
-    untouchAll?(): void;
+    untouchAll(): void;
 
     /**
      * true if the form passes validation (has no validation errors). Opposite
      * of invalid.
      */
-    valid?: boolean;
+    valid: boolean;
 
     /**
      * All of your values in the form { field1: <string>, field2: <string> }.
      */
-    values?: FormData;
+    values: FormData;
 }
 
 interface ComponentDecorator<T> {
