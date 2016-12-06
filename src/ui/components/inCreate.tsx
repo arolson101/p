@@ -3,12 +3,11 @@ import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
-import { reduxForm, Field, ReduxFormProps } from 'redux-form'
-import { TextField } from 'redux-form-material-ui'
+import { reduxForm, ReduxFormProps } from 'redux-form'
 import { Institution } from '../../docs'
 import { AppState, AppDispatch, historyAPI } from '../../state'
 import { Validator } from '../../util'
-import { forms } from './forms'
+import { formFields, forms } from './forms'
 import { IntlProps } from './props'
 
 const messages = defineMessages({
@@ -34,6 +33,8 @@ const style = {
 
 type Values = Institution
 
+const { AutoComplete } = formFields<Values>()
+
 export const InCreateComponent = (props: AllProps) => {
   const { formatMessage } = props.intl
   const { handleSubmit } = props
@@ -41,10 +42,10 @@ export const InCreateComponent = (props: AllProps) => {
     <div>
       <form onSubmit={handleSubmit(submit)}>
         <div>
-          <Field
+          <AutoComplete
             name='name'
             autoFocus
-            component={TextField}
+            dataSource={['uwcu', 'chase']}
             hintText={formatMessage(messages.name)}
             floatingLabelText={formatMessage(messages.name)}
           />

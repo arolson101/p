@@ -3,12 +3,11 @@ import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
-import { reduxForm, Field, ReduxFormProps } from 'redux-form'
-import { TextField } from 'redux-form-material-ui'
+import { reduxForm, ReduxFormProps } from 'redux-form'
 import { DbInfo } from '../../docs'
 import { AppState, AppDispatch, historyAPI, CreateDb } from '../../state'
 import { Validator } from '../../util'
-import { forms } from './forms'
+import { forms, formFields } from './forms'
 import { IntlProps, RouteProps } from './props'
 
 const messages = defineMessages({
@@ -42,6 +41,8 @@ const style = {
   }
 }
 
+const { TextField } = formFields<Values>()
+
 export const DbCreateComponent = (props: AllProps) => {
   const { handleSubmit } = props
   const { formatMessage } = props.intl
@@ -50,28 +51,25 @@ export const DbCreateComponent = (props: AllProps) => {
       <p>{formatMessage(messages.welcome)}</p>
       <form onSubmit={handleSubmit(submit)}>
         <div>
-          <Field
+          <TextField
             name='name'
             autoFocus
-            component={TextField}
             hintText={formatMessage(messages.name)}
             floatingLabelText={formatMessage(messages.name)}
           />
         </div>
         <div>
-          <Field
+          <TextField
             name='password'
             type='password'
-            component={TextField}
             hintText={formatMessage(forms.password)}
             floatingLabelText={formatMessage(forms.password)}
           />
         </div>
         <div>
-          <Field
+          <TextField
             name='confirmPassword'
             type='password'
-            component={TextField}
             hintText={formatMessage(forms.confirmPassword)}
             floatingLabelText={formatMessage(forms.confirmPassword)}
           />

@@ -18,7 +18,7 @@ export class SubmissionError<T> {
     constructor(errors: ErrorsFor<T>);
 }
 
-export interface FieldProp {
+export interface FieldProp<Name> {
     /**
      * true if this field currently has focus. It will only work if you are
      * passing onFocus to your input element.
@@ -60,7 +60,7 @@ export interface FieldProp {
      * Object, but useful if bundling up a field to send down to a specialized
      * input component.
      */
-    name: string;
+    name: Name;
 
     /**
      * A function to call when the form field loses focus. It expects to
@@ -129,6 +129,8 @@ export interface FieldProp {
      * passing onFocus to your input element.
      */
     visited?: boolean;
+
+    component?: any;
 }
 
 export interface ReduxFormProps<TValues> {
