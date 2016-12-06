@@ -1,4 +1,4 @@
-import * as CryptoPouch from 'crypto-pouch/forward'
+import * as CryptoPouch from 'crypto-pouch'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction, Dispatch } from 'redux'

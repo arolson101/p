@@ -15,7 +15,7 @@
   },
   "license": "ISC",
   "dependencies": {
-    "crypto-pouch": "arolson101/crypto-pouch",
+    "crypto-pouch": "^3.1.0",
     "docuri": "^4.2.1",
     "material-ui": "^0.16.4",
     "pouchdb-browser": "^6.0.7",
