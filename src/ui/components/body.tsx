@@ -57,4 +57,4 @@ export const Body = connect(
     dbInfos: state.db.meta.infos,
     current: state.db.current
   })
-)(BodyComponent) as React.ComponentClass<RouteProps>
+)(BodyComponent) as React.ComponentClass<Props>

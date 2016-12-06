@@ -57,7 +57,10 @@ interface ConnectedProps {
   metaDb: MetaDb
 }
 
-export const DbIndexComponent = (props: RouteProps & ConnectedProps) => (
+interface Props {}
+type AllProps = RouteProps & ConnectedProps & Props
+
+export const DbIndexComponent = (props: AllProps) => (
   <div>
     {props.dbInfos &&
       <Paper style={style.paper}>
@@ -99,4 +102,4 @@ export const DbIndex = connect(
     dbInfos: state.db.meta.infos,
     metaDb: state.db.meta
   })
-)(DbIndexComponent) as React.ComponentClass<RouteProps>
+)(DbIndexComponent) as React.ComponentClass<Props>
