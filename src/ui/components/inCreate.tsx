@@ -1,5 +1,8 @@
 import RaisedButton from 'material-ui/RaisedButton'
+import MenuItem from 'material-ui/MenuItem'
+import { normalize, arrayOf, Schema } from 'normalizr'
 import * as React from 'react'
+import * as R from 'ramda'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
@@ -9,6 +12,16 @@ import { AppState, AppDispatch, historyAPI } from '../../state'
 import { Validator } from '../../util'
 import { formFields, forms } from './forms'
 import { IntlProps } from './props'
+import { FinancialInstitution } from 'filist'
+
+const fi = new Schema('fi', { idAttribute: 'name' })
+
+// TODO: put this somewhere it can be updated
+const filist: FinancialInstitution[] = require('json-loader!filist/filist.json')
+// const filist: { [name: string]: FinancialInstitution } = normalize(
+//   require('json-loader!filist/filist.json'),
+//   arrayOf(fi)
+// ).entities.fi
 
 const messages = defineMessages({
   name: {
@@ -33,7 +46,10 @@ const style = {
 
 type Values = Institution
 
-const { AutoComplete } = formFields<Values>()
+const { AutoComplete, SelectField } = formFields<Values>()
+
+const fiMenuItem = (fi: FinancialInstitution) =>
+  <MenuItem key={fi.name}>{fi.name}</MenuItem>
 
 export const InCreateComponent = (props: AllProps) => {
   const { formatMessage } = props.intl
@@ -42,13 +58,16 @@ export const InCreateComponent = (props: AllProps) => {
     <div>
       <form onSubmit={handleSubmit(submit)}>
         <div>
-          <AutoComplete
+          <SelectField
             name='name'
             autoFocus
-            dataSource={['uwcu', 'chase']}
             hintText={formatMessage(messages.name)}
             floatingLabelText={formatMessage(messages.name)}
-          />
+          >
+            {//R.map(FiMenuItem, R.values(filist))
+              filist.map(fiMenuItem)
+            }
+          </SelectField>
         </div>
         <div>
           <RaisedButton
