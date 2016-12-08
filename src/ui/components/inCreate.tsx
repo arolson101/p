@@ -37,35 +37,23 @@ interface Props {
 
 type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<Values>
 
-const style = {
-  button: {
-    margin: '16px 32px 16px 0'
-  }
-}
-
 type Values = Institution
 
-const { TextField } = formFields<Values>()
+const { SelectField } = formFields<Values>()
 
-const fiMenuItem = (fi: FinancialInstitution) =>
-  <option key={fi.name}>{fi.name}</option>
+const options = filist.map(fi => ({ value: fi.name, label: fi.name }))
 
 export const InCreateComponent = (props: AllProps) => {
-  const { handleSubmit } = props
+  const { handleSubmit, intl: { formatMessage } } = props
   return (
     <div>
       <form onSubmit={handleSubmit(submit)}>
         <div>
-          <select
+          <SelectField
             name='name'
-            autoFocus
-            // hintText={formatMessage(messages.name)}
-            // floatingLabelText={formatMessage(messages.name)}
-          >
-            {//R.map(FiMenuItem, R.values(filist))
-              filist.map(fiMenuItem)
-            }
-          </select>
+            label={formatMessage(messages.name)}
+            options={options}
+          />
         </div>
         <div>
           <ButtonToolbar>

@@ -2,6 +2,8 @@ import * as React from 'react'
 import { Field, FieldProps, FieldComponent, InjectedFieldProps } from 'redux-form'
 import * as RB from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
+import * as Select from 'react-select'
+import 'react-select/dist/react-select.css'
 
 export const forms = defineMessages({
   password: {
@@ -59,27 +61,19 @@ interface FieldGroupProps<Name> {
   label: string
 }
 
-const FormControl = <Name extends string>(props: FieldGroupProps<Name> & InjectedFieldProps<string> & RB.FormControlProps) => {
-  const { input, meta, ...fieldProps } = props as any
-  const { name, label } = fieldProps
-  const { error, warning } = meta
-  return (
-    <RB.FormGroup controlId={name} {...{validationState: error ? 'error' : warning ? 'warning' : undefined}}>
-      <RB.ControlLabel>{label}</RB.ControlLabel>
-      <RB.FormControl {...fieldProps} {...input} />
-      {(error || warning) && <RB.HelpBlock>{error || warning}</RB.HelpBlock>}
-    </RB.FormGroup>
-  )
-}
-
-// export const FieldGroup = <Name extends string, foo>(props: FieldGroupProps<Name>) => (
-//   <Field {...props} component={FormControl} />
-// )
-
-// export const TextField = <Name extends string>() =>
-//   (props: FieldGroupProps<Name>) => (
-//     <Field {...props} component={FormControl} type='text' />
-//   )
+const WrappedControl = <Name extends string, Props>(Component: any) =>
+  (props: FieldGroupProps<Name> & InjectedFieldProps<string> & Props) => {
+    const { input, meta, ...fieldProps } = props as any
+    const { name, label } = fieldProps
+    const { error, warning } = meta
+    return (
+      <RB.FormGroup controlId={name} {...{validationState: error ? 'error' : warning ? 'warning' : undefined}}>
+        <RB.ControlLabel>{label}</RB.ControlLabel>
+        <Component {...fieldProps} {...input} />
+        {(error || warning) && <RB.HelpBlock>{error || warning}</RB.HelpBlock>}
+      </RB.FormGroup>
+    )
+  }
 
 const FieldTemplate = <Values, Props>(component: FieldComponent<Props>, componentProps: Props) =>
   (props: Props & React.HTMLAttributes<any> & Partial<FieldProps<Values, Props>>) => (
@@ -88,7 +82,8 @@ const FieldTemplate = <Values, Props>(component: FieldComponent<Props>, componen
 
 export const formFields = function<Values> () {
   return ({
-    TextField: FieldTemplate<Values, RB.FormControlProps>(FormControl, {type: 'input'}),
-    PasswordField: FieldTemplate<Values, RB.FormControlProps>(FormControl, {type: 'password'})
+    TextField: FieldTemplate<Values, RB.FormControlProps>(WrappedControl(RB.FormControl), {type: 'input'}),
+    PasswordField: FieldTemplate<Values, RB.FormControlProps>(WrappedControl(RB.FormControl), {type: 'password'}),
+    SelectField: FieldTemplate<Values, Select.ReactSelectProps>(WrappedControl(Select), {})
   })
 }
