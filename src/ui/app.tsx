@@ -1,6 +1,4 @@
 import * as History from 'history'
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
-import getMuiTheme from 'material-ui/styles/getMuiTheme'
 import * as React from 'react'
 import { Router, Route } from 'react-router'
 import { bindActionCreators } from 'redux'
@@ -29,12 +27,10 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
     return (
       <Provider store={store}>
         <IntlProvider locale={locale}>
-          <MuiThemeProvider muiTheme={getMuiTheme()}>
-            <Router history={history}>
-              <Route path='/(:db)(/:institution)(/:account)' component={Root}/>
-              <Route path='*' component={NotFoundRoute}/>
-            </Router>
-          </MuiThemeProvider>
+          <Router history={history}>
+            <Route path='/(:db)(/:institution)(/:account)' component={Root}/>
+            <Route path='*' component={NotFoundRoute}/>
+          </Router>
         </IntlProvider>
       </Provider>
     )

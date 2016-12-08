@@ -1,17 +1,8 @@
-import Divider from 'material-ui/Divider'
-import FontIcon from 'material-ui/FontIcon'
-import IconButton from 'material-ui/IconButton'
-import IconMenu from 'material-ui/IconMenu'
-import { List, ListItem } from 'material-ui/List'
-import MenuItem from 'material-ui/MenuItem'
-import { grey400 } from 'material-ui/styles/colors'
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert'
-import Paper from 'material-ui/Paper'
 import * as PouchDB from 'pouchdb-browser'
 import * as React from 'react'
+import { ListGroup, ListGroupItem } from 'react-bootstrap'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { Link } from 'react-router'
 import { DbInfo } from '../../docs'
 import { AppState, MetaDb } from '../../state'
 import { Lookup } from '../../util'
@@ -37,21 +28,6 @@ const messages = defineMessages({
   }
 })
 
-const style = {
-  paper: {
-    display: 'inline-block',
-    margin: '16px 32px 16px 0'
-  }
-}
-
-const iconButtonElement = (
-  <IconButton
-    touch={true}
-  >
-    <MoreVertIcon color={grey400} />
-  </IconButton>
-)
-
 interface ConnectedProps {
   dbInfos: DbInfo.Cache
   metaDb: MetaDb
@@ -63,36 +39,27 @@ type AllProps = RouteProps & ConnectedProps & Props
 export const DbIndexComponent = (props: AllProps) => (
   <div>
     {props.dbInfos &&
-      <Paper style={style.paper}>
-        <List>
+      <div>
+        <ListGroup>
           {Lookup.map(props.dbInfos, dbInfo =>
-            <ListItem
+            <ListGroupItem
+              href={props.router.createHref(DbInfo.path(dbInfo))}
               key={dbInfo._id}
-              primaryText={dbInfo.title}
-              leftIcon={<FontIcon {...icons.openDb} />}
-              containerElement={<Link to={DbInfo.path(dbInfo)}/>}
-              rightIconButton={
-                <IconMenu iconButtonElement={iconButtonElement}>
-                  <MenuItem onTouchTap={() => {
-                    props.metaDb.db.remove(dbInfo)
-                    new PouchDB(dbInfo._id).destroy()
-                  }}>Delete</MenuItem>
-                </IconMenu>
-              }
-            />
+            >
+              <h4><i {...icons.openDb}/> {dbInfo.title}</h4>
+            </ListGroupItem>
           )}
-          {Lookup.hasAny(props.dbInfos) &&
+          {/*Lookup.hasAny(props.dbInfos) &&
             <Divider/>
-          }
-          <ListItem
-            primaryText={<FormattedMessage {...messages.newDb}/>}
-            secondaryText={<p><FormattedMessage {...messages.newDbDescription}/></p>}
-            secondaryTextLines={1}
-            leftIcon={<FontIcon {...icons.newDb} />}
-            containerElement={<Link to='/?create'/>}
-          />
-        </List>
-      </Paper>
+          */}
+          <ListGroupItem
+            href={props.router.createHref('/?create')}
+          >
+            <h4><i {...icons.openDb}/> <FormattedMessage {...messages.newDb}/></h4>
+            <p><FormattedMessage {...messages.newDbDescription}/></p>
+          </ListGroupItem>
+        </ListGroup>
+      </div>
     }
   </div>
 )

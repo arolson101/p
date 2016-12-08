@@ -1,9 +1,8 @@
-import RaisedButton from 'material-ui/RaisedButton'
-import MenuItem from 'material-ui/MenuItem'
 import { normalize, arrayOf, Schema } from 'normalizr'
 import * as React from 'react'
+import { Button, ButtonToolbar } from 'react-bootstrap'
 import * as R from 'ramda'
-import { injectIntl, defineMessages } from 'react-intl'
+import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
@@ -46,42 +45,43 @@ const style = {
 
 type Values = Institution
 
-const { AutoComplete, SelectField } = formFields<Values>()
+const { TextField } = formFields<Values>()
 
 const fiMenuItem = (fi: FinancialInstitution) =>
-  <MenuItem key={fi.name}>{fi.name}</MenuItem>
+  <option key={fi.name}>{fi.name}</option>
 
 export const InCreateComponent = (props: AllProps) => {
-  const { formatMessage } = props.intl
   const { handleSubmit } = props
   return (
     <div>
       <form onSubmit={handleSubmit(submit)}>
         <div>
-          <SelectField
+          <select
             name='name'
             autoFocus
-            hintText={formatMessage(messages.name)}
-            floatingLabelText={formatMessage(messages.name)}
+            // hintText={formatMessage(messages.name)}
+            // floatingLabelText={formatMessage(messages.name)}
           >
             {//R.map(FiMenuItem, R.values(filist))
               filist.map(fiMenuItem)
             }
-          </SelectField>
+          </select>
         </div>
         <div>
-          <RaisedButton
-            type='button'
-            label={formatMessage(forms.cancel)}
-            style={style.button}
-            onTouchTap={() => historyAPI.go(-1)}
-          />
-          <RaisedButton
-            type='submit'
-            label={formatMessage(forms.create)}
-            style={style.button}
-            primary
-          />
+          <ButtonToolbar>
+            <Button
+              type='button'
+              onClick={() => historyAPI.go(-1)}
+            >
+              <FormattedMessage {...forms.cancel}/>
+            </Button>
+            <Button
+              type='submit'
+              bsStyle='primary'
+            >
+              <FormattedMessage {...forms.create}/>
+            </Button>
+          </ButtonToolbar>
         </div>
       </form>
     </div>

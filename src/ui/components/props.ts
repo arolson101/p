@@ -24,11 +24,24 @@ interface Params {
   account: Account.Id
 }
 
+interface InjectedRouter {
+    push: (pathOrLoc: History.LocationDescriptor) => void
+    replace: (pathOrLoc: History.LocationDescriptor) => void
+    go: (n: number) => void
+    goBack: () => void
+    goForward: () => void
+    setRouteLeaveHook(route: RR.PlainRoute, callback: RR.RouteHook): void
+    createPath(path: History.Path, query?: History.Query): History.Path
+    createHref(path: History.Path, query?: History.Query): History.Href
+    isActive(pathOrLoc: History.LocationDescriptor, indexOnly?: boolean): boolean
+}
+
 interface RouteComponentProps<P, R> {
   history: History
   location: Location
   params: P
   route: RR.PlainRoute
+  router: InjectedRouter
   routeParams: R
   routes: RR.PlainRoute[]
   children?: React.ReactElement<any>

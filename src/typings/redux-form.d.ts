@@ -12,126 +12,144 @@ export const actionTypes: {[actionName:string]: string};
 
 export type FieldValue = any;
 
-export type ErrorsFor<TValues> = { [P in keyof TValues] ?: string }
+export interface FieldArrayErrors {
+  _error: string;
+  [key: string]: string;
+}
+
+export type ErrorsFor<TValues> = { [P in keyof TValues] ?: string | FieldArrayErrors | string[] }
 
 export class SubmissionError<T> {
     constructor(errors: ErrorsFor<T>);
 }
 
-export interface FieldProp<Name> {
-    /**
-     * true if this field currently has focus. It will only work if you are
-     * passing onFocus to your input element.
-     */
-    active?: boolean;
+type FunctionalComponent<Props> = (props: Props) => any;
+export type FieldComponent<Props> = React.Component<Props, any> | FunctionalComponent<Props> | string;
 
-    /**
-     * An alias for value only when value is a boolean. Provided for
-     * convenience of destructuring the whole field object into the props of a
-     * form element.
-     */
-    checked?: boolean;
+export interface FieldProps<Values, Props> {
+    // A string path, in dot-and-bracket notation, corresponding to a value in the form values. It may be as simple as 'firstName' or as complicated as contact.billing.address[2].phones[1].areaCode. See the Usage section below for details.
+    name: keyof Values
 
-    /**
-     * true if the field value has changed from its initialized value.
-     * Opposite of pristine.
-     */
-    dirty?: boolean;
+    // A Component, stateless function, or string corresponding to a default JSX element. See the Usage section below for details.
+    component: FieldComponent<Props>
 
-    /**
-     * The error for this field if its value is not passing validation. Both
-     * synchronous and asynchronous validation errors will be reported here.
-     */
-    error?: any;
+    // Formats the value from the Redux store to be displayed in the field input. Common use cases are to format Numbers into currencies or Dates into a localized date format.
+    // format is called with the field value and name as arguments and should return the new formatted value to be displayed in the field input.
+    // To respect React 15 input behavior there is defaultFormat = value => value == null ? '' : value internally used. To disable that you can pass null as format prop.
+    format?: (value: any, name: any) => any
 
-    /**
-     * The value for this field as supplied in initialValues to the form.
-     */
-    initialValue?: FieldValue;
+    // A function to convert whatever value the user has entered into the value that you want stored in the Redux store for the field. For instance, if you want the value to be in all uppercase, you would pass value => value.toUpperCase(). The parameters to your normalize function are:
+    // value: The value entered by the user.
+    // previousValue: The previous value for the field.
+    // allValues: All the values in the entire form with the new value. This will be an Immutable Map if you are using Immutable JS.
+    // previousAllValues: All the values in the entire form before the current change. This will be an Immutable Map if you are using Immutable JS.
+    normalize?: (value: any, previousValue: any, allValues: Values, previousAllValues: Values) => any
 
-    /**
-     * true if the field value fails validation (has a validation error).
-     * Opposite of valid.
-     */
-    invalid?: boolean;
+    // Object with custom props to pass through the Field component into a component provided to component prop. This props will be merged to props provided by Field itself. This may be useful if you are using TypeScript. This construct is completely optional; the primary way of passing props along to your component is to give them directly to the Field component, but if, for whatever reason, you prefer to bundle them into a separate object, you may do so by passing them into props.
+    props?: any
 
-    /**
-     * The name of the field. It will be the same as the key in the fields
-     * Object, but useful if bundling up a field to send down to a specialized
-     * input component.
-     */
-    name: Name;
+    // Parses the value given from the field input component to the type that you want stored in the Redux store. Common use cases are to parse currencies into Numbers into currencies or localized date formats into Dates.
+    // parse is called with the field value and name as arguments and should return the new parsed value to be stored in the Redux store.
+    parse?: (value: any, name: any) => any
 
-    /**
-     * A function to call when the form field loses focus. It expects to
-     * either receive the React SyntheticEvent or the current value of the
-     * field.
-     */
-    onBlur?(eventOrValue: SyntheticEvent<any> | FieldValue): void;
+    // Allows you to to provide a field-level validation rule. The function will be given the current value of the field and all the other form values. If the field is valid, it should return undefined, if the field is invalid, it should return an error (usually, but not necessarily, a String).
+    validate?: (value: any, allValues: Values) => string
 
-    /**
-     * A function to call when the form field is changed. It expects to either
-     * receive the React SyntheticEvent or the new value of the field.
-     * @param eventOrValue
-     */
-    onChange?(eventOrValue: SyntheticEvent<any> | FieldValue): void;
+    // Allows you to to provide a field-level warning rule. The function will be given the current value of the field and all the other form values. If the field needs a warning, it should return the warning (usually, but not necessarily, a String). If the field does not need a warning, it should return undefined.
+    warn?: (value: any, allValues: Values) => string
 
-    /**
-     * A function to call when the form field receives a 'dragStart' event.
-     * Saves the field value in the event for giving the field it is dropped
-     * into.
-     */
-    onDragStart?(): void;
-
-    /**
-     * A function to call when the form field receives a drop event.
-     */
-    onDrop?(): void;
-
-    /**
-     * A function to call when the form field receives focus.
-     */
-    onFocus?(): void;
-
-    /**
-     * An alias for onChange. Provided for convenience of destructuring the
-     * whole field object into the props of a form element. Added to provide
-     * out-of-the-box support for Belle components' onUpdate API.
-     */
-    onUpdate?(): void;
-
-    /**
-     * true if the field value is the same as its initialized value. Opposite
-     * of dirty.
-     */
-    pristine?: boolean;
-
-    /**
-     * true if the field has been touched. By default this will be set when
-     * the field is blurred.
-     */
-    touched?: boolean;
-
-    /**
-     * true if the field value passes validation (has no validation errors).
-     * Opposite of invalid.
-     */
-    valid?: boolean;
-
-    /**
-     * The value of this form field. It will be a boolean for checkboxes, and
-     * a string for all other input types.
-     */
-    value?: FieldValue;
-
-    /**
-     * true if this field has ever had focus. It will only work if you are
-     * passing onFocus to your input element.
-     */
-    visited?: boolean;
-
-    component?: any;
+    // If true, the rendered component will be available with the getRenderedComponent() method. Defaults to false. Cannot be used if your component is a stateless function component.
+    withRef?: boolean
 }
+
+
+export interface InjectedFieldInputProps<Name> {
+  // An alias for value only when value is a boolean. Provided for convenience of destructuring
+  // the whole field object into the props of a form element.
+  checked?: boolean
+
+  // The name prop passed in.
+  name: Name
+
+  // A function to call when the form field loses focus. It expects to either receive the React
+  // SyntheticEvent or the current value of the field.
+  onBlur: (eventOrValue: any) => any
+
+  // A function to call when the form field is changed. It expects to either receive the React
+  // SyntheticEvent or the new value of the field.
+  onChange: (eventOrValue: any) => any
+
+  // A function to call when the form field receives a dragStart event. Saves the field value
+  // in the event for giving the field it is dropped into.
+  onDragStart: (event: any) => any
+
+  // A function to call when the form field receives a drop event.
+  onDrop: (event: any) => any
+
+  // A function to call when the form field receives focus.
+  onFocus: (event: any) => any
+
+  // The value of this form field. It will be a boolean for checkboxes, and a string for all
+  // other input types. If there is no value in the Redux state for this field, it will default
+  // to ''. This is to ensure that the input is controlled. If you require that the value be of
+  // another type (e.g. Date or Number), you must provide initialValues to your form with the
+  // desired type of this field.
+  value: any
+}
+
+
+// The props under the meta key are metadata about the state of this field that redux-form is tracking for you.
+export interface InjectedFieldMetaProps {
+
+  // true if this field currently has focus. It will only work if you are passing onFocus to your input element.
+  active: boolean
+
+  // true if this field has been set with the AUTOFILL action and has not since been changed with
+  // a CHANGE action. This is useful to render the field in a way that the user can tell that the
+  // value was autofilled for them.
+  autofilled: boolean
+
+  // true if the form is currently running asynchronous validation because this field was blurred.
+  asyncValidating: boolean
+
+  // true if the field value has changed from its initialized value. Opposite of pristine.
+  dirty: boolean
+
+  // The Redux dispatch function.
+  dispatch: Function
+
+  // The error for this field if its value is not passing validation. Both synchronous, asynchronous,
+  // and submit validation errors will be reported here.
+  error?: string
+
+  // The warning for this field if its value is not passing warning validation.
+  warning?: string
+
+  // true if the field value fails validation (has a validation error). Opposite of valid.
+  invalid: boolean
+
+  // true if the field value is the same as its initialized value. Opposite of dirty.
+  pristine: boolean
+
+  // true if the field is currently being submitted
+  submitting: boolean
+
+  // true if the field has been touched. By default this will be set when the field is blurred.
+  touched: boolean
+
+  // true if the field value passes validation (has no validation errors). Opposite of invalid.
+  valid: boolean
+
+  // true if this field has ever had focus. It will only work if you are passing onFocus to your input element.
+  visited: boolean
+}
+
+
+export interface InjectedFieldProps<Name> {
+  input: InjectedFieldInputProps<Name>
+  meta: InjectedFieldMetaProps
+}
+
 
 export interface ReduxFormProps<TValues> {
     /**
@@ -422,6 +440,15 @@ export interface ReduxFormConfig<TOwnProps, TValues> {
      * Defaults to (values, props) => ({}).
      */
     validate?(values: TValues, props: TOwnProps): Object;
+
+    /**
+     * a synchronous warning function that takes the form values and props passed
+     * into your component. Warnings work the same as validations, but do not mark
+     * a form as invalid. If the warning check passes, it should return {}. If
+     * the check fails, it should return the warnings in the form { field1: <String>,
+     * field2: <String> }. Defaults to (values, props) => ({}).
+     */
+    warn?(values: TValues, props: TOwnProps): Object;
 }
 
 /**
@@ -462,6 +489,27 @@ export const reducer: {
     plugin(reducers: { [formName: string]: Reducer<any> }): Reducer<any>;
 }
 
+// export class Field<Values, Props> extends React.Component<FieldProps<Values, Props>, any> {}
 export class Field extends React.Component<any, any> {}
+
+export interface FieldArrayProps {
+  /**
+   * A string path, in dot-and-bracket notation, corresponding to a value in
+   * the form values. It may be as simple as 'firstName' or as complicated as
+   * contact.billing.address[2].phones[1].areaCode.
+   */
+  name: string;
+  /**
+   * A Component or stateless function to render the field array.
+   */
+  component: React.Component<any, any>;
+  withRef?: boolean;
+}
+
+export class FieldArray extends React.Component<any, any> {}
+
+export type selector = (state: Object, ...field: string[]) => any;
+
+export function formValueSelector(form: string, getFormState?: Function): selector;
 
 }

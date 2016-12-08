@@ -1,4 +1,4 @@
-import RaisedButton from 'material-ui/RaisedButton'
+import { Button, ButtonToolbar } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
@@ -35,13 +35,7 @@ interface Values {
   confirmPassword: string
 }
 
-const style = {
-  button: {
-    margin: '16px 32px 16px 0'
-  }
-}
-
-const { TextField } = formFields<Values>()
+const { TextField, PasswordField } = formFields<Values>()
 
 export const DbCreateComponent = (props: AllProps) => {
   const { handleSubmit } = props
@@ -54,39 +48,38 @@ export const DbCreateComponent = (props: AllProps) => {
           <TextField
             name='name'
             autoFocus
-            hintText={formatMessage(messages.name)}
-            floatingLabelText={formatMessage(messages.name)}
+            label={formatMessage(messages.name)}
           />
         </div>
         <div>
-          <TextField
+          <PasswordField
             name='password'
-            type='password'
-            hintText={formatMessage(forms.password)}
-            floatingLabelText={formatMessage(forms.password)}
+            label={formatMessage(forms.password)}
           />
         </div>
         <div>
-          <TextField
+          <PasswordField
             name='confirmPassword'
-            type='password'
-            hintText={formatMessage(forms.confirmPassword)}
-            floatingLabelText={formatMessage(forms.confirmPassword)}
+            label={formatMessage(forms.confirmPassword)}
           />
         </div>
         <div>
-          <RaisedButton
-            type='button'
-            label={formatMessage(forms.cancel)}
-            style={style.button}
-            onTouchTap={() => historyAPI.go(-1)}
-          />
-          <RaisedButton
-            type='submit'
-            label={formatMessage(forms.create)}
-            style={style.button}
-            primary
-          />
+          <ButtonToolbar>
+            <Button
+              type='button'
+              bsSize='large'
+              onClick={() => historyAPI.go(-1)}
+            >
+              {formatMessage(forms.cancel)}
+            </Button>
+            <Button
+              type='submit'
+              bsStyle='primary'
+              bsSize='large'
+            >
+              {formatMessage(forms.create)}
+            </Button>
+          </ButtonToolbar>
         </div>
       </form>
     </div>
