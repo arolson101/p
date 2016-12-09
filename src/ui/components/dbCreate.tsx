@@ -7,7 +7,7 @@ import { reduxForm, ReduxFormProps } from 'redux-form'
 import { DbInfo } from '../../docs'
 import { AppState, AppDispatch, historyAPI, CreateDb } from '../../state'
 import { Validator } from '../../util'
-import { forms, formFields } from './forms'
+import { forms, typedFields } from './forms'
 import { IntlProps, RouteProps } from './props'
 
 const messages = defineMessages({
@@ -35,7 +35,7 @@ interface Values {
   confirmPassword: string
 }
 
-const { TextField, PasswordField } = formFields<Values>()
+const { TextField, PasswordField } = typedFields<Values>()
 
 export const DbCreateComponent = (props: AllProps) => {
   const { handleSubmit } = props

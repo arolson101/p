@@ -3,7 +3,6 @@ import { Field, FieldProps, FieldComponent, InjectedFieldProps } from 'redux-for
 import * as RB from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import * as Select from 'react-select'
-import 'react-select/dist/react-select.css'
 
 export const forms = defineMessages({
   password: {
@@ -61,29 +60,35 @@ interface FieldGroupProps<Name> {
   label: string
 }
 
-const WrappedControl = <Name extends string, Props>(Component: any) =>
-  (props: FieldGroupProps<Name> & InjectedFieldProps<string> & Props) => {
+const WrappedControl = <Name extends string, Props>(Component: any, componentProps?: Props) =>
+  (props: FieldGroupProps<Name> & Partial<InjectedFieldProps<string>> & Props) => {
     const { input, meta, ...fieldProps } = props as any
     const { name, label } = fieldProps
     const { error, warning } = meta
     return (
       <RB.FormGroup controlId={name} {...{validationState: error ? 'error' : warning ? 'warning' : undefined}}>
         <RB.ControlLabel>{label}</RB.ControlLabel>
-        <Component {...fieldProps} {...input} />
+        <Component {...componentProps} {...fieldProps} {...input} />
         {(error || warning) && <RB.HelpBlock>{error || warning}</RB.HelpBlock>}
       </RB.FormGroup>
     )
   }
 
-const FieldTemplate = <Values, Props>(component: FieldComponent<Props>, componentProps: Props) =>
+export { Select }
+
+const FieldTemplate = <Values, Props>(component: FieldComponent<Props>) =>
   (props: Props & React.HTMLAttributes<any> & Partial<FieldProps<Values, Props>>) => (
-    <Field {...componentProps} component={component} {...props} />
+    <Field component={component} {...props} />
   )
 
-export const formFields = function<Values> () {
+export const TextControl = WrappedControl(RB.FormControl, {type: 'input'})
+export const PasswordControl = WrappedControl(RB.FormControl, {type: 'password'})
+export const SelectControl = WrappedControl<string, Select.ReactSelectProps>(Select)
+
+export const typedFields = function<Values> () {
   return ({
-    TextField: FieldTemplate<Values, RB.FormControlProps>(WrappedControl(RB.FormControl), {type: 'input'}),
-    PasswordField: FieldTemplate<Values, RB.FormControlProps>(WrappedControl(RB.FormControl), {type: 'password'}),
-    SelectField: FieldTemplate<Values, Select.ReactSelectProps>(WrappedControl(Select), {})
+    TextField: FieldTemplate<Values, RB.FormControlProps>(TextControl),
+    PasswordField: FieldTemplate<Values, RB.FormControlProps>(PasswordControl),
+    SelectField: FieldTemplate<Values, Select.ReactSelectProps>(SelectControl)
   })
 }

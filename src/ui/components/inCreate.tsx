@@ -1,7 +1,6 @@
-import { normalize, arrayOf, Schema } from 'normalizr'
 import * as React from 'react'
-import { Button, ButtonToolbar } from 'react-bootstrap'
 import * as R from 'ramda'
+import { Button, ButtonToolbar } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
@@ -9,23 +8,21 @@ import { reduxForm, ReduxFormProps } from 'redux-form'
 import { Institution } from '../../docs'
 import { AppState, AppDispatch, historyAPI } from '../../state'
 import { Validator } from '../../util'
-import { formFields, forms } from './forms'
+import { typedFields, forms, SelectControl } from './forms'
 import { IntlProps } from './props'
 import { FinancialInstitution } from 'filist'
 
-const fi = new Schema('fi', { idAttribute: 'name' })
-
 // TODO: put this somewhere it can be updated
 const filist: FinancialInstitution[] = require('json-loader!filist/filist.json')
-// const filist: { [name: string]: FinancialInstitution } = normalize(
-//   require('json-loader!filist/filist.json'),
-//   arrayOf(fi)
-// ).entities.fi
 
 const messages = defineMessages({
+  fi: {
+    id: 'inCreate.fi',
+    defaultMessage: 'Institution'
+  },
   name: {
     id: 'inCreate.name',
-    defaultMessage: 'Institution'
+    defaultMessage: 'Name'
   }
 })
 
@@ -37,11 +34,13 @@ interface Props {
 
 type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<Values>
 
-type Values = Institution
+interface Values extends Institution {
+  fi: string
+}
 
-const { SelectField } = formFields<Values>()
+const { TextField, SelectField } = typedFields<Values>()
 
-const options = filist.map(fi => ({ value: fi.name, label: fi.name }))
+const options = filist.map((fi, index) => ({ value: index, label: fi.name }))
 
 export const InCreateComponent = (props: AllProps) => {
   const { handleSubmit, intl: { formatMessage } } = props
@@ -50,9 +49,16 @@ export const InCreateComponent = (props: AllProps) => {
       <form onSubmit={handleSubmit(submit)}>
         <div>
           <SelectField
+            name='fi'
+            label={formatMessage(messages.fi)}
+            options={options}
+            // onChange={onChangeFI}
+          />
+        </div>
+        <div>
+          <TextField
             name='name'
             label={formatMessage(messages.name)}
-            options={options}
           />
         </div>
         <div>
@@ -74,6 +80,10 @@ export const InCreateComponent = (props: AllProps) => {
       </form>
     </div>
   )
+}
+
+const onChangeFI = function() {
+  console.log(arguments)
 }
 
 const validate = (values: Values, props: IntlProps) => {

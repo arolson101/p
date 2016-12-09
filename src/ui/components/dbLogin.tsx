@@ -8,7 +8,7 @@ import { DbInfo } from '../../docs'
 import { AppState, AppDispatch, historyAPI, loadDb } from '../../state'
 import { Validator } from '../../util'
 import { RouteProps, IntlProps } from './props'
-import { formFields, forms } from './forms'
+import { typedFields, forms } from './forms'
 
 interface Props {
 }
@@ -30,7 +30,7 @@ const messages = defineMessages({
   }
 })
 
-const { PasswordField } = formFields<Values>()
+const { PasswordField } = typedFields<Values>()
 
 export const DbLoginComponent = (props: AllProps) => {
   if (!props.dbDoc) {
