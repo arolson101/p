@@ -5,15 +5,13 @@ import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
+import { createSelector } from 'reselect'
 import { Institution } from '../../docs'
-import { AppState, AppDispatch, historyAPI } from '../../state'
+import { AppState, AppDispatch, historyAPI, emptyfi } from '../../state'
 import { Validator } from '../../util'
-import { typedFields, forms, SelectControl } from './forms'
+import { typedFields, forms } from './forms'
 import { IntlProps } from './props'
 import { FinancialInstitution } from 'filist'
-
-// TODO: put this somewhere it can be updated
-const filist: FinancialInstitution[] = require('json-loader!filist/filist.json')
 
 const messages = defineMessages({
   fi: {
@@ -23,10 +21,21 @@ const messages = defineMessages({
   name: {
     id: 'inCreate.name',
     defaultMessage: 'Name'
+  },
+  web: {
+    id: 'inCreate.web',
+    defaultMessage: 'Website'
   }
 })
 
+interface Option {
+  value: number
+  label: string
+}
+
 interface ConnectedProps {
+  options: Option[]
+  filist: FinancialInstitution[]
 }
 
 interface Props {
@@ -40,25 +49,30 @@ interface Values extends Institution {
 
 const { TextField, SelectField } = typedFields<Values>()
 
-const options = filist.map((fi, index) => ({ value: index, label: fi.name }))
-
 export const InCreateComponent = (props: AllProps) => {
-  const { handleSubmit, intl: { formatMessage } } = props
+  const { handleSubmit, intl: { formatMessage }, options } = props
   return (
     <div>
       <form onSubmit={handleSubmit(submit)}>
         <div>
           <SelectField
+            autofocus
             name='fi'
             label={formatMessage(messages.fi)}
             options={options}
-            // onChange={onChangeFI}
+            onChange={(value: number) => onChangeFI(props, value)}
           />
         </div>
         <div>
           <TextField
             name='name'
             label={formatMessage(messages.name)}
+          />
+        </div>
+        <div>
+          <TextField
+            name='web'
+            label={formatMessage(messages.web)}
           />
         </div>
         <div>
@@ -82,9 +96,18 @@ export const InCreateComponent = (props: AllProps) => {
   )
 }
 
-const onChangeFI = function() {
-  console.log(arguments)
+const onChangeFI = (props: AllProps, index?: number) => {
+  const { filist } = props
+  const value = index ? filist[index - 1] : emptyfi
+
+  props.change('name', value.name)
+  props.change('web', value.profile.siteURL)
 }
+
+const optionsSelector = createSelector(
+  (state: AppState) => state.fi.list,
+  (filist): Option[] => filist.map((fi, index) => ({ value: index + 1, label: fi.name }))
+)
 
 const validate = (values: Values, props: IntlProps) => {
   const { formatMessage } = props.intl
@@ -102,7 +125,10 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
 export const InCreate = compose(
   injectIntl,
   connect(
-    (state: AppState): ConnectedProps => ({}),
+    (state: AppState): ConnectedProps => ({
+      options: optionsSelector(state),
+      filist: state.fi.list
+    }),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   ),
   reduxForm<AllProps, Values>({

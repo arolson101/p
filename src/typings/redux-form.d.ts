@@ -152,140 +152,167 @@ export interface InjectedFieldProps<Name> {
 
 
 export interface ReduxFormProps<TValues> {
-    /**
-     * The name of the currently active (with focus) field.
-     */
-    active: string;
 
-    /**
-     * A function that may be called to initiate asynchronous validation if
-     * asynchronous validation is enabled.
-     */
-    asyncValidate: Function;
+    // true if any of the fields have been marked as touched, false otherwise.
+    anyTouched : boolean
 
-    /**
-     * true if the asynchronous validation function has been called but has not
-     * yet returned.
-     */
-    asyncValidating: boolean;
+    // A set of pre-bound action creators for you to operate on array fields in your form.
+    array : {
+        // Inserts a value into the given array field in your form. This is a bound action creator,
+        // so it returns nothing.
+        insert(field:String, index:Number, value:any) : void
 
-    /**
-     * Destroys the form state in the Redux store. By default, this will be
-     * called for you in componentWillUnmount().
-     */
-    destroyForm(): void;
+        // Moves a value at the given from index to the given to index in the given array field in
+        // your form. This is a bound action creator, so it returns nothing.
+        move(field:String, from:Number, to:Number) : void
 
-    /**
-     * true if the form data has changed from its initialized values. Opposite
-     * of pristine.
-     */
-    dirty: boolean;
+        // Pops a value off of the end of a given array field in your form. This is a bound action
+        // creator, so it returns nothing.
+        pop(field:String) : void
 
-    /**
-     * A generic error for the entire form given by the _error key in the
-     * result from the synchronous validation function, the asynchronous
-     * validation, or the rejected promise from onSubmit.
-     */
-    error: any;
+        // Pushes the given value onto the end of the given array field in your form. This is a bound
+        // action creator, so it returns nothing.
+        push(field:String, value:any) : void
 
-    /**
-     * A function meant to be passed to <form onSubmit={handleSubmit}> or to
-     * <button onClick={handleSubmit}>. It will run validation, both sync and
-     * async, and, if the form is valid, it will call
-     * this.props.onSubmit(data) with the contents of the form data.
-     * Optionally, you may also pass your onSubmit function to handleSubmit
-     * which will take the place of the onSubmit prop. For example: <form
-     * onSubmit={handleSubmit(this.save.bind(this))}> If your onSubmit
-     * function returns a promise, the submitting property will be set to true
-     * until the promise has been resolved or rejected. If it is rejected with
-     * an object matching { field1: 'error', field2: 'error' } then the
-     * submission errors will be added to each field (to the error prop) just
-     * like async validation errors are. If there is an error that is not
-     * specific to any field, but applicable to the entire form, you may pass
-     * that as if it were the error for a field called _error, and it will be
-     * given as the error prop.
-     */
+        // Removes a value at the given index from the given array field in your form. This is a bound
+        // action creator, so it returns nothing.
+        remove(field:String, index:Number) : void
+
+        // Removes all the values from the given array field in your form. This is a bound action
+        // creator, so it returns nothing.
+        removeAll(field:String) : void
+
+        // Shifts a value out of the beginning of the given array in your form. This is a bound action
+        // creator, so it returns nothing.
+        shift(field:String) : void
+
+        // Performs an Array.splice operation on the given array in your form. This is a bound action
+        // creator, so it returns nothing.
+        splice(field:String, index:Number, removeNum:Number, value:any) : void
+
+        // Swaps two values at the given indexes of the given array field in your form. This is a bound
+        // action creator, so it returns nothing.
+        swap(field:String, indexA:Number, indexB:Number) : void
+
+        // Unshifts the given value into the beginning of the given array field in your form. This is a
+        // bound action creator, so it returns nothing.
+        unshift(field:String, value:any) : void
+    }
+
+    // A function that may be called to initiate asynchronous validation if asynchronous validation
+    // is enabled.
+    asyncValidate : Function
+
+    // This value will be either:
+    // false - No asynchronous validation is currently happening
+    // true - Asynchronous validation is currently running in preparation to submit a form
+    // a string - The name of the field that just blurred to trigger asynchronous validation
+    asyncValidating : string | boolean
+
+    // Sets the value and marks the field as autofilled in the Redux Store. This is useful when a field
+    //  needs to be set programmatically, but in a way that lets the user know (via a styling change
+    // using the autofilled prop in Field) that it has been autofilled for them programmatically. This is
+    // a bound action creator, so it returns nothing.
+    autofill(field:string, value:any) : void
+
+    // Marks a field as blurred in the Redux store. This is a bound action creator, so it returns nothing.
+    blur(field:string, value:any) : void
+
+    // Changes the value of a field in the Redux store. This is a bound action creator, so it returns nothing.
+    change<Key extends keyof TValues>(field:Key, value:TValues[Key]) : void
+
+    // Clear async error of a field in the Redux store. This is a bound action creator, so it returns nothing.
+    clearAsyncError(field:string) : void
+
+    // Destroys the form state in the Redux store. By default, this will be called for you in
+    // componentWillUnmount(). This is a bound action creator, so it returns nothing.
+    destroy() : void
+
+    // true if the form data has changed from its initialized values. Opposite of pristine.
+    dirty : boolean
+
+    // A generic error for the entire form given by the _error key in the result from the synchronous
+    // validation function, the asynchronous validation, or the rejected promise from onSubmit.
+    error : any
+
+    // The form name that you gave to the reduxForm() decorator or the prop you passed in to your decorated
+    // form component.
+    form : string
+
+    // A function meant to be passed to <form onSubmit={handleSubmit}> or to <button onClick={handleSubmit}>.
+    // It will run validation, both sync and async, and, if the form is valid, it will call
+    // this.props.onSubmit(data) with the contents of the form data.
+    //
+    // Optionally, you may also pass your onSubmit function to handleSubmit which will take the place of the
+    // onSubmit prop. For example: <form onSubmit={handleSubmit(this.save.bind(this))}>
+    //
+    // If your onSubmit function returns a promise, the submitting property will be set to true until the
+    // promise has been resolved or rejected. If it is rejected with an object like
+    // new SubmissionError({ field1: 'error', field2: 'error' }) then the submission errors will be added
+    // to each field (to the error prop) just like async validation errors are. If there is an error that
+    // is not specific to any field, but applicable to the entire form, you may pass that as if it were the
+    // error for a field called _error, and it will be given as the error prop.
+    //
+    // To recap, there are two ways to use handleSubmit:
+    // 1. pass it a function to call
+    // <button onClick={handleSubmit(data => {
+    //   // do something with data. validation will have been called at this point,
+    //   // so you know the data is valid
+    // })}>Submit</button>
+    // 2. pass in such a function as the onSubmit prop to your decorated component
+    // <MyDecoratedForm onSubmit={data => {
+    //   // do something with data. validation will have been called at this point,
+    //   // so you know the data is valid
+    // }}/>
     handleSubmit(event: SyntheticEvent<any>): void;
     handleSubmit(event: React.MouseEvent<HTMLButtonElement>): void;
     handleSubmit(submit: (data: TValues, dispatch?: Dispatch<any>, props?: any) => Promise<any> | void): FormEventHandler<any>;
 
-    /**
-     * Initializes the form data to the given values. All dirty and pristine
-     * state will be determined by comparing the current data with these
-     * initialized values.
-     * @param data
-     */
-    initializeForm(data: TValues): void;
+    // Initializes the form data to the given values. All dirty and pristine state will be determined
+    // by comparing the current data with these initialized values. This is a bound action creator, so
+    // it returns nothing.
+    initialize(data:Object) : void
 
-    /**
-     * true if the form has validation errors. Opposite of valid.
-     */
-    invalid: boolean;
+    // The same initialValues object passed to reduxForm to initialize the form data.
+    initialValues : TValues
 
-    /**
-     * true if the form data is the same as its initialized values. Opposite
-     * of dirty.
-     */
-    pristine: boolean;
+    // true if the form has validation errors. Opposite of valid.
+    invalid : boolean
 
-    /**
-     * Resets all the values in the form to the initialized state, making it
-     * pristine again.
-     */
-    resetForm(): void;
+    // true if the form data is the same as its initialized values. Opposite of dirty.
+    pristine: boolean
 
-    /**
-     * The same formKey prop that was passed in. See Editing Multiple Records.
-     */
-    formKey: string;
+    // Resets all the values in the form to the initialized state, making it pristine again. This is
+    // a bound action creator, so it returns nothing.
+    reset() : void
 
-    /**
-     * Whether or not your form is currently submitting. This prop will only
-     * work if you have passed an onSubmit function that returns a promise. It
-     * will be true until the promise is resolved or rejected.
-     */
-    submitting: boolean;
+    // Starts as false. If onSubmit is called, and fails to submit for any reason, submitFailed will be
+    // set to true. A subsequent successful submit will set it back to false.
+    submitFailed : boolean
 
-    /**
-     * Starts as false. If onSubmit is called, and fails to submit for any
-     * reason, submitFailed will be set to true. A subsequent successful
-     * submit will set it back to false.
-     */
-    submitFailed: boolean;
+    // Starts as false. If onSubmit is called, and succeed to submit , submitSucceeded will be set to
+    // true. A subsequent unsuccessful submit will set it back to false.
+    submitSucceeded : boolean
 
-    /**
-     * Marks the given fields as "touched" to show errors.
-     * @param field
-     */
-    touch(...field: string[]): void;
+    // Whether or not your form is currently submitting. This prop will only work if you have passed an
+    // onSubmit function that returns a promise. It will be true until the promise is resolved or
+    // rejected.
+    submitting : boolean
 
-    /**
-     * Marks all fields as "touched" to show errors. This will automatically
-     * happen on form submission.
-     */
-    touchAll(): void;
+    // Marks the given fields as "touched" to show errors. This is a bound action creator, so it
+    // returns nothing.
+    touch(...field:string[]) : void
 
-    /**
-     * Clears the "touched" flag for the given fields
-     * @param field
-     */
-    untouch(...field: string[]): void;
+    // Clears the "touched" flag for the given fields This is a bound action creator, so it returns
+    // nothing.
+    untouch(...field:string[]) : void
 
-    /**
-     * Clears the "touched" flag for the all fields
-     */
-    untouchAll(): void;
+    // true if the form passes validation (has no validation errors). Opposite of invalid.
+    valid : boolean
 
-    /**
-     * true if the form passes validation (has no validation errors). Opposite
-     * of invalid.
-     */
-    valid: boolean;
-
-    /**
-     * All of your values in the form { field1: <string>, field2: <string> }.
-     */
-    values: TValues;
+    // A generic warning for the entire form given by the _warning key in the result from the
+    // synchronous warning function.
+    warning : any
 }
 
 interface ComponentDecorator<T> {
@@ -490,7 +517,7 @@ export const reducer: {
 }
 
 // export class Field<Values, Props> extends React.Component<FieldProps<Values, Props>, any> {}
-export class Field extends React.Component<any, any> {}
+export class Field extends React.Component<FieldProps<any, any>, any> {}
 
 export interface FieldArrayProps {
   /**
