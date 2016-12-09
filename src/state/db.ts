@@ -3,6 +3,7 @@ import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction, Dispatch } from 'redux'
 import { createIndices, DbInfo, docChangeActionTesters, Institution, Account } from '../docs'
+import { AppThunk } from './'
 
 PouchDB.plugin(PouchFind)
 PouchDB.plugin(CryptoPouch)
@@ -99,21 +100,6 @@ const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>
     }
   }
 
-export const loadMetaDb = (): Thunk =>
-  async (dispatch) => {
-    const db = new PouchDB<DbInfo.Doc>(METADB_NAME)
-    db.changes({
-      since: 'now',
-      live: true
-    })
-    .on('change', handleChange(db, dispatch))
-
-    const results = await db.find({selector: DbInfo.all})
-    const infos = await DbInfo.createCache(results.docs)
-
-    dispatch(setMetaDb({db, infos}))
-  }
-
 export const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
   async (dispatch) => {
     const db = new PouchDB<any>(info._id)
@@ -185,6 +171,17 @@ export const DbSlice = {
   db: reducer
 }
 
-export const DbInit = [
-  loadMetaDb
-]
+export const DbInit = (): AppThunk =>
+  async (dispatch) => {
+    const db = new PouchDB<DbInfo.Doc>(METADB_NAME)
+    db.changes({
+      since: 'now',
+      live: true
+    })
+    .on('change', handleChange(db, dispatch))
+
+    const results = await db.find({selector: DbInfo.all})
+    const infos = await DbInfo.createCache(results.docs)
+
+    dispatch(setMetaDb({db, infos}))
+  }

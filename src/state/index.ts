@@ -5,11 +5,13 @@ import { composeWithDevTools } from 'redux-devtools-extension'
 
 export * from './db'
 export * from './form'
+export * from './fi'
 export * from './i18n'
 export * from './router'
 export * from './ui'
 
 import { DbSlice, DbInit } from './db'
+import { FiSlice, FiInit } from './fi'
 import { FormSlice } from './form'
 import { I18nSlice } from './i18n'
 import { RouterSlice, historyAPI } from './router'
@@ -17,6 +19,7 @@ import { UiSlice } from './ui'
 
 export type AppState =
   DbSlice &
+  FiSlice &
   FormSlice &
   I18nSlice &
   RouterSlice &
@@ -24,6 +27,7 @@ export type AppState =
 
 export const AppState = combineReducers<AppState>({
   ...DbSlice,
+  ...FiSlice,
   ...FormSlice,
   ...I18nSlice,
   ...RouterSlice,
@@ -36,11 +40,10 @@ export type AppThunk = ThunkAction<any, AppState, any>
 export const AppInit = (): AppThunk => async (dispatch) => {
   type Initializer = () => AppThunk
   const initializers: Initializer[] = [
-    ...DbInit
+    DbInit,
+    FiInit
   ]
-  for (let init of initializers) {
-    await dispatch(init())
-  }
+  await Promise.all(initializers.map(init => dispatch(init())))
 }
 
 const routingMiddleware = routerMiddleware(historyAPI)
