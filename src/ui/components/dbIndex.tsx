@@ -1,4 +1,3 @@
-import * as PouchDB from 'pouchdb-browser'
 import * as React from 'react'
 import { ListGroup, ListGroupItem } from 'react-bootstrap'
 import { FormattedMessage, defineMessages } from 'react-intl'

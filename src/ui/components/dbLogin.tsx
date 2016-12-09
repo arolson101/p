@@ -47,6 +47,7 @@ export const DbLoginComponent = (props: AllProps) => {
       <form onSubmit={handleSubmit(submit)}>
         <div>
           <PasswordField
+            autoFocus
             name='password'
             label={formatMessage(forms.password)}
           />

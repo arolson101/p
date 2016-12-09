@@ -58,6 +58,7 @@ export const forms = defineMessages({
 interface FieldGroupProps<Name> {
   name: Name
   label: string
+  onChange?: (newValue: any) => any
 }
 
 const WrappedControl = <Name extends string, Props>(Component: any, componentProps?: Props) =>
@@ -65,25 +66,35 @@ const WrappedControl = <Name extends string, Props>(Component: any, componentPro
     const { input, meta, ...fieldProps } = props as any
     const { name, label } = fieldProps
     const { error, warning } = meta
+    const onChange = (e: any) => {
+      if (input.onChange) { input.onChange(e) }
+      if (props.onChange) { props.onChange(e) }
+    }
     return (
       <RB.FormGroup controlId={name} {...{validationState: error ? 'error' : warning ? 'warning' : undefined}}>
         <RB.ControlLabel>{label}</RB.ControlLabel>
-        <Component {...componentProps} {...fieldProps} {...input} />
+        <Component {...componentProps} {...fieldProps} {...input} onChange={onChange}/>
         {(error || warning) && <RB.HelpBlock>{error || warning}</RB.HelpBlock>}
       </RB.FormGroup>
     )
   }
 
-export { Select }
+// react-select with onChange/onBlur compatable with redux-form
+const RFSelect = (props: Select.ReactSelectProps) =>
+  <Select
+    {...props}
+    onChange={(e: any) => props.onChange && props.onChange(e && e.value)}
+    onBlur={() => props.onBlur && props.onBlur(props.value ? props.value : undefined as any)}
+  />
 
 const FieldTemplate = <Values, Props>(component: FieldComponent<Props>) =>
-  (props: Props & React.HTMLAttributes<any> & Partial<FieldProps<Values, Props>>) => (
-    <Field component={component} {...props} />
+  (props: Props & FieldGroupProps<keyof Values> & Partial<FieldProps<Values, Props>>) => (
+    <Field component={component} {...props as any} />
   )
 
 export const TextControl = WrappedControl(RB.FormControl, {type: 'input'})
 export const PasswordControl = WrappedControl(RB.FormControl, {type: 'password'})
-export const SelectControl = WrappedControl<string, Select.ReactSelectProps>(Select)
+export const SelectControl = WrappedControl<string, Select.ReactSelectProps>(RFSelect)
 
 export const typedFields = function<Values> () {
   return ({
