@@ -1,7 +1,7 @@
 import { routerMiddleware } from 'react-router-redux'
 import { createStore, applyMiddleware, combineReducers, Dispatch, ThunkAction } from 'redux'
 import ReduxThunk from 'redux-thunk'
-import { composeWithDevTools } from 'remote-redux-devtools'
+import { composeWithDevTools } from 'redux-devtools-extension'
 
 export * from './db'
 export * from './form'

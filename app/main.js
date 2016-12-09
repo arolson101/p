@@ -23,6 +23,7 @@ if (!process.env.NODE_ENV) {
 }
 const __DEVELOPMENT__ = (process.env.NODE_ENV == 'development');
 
+
 if (__DEVELOPMENT__) {
   const port = 3000;
   const WebpackDevServer = require('webpack-dev-server');
@@ -63,7 +64,16 @@ function createWindow () {
 
   // Open the DevTools.
   if (__DEVELOPMENT__) {
-    //mainWindow.webContents.openDevTools();
+    const devtools = require('electron-devtools-installer');
+    const installExtension = devtools.default;
+
+    Promise.all(
+      [devtools.REACT_DEVELOPER_TOOLS, devtools.REDUX_DEVTOOLS]
+      .map(installExtension)
+    )
+    .then((name) => console.log(`Added Extension:  ${name}`))
+    .catch((err) => console.log('An error occurred: ', err))
+    .then(() => mainWindow.webContents.openDevTools());
   }
 
   mainWindow.on('close', function() {
