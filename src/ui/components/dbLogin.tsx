@@ -1,106 +1,69 @@
 import * as React from 'react'
-import { Button, ButtonToolbar } from 'react-bootstrap'
-import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
+import { ListGroup, ListGroupItem } from 'react-bootstrap'
+import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { bindActionCreators, Dispatch, compose } from 'redux'
-import { reduxForm, ReduxFormProps, SubmissionError } from 'redux-form'
 import { DbInfo } from '../../docs'
-import { AppState, AppDispatch, historyAPI, loadDb } from '../../state'
-import { Validator } from '../../util'
-import { RouteProps, IntlProps } from './props'
-import { typedFields, forms } from './forms'
+import { AppState } from '../../state'
+import { Lookup } from '../../util'
+import { RouteProps } from './props'
 
-interface Props {
-}
-
-interface ConnectedProps {
-  dbDoc: DbInfo.Doc
-}
-
-type AllProps = Props & RouteProps & ConnectedProps & IntlProps & ReduxFormProps<Values>
-
-interface Values {
-  password: string
+const icons = {
+  newDb: {
+    className: 'fa fa-user-plus'
+  },
+  openDb: {
+    className: 'fa fa-sign-in'
+  }
 }
 
 const messages = defineMessages({
-  intro: {
-    id: 'dbLogin.intro',
-    defaultMessage: 'Enter password for database {dbTitle}'
+  newDb: {
+    id: 'login.newDb',
+    defaultMessage: 'New'
+  },
+  newDbDescription: {
+    id: 'login.newDbDescription',
+    defaultMessage: 'Create a new data store'
   }
 })
 
-const { PasswordField } = typedFields<Values>()
+interface ConnectedProps {
+  dbInfos: DbInfo.Cache
+}
 
-export const DbLoginComponent = (props: AllProps) => {
-  if (!props.dbDoc) {
-    return null as any
-  }
-  const dbTitle = props.dbDoc.title
-  const { handleSubmit } = props
-  const { formatMessage } = props.intl
-  return (
-    <div>
-      <p>
-        <FormattedMessage {...messages.intro} values={{dbTitle}}/>
-      </p>
-      <form onSubmit={handleSubmit(submit)}>
-        <div>
-          <PasswordField
-            autoFocus
-            name='password'
-            label={formatMessage(forms.password)}
-          />
-        </div>
-        <div>
-          <ButtonToolbar>
-            <Button
-              type='button'
-              onClick={() => historyAPI.go(-1)}
+interface Props {}
+type AllProps = RouteProps<any> & ConnectedProps & Props
+
+export const DbLoginComponent = (props: AllProps) => (
+  <div>
+    {props.dbInfos &&
+      <div>
+        <ListGroup>
+          {Lookup.map(props.dbInfos, dbInfo =>
+            <ListGroupItem
+              href={props.router.createHref(DbInfo.path(dbInfo))}
+              key={dbInfo._id}
             >
-              <FormattedMessage {...forms.cancel}/>
-            </Button>
-            <Button
-              type='submit'
-              bsStyle='primary'
-            >
-              <FormattedMessage {...forms.login}/>
-            </Button>
-          </ButtonToolbar>
-        </div>
-      </form>
-    </div>
-  )
-}
+              <h4><i {...icons.openDb}/> {dbInfo.title}</h4>
+            </ListGroupItem>
+          )}
+          {/*Lookup.hasAny(props.dbInfos) &&
+            <Divider/>
+          */}
+          <ListGroupItem
+            href={props.router.createHref('/' + DbInfo.create)}
+          >
+            <h4><i {...icons.openDb}/> <FormattedMessage {...messages.newDb}/></h4>
+            <p><FormattedMessage {...messages.newDbDescription}/></p>
+          </ListGroupItem>
+        </ListGroup>
+      </div>
+    }
+  </div>
+)
 
-const selectDbDoc = (state: AppState, props: RouteProps) => {
-  const dbs = state.db.meta.infos
-  const db = props.params.db
-  return dbs.get(DbInfo.docId({db}))!
-}
-
-const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-  const { formatMessage } = props.intl
-  const v = new Validator(values)
-  v.required(['password'], formatMessage(forms.required))
-  v.maybeThrowSubmissionError()
-
-  try {
-    await dispatch(loadDb(props.dbDoc, values.password))
-  } catch (error) {
-    throw new SubmissionError<Values>({password: error.message})
-  }
-}
-
-export const DbLogin = compose(
-  injectIntl,
-  connect(
-    (state: AppState, props: RouteProps): ConnectedProps => ({
-      dbDoc: selectDbDoc(state, props)
-    }),
-    (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
-  ),
-  reduxForm<AllProps, Values>({
-    form: 'DbLogin'
+export const DbLogin = connect(
+  (state: AppState): ConnectedProps => ({
+    dbInfos: state.db.meta.infos
   })
 )(DbLoginComponent) as React.ComponentClass<Props>

@@ -64,7 +64,7 @@ const setMetaDb = (meta: MetaDb): SetMetaDbAction => ({
   meta
 })
 
-export const CreateDb = (title: string, password?: string): Thunk =>
+export const createDb = (title: string, password?: string): Thunk =>
   async (dispatch, getState) => {
     const info = DbInfo.doc({ title })
     const meta = getState().db.meta!

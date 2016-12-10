@@ -23,11 +23,12 @@ export namespace Account {
     CREDITCARD,
   }
 
-  export type Id = ':account' | makeid | ''
+  export type Id = ':account' | 'create' | makeid | ''
   export type DocId = 'account/:account'
   export type Doc = PouchDB.Core.Document<Account> & { _id: DocId }
-
-  export const docId = docURI.route<{account: Id}, DocId>('account/:account')
+  export interface Params { account: Id }
+  export const route = 'account/:account'
+  export const docId = docURI.route<Params, DocId>(route)
   export const startkey = docId({account: ''})
   export const endkey = docId({account: ''}) + '\uffff'
   export const all: PouchDB.Selector = {
@@ -45,10 +46,10 @@ export namespace Account {
     ]
   })
 
-  export const path = (db: string, account: Doc, path: string = ''): string => {
-    const institutionId = Institution.idFromDocId(account.institution)
-    const accountId = idFromDocId(account._id)
-    return `/${db}/${institutionId}/${accountId}/${path}`
+  export const create = docId({account: 'create'})
+
+  export const path = (account: Doc): string => {
+    return '/' + account._id
   }
 
   export const isDocId = (id: string): boolean => {

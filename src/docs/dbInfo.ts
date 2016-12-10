@@ -8,10 +8,12 @@ export interface DbInfo {
 }
 
 export namespace DbInfo {
-  export type Id = ':dbInfo' | makeid | ''
-  export type DocId = 'dbInfo/:info'
+  export type Id = ':dbInfo' | 'create' | makeid | ''
+  export type DocId = 'dbInfo/:db'
   export type Doc = PouchDB.Core.Document<DbInfo> & { _id: DocId }
-  export const docId = docURI.route<{db: Id}, DocId>('dbInfo/:db')
+  export interface Params { db: Id }
+  export const route = 'dbInfo/:db'
+  export const docId = docURI.route<Params, DocId>(route)
   export const startkey = docId({db: ''})
   export const endkey = docId({db: ''}) + '\uffff'
   export const all: PouchDB.Selector = {
@@ -25,22 +27,15 @@ export namespace DbInfo {
     return !!docId(id as DocId)
   }
 
-  export const idFromDocId = (dbInfo: DocId): Id => {
-    const parts = docId(dbInfo)
-    if (!parts) {
-      throw new Error('not an dbinfo id: ' + dbInfo)
-    }
-    return parts.db
-  }
-
   export const doc = (dbInfo: DbInfo): Doc => {
     const _id = docId({ db: makeid() })
     return { _id, ...dbInfo }
   }
 
+  export const create = docId({db: 'create'})
+
   export const path = (dbInfo: Doc) => {
-    const db = idFromDocId(dbInfo._id)
-    return `/${db}/`
+    return '/' + dbInfo._id
   }
 
   export type Cache = Lookup<DocId, Doc>

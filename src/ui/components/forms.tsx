@@ -35,26 +35,6 @@ export const forms = defineMessages({
   }
 })
 
-// const FieldTemplate = <Values, T>(component: React.ComponentClass<T>, componentProps: T) =>
-//   (props: T & React.HTMLAttributes<any> & InjectedFieldProps<keyof Values>) => (
-//     <Field {...componentProps} component={component} {...props} />
-//   )
-
-// export const formFields = function<Values> () {
-//   return ({
-
-//     AutoComplete: FieldTemplate<Values, __MaterialUI.AutoCompleteProps>(RFMUI.AutoComplete),
-//     Checkbox: FieldTemplate<Values, __MaterialUI.Switches.CheckboxProps>(RFMUI.Checkbox),
-//     TimePicker: FieldTemplate<Values, __MaterialUI.TimePickerProps>(RFMUI.TimePicker),
-//     DatePicker: FieldTemplate<Values, __MaterialUI.DatePicker.DatePickerProps>(RFMUI.DatePicker),
-//     RadioButtonGroup: FieldTemplate<Values, __MaterialUI.Switches.RadioButtonGroupProps>(RFMUI.RadioButtonGroup),
-//     SelectField: FieldTemplate<Values, __MaterialUI.SelectFieldProps>(RFMUI.SelectField),
-//     Slider: FieldTemplate<Values, __MaterialUI.SliderProps>(RFMUI.Slider),
-//     TextField: FieldTemplate<Values, __MaterialUI.TextFieldProps>(RFMUI.TextField),
-//     Toggle: FieldTemplate<Values, __MaterialUI.Switches.ToggleProps>(RFMUI.Toggle)
-//   })
-// }
-
 interface FieldGroupProps<Name> {
   name: Name
   label: string

@@ -1,10 +1,9 @@
 import * as React from 'react'
 import { Link } from 'react-router'
 import { historyAPI } from '../../state'
-import { Body } from './body'
 import { RouteProps } from './props'
 
-export const Root = (props: RouteProps) => (
+export const Root = (props: RouteProps<any>) => (
   <div>
     <a href='#' onClick={(event) => {
       event.preventDefault()
@@ -16,8 +15,9 @@ export const Root = (props: RouteProps) => (
     }}>&gt;</a>{' '}
     [ {props.location.pathname + props.location.search} ]{' '}
     <Link to='/'>/</Link>{' '}
+    <Link to='/logout'>/logout</Link>{' '}
     <div>
-      <Body {...props}/>
+      {props.children}
     </div>
   </div>
 )

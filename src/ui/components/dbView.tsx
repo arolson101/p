@@ -1,52 +1,50 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { createSelector } from 'reselect'
-import { Institution, Account } from '../../docs'
+import { DbInfo, Institution, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Lookup } from '../../util'
+import { RouteProps } from './props'
+import { DbPassword } from './dbPassword'
 
 interface Props {
 }
 
 interface ConnectedProps {
-  institutions: Institution.Cache
-  accounts: Account.Cache
+  current?: CurrentDb
 }
 
-interface RouteProps {
-  params: {
-    db: string
-  }
-}
-
-type AllProps = React.Props<any> & Props & ConnectedProps & RouteProps
+type AllProps = React.Props<any> & Props & ConnectedProps & RouteProps<DbInfo.Params>
 
 type InstitutionWithAccounts = Institution.Doc & {
   accounts: Account.Doc[]
 }
 
 export const DbViewComponent = (props: AllProps) => {
-  const { db } = props.params
+  if (!props.current || props.current.info._id !== DbInfo.docId({db: props.params.db})) {
+    return <DbPassword {...props}/>
+  }
+
+  const { institutions, accounts } = props.current.cache
 
   return (
     <div>institutions:
       <ul>
-        {Lookup.map(props.institutions, institution =>
+        {Lookup.map(institutions, institution =>
           <li key={institution._id}>
-            <Link to={Institution.path(db, institution)}>{institution.name}</Link>
+            <Link to={Institution.path(institution)}>{institution.name}</Link>
             <ul>
-              {Array.from(props.accounts.values())
+              {Array.from(accounts.values())
                     .filter(account => account.institution === institution._id)
                     .map(account =>
-                <li key={account._id}><Link to={Account.path(db, account)}>{account.name}</Link></li>
+                <li key={account._id}><Link to={Account.path(account)}>{account.name}</Link></li>
               )}
-              <li><Link to={Institution.path(db, institution, 'create')}>add account</Link></li>
+              <li><Link to={'/' + Account.create}>add account</Link></li>
             </ul>
           </li>
         )}
       </ul>
-      <Link to={`/${db}/?create`}>add institution</Link>
+      <Link to={'/' + Institution.create}>add institution</Link>
     </div>
   )
 }
@@ -68,8 +66,7 @@ const addInstitution = async (current: CurrentDb) => {
 }
 
 export const DbView = connect(
-  (state: AppState, props: RouteProps): ConnectedProps => ({
-    institutions: state.db.current!.cache.institutions,
-    accounts: state.db.current!.cache.accounts
+  (state: AppState, props: RouteProps<DbInfo.Params>): ConnectedProps => ({
+    current: state.db.current
   })
 )(DbViewComponent as any) as React.ComponentClass<Props>

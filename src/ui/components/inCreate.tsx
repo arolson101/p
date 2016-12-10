@@ -1,6 +1,5 @@
 import { FinancialInstitution } from 'filist'
 import * as React from 'react'
-import * as R from 'ramda'
 import { Button, ButtonToolbar } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
@@ -41,13 +40,12 @@ interface ConnectedProps {
   options: Option[]
   filist: FinancialInstitution[]
   current: CurrentDb
-  // institution?: Institution
 }
 
 interface Props {
 }
 
-type AllProps = Props & IntlProps & ConnectedProps & RouteProps & ReduxFormProps<Values>
+type AllProps = Props & IntlProps & ConnectedProps & RouteProps<Institution.Params> & ReduxFormProps<Values>
 
 interface Values extends Institution {
   fi: string
@@ -123,12 +121,6 @@ const optionsSelector = createSelector(
   (filist): Option[] => filist.map((fi, index) => ({ value: index + 1, label: fi.name }))
 )
 
-// const institutionSelector = createSelector(
-//   (state: AppState, props: AllProps) => props.params.institution,
-//   (state: AppState) => state.db.current && state.db.current.cache,
-//   (institution, cache) => cache && cache.institutions.get(Institution.docId({institution}))
-// )
-
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
   const { formatMessage } = props.intl
   const v = new Validator(values)
@@ -140,7 +132,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   const doc = Institution.doc(vals)
   await current.db.put(doc)
 
-  props.router.replace(Institution.path(props.params.db, doc))
+  props.router.replace(Institution.path(doc))
 }
 
 export const InCreate = compose(
@@ -149,8 +141,7 @@ export const InCreate = compose(
     (state: AppState): ConnectedProps => ({
       options: optionsSelector(state),
       filist: state.fi.list,
-      current: state.db.current!,
-      // institution: institutionSelector(state)
+      current: state.db.current!
     }),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   ),

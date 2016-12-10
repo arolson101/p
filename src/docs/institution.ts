@@ -22,11 +22,12 @@ export interface Institution {
 }
 
 export namespace Institution {
-  export type Id = ':institution' | makeid | ''
+  export type Id = ':institution' | 'create' | makeid | ''
   export type DocId = 'institution/:institution'
   export type Doc = PouchDB.Core.Document<Institution> & { _id: DocId }
-
-  export const docId = docURI.route<{institution: Id}, DocId>('institution/:institution')
+  export interface Params { institution: Id }
+  export const route = 'institution/:institution'
+  export const docId = docURI.route<Params, DocId>(route)
   export const startkey = docId({institution: ''})
   export const endkey = docId({institution: ''}) + '\uffff'
   export const all: PouchDB.Selector = {
@@ -36,9 +37,10 @@ export namespace Institution {
     ]
   }
 
-  export const path = (db: string, institution: Doc, path: string = ''): string => {
-    const institutionId = idFromDocId(institution._id)
-    return `/${db}/${institutionId}/${path}`
+  export const create = docId({institution: 'create'})
+
+  export const path = (institution: Doc): string => {
+    return '/' + institution._id
   }
 
   export const isDocId = (id: string): boolean => {
@@ -47,14 +49,6 @@ export namespace Institution {
 
   export const isDoc = (doc: Doc): boolean => {
     return !!docId(doc._id)
-  }
-
-  export const idFromDocId = (institution: DocId): Id => {
-    const iparts = docId(institution)
-    if (!iparts) {
-      throw new Error('not an institution id: ' + institution)
-    }
-    return iparts.institution
   }
 
   export const doc = (institution: Institution): Doc => {

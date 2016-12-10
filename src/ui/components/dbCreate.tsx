@@ -4,8 +4,7 @@ import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { DbInfo } from '../../docs'
-import { AppState, AppDispatch, historyAPI, CreateDb } from '../../state'
+import { AppState, AppDispatch, historyAPI, createDb } from '../../state'
 import { Validator } from '../../util'
 import { forms, typedFields } from './forms'
 import { IntlProps, RouteProps } from './props'
@@ -27,7 +26,7 @@ interface ConnectedProps {
 interface Props {
 }
 
-type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps
+type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps<any>
 
 interface Values {
   name: string
@@ -99,8 +98,8 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.required(['name', 'password', 'confirmPassword'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
 
-  const dbInfo = await dispatch(CreateDb(values.name, values.password))
-  historyAPI.push(DbInfo.path(dbInfo))
+  await dispatch(createDb(values.name))
+  historyAPI.push('/')
 }
 
 export const DbCreate = compose(

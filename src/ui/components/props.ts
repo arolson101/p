@@ -18,12 +18,6 @@ export interface IntlProps {
   intl: InjectedIntlProps
 }
 
-interface Params {
-  db: DbInfo.Id
-  institution: Institution.Id
-  account: Account.Id
-}
-
 interface InjectedRouter {
     push: (pathOrLoc: History.LocationDescriptor) => void
     replace: (pathOrLoc: History.LocationDescriptor) => void
@@ -47,4 +41,4 @@ interface RouteComponentProps<P, R> {
   children?: React.ReactElement<any>
 }
 
-export type RouteProps = RouteComponentProps<Params, any>
+export type RouteProps<Params> = RouteComponentProps<Params, any>
