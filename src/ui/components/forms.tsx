@@ -93,12 +93,14 @@ const FieldTemplate = <Values, Props>(component: FieldComponent<Props>) =>
   )
 
 export const TextControl = WrappedControl(RB.FormControl, {type: 'input'})
+export const MultilineTextControl = WrappedControl(RB.FormControl, {componentClass: 'textarea'})
 export const PasswordControl = WrappedControl(RB.FormControl, {type: 'password'})
 export const SelectControl = WrappedControl<string, Select.ReactSelectProps>(RFSelect)
 
 export const typedFields = function<Values> () {
   return ({
     TextField: FieldTemplate<Values, RB.FormControlProps>(TextControl),
+    MultilineTextField: FieldTemplate<Values, RB.FormControlProps>(MultilineTextControl),
     PasswordField: FieldTemplate<Values, RB.FormControlProps>(PasswordControl),
     SelectField: FieldTemplate<Values, Select.ReactSelectProps>(SelectControl)
   })

@@ -35,12 +35,15 @@ export const BodyComponent = (props: AllProps) => {
     return <DbLogin {...props}/>
   }
 
-  const institutions = props.current.cache.institutions
+  const inst = props.institutions && props.institutions.get(Institution.docId({institution}))
+  if (institution && !inst) {
+    return null as any
+  }
 
   return (
     <div>db '{props.dbInfos.get(DbInfo.docId({db: db}))!.title}'
       {institution ? (
-        <div>institution '{institutions.get(Institution.docId({institution}))!.name}'</div>
+        <div>institution '{inst!.name}'</div>
       ) : (
         create ? (
           <InCreate {...props}/>
@@ -55,6 +58,7 @@ export const BodyComponent = (props: AllProps) => {
 export const Body = connect(
   (state: AppState): ConnectedProps => ({
     dbInfos: state.db.meta.infos,
-    current: state.db.current
+    current: state.db.current,
+    institutions: state.db.current && state.db.current.cache.institutions
   })
 )(BodyComponent) as React.ComponentClass<Props>

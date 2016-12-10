@@ -1,3 +1,4 @@
+export * from './formatAddress'
 export * from './lookup'
 export * from './makeid'
 export * from './observeStore'

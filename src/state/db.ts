@@ -153,10 +153,10 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
       return { ...state, meta: { ...state.meta, infos: action.cache } }
 
     case Institution.CACHE_SET:
-      return { ...state, current: { ...state.current!, institutions: action.cache } }
+      return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, institutions: action.cache } } }
 
     case Account.CACHE_SET:
-      return { ...state, current: { ...state.current!, accounts: action.cache } }
+      return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, accounts: action.cache } } }
 
     default:
       return state
