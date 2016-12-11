@@ -5,7 +5,7 @@ import { DbInfo, Institution, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Lookup } from '../../util'
 import { RouteProps } from './props'
-import { DbPassword } from './dbPassword'
+import { DbLogin } from './dbLogin'
 
 interface Props {
 }
@@ -22,7 +22,7 @@ type InstitutionWithAccounts = Institution.Doc & {
 
 export const DbViewComponent = (props: AllProps) => {
   if (!props.current || props.current.info._id !== DbInfo.docId({db: props.params.db})) {
-    return <DbPassword {...props}/>
+    return <DbLogin {...props}/>
   }
 
   const { institutions, accounts } = props.current.cache
@@ -39,7 +39,6 @@ export const DbViewComponent = (props: AllProps) => {
                     .map(account =>
                 <li key={account._id}><Link to={Account.path(account)}>{account.name}</Link></li>
               )}
-              <li><Link to={'/' + Account.create}>add account</Link></li>
             </ul>
           </li>
         )}
@@ -49,21 +48,21 @@ export const DbViewComponent = (props: AllProps) => {
   )
 }
 
-const addAccount = async (institution: InstitutionWithAccounts, current: CurrentDb) => {
-  const account: Account = {
-    name: 'Account ' + institution.accounts.length,
-    institution: institution._id,
-    type: Account.Type.CHECKING,
-    number: institution.accounts.length.toString(),
-    visible: true,
-    balance: 0
-  }
-  current.db.put(Account.doc(account))
-}
+// const addAccount = async (institution: InstitutionWithAccounts, current: CurrentDb) => {
+//   const account: Account = {
+//     name: 'Account ' + institution.accounts.length,
+//     institution: institution._id,
+//     type: Account.Type.CHECKING,
+//     number: institution.accounts.length.toString(),
+//     visible: true,
+//     balance: 0
+//   }
+//   current.db.put(Account.doc(account))
+// }
 
-const addInstitution = async (current: CurrentDb) => {
-  current.db.put(Institution.doc({name: '1st bank'}))
-}
+// const addInstitution = async (current: CurrentDb) => {
+//   current.db.put(Institution.doc({name: '1st bank'}))
+// }
 
 export const DbView = connect(
   (state: AppState, props: RouteProps<DbInfo.Params>): ConnectedProps => ({

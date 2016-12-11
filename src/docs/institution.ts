@@ -2,6 +2,7 @@ import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
 import { AppThunk } from '../state'
 import { TCacheSetAction } from './index'
+import { Account } from './account'
 
 export interface Institution {
   name: string
@@ -38,6 +39,13 @@ export namespace Institution {
   }
 
   export const create = docId({institution: 'create'})
+  export const accountCreatePath = (institution: Doc): string => {
+    const iparams = docId(institution._id)
+    if (!iparams) {
+      throw new Error('not a institution docid: ' + institution._id)
+    }
+    return '/' + Account.docId({institution: iparams.institution, account: 'create'})
+  }
 
   export const path = (institution: Doc): string => {
     return '/' + institution._id
@@ -51,8 +59,8 @@ export namespace Institution {
     return !!docId(doc._id)
   }
 
-  export const doc = (institution: Institution): Doc => {
-    const _id = docId({ institution: makeid() })
+  export const doc = (institution: Institution, lang: string): Doc => {
+    const _id = docId({ institution: makeid(institution.name, lang) })
     return { _id, ...institution }
   }
 

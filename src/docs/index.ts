@@ -11,7 +11,7 @@ import { Lookup } from '../util'
 export const createIndices = async (db: PouchDB.Database<any>) => {
   type Indexer = (db: PouchDB.Database<any>) => Promise<any>
   const indexers: Indexer[] = [
-    Account.createIndices
+    // Account.createIndices
   ]
   for (let index of indexers) {
     await index(db)

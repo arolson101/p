@@ -2,9 +2,10 @@ import { Button, ButtonToolbar } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { bindActionCreators, Dispatch, compose } from 'redux'
+import { Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { AppState, AppDispatch, historyAPI, createDb } from '../../state'
+import { DbInfo } from '../../docs'
+import { AppState, dbActions } from '../../state'
 import { Validator } from '../../util'
 import { forms, typedFields } from './forms'
 import { IntlProps, RouteProps } from './props'
@@ -21,12 +22,17 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
+  lang: string
 }
 
 interface Props {
 }
 
-type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps<any>
+interface DispatchedProps {
+  createDb(title: string, password: string, lang: string): Promise<DbInfo.Doc>
+}
+
+type AllProps = Props & IntlProps & ConnectedProps & DispatchedProps & ReduxFormProps<Values> & RouteProps<any>
 
 interface Values {
   name: string
@@ -67,7 +73,7 @@ export const DbCreateComponent = (props: AllProps) => {
             <Button
               type='button'
               bsSize='large'
-              onClick={() => historyAPI.go(-1)}
+              onClick={() => props.router.goBack()}
             >
               {formatMessage(forms.cancel)}
             </Button>
@@ -98,15 +104,17 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.required(['name', 'password', 'confirmPassword'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
 
-  await dispatch(createDb(values.name))
-  historyAPI.push('/')
+  const { router } = props
+  const dbInfo = await dispatch(dbActions.createDb(values.name, values.password, props.lang))
+  router.replace(DbInfo.path(dbInfo))
 }
 
 export const DbCreate = compose(
   injectIntl,
   connect(
-    (state: AppState): ConnectedProps => ({}),
-    (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
+    (state: AppState): ConnectedProps => ({
+      lang: state.i18n.lang
+    })
   ),
   reduxForm<AllProps, Values>({
     form: 'DbCreate',

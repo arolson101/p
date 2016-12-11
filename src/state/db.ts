@@ -38,10 +38,10 @@ const initialState: DbState = {
 type State = DbSlice
 type Thunk = ThunkAction<any, State, any>
 
-export type DB_SET_CURRENT = 'db/setCurrent'
-export const DB_SET_CURRENT = 'db/setCurrent'
+type DB_SET_CURRENT = 'db/setCurrent'
+const DB_SET_CURRENT = 'db/setCurrent'
 
-export interface SetDbAction {
+interface SetDbAction {
   type: DB_SET_CURRENT
   current?: CurrentDb
 }
@@ -51,10 +51,10 @@ const setDb = (current?: CurrentDb): SetDbAction => ({
   current
 })
 
-export type DB_SET_META = 'db/setMeta'
-export const DB_SET_META = 'db/setMeta'
+type DB_SET_META = 'db/setMeta'
+const DB_SET_META = 'db/setMeta'
 
-export interface SetMetaDbAction {
+interface SetMetaDbAction {
   type: DB_SET_META
   meta: MetaDb
 }
@@ -64,9 +64,9 @@ const setMetaDb = (meta: MetaDb): SetMetaDbAction => ({
   meta
 })
 
-export const createDb = (title: string, password?: string): Thunk =>
+const createDb = (title: string, password: string, lang: string): Thunk =>
   async (dispatch, getState) => {
-    const info = DbInfo.doc({ title })
+    const info = DbInfo.doc({ title }, lang)
     const meta = getState().db.meta!
     await meta.db.put(info)
     await dispatch(loadDb(info, password))
@@ -100,7 +100,7 @@ const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>
     }
   }
 
-export const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
+const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
   async (dispatch) => {
     const db = new PouchDB<any>(info._id)
     if (password) {
@@ -125,7 +125,24 @@ export const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
     dispatch(setDb({info, db, changes, cache}))
   }
 
-export const unloadDb = (): SetDbAction => setDb(undefined)
+const deleteDb = (info: DbInfo.Doc): Thunk =>
+  async (dispatch, getState) => {
+    const { current, meta } = getState().db
+
+    // unload db if it's the current one
+    if (current && current.info._id === info._id) {
+      await dispatch(unloadDb())
+    }
+
+    // remove meta db info
+    await meta.db.remove(info)
+
+    // destroy db
+    const db = new PouchDB<any>(info._id)
+    await db.destroy()
+  }
+
+const unloadDb = (): SetDbAction => setDb(undefined)
 
 type Actions =
   SetMetaDbAction |
@@ -162,6 +179,13 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
       return state
   }
 }
+
+export const dbActions = ({
+  createDb,
+  loadDb,
+  unloadDb,
+  deleteDb
+})
 
 export interface DbSlice {
   db: DbState

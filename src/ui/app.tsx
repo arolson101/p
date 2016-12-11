@@ -4,8 +4,8 @@ import { Router, Route, IndexRoute } from 'react-router'
 import { bindActionCreators } from 'redux'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
-import { DbInfo, Institution } from '../docs'
-import { AppState, AppDispatch, unloadDb } from '../state'
+import { DbInfo, Institution, Account } from '../docs'
+import { AppState, AppDispatch, dbActions } from '../state'
 import * as Components from './components'
 
 interface Props {
@@ -33,7 +33,7 @@ const requireAuth = (store: Redux.Store<AppState>) =>
 const logout = (store: Redux.Store<AppState>) =>
   (nextState: any, replace: any) => {
     if (store.getState().db.current) {
-      store.dispatch(unloadDb())
+      store.dispatch(dbActions.unloadDb())
     }
     replace({
       pathname: '/'
@@ -49,13 +49,14 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
         <IntlProvider locale={locale}>
           <Router history={history}>
             <Route path='/' component={Components.Root}>
-              <IndexRoute component={Components.DbLogin}/>
+              <IndexRoute component={Components.DbList}/>
               <Route path='logout' onEnter={logout(store)}/>
               <Route path={DbInfo.create} component={Components.DbCreate}/>
               <Route path={DbInfo.route} component={Components.DbView}/>
               <Route onEnter={requireAuth(store)}>
                 <Route path={Institution.create} component={Components.InCreate}/>
                 <Route path={Institution.route} component={Components.InView}/>
+                <Route path={Account.create} component={Components.AcCreate}/>
               </Route>
               <Route path='*' component={NotFoundRoute}/>
             </Route>

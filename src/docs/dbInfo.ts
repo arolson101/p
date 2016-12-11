@@ -27,8 +27,8 @@ export namespace DbInfo {
     return !!docId(id as DocId)
   }
 
-  export const doc = (dbInfo: DbInfo): Doc => {
-    const _id = docId({ db: makeid() })
+  export const doc = (dbInfo: DbInfo, lang: string): Doc => {
+    const _id = docId({ db: makeid(dbInfo.title, lang) })
     return { _id, ...dbInfo }
   }
 

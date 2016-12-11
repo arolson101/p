@@ -1,7 +1,7 @@
 import * as RI from 'react-intl'
-import { DbInfo, Institution, Account } from '../../docs'
 import * as RR from 'react-router'
 import { Location, History } from 'history'
+import { AppDispatch } from '../../state'
 
 // the .d.ts declares these as optional
 interface InjectedIntlProps {
@@ -42,3 +42,7 @@ interface RouteComponentProps<P, R> {
 }
 
 export type RouteProps<Params> = RouteComponentProps<Params, any>
+
+export interface DispatchProps {
+  dispatch: AppDispatch
+}

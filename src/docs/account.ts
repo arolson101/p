@@ -10,7 +10,6 @@ export interface Account {
   type: Account.Type
   number: string
   visible: boolean
-  balance: number
 }
 
 export namespace Account {
@@ -24,13 +23,13 @@ export namespace Account {
   }
 
   export type Id = ':account' | 'create' | makeid | ''
-  export type DocId = 'account/:account'
+  export type DocId = 'account/:institution/:account'
   export type Doc = PouchDB.Core.Document<Account> & { _id: DocId }
-  export interface Params { account: Id }
-  export const route = 'account/:account'
+  export interface Params { institution: Institution.Id, account: Id }
+  export const route = 'account/:institution/:account'
   export const docId = docURI.route<Params, DocId>(route)
-  export const startkey = docId({account: ''})
-  export const endkey = docId({account: ''}) + '\uffff'
+  export const startkey = 'account/'
+  export const endkey = 'account/\uffff'
   export const all: PouchDB.Selector = {
     $and: [
       { _id: { $gt: startkey } },
@@ -38,15 +37,7 @@ export namespace Account {
     ]
   }
 
-  export const allForInstitution = (institution: Institution.Doc): PouchDB.Selector => ({
-    $and: [
-      { _id: { $gt: startkey } },
-      { _id: { $lt: endkey } },
-      { institution: institution._id }
-    ]
-  })
-
-  export const create = docId({account: 'create'})
+  export const create = 'account/:institution/create'
 
   export const path = (account: Doc): string => {
     return '/' + account._id
@@ -68,17 +59,24 @@ export namespace Account {
     return aparts.account
   }
 
-  export const doc = (account: Account): Doc => {
-    const _id = docId({ account: makeid() })
+  export const doc = (account: Account, lang: string): Doc => {
+    const iparams = Institution.docId(account.institution)
+    if (!iparams) {
+      throw new Error('invalid institution docid: ' + account.institution)
+    }
+    const _id = docId({
+      institution: iparams.institution,
+      account: makeid(account.name, lang)
+    })
     return { _id, ...account }
   }
 
   export const createIndices = (db: PouchDB.Database<any>) => {
-    return db.createIndex({
-      index: {
-        fields: ['institution']
-      }
-    })
+    // return db.createIndex({
+    //   index: {
+    //     fields: ['institution']
+    //   }
+    // })
   }
 
   export type Cache = Lookup<DocId, Doc>

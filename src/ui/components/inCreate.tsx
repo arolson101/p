@@ -7,7 +7,7 @@ import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
 import { createSelector } from 'reselect'
 import { Institution } from '../../docs'
-import { AppState, AppDispatch, historyAPI, emptyfi, CurrentDb } from '../../state'
+import { AppState, AppDispatch, emptyfi, CurrentDb } from '../../state'
 import { Validator, formatAddress } from '../../util'
 import { typedFields, forms } from './forms'
 import { IntlProps, RouteProps } from './props'
@@ -40,6 +40,7 @@ interface ConnectedProps {
   options: Option[]
   filist: FinancialInstitution[]
   current: CurrentDb
+  lang: string
 }
 
 interface Props {
@@ -90,7 +91,7 @@ export const InCreateComponent = (props: AllProps) => {
           <ButtonToolbar>
             <Button
               type='button'
-              onClick={() => historyAPI.go(-1)}
+              onClick={() => props.router.goBack()}
             >
               <FormattedMessage {...forms.cancel}/>
             </Button>
@@ -127,9 +128,9 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.required(['name'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
 
-  const { current } = props
+  const { current, lang } = props
   const { fi, ...vals } = values
-  const doc = Institution.doc(vals)
+  const doc = Institution.doc(vals, lang)
   await current.db.put(doc)
 
   props.router.replace(Institution.path(doc))
@@ -141,7 +142,8 @@ export const InCreate = compose(
     (state: AppState): ConnectedProps => ({
       options: optionsSelector(state),
       filist: state.fi.list,
-      current: state.db.current!
+      current: state.db.current!,
+      lang: state.i18n.locale
     }),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   ),
