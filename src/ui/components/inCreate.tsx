@@ -67,8 +67,9 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.required(['name'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
 
-  const { current, lang } = props
+  const { current, filist, lang } = props
   const institution: Institution = {
+    fi: values.fi ? filist[values.fi - 1].name : undefined,
     name: values.name,
     web: values.web,
     address: values.address,

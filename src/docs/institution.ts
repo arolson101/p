@@ -5,6 +5,8 @@ import { TCacheSetAction } from './index'
 import { Account } from './account'
 
 export interface Institution {
+  fi?: string
+
   name: string
   web?: string
   address?: string

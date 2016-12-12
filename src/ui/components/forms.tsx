@@ -21,6 +21,10 @@ export const forms = defineMessages({
     id: 'forms.create',
     defaultMessage: 'Create'
   },
+  save: {
+    id: 'forms.save',
+    defaultMessage: 'Save'
+  },
   delete: {
     id: 'forms.delete',
     defaultMessage: 'Delete'

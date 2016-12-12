@@ -37,7 +37,7 @@ interface Props {
 type AllProps = IntlProps & Props & ReduxFormProps<Values>
 
 export interface Values {
-  fi: string
+  fi: number
 
   name: string
   web: string
@@ -70,7 +70,7 @@ export class InForm extends React.Component<AllProps, any> {
   initializeValues(props: AllProps) {
     const { institution, initialize, filist } = props
     if (institution) {
-      const fi = filist.findIndex(fi => fi.name === institution.name) + 1
+      const fi = filist.findIndex(fi => fi.name === institution.fi) + 1
       const values = institution ? { ...institution, fi } : {}
       initialize(values)
     } else {

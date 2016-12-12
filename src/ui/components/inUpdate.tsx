@@ -53,7 +53,7 @@ export const InUpdateComponent = (props: AllProps) => {
               type='submit'
               bsStyle='primary'
             >
-              <FormattedMessage {...forms.create}/>
+              <FormattedMessage {...forms.save}/>
             </Button>
           </ButtonToolbar>
         </div>
@@ -68,8 +68,11 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.required(['name'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
 
-  const { current, lang } = props
-  const institution: Institution = {
+  const { current, filist } = props
+  const doc: Institution.Doc = {
+    ...props.institution,
+
+    fi: values.fi ? filist[values.fi - 1].name : undefined,
     name: values.name,
     web: values.web,
     address: values.address,
@@ -80,10 +83,8 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
     login: {
       username: values.username,
       password: values.password
-    },
-    accounts: []
+    }
   }
-  const doc = Institution.doc(institution, lang)
   await current.db.put(doc)
 
   props.router.replace(Institution.to.read(doc))
