@@ -2,10 +2,10 @@ import * as React from 'react'
 import { Button, ButtonToolbar } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { bindActionCreators, Dispatch, compose } from 'redux'
+import { Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
 import { DbInfo, Institution } from '../../docs'
-import { AppState, AppDispatch, FI, CurrentDb } from '../../state'
+import { AppState, FI, CurrentDb } from '../../state'
 import { Validator } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
@@ -99,8 +99,7 @@ export const InUpdate = compose(
       lang: state.i18n.locale,
       dbInfo: selectDbInfo(state),
       institution: selectInstitution(state, props)
-    }),
-    (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
+    })
   ),
   reduxForm<AllProps, Values>({
     form: 'InUpdate'

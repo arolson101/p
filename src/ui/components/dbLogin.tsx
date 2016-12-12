@@ -2,10 +2,10 @@ import * as React from 'react'
 import { Button, ButtonToolbar } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { bindActionCreators, Dispatch, compose } from 'redux'
+import { Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps, SubmissionError } from 'redux-form'
 import { DbInfo } from '../../docs'
-import { AppState, AppDispatch, dbActions } from '../../state'
+import { AppState, dbActions } from '../../state'
 import { Validator } from '../../util'
 import { DispatchProps, RouteProps, IntlProps } from './props'
 import { typedFields, forms } from './forms'
@@ -118,8 +118,7 @@ export const DbLogin = compose(
   connect(
     (state: AppState, props: RouteProps<Params>): ConnectedProps => ({
       dbDoc: selectDbDoc(state, props)
-    }),
-    (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
+    })
   ),
   reduxForm<AllProps, Values>({
     form: 'Password'

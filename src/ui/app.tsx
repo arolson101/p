@@ -1,11 +1,10 @@
 import * as History from 'history'
 import * as React from 'react'
 import { Router, Route, IndexRoute } from 'react-router'
-import { bindActionCreators } from 'redux'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
 import { DbInfo, Institution, Account } from '../docs'
-import { AppState, AppDispatch, dbActions } from '../state'
+import { AppState, dbActions } from '../state'
 import * as Components from './components'
 
 interface Props {
@@ -70,6 +69,5 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
 }
 
 export const App = connect(
-  (state: AppState): ConnectedProps => ({ locale: state.i18n.locale }),
-  (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
+  (state: AppState): ConnectedProps => ({ locale: state.i18n.locale })
 )(AppComponent) as React.ComponentClass<Props>
