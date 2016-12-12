@@ -16,7 +16,7 @@ interface ConnectedProps {
 
 type AllProps = Props & RouteProps<Institution.Params> & ConnectedProps
 
-export const InViewComponent = (props: AllProps) => {
+export const InUpdateComponent = (props: AllProps) => {
   const { institution } = props
   const accounts = props.accounts!
   return (
@@ -37,9 +37,9 @@ export const InViewComponent = (props: AllProps) => {
   )
 }
 
-export const InView = connect(
+export const InUpdate = connect(
   (state: AppState, props: RouteProps<Institution.Params>): ConnectedProps => ({
     institution: selectInstitution(state, props),
     accounts: state.db.current && state.db.current.cache.accounts!
   })
-)(InViewComponent) as React.ComponentClass<Props>
+)(InUpdateComponent) as React.ComponentClass<Props>

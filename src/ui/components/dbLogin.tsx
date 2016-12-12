@@ -101,7 +101,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
 
   try {
     await dispatch(dbActions.loadDb(props.dbDoc, values.password))
-    // no need to go anywhere - dbView will switch to rendering authenticated view
+    // no need to go anywhere - dbRead will switch to rendering authenticated view
   } catch (error) {
     throw new SubmissionError<Values>({password: error.message})
   }

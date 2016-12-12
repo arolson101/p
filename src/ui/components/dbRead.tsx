@@ -20,7 +20,7 @@ type InstitutionWithAccounts = Institution.Doc & {
   accounts: Account.Doc[]
 }
 
-export const DbViewComponent = (props: AllProps) => {
+export const DbReadComponent = (props: AllProps) => {
   if (!props.current || props.current.info._id !== DbInfo.docId({db: props.params.db})) {
     return <DbLogin {...props}/>
   }
@@ -46,24 +46,8 @@ export const DbViewComponent = (props: AllProps) => {
   )
 }
 
-// const addAccount = async (institution: InstitutionWithAccounts, current: CurrentDb) => {
-//   const account: Account = {
-//     name: 'Account ' + institution.accounts.length,
-//     institution: institution._id,
-//     type: Account.Type.CHECKING,
-//     number: institution.accounts.length.toString(),
-//     visible: true,
-//     balance: 0
-//   }
-//   current.db.put(Account.doc(account))
-// }
-
-// const addInstitution = async (current: CurrentDb) => {
-//   current.db.put(Institution.doc({name: '1st bank'}))
-// }
-
-export const DbView = connect(
+export const DbRead = connect(
   (state: AppState, props: RouteProps<DbInfo.Params>): ConnectedProps => ({
     current: state.db.current
   })
-)(DbViewComponent as any) as React.ComponentClass<Props>
+)(DbReadComponent as any) as React.ComponentClass<Props>

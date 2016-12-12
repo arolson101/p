@@ -16,7 +16,7 @@ interface ConnectedProps {
 
 type AllProps = Props & RouteProps<Account.Params> & ConnectedProps
 
-export const AcViewComponent = (props: AllProps) => {
+export const AcReadComponent = (props: AllProps) => {
   const { institution, account } = props
   return (
     <div>
@@ -31,9 +31,9 @@ export const AcViewComponent = (props: AllProps) => {
   )
 }
 
-export const AcView = connect(
+export const AcRead = connect(
   (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
     institution: selectInstitution(state, props),
     account: selectAccount(state, props)
   })
-)(AcViewComponent) as React.ComponentClass<Props>
+)(AcReadComponent) as React.ComponentClass<Props>
