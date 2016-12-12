@@ -76,6 +76,16 @@ function createWindow () {
     .then(() => mainWindow.webContents.openDevTools());
   }
 
+  mainWindow.on('app-command', (e, cmd) => {
+    // Navigate the window back when the user hits their mouse back button
+    if (cmd === 'browser-backward' && mainWindow.webContents.canGoBack()) {
+      mainWindow.webContents.goBack()
+    }
+    if (cmd === 'browser-forward' && mainWindow.webContents.canGoForward()) {
+      mainWindow.webContents.goForward()
+    }
+  })
+
   mainWindow.on('close', function() {
     writeConfig(configPath);
   });
