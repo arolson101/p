@@ -23,6 +23,27 @@ export namespace DbInfo {
     ]
   }
 
+  export namespace routes {
+    export const create = 'dbInfo/create'
+    export const read = 'dbInfo/:db'
+    export const update = 'dbInfo/:db/update'
+    export const destroy = 'dbInfo/:db/destroy'
+  }
+
+  export namespace to {
+    export const create = () => {
+      return '/' + routes.create
+    }
+
+    export const read = (dbInfo: Doc) => {
+      return '/' + dbInfo._id
+    }
+
+    export const update = (dbInfo: Doc) => {
+      return '/' + dbInfo._id + '/update'
+    }
+  }
+
   export const isDocId = (id: string): boolean => {
     return !!docId(id as DocId)
   }
@@ -30,12 +51,6 @@ export namespace DbInfo {
   export const doc = (dbInfo: DbInfo, lang: string): Doc => {
     const _id = docId({ db: makeid(dbInfo.title, lang) })
     return { _id, ...dbInfo }
-  }
-
-  export const create = docId({db: 'create'})
-
-  export const path = (dbInfo: Doc) => {
-    return '/' + dbInfo._id
   }
 
   export type Cache = Lookup<DocId, Doc>

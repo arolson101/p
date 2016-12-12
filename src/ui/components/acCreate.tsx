@@ -81,7 +81,7 @@ export const AcCreateComponent = (props: AllProps) => {
 }
 
 const validate = (values: Values, props: IntlProps) => {
-  const { formatMessage } = props.intl
+  // const { formatMessage } = props.intl
   const v = new Validator(values)
   // TODO: ensure uniqueness
   return v.errors
@@ -103,7 +103,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   institution.accounts.push(doc._id)
   await current!.db.bulkDocs([doc, institution])
 
-  router.replace(Account.path(doc))
+  router.replace(Account.to.read(doc))
 }
 
 export const AcCreate = compose(

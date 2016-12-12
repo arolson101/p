@@ -32,16 +32,16 @@ export const DbReadComponent = (props: AllProps) => {
       <ul>
         {Lookup.map(institutions, institution =>
           <li key={institution._id}>
-            <Link to={Institution.path(institution)}>{institution.name}</Link>
+            <Link to={Institution.to.read(institution)}>{institution.name}</Link>
             <ul>
               {institution.accounts.map(id => accounts.get(id)!).map(account =>
-                <li key={account._id}><Link to={Account.path(account)}>{account.name}</Link></li>
+                <li key={account._id}><Link to={Account.to.read(account)}>{account.name}</Link></li>
               )}
             </ul>
           </li>
         )}
       </ul>
-      <Link to={'/' + Institution.create}>add institution</Link>
+      <Link to={Institution.to.create()}>add institution</Link>
     </div>
   )
 }

@@ -37,10 +37,21 @@ export namespace Account {
     ]
   }
 
-  export const create = 'account/:institution/create'
+  export namespace routes {
+    export const create = 'account/:institution/create'
+    export const read = 'account/:institution/:account'
+    export const update = 'account/:institution/:account/update'
+    export const destroy = 'account/:institution/:account/destroy'
+  }
 
-  export const path = (account: Doc): string => {
-    return '/' + account._id
+  export namespace to {
+    export const create = () => {
+      return '/' + routes.create
+    }
+
+    export const read = (account: Doc): string => {
+      return '/' + account._id
+    }
   }
 
   export const isDocId = (id: string): boolean => {

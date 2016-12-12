@@ -41,7 +41,7 @@ export const DbListComponent = (props: AllProps) => (
         <ListGroup>
           {Lookup.map(props.dbInfos, dbInfo =>
             <ListGroupItem
-              href={props.router.createHref(DbInfo.path(dbInfo))}
+              href={props.router.createHref(DbInfo.to.read(dbInfo))}
               key={dbInfo._id}
             >
               <h4><i {...icons.openDb}/> {dbInfo.title}</h4>
@@ -51,7 +51,7 @@ export const DbListComponent = (props: AllProps) => (
             <Divider/>
           */}
           <ListGroupItem
-            href={props.router.createHref('/' + DbInfo.create)}
+            href={props.router.createHref(DbInfo.to.create())}
           >
             <h4><i {...icons.openDb}/> <FormattedMessage {...messages.newDb}/></h4>
             <p><FormattedMessage {...messages.newDbDescription}/></p>

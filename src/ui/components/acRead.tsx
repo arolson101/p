@@ -23,7 +23,7 @@ export const AcReadComponent = (props: AllProps) => {
       <Loading color='red' show={!account || !institution}/>
       {account && institution &&
         <div>
-          <h1>{institution.name}</h1>
+          <h1><Link to={Institution.to.read(institution)}>{institution.name}</Link></h1>
           <h2>{account.name}</h2>
         </div>
       }

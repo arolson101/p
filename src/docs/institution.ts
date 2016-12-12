@@ -29,8 +29,7 @@ export namespace Institution {
   export type DocId = 'institution/:institution'
   export type Doc = PouchDB.Core.Document<Institution> & { _id: DocId }
   export interface Params { institution: Id }
-  export const route = 'institution/:institution'
-  export const docId = docURI.route<Params, DocId>(route)
+  export const docId = docURI.route<Params, DocId>('institution/:institution')
   export const startkey = docId({institution: ''})
   export const endkey = docId({institution: ''}) + '\uffff'
   export const all: PouchDB.Selector = {
@@ -40,17 +39,33 @@ export namespace Institution {
     ]
   }
 
-  export const create = docId({institution: 'create'})
-  export const accountCreatePath = (institution: Doc): string => {
-    const iparams = docId(institution._id)
-    if (!iparams) {
-      throw new Error('not a institution docid: ' + institution._id)
-    }
-    return '/' + Account.docId({institution: iparams.institution, account: 'create'})
+  export namespace routes {
+    export const create = 'institution/create'
+    export const read = 'institution/:institution'
+    export const update = 'institution/:institution/update'
+    export const destroy = 'institution/:institution/destroy'
   }
 
-  export const path = (institution: Doc): string => {
-    return '/' + institution._id
+  export namespace to {
+    export const create = () => {
+      return '/' + routes.create
+    }
+
+    export const read = (institution: Doc): string => {
+      return '/' + institution._id
+    }
+
+    export const update = (institution: Doc): string => {
+      return '/' + institution._id + '/update'
+    }
+
+    export const accountCreate = (institution: Doc): string => {
+      const iparams = docId(institution._id)
+      if (!iparams) {
+        throw new Error('not a institution docid: ' + institution._id)
+      }
+      return '/' + Account.docId({institution: iparams.institution, account: 'create'})
+    }
   }
 
   export const isDocId = (id: string): boolean => {

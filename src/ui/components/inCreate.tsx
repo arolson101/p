@@ -160,7 +160,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   const doc = Institution.doc(institution, lang)
   await current.db.put(doc)
 
-  props.router.replace(Institution.path(doc))
+  props.router.replace(Institution.to.read(doc))
 }
 
 export const InCreate = compose(

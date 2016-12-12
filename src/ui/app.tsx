@@ -51,13 +51,14 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
             <Route path='/' component={Components.Root}>
               <IndexRoute component={Components.DbList}/>
               <Route path='logout' onEnter={logout(store)}/>
-              <Route path={DbInfo.create} component={Components.DbCreate}/>
-              <Route path={DbInfo.route} component={Components.DbRead}/>
+              <Route path={DbInfo.routes.create} component={Components.DbCreate}/>
+              <Route path={DbInfo.routes.read} component={Components.DbRead}/>
               <Route onEnter={requireAuth(store)}>
-                <Route path={Institution.create} component={Components.InCreate}/>
-                <Route path={Institution.route} component={Components.InRead}/>
-                <Route path={Account.create} component={Components.AcCreate}/>
-                <Route path={Account.route} component={Components.AcRead}/>
+                <Route path={Institution.routes.create} component={Components.InCreate}/>
+                <Route path={Institution.routes.read} component={Components.InRead}/>
+                <Route path={Institution.routes.update} component={Components.InUpdate}/>
+                <Route path={Account.routes.create} component={Components.AcCreate}/>
+                <Route path={Account.routes.read} component={Components.AcRead}/>
               </Route>
               <Route path='*' component={NotFoundRoute}/>
             </Route>

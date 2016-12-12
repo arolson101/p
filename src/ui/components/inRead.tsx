@@ -27,10 +27,11 @@ export const InReadComponent = (props: AllProps) => {
           <h1>{institution.name}</h1>
           <ul>
             {institution.accounts.map(id => accounts.get(id)!).map(account =>
-              <li key={account._id}><Link to={Account.path(account)}>{account.name}</Link></li>
+              <li key={account._id}><Link to={Account.to.read(account)}>{account.name}</Link></li>
             )}
           </ul>
-          <Link to={Institution.accountCreatePath(institution)}>add account</Link>
+          <p><Link to={Institution.to.accountCreate(institution)}>add account</Link></p>
+          <p><Link to={Institution.to.update(institution)}>update</Link></p>
         </div>
       }
     </div>
