@@ -1,16 +1,15 @@
-import { FinancialInstitution } from 'filist'
 import * as React from 'react'
 import { Button, ButtonToolbar } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { createSelector } from 'reselect'
 import { Institution } from '../../docs'
-import { AppState, AppDispatch, emptyfi, CurrentDb } from '../../state'
-import { Validator, formatAddress } from '../../util'
-import { typedFields, forms } from './forms'
+import { AppState, AppDispatch, FI, CurrentDb } from '../../state'
+import { Validator } from '../../util'
+import { forms } from './forms'
 import { IntlProps, RouteProps } from './props'
+import { Values, InForm } from './inForm'
 
 const messages = defineMessages({
   fi: {
@@ -31,14 +30,8 @@ const messages = defineMessages({
   }
 })
 
-interface Option {
-  value: number
-  label: string
-}
-
 interface ConnectedProps {
-  options: Option[]
-  filist: FinancialInstitution[]
+  filist: FI[]
   current: CurrentDb
   lang: string
 }
@@ -48,59 +41,12 @@ interface Props {
 
 type AllProps = Props & IntlProps & ConnectedProps & RouteProps<Institution.Params> & ReduxFormProps<Values>
 
-interface Values {
-  fi: string
-
-  name: string
-  web: string
-  address: string
-  notes: string
-
-  online: boolean
-
-  fid: string
-  org: string
-  ofx: string
-
-  username: string
-  password: string
-}
-
-const { TextField, SelectField, MultilineTextField } = typedFields<Values>()
-
 export const InCreateComponent = (props: AllProps) => {
-  const { handleSubmit, intl: { formatMessage }, options } = props
+  const { handleSubmit } = props
   return (
     <div>
       <form onSubmit={handleSubmit(submit)}>
-        <div>
-          <SelectField
-            autofocus
-            name='fi'
-            label={formatMessage(messages.fi)}
-            options={options}
-            onChange={(value: number) => onChangeFI(props, value)}
-          />
-        </div>
-        <div>
-          <TextField
-            name='name'
-            label={formatMessage(messages.name)}
-          />
-        </div>
-        <div>
-          <TextField
-            name='web'
-            label={formatMessage(messages.web)}
-          />
-        </div>
-        <div>
-          <MultilineTextField
-            name='address'
-            rows={4}
-            label={formatMessage(messages.address)}
-          />
-        </div>
+        <InForm {...props} />
         <div>
           <ButtonToolbar>
             <Button
@@ -121,20 +67,6 @@ export const InCreateComponent = (props: AllProps) => {
     </div>
   )
 }
-
-const onChangeFI = (props: AllProps, index?: number) => {
-  const { filist } = props
-  const value = index ? filist[index - 1] : emptyfi
-
-  props.change('name', value.name)
-  props.change('web', value.profile.siteURL)
-  props.change('address', formatAddress(value))
-}
-
-const optionsSelector = createSelector(
-  (state: AppState) => state.fi.list,
-  (filist): Option[] => filist.map((fi, index) => ({ value: index + 1, label: fi.name }))
-)
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
   const { formatMessage } = props.intl
@@ -167,7 +99,6 @@ export const InCreate = compose(
   injectIntl,
   connect(
     (state: AppState): ConnectedProps => ({
-      options: optionsSelector(state),
       filist: state.fi.list,
       current: state.db.current!,
       lang: state.i18n.locale

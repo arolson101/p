@@ -26,8 +26,7 @@ export namespace Account {
   export type DocId = 'account/:institution/:account'
   export type Doc = PouchDB.Core.Document<Account> & { _id: DocId }
   export interface Params { institution: Institution.Id, account: Id }
-  export const route = 'account/:institution/:account'
-  export const docId = docURI.route<Params, DocId>(route)
+  export const docId = docURI.route<Params, DocId>('account/:institution/:account')
   export const startkey = 'account/'
   export const endkey = 'account/\uffff'
   export const all: PouchDB.Selector = {

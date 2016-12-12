@@ -12,8 +12,7 @@ export namespace DbInfo {
   export type DocId = 'dbInfo/:db'
   export type Doc = PouchDB.Core.Document<DbInfo> & { _id: DocId }
   export interface Params { db: Id }
-  export const route = 'dbInfo/:db'
-  export const docId = docURI.route<Params, DocId>(route)
+  export const docId = docURI.route<Params, DocId>('dbInfo/:db')
   export const startkey = docId({db: ''})
   export const endkey = docId({db: ''}) + '\uffff'
   export const all: PouchDB.Selector = {

@@ -2,8 +2,12 @@ import { FinancialInstitution, FinancialInstitutionProfile } from 'filist'
 import { ThunkAction } from 'redux'
 import { AppThunk } from './'
 
+export interface FI extends FinancialInstitution {
+  id: number // array index + 1
+}
+
 export type FiState = {
-  list: FinancialInstitution[]
+  list: FI[]
 }
 
 const initialState: FiState = {
@@ -42,10 +46,10 @@ export const FI_SET = 'fi/set'
 
 export interface SetFiAction {
   type: FI_SET
-  fi: FinancialInstitution[]
+  fi: FI[]
 }
 
-export const setFi = (fi: FinancialInstitution[]): SetFiAction => ({
+export const setFi = (fi: FI[]): SetFiAction => ({
   type: FI_SET,
   fi
 })
@@ -75,5 +79,6 @@ export const FiSlice = {
 export const FiInit = (): AppThunk =>
   async (dispatch) => {
     const filist: FinancialInstitution[] = require('json-loader!filist/filist.json')
-    dispatch(setFi(filist))
+    const fis = filist.map((fi, index) => ({...fi, id: index + 1}))
+    dispatch(setFi(fis))
   }

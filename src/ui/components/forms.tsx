@@ -67,7 +67,12 @@ const WrappedControl = <Name extends string, Props>(Component: any, componentPro
 const RFSelect = (props: Select.ReactSelectProps) =>
   <Select
     {...props}
-    onChange={(e: any) => props.onChange && props.onChange(e && e.value)}
+    onChange={(e: any) => {
+      const value = e && (props.valueKey ? e[props.valueKey] : e.value)
+      if (props.onChange) {
+        props.onChange(value)
+      }
+    }}
     onBlur={() => props.onBlur && props.onBlur(props.value ? props.value : undefined as any)}
   />
 
