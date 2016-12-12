@@ -1,5 +1,6 @@
 import * as React from 'react'
 import Loading from 'react-loading-bar'
+import { Grid } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { DbInfo, Institution, Account } from '../../docs'
@@ -25,7 +26,7 @@ export const InReadComponent = (props: AllProps) => {
     <div>
       <Loading color='red' show={!institution}/>
       {institution &&
-        <div>
+        <Grid>
           <Breadcrumbs {...props}/>
           <h1>{institution.name}</h1>
           <ul>
@@ -35,7 +36,7 @@ export const InReadComponent = (props: AllProps) => {
           </ul>
           <p><Link to={Institution.to.accountCreate(institution)}>add account</Link></p>
           <p><Link to={Institution.to.update(institution)}>update</Link></p>
-        </div>
+        </Grid>
       }
     </div>
   )

@@ -1,4 +1,4 @@
-import { Button, ButtonToolbar } from 'react-bootstrap'
+import { Grid, Button, ButtonToolbar } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
@@ -46,7 +46,7 @@ export const DbCreateComponent = (props: AllProps) => {
   const { handleSubmit } = props
   const { formatMessage } = props.intl
   return (
-    <div>
+    <Grid>
       <p>{formatMessage(messages.welcome)}</p>
       <form onSubmit={handleSubmit(submit)}>
         <div>
@@ -69,10 +69,9 @@ export const DbCreateComponent = (props: AllProps) => {
           />
         </div>
         <div>
-          <ButtonToolbar>
+          <ButtonToolbar className='pull-right'>
             <Button
               type='button'
-              bsSize='large'
               onClick={() => props.router.goBack()}
             >
               {formatMessage(forms.cancel)}
@@ -80,14 +79,13 @@ export const DbCreateComponent = (props: AllProps) => {
             <Button
               type='submit'
               bsStyle='primary'
-              bsSize='large'
             >
               {formatMessage(forms.create)}
             </Button>
           </ButtonToolbar>
         </div>
       </form>
-    </div>
+    </Grid>
   )
 }
 

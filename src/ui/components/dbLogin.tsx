@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, ButtonToolbar } from 'react-bootstrap'
+import { Grid, Button, ButtonToolbar } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
@@ -44,7 +44,7 @@ export const DbLoginComponent = (props: AllProps) => {
   const { handleSubmit } = props
   const { formatMessage } = props.intl
   return (
-    <div>
+    <Grid>
       <p>
         <FormattedMessage {...messages.intro} values={{dbTitle}}/>
       </p>
@@ -57,7 +57,14 @@ export const DbLoginComponent = (props: AllProps) => {
           />
         </div>
         <div>
-          <ButtonToolbar>
+          <ButtonToolbar className='pull-right'>
+            <Button
+              type='button'
+              bsStyle='danger'
+              onClick={() => deleteDoc(props)}
+            >
+              <FormattedMessage {...forms.delete}/>
+            </Button>
             <Button
               type='button'
               onClick={() => props.router.goBack()}
@@ -72,18 +79,8 @@ export const DbLoginComponent = (props: AllProps) => {
             </Button>
           </ButtonToolbar>
         </div>
-        <hr/>
-        <ButtonToolbar>
-          <Button
-            type='button'
-            bsStyle='danger'
-            onClick={() => deleteDoc(props)}
-          >
-            <FormattedMessage {...forms.delete}/>
-          </Button>
-        </ButtonToolbar>
       </form>
-    </div>
+    </Grid>
   )
 }
 

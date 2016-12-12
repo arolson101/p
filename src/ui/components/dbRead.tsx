@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Grid } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { DbInfo, Institution, Account } from '../../docs'
@@ -31,7 +32,7 @@ export const DbReadComponent = (props: AllProps) => {
   const { institutions, accounts } = props.current.cache
 
   return (
-    <div>
+    <Grid>
       <Breadcrumbs {...props}/>
       institutions:
       <ul>
@@ -47,7 +48,7 @@ export const DbReadComponent = (props: AllProps) => {
         )}
       </ul>
       <Link to={Institution.to.create()}>add institution</Link>
-    </div>
+    </Grid>
   )
 }
 

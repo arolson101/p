@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ListGroup, ListGroupItem } from 'react-bootstrap'
+import { Grid, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { DbInfo } from '../../docs'
@@ -35,7 +35,7 @@ interface Props {}
 type AllProps = RouteProps<any> & ConnectedProps & Props
 
 export const DbListComponent = (props: AllProps) => (
-  <div>
+  <Grid>
     {props.dbInfos &&
       <div>
         <ListGroup>
@@ -59,7 +59,7 @@ export const DbListComponent = (props: AllProps) => (
         </ListGroup>
       </div>
     }
-  </div>
+  </Grid>
 )
 
 export const DbList = connect(

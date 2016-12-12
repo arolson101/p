@@ -1,5 +1,6 @@
 import * as React from 'react'
 import Loading from 'react-loading-bar'
+import { Grid } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { DbInfo, Institution, Account } from '../../docs'
@@ -24,11 +25,11 @@ export const AcReadComponent = (props: AllProps) => {
     <div>
       <Loading color='red' show={!account || !institution}/>
       {account && institution &&
-        <div>
+        <Grid>
           <Breadcrumbs {...props}/>
           <h1>{institution.name}</h1>
           <h2>{account.name}</h2>
-        </div>
+        </Grid>
       }
     </div>
   )

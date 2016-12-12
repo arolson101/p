@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, ButtonToolbar } from 'react-bootstrap'
+import { Grid, Button, ButtonToolbar } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
@@ -36,12 +36,12 @@ export const InCreateComponent = (props: AllProps) => {
   const { handleSubmit } = props
   const { formatMessage } = props.intl
   return (
-    <div>
+    <Grid>
       <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
       <form onSubmit={handleSubmit(submit)}>
         <InForm {...props} />
         <div>
-          <ButtonToolbar>
+          <ButtonToolbar className='pull-right'>
             <Button
               type='button'
               onClick={() => props.router.goBack()}
@@ -57,7 +57,7 @@ export const InCreateComponent = (props: AllProps) => {
           </ButtonToolbar>
         </div>
       </form>
-    </div>
+    </Grid>
   )
 }
 

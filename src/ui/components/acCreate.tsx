@@ -1,4 +1,4 @@
-import { Button, ButtonToolbar } from 'react-bootstrap'
+import { Grid, Button, ButtonToolbar } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import Loading from 'react-loading-bar'
@@ -54,7 +54,7 @@ export const AcCreateComponent = (props: AllProps) => {
     <div>
       <Loading color='red' show={!institution}/>
       {institution &&
-        <div>
+        <Grid>
           <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
           <form onSubmit={handleSubmit(submit)}>
             <div>
@@ -65,10 +65,9 @@ export const AcCreateComponent = (props: AllProps) => {
               />
             </div>
             <div>
-              <ButtonToolbar>
+              <ButtonToolbar className='pull-right'>
                 <Button
                   type='button'
-                  bsSize='large'
                   onClick={() => router.goBack()}
                 >
                   {formatMessage(forms.cancel)}
@@ -76,14 +75,13 @@ export const AcCreateComponent = (props: AllProps) => {
                 <Button
                   type='submit'
                   bsStyle='primary'
-                  bsSize='large'
                 >
                   {formatMessage(forms.create)}
                 </Button>
               </ButtonToolbar>
             </div>
           </form>
-        </div>
+        </Grid>
       }
     </div>
   )
