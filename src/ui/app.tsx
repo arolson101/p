@@ -57,6 +57,7 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
                 <Route path={Institution.create} component={Components.InCreate}/>
                 <Route path={Institution.route} component={Components.InView}/>
                 <Route path={Account.create} component={Components.AcCreate}/>
+                <Route path={Account.route} component={Components.AcView}/>
               </Route>
               <Route path='*' component={NotFoundRoute}/>
             </Route>

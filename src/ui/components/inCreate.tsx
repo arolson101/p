@@ -48,8 +48,22 @@ interface Props {
 
 type AllProps = Props & IntlProps & ConnectedProps & RouteProps<Institution.Params> & ReduxFormProps<Values>
 
-interface Values extends Institution {
+interface Values {
   fi: string
+
+  name: string
+  web: string
+  address: string
+  notes: string
+
+  online: boolean
+
+  fid: string
+  org: string
+  ofx: string
+
+  username: string
+  password: string
 }
 
 const { TextField, SelectField, MultilineTextField } = typedFields<Values>()
@@ -129,8 +143,21 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.maybeThrowSubmissionError()
 
   const { current, lang } = props
-  const { fi, ...vals } = values
-  const doc = Institution.doc(vals, lang)
+  const institution: Institution = {
+    name: values.name,
+    web: values.web,
+    address: values.address,
+    online: values.online,
+    fid: values.fid,
+    org: values.org,
+    ofx: values.ofx,
+    login: {
+      username: values.username,
+      password: values.password
+    },
+    accounts: []
+  }
+  const doc = Institution.doc(institution, lang)
   await current.db.put(doc)
 
   props.router.replace(Institution.path(doc))

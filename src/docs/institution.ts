@@ -20,6 +20,8 @@ export interface Institution {
     username: string
     password: string
   }
+
+  accounts: Account.DocId[]
 }
 
 export namespace Institution {

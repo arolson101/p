@@ -10,6 +10,7 @@ import { AppState, CurrentDb } from '../../state'
 import { Validator } from '../../util'
 import { forms, typedFields } from './forms'
 import { IntlProps, RouteProps } from './props'
+import { selectInstitution } from './selectors'
 
 const messages = defineMessages({
   name: {
@@ -79,11 +80,6 @@ export const AcCreateComponent = (props: AllProps) => {
   )
 }
 
-const selectInstitution = (state: AppState, props: RouteProps<Institution.Params>) => {
-  const id = Institution.docId(props.params)
-  return state.db.current && state.db.current.cache.institutions.get(id)
-}
-
 const validate = (values: Values, props: IntlProps) => {
   const { formatMessage } = props.intl
   const v = new Validator(values)
@@ -93,9 +89,10 @@ const validate = (values: Values, props: IntlProps) => {
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
   const { current, router, lang } = props
+  const institution = props.institution!
 
   const account: Account = {
-    institution: props.institution!._id,
+    institution: institution._id,
     name: values.name,
     type: Account.Type.CHECKING,
     number: values.number,
@@ -103,7 +100,8 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   }
 
   const doc = Account.doc(account, lang)
-  await current!.db.put(doc)
+  institution.accounts.push(doc._id)
+  await current!.db.bulkDocs([doc, institution])
 
   router.replace(Account.path(doc))
 }

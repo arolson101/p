@@ -5,13 +5,13 @@ import { AppDispatch } from '../../state'
 
 // the .d.ts declares these as optional
 interface InjectedIntlProps {
-  formatDate: (date: Date, options: RI.FormattedDate.PropsBase) => string;
-  formatTime: (date: Date, option?: RI.FormattedTime.PropsBase) => string;
-  formatRelative: (value: number,options?: RI.FormattedRelative.PropsBase) => string;
-  formatNumber: (value: number, options?: RI.FormattedNumber.PropsBase) => string;
-  formatPlural: (value: number, options?: RI.FormattedPlural.PropsBase) => string;
-  formatMessage: (messageDescriptor: RI.FormattedMessage.MessageDescriptor, values?: Object) => string;
-  formatHTMLMessage: (messageDescriptor: RI.FormattedMessage.MessageDescriptor, values?: Object) => string;
+  formatDate: (date: Date, options: RI.FormattedDate.PropsBase) => string
+  formatTime: (date: Date, option?: RI.FormattedTime.PropsBase) => string
+  formatRelative: (value: number,options?: RI.FormattedRelative.PropsBase) => string
+  formatNumber: (value: number, options?: RI.FormattedNumber.PropsBase) => string
+  formatPlural: (value: number, options?: RI.FormattedPlural.PropsBase) => string
+  formatMessage: (messageDescriptor: RI.FormattedMessage.MessageDescriptor, values?: Object) => string
+  formatHTMLMessage: (messageDescriptor: RI.FormattedMessage.MessageDescriptor, values?: Object) => string
 }
 
 export interface IntlProps {
