@@ -4,13 +4,16 @@ import { Link } from 'react-router'
 import { DbInfo, Institution, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Lookup } from '../../util'
+import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps } from './props'
 import { DbLogin } from './dbLogin'
+import { selectDbInfo } from './selectors'
 
 interface Props {
 }
 
 interface ConnectedProps {
+  dbInfo?: DbInfo.Doc
   current?: CurrentDb
 }
 
@@ -28,7 +31,9 @@ export const DbReadComponent = (props: AllProps) => {
   const { institutions, accounts } = props.current.cache
 
   return (
-    <div>institutions:
+    <div>
+      <Breadcrumbs {...props}/>
+      institutions:
       <ul>
         {Lookup.map(institutions, institution =>
           <li key={institution._id}>
@@ -48,6 +53,7 @@ export const DbReadComponent = (props: AllProps) => {
 
 export const DbRead = connect(
   (state: AppState, props: RouteProps<DbInfo.Params>): ConnectedProps => ({
+    dbInfo: selectDbInfo(state),
     current: state.db.current
   })
 )(DbReadComponent as any) as React.ComponentClass<Props>

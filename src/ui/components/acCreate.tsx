@@ -5,14 +5,19 @@ import Loading from 'react-loading-bar'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { Institution, Account } from '../../docs'
+import { DbInfo, Institution, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Validator } from '../../util'
+import { Breadcrumbs } from './breadcrumbs'
 import { forms, typedFields } from './forms'
 import { IntlProps, RouteProps } from './props'
-import { selectInstitution } from './selectors'
+import { selectDbInfo, selectInstitution } from './selectors'
 
 const messages = defineMessages({
+  page: {
+    id: 'acCreate.page',
+    defaultMessage: 'Add Account'
+  },
   name: {
     id: 'acCreate.name',
     defaultMessage: 'Account Name'
@@ -25,6 +30,7 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   current?: CurrentDb
+  dbInfo?: DbInfo.Doc
   institution?: Institution.Doc
   lang: string
 }
@@ -48,33 +54,36 @@ export const AcCreateComponent = (props: AllProps) => {
     <div>
       <Loading color='red' show={!institution}/>
       {institution &&
-        <form onSubmit={handleSubmit(submit)}>
-          <div>
-            <TextField
-              name='name'
-              autoFocus
-              label={formatMessage(messages.name)}
-            />
-          </div>
-          <div>
-            <ButtonToolbar>
-              <Button
-                type='button'
-                bsSize='large'
-                onClick={() => router.goBack()}
-              >
-                {formatMessage(forms.cancel)}
-              </Button>
-              <Button
-                type='submit'
-                bsStyle='primary'
-                bsSize='large'
-              >
-                {formatMessage(forms.create)}
-              </Button>
-            </ButtonToolbar>
-          </div>
-        </form>
+        <div>
+          <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
+          <form onSubmit={handleSubmit(submit)}>
+            <div>
+              <TextField
+                name='name'
+                autoFocus
+                label={formatMessage(messages.name)}
+              />
+            </div>
+            <div>
+              <ButtonToolbar>
+                <Button
+                  type='button'
+                  bsSize='large'
+                  onClick={() => router.goBack()}
+                >
+                  {formatMessage(forms.cancel)}
+                </Button>
+                <Button
+                  type='submit'
+                  bsStyle='primary'
+                  bsSize='large'
+                >
+                  {formatMessage(forms.create)}
+                </Button>
+              </ButtonToolbar>
+            </div>
+          </form>
+        </div>
       }
     </div>
   )
@@ -112,6 +121,7 @@ export const AcCreate = compose(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       current: state.db.current,
       lang: state.i18n.lang,
+      dbInfo: selectDbInfo(state),
       institution: selectInstitution(state, props)
     })
   ),

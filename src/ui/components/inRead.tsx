@@ -2,15 +2,17 @@ import * as React from 'react'
 import Loading from 'react-loading-bar'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { Institution, Account } from '../../docs'
+import { DbInfo, Institution, Account } from '../../docs'
 import { AppState } from '../../state'
+import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps } from './props'
-import { selectInstitution } from './selectors'
+import { selectDbInfo, selectInstitution } from './selectors'
 
 interface Props {}
 
 interface ConnectedProps {
   institution?: Institution.Doc
+  dbInfo?: DbInfo.Doc
   accounts?: Account.Cache
 }
 
@@ -24,6 +26,7 @@ export const InReadComponent = (props: AllProps) => {
       <Loading color='red' show={!institution}/>
       {institution &&
         <div>
+          <Breadcrumbs {...props}/>
           <h1>{institution.name}</h1>
           <ul>
             {institution.accounts.map(id => accounts.get(id)!).map(account =>
@@ -40,6 +43,7 @@ export const InReadComponent = (props: AllProps) => {
 
 export const InRead = connect(
   (state: AppState, props: RouteProps<Institution.Params>): ConnectedProps => ({
+    dbInfo: selectDbInfo(state),
     institution: selectInstitution(state, props),
     accounts: state.db.current && state.db.current.cache.accounts!
   })

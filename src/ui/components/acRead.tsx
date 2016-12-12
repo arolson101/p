@@ -2,14 +2,16 @@ import * as React from 'react'
 import Loading from 'react-loading-bar'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { Institution, Account } from '../../docs'
+import { DbInfo, Institution, Account } from '../../docs'
 import { AppState } from '../../state'
+import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps } from './props'
-import { selectInstitution, selectAccount } from './selectors'
+import { selectDbInfo, selectInstitution, selectAccount } from './selectors'
 
 interface Props {}
 
 interface ConnectedProps {
+  dbInfo?: DbInfo.Doc
   institution?: Institution.Doc
   account?: Account.Doc
 }
@@ -23,7 +25,8 @@ export const AcReadComponent = (props: AllProps) => {
       <Loading color='red' show={!account || !institution}/>
       {account && institution &&
         <div>
-          <h1><Link to={Institution.to.read(institution)}>{institution.name}</Link></h1>
+          <Breadcrumbs {...props}/>
+          <h1>{institution.name}</h1>
           <h2>{account.name}</h2>
         </div>
       }
@@ -33,6 +36,7 @@ export const AcReadComponent = (props: AllProps) => {
 
 export const AcRead = connect(
   (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
+    dbInfo: selectDbInfo(state),
     institution: selectInstitution(state, props),
     account: selectAccount(state, props)
   })

@@ -2,6 +2,7 @@ import autobind = require('autobind-decorator')
 import * as React from 'react'
 import { defineMessages } from 'react-intl'
 import { ReduxFormProps } from 'redux-form'
+import { Institution } from '../../docs'
 import { FI, emptyfi, CurrentDb } from '../../state'
 import { formatAddress } from '../../util'
 import { typedFields } from './forms'
@@ -30,6 +31,7 @@ interface Props {
   filist: FI[]
   current: CurrentDb
   lang: string
+  institution?: Institution
 }
 
 type AllProps = IntlProps & Props & ReduxFormProps<Values>
@@ -55,6 +57,27 @@ export interface Values {
 const { TextField, SelectField, MultilineTextField } = typedFields<Values>()
 
 export class InForm extends React.Component<AllProps, any> {
+  componentWillMount() {
+    this.initializeValues(this.props)
+  }
+
+  compontWillReceiveProps(nextProps: AllProps) {
+    if (this.props.institution !== nextProps.institution) {
+      this.initializeValues(nextProps)
+    }
+  }
+
+  initializeValues(props: AllProps) {
+    const { institution, initialize, filist } = props
+    if (institution) {
+      const fi = filist.findIndex(fi => fi.name === institution.name) + 1
+      const values = institution ? { ...institution, fi } : {}
+      initialize(values)
+    } else {
+      initialize({})
+    }
+  }
+
   render() {
     const { intl: { formatMessage }, filist } = this.props
     return (

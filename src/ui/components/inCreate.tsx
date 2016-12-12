@@ -4,29 +4,19 @@ import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { Institution } from '../../docs'
+import { DbInfo, Institution } from '../../docs'
 import { AppState, AppDispatch, FI, CurrentDb } from '../../state'
 import { Validator } from '../../util'
+import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
 import { IntlProps, RouteProps } from './props'
 import { Values, InForm } from './inForm'
+import { selectDbInfo } from './selectors'
 
 const messages = defineMessages({
-  fi: {
-    id: 'inCreate.fi',
-    defaultMessage: 'Institution'
-  },
-  name: {
-    id: 'inCreate.name',
-    defaultMessage: 'Name'
-  },
-  web: {
-    id: 'inCreate.web',
-    defaultMessage: 'Website'
-  },
-  address: {
-    id: 'inCreate.address',
-    defaultMessage: 'Address'
+  page: {
+    id: 'inCreate.page',
+    defaultMessage: 'Add Institution'
   }
 })
 
@@ -34,6 +24,7 @@ interface ConnectedProps {
   filist: FI[]
   current: CurrentDb
   lang: string
+  dbInfo?: DbInfo.Doc
 }
 
 interface Props {
@@ -43,8 +34,10 @@ type AllProps = Props & IntlProps & ConnectedProps & RouteProps<Institution.Para
 
 export const InCreateComponent = (props: AllProps) => {
   const { handleSubmit } = props
+  const { formatMessage } = props.intl
   return (
     <div>
+      <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
       <form onSubmit={handleSubmit(submit)}>
         <InForm {...props} />
         <div>
@@ -101,7 +94,8 @@ export const InCreate = compose(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
       current: state.db.current!,
-      lang: state.i18n.locale
+      lang: state.i18n.locale,
+      dbInfo: selectDbInfo(state)
     }),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   ),

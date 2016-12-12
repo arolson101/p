@@ -4,29 +4,19 @@ import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { bindActionCreators, Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { Institution } from '../../docs'
+import { DbInfo, Institution } from '../../docs'
 import { AppState, AppDispatch, FI, CurrentDb } from '../../state'
 import { Validator } from '../../util'
+import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
-import { IntlProps, RouteProps } from './props'
 import { Values, InForm } from './inForm'
+import { IntlProps, RouteProps } from './props'
+import { selectDbInfo, selectInstitution } from './selectors'
 
 const messages = defineMessages({
-  fi: {
-    id: 'inUpdate.fi',
-    defaultMessage: 'Institution'
-  },
-  name: {
-    id: 'inUpdate.name',
-    defaultMessage: 'Name'
-  },
-  web: {
-    id: 'inUpdate.web',
-    defaultMessage: 'Website'
-  },
-  address: {
-    id: 'inUpdate.address',
-    defaultMessage: 'Address'
+  page: {
+    id: 'inUpdate.page',
+    defaultMessage: 'Edit'
   }
 })
 
@@ -34,6 +24,8 @@ interface ConnectedProps {
   filist: FI[]
   current: CurrentDb
   lang: string
+  dbInfo?: DbInfo.Doc
+  institution?: Institution.Doc
 }
 
 interface Props {
@@ -43,8 +35,10 @@ type AllProps = Props & IntlProps & ConnectedProps & RouteProps<Institution.Para
 
 export const InUpdateComponent = (props: AllProps) => {
   const { handleSubmit } = props
+  const { formatMessage } = props.intl
   return (
     <div>
+      <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
       <form onSubmit={handleSubmit(submit)}>
         <InForm {...props} />
         <div>
@@ -98,10 +92,12 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
 export const InUpdate = compose(
   injectIntl,
   connect(
-    (state: AppState): ConnectedProps => ({
+    (state: AppState, props: RouteProps<Institution.Params>): ConnectedProps => ({
       filist: state.fi.list,
       current: state.db.current!,
-      lang: state.i18n.locale
+      lang: state.i18n.locale,
+      dbInfo: selectDbInfo(state),
+      institution: selectInstitution(state, props)
     }),
     (dispatch: AppDispatch) => bindActionCreators( {}, dispatch ),
   ),
