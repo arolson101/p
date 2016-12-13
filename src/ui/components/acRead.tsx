@@ -23,7 +23,7 @@ export const AcReadComponent = (props: AllProps) => {
   const { institution, account } = props
   return (
     <div>
-      <Loading color='red' show={!account || !institution}/>
+      <Loading color='blue' show={!account || !institution}/>
       {account && institution &&
         <Grid>
           <Breadcrumbs {...props}/>

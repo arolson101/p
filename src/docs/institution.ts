@@ -29,7 +29,7 @@ export interface Institution {
 export namespace Institution {
   export type Id = ':institution' | 'create' | makeid | ''
   export type DocId = 'institution/:institution'
-  export type Doc = PouchDB.Core.Document<Institution> & { _id: DocId }
+  export type Doc = PouchDB.Core.Document<Institution> & { _id: DocId; _rev?: string }
   export interface Params { institution: Id }
   export const docId = docURI.route<Params, DocId>('institution/:institution')
   export const startkey = docId({institution: ''})

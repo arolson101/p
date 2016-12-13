@@ -9,7 +9,7 @@ export interface Transaction {
 
 export namespace Transaction {
   export type DocId = 'transaction/:account/:time'
-  export type Doc = PouchDB.Core.Document<Transaction> & { _id: DocId }
+  export type Doc = PouchDB.Core.Document<Transaction> & { _id: DocId; _rev?: string }
 
   export const CHANGE_ACTION = 'db/TransactionChange'
   export const docId = docURI.route<{account: Account.Id, time: string}, DocId>('transaction/:account/:time')

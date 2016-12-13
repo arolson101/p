@@ -24,7 +24,7 @@ export namespace Account {
 
   export type Id = ':account' | 'create' | makeid | ''
   export type DocId = 'account/:institution/:account'
-  export type Doc = PouchDB.Core.Document<Account> & { _id: DocId }
+  export type Doc = PouchDB.Core.Document<Account> & { _id: DocId; _rev?: string }
   export interface Params { institution: Institution.Id, account: Id }
   export const docId = docURI.route<Params, DocId>('account/:institution/:account')
   export const startkey = 'account/'

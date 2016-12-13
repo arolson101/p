@@ -24,7 +24,7 @@ export const InReadComponent = (props: AllProps) => {
   const accounts = props.accounts!
   return (
     <div>
-      <Loading color='red' show={!institution}/>
+      <Loading color='blue' show={!institution}/>
       {institution &&
         <Grid>
           <Breadcrumbs {...props}/>

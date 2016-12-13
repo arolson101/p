@@ -52,7 +52,7 @@ export const AcCreateComponent = (props: AllProps) => {
   const { formatMessage } = props.intl
   return (
     <div>
-      <Loading color='red' show={!institution}/>
+      <Loading color='blue' show={!institution}/>
       {institution &&
         <Grid>
           <Breadcrumbs {...props} page={formatMessage(messages.page)}/>

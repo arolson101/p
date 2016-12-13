@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Grid, Button, ButtonToolbar } from 'react-bootstrap'
+import { Grid, Button, ButtonToolbar, SplitButton, MenuItem } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
@@ -7,6 +7,7 @@ import { reduxForm, ReduxFormProps, SubmissionError } from 'redux-form'
 import { DbInfo } from '../../docs'
 import { AppState, dbActions } from '../../state'
 import { Validator } from '../../util'
+import { ConfirmDelete } from './confirmDelete'
 import { DispatchProps, RouteProps, IntlProps } from './props'
 import { typedFields, forms } from './forms'
 
@@ -31,6 +32,18 @@ const messages = defineMessages({
   intro: {
     id: 'dbLogin.intro',
     defaultMessage: 'Enter password for database {dbTitle}'
+  },
+  deleteDb: {
+    id: 'dbLogin.deleteDb',
+    defaultMessage: 'Delete Database'
+  },
+  confirmDeleteTitle: {
+    id: 'dbLogin.confirmDeleteTitle',
+    defaultMessage: 'Confirm Delete'
+  },
+  confirmDeleteBody: {
+    id: 'dbLogin.confirmDeleteBody',
+    defaultMessage: "Are you sure?  You won't be able to undo this"
   }
 })
 
@@ -60,23 +73,28 @@ export const DbLoginComponent = (props: AllProps) => {
           <ButtonToolbar className='pull-right'>
             <Button
               type='button'
-              bsStyle='danger'
-              onClick={() => deleteDoc(props)}
-            >
-              <FormattedMessage {...forms.delete}/>
-            </Button>
-            <Button
-              type='button'
               onClick={() => props.router.goBack()}
             >
               <FormattedMessage {...forms.cancel}/>
             </Button>
-            <Button
+            <SplitButton
               type='submit'
               bsStyle='primary'
+              id='open-dropdown'
+              title={formatMessage(forms.login)}
+              pullRight
             >
-              <FormattedMessage {...forms.login}/>
-            </Button>
+              <ConfirmDelete
+                component={MenuItem}
+                event='onSelect'
+                title={formatMessage(messages.confirmDeleteTitle)}
+                body={formatMessage(messages.confirmDeleteBody)}
+                confirm={formatMessage(messages.deleteDb)}
+                onConfirmed={() => deleteDoc(props)}
+              >
+                <FormattedMessage {...messages.deleteDb}/>
+              </ConfirmDelete>
+            </SplitButton>
           </ButtonToolbar>
         </div>
       </form>
@@ -105,8 +123,8 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
 }
 
 const deleteDoc = async (props: AllProps) => {
-  const { dispatch, router } = props
-  await dispatch(dbActions.deleteDb(props.dbDoc))
+  const { dispatch, router, dbDoc } = props
+  await dispatch(dbActions.deleteDb(dbDoc))
   router.replace('/')
 }
 
