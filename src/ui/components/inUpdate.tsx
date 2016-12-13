@@ -1,12 +1,11 @@
 import autobind = require('autobind-decorator')
 import * as React from 'react'
-import Loading from 'react-loading-bar'
 import { Grid, Alert, Button, SplitButton, ButtonToolbar, MenuItem } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { DbInfo, Institution, Account } from '../../docs'
+import { DbInfo, Institution } from '../../docs'
 import { AppState, FI, CurrentDb } from '../../state'
 import { Validator } from '../../util'
 import { ConfirmDelete } from './confirmDelete'
@@ -69,10 +68,8 @@ export class InUpdateComponent extends React.Component<AllProps, State> {
     const { handleSubmit, router, institution } = this.props
     const { formatMessage } = this.props.intl
     const { error, deleting } = this.state
-    const color = institution ? 'red' : 'blue'
     return (
       <div>
-        <Loading color={color} show={!institution || deleting}/>
         {institution &&
           <Grid>
             <Breadcrumbs {...this.props} page={formatMessage(messages.page)}/>

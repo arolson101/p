@@ -1,7 +1,6 @@
 import { Grid, Button, ButtonToolbar } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
-import Loading from 'react-loading-bar'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
@@ -52,7 +51,6 @@ export const AcCreateComponent = (props: AllProps) => {
   const { formatMessage } = props.intl
   return (
     <div>
-      <Loading color='blue' show={!institution}/>
       {institution &&
         <Grid>
           <Breadcrumbs {...props} page={formatMessage(messages.page)}/>

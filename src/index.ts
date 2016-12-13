@@ -1,6 +1,5 @@
 require('bootstrap/dist/css/bootstrap.css')
 require('font-awesome/css/font-awesome.css')
-require('react-loading-bar/dist/index.css')
 require('react-select/dist/react-select.css')
 
 import { main } from './main'

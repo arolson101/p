@@ -1,5 +1,4 @@
 import * as React from 'react'
-import Loading from 'react-loading-bar'
 import { Grid } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
@@ -24,7 +23,6 @@ export const InReadComponent = (props: AllProps) => {
   const accounts = props.accounts!
   return (
     <div>
-      <Loading color='blue' show={!institution}/>
       {institution &&
         <Grid>
           <Breadcrumbs {...props}/>
