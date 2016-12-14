@@ -45,7 +45,7 @@ export namespace Institution {
     export const create = 'institution/create'
     export const read = 'institution/:institution'
     export const update = 'institution/:institution/update'
-    export const destroy = 'institution/:institution/destroy'
+    export const del = 'institution/:institution/delete'
   }
 
   export namespace to {
@@ -59,6 +59,10 @@ export namespace Institution {
 
     export const update = (institution: Doc): string => {
       return '/' + institution._id + '/update'
+    }
+
+    export const del = (institution: Doc): string => {
+      return '/' + institution._id + '/delete'
     }
 
     export const accountCreate = (institution: Doc): string => {

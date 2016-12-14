@@ -28,12 +28,13 @@ export const InReadComponent = (props: AllProps) => {
           <Breadcrumbs {...props}/>
           <h1>{institution.name}</h1>
           <ul>
-            {institution.accounts.map(id => accounts.get(id)!).map(account =>
+            {institution.accounts.map(id => accounts.get(id)).map(account => account &&
               <li key={account._id}><Link to={Account.to.read(account)}>{account.name}</Link></li>
             )}
           </ul>
           <p><Link to={Institution.to.accountCreate(institution)}>add account</Link></p>
           <p><Link to={Institution.to.update(institution)}>update</Link></p>
+          <p><Link to={Institution.to.del(institution)}>delete</Link></p>
         </Grid>
       }
     </div>
