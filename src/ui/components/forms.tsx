@@ -80,6 +80,14 @@ const RFSelect = (props: Select.ReactSelectProps) =>
     onBlur={() => props.onBlur && props.onBlur(props.value ? props.value : undefined as any)}
   />
 
+const RBCheckbox = (props: RB.CheckboxProps & InjectedFieldProps<any>) =>
+  <RB.Checkbox
+    {...props.input}
+    checked={props.input.value}
+  >
+    {props.label}
+  </RB.Checkbox>
+
 const FieldTemplate = <Values, Props>(component: FieldComponent<Props>) =>
   (props: Props & FieldGroupProps<keyof Values> & Partial<FieldProps<Values, Props>>) => (
     <Field component={component} {...props as any} />
@@ -95,6 +103,7 @@ export const typedFields = function<Values> () {
     TextField: FieldTemplate<Values, RB.FormControlProps>(TextControl),
     MultilineTextField: FieldTemplate<Values, RB.FormControlProps>(MultilineTextControl),
     PasswordField: FieldTemplate<Values, RB.FormControlProps>(PasswordControl),
-    SelectField: FieldTemplate<Values, Select.ReactSelectProps>(SelectControl)
+    SelectField: FieldTemplate<Values, Select.ReactSelectProps>(SelectControl),
+    CheckboxField: FieldTemplate<Values, RB.CheckboxProps>(RBCheckbox)
   })
 }

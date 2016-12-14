@@ -1,5 +1,6 @@
 import autobind = require('autobind-decorator')
 import * as React from 'react'
+import { Col } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import { ReduxFormProps } from 'redux-form'
 import { Institution } from '../../docs'
@@ -24,6 +25,34 @@ const messages = defineMessages({
   address: {
     id: 'inForm.address',
     defaultMessage: 'Address'
+  },
+  notes: {
+    id: 'inForm.notes',
+    defaultMessage: 'Notes'
+  },
+  online: {
+    id: 'inForm.online',
+    defaultMessage: 'Online'
+  },
+  fid: {
+    id: 'inForm.fid',
+    defaultMessage: 'fid'
+  },
+  org: {
+    id: 'inForm.org',
+    defaultMessage: 'org'
+  },
+  ofx: {
+    id: 'inForm.ofx',
+    defaultMessage: 'ofx'
+  },
+  username: {
+    id: 'inForm.username',
+    defaultMessage: 'username'
+  },
+  password: {
+    id: 'inForm.password',
+    defaultMessage: 'password'
   }
 })
 
@@ -54,7 +83,7 @@ export interface Values {
   password: string
 }
 
-const { TextField, SelectField, MultilineTextField } = typedFields<Values>()
+const { TextField, SelectField, MultilineTextField, CheckboxField } = typedFields<Values>()
 
 export class InForm extends React.Component<AllProps, any> {
   componentWillMount() {
@@ -74,7 +103,7 @@ export class InForm extends React.Component<AllProps, any> {
       const values = institution ? { ...institution, fi } : {}
       initialize(values)
     } else {
-      initialize({})
+      initialize({online: true})
     }
   }
 
@@ -82,7 +111,7 @@ export class InForm extends React.Component<AllProps, any> {
     const { intl: { formatMessage }, filist } = this.props
     return (
       <div>
-        <div>
+        <Col sm={12}>
           <SelectField
             autofocus
             name='fi'
@@ -92,26 +121,69 @@ export class InForm extends React.Component<AllProps, any> {
             valueKey='id'
             onChange={this.onChangeFI}
           />
-        </div>
-        <div>
+        </Col>
+        <Col sm={6}>
           <TextField
             name='name'
             label={formatMessage(messages.name)}
           />
-        </div>
-        <div>
+        </Col>
+        <Col sm={6}>
           <TextField
             name='web'
             label={formatMessage(messages.web)}
           />
-        </div>
-        <div>
+        </Col>
+        <Col sm={6}>
           <MultilineTextField
             name='address'
             rows={4}
             label={formatMessage(messages.address)}
           />
-        </div>
+        </Col>
+        <Col sm={6}>
+          <MultilineTextField
+            name='notes'
+            rows={4}
+            label={formatMessage(messages.notes)}
+          />
+        </Col>
+        <Col sm={12}>
+          <CheckboxField
+            name='online'
+            label={formatMessage(messages.online)}
+          />
+        </Col>
+        <Col sm={3} xs={6}>
+          <TextField
+            name='fid'
+            label={formatMessage(messages.fid)}
+          />
+        </Col>
+        <Col sm={3} xs={6}>
+          <TextField
+            name='org'
+            label={formatMessage(messages.org)}
+          />
+        </Col>
+        <Col sm={6}>
+          <TextField
+            name='ofx'
+            label={formatMessage(messages.ofx)}
+          />
+        </Col>
+        <Col sm={6}>
+          <TextField
+            name='username'
+            label={formatMessage(messages.username)}
+          />
+        </Col>
+        <Col sm={6}>
+          <TextField
+            name='password'
+            label={formatMessage(messages.password)}
+          />
+        </Col>
       </div>
     )
   }
@@ -124,5 +196,8 @@ export class InForm extends React.Component<AllProps, any> {
     change('name', value.name)
     change('web', value.profile.siteURL)
     change('address', formatAddress(value))
+    change('fid', value.fid)
+    change('org', value.org)
+    change('ofx', value.ofx)
   }
 }
