@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Grid, Button, ButtonToolbar } from 'react-bootstrap'
+import { Grid, Col, Button, ButtonToolbar } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
@@ -44,7 +44,7 @@ export class InUpdateComponent extends React.Component<AllProps, any> {
             <Breadcrumbs {...this.props} page={formatMessage(messages.page)}/>
             <form onSubmit={handleSubmit(submit)}>
               <InForm {...this.props} />
-              <div>
+              <Col>
                 <ButtonToolbar className='pull-right'>
                   <Button
                     type='button'
@@ -60,7 +60,7 @@ export class InUpdateComponent extends React.Component<AllProps, any> {
                   <FormattedMessage {...forms.save}/>
                   </Button>
                 </ButtonToolbar>
-              </div>
+              </Col>
             </form>
           </Grid>
         }

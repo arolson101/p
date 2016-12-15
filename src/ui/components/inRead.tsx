@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Grid } from 'react-bootstrap'
+import { Grid, PageHeader } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { DbInfo, Institution, Account } from '../../docs'
@@ -26,7 +26,7 @@ export const InReadComponent = (props: AllProps) => {
       {institution &&
         <Grid>
           <Breadcrumbs {...props}/>
-          <h1>{institution.name}</h1>
+          <PageHeader>{institution.name}</PageHeader>
           <ul>
             {institution.accounts.map(id => accounts.get(id)).map(account => account &&
               <li key={account._id}><Link to={Account.to.read(account)}>{account.name}</Link></li>

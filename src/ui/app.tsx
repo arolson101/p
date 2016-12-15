@@ -59,6 +59,7 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
                 <Route path={Institution.routes.del} component={Components.InDelete}/>
                 <Route path={Account.routes.create} component={Components.AcCreate}/>
                 <Route path={Account.routes.read} component={Components.AcRead}/>
+                <Route path={Account.routes.update} component={Components.AcUpdate}/>
               </Route>
               <Route path='*' component={NotFoundRoute}/>
             </Route>

@@ -36,23 +36,23 @@ const messages = defineMessages({
   },
   fid: {
     id: 'inForm.fid',
-    defaultMessage: 'fid'
+    defaultMessage: 'Fid'
   },
   org: {
     id: 'inForm.org',
-    defaultMessage: 'org'
+    defaultMessage: 'Org'
   },
   ofx: {
     id: 'inForm.ofx',
-    defaultMessage: 'ofx'
+    defaultMessage: 'OFX Server'
   },
   username: {
     id: 'inForm.username',
-    defaultMessage: 'username'
+    defaultMessage: 'Username'
   },
   password: {
     id: 'inForm.password',
-    defaultMessage: 'password'
+    defaultMessage: 'Password'
   }
 })
 
@@ -154,6 +154,18 @@ export class InForm extends React.Component<AllProps, any> {
             label={formatMessage(messages.online)}
           />
         </Col>
+        <Col sm={6} xs={6}>
+          <TextField
+            name='username'
+            label={formatMessage(messages.username)}
+          />
+        </Col>
+        <Col sm={6} xs={6}>
+          <TextField
+            name='password'
+            label={formatMessage(messages.password)}
+          />
+        </Col>
         <Col sm={3} xs={6}>
           <TextField
             name='fid'
@@ -170,18 +182,6 @@ export class InForm extends React.Component<AllProps, any> {
           <TextField
             name='ofx'
             label={formatMessage(messages.ofx)}
-          />
-        </Col>
-        <Col sm={6}>
-          <TextField
-            name='username'
-            label={formatMessage(messages.username)}
-          />
-        </Col>
-        <Col sm={6}>
-          <TextField
-            name='password'
-            label={formatMessage(messages.password)}
           />
         </Col>
       </div>

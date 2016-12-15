@@ -51,6 +51,10 @@ export namespace Account {
     export const read = (account: Doc): string => {
       return '/' + account._id
     }
+
+    export const update = (account: Doc): string => {
+      return '/' + account._id + '/update'
+    }
   }
 
   export const isDocId = (id: string): boolean => {

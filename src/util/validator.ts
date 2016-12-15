@@ -23,8 +23,17 @@ export class Validator<V> {
     }
   }
 
-  equal<K extends keyof V>(key: K, otherKey: K, message: string) {
+  equal(key: keyof V, otherKey: keyof V, message: string) {
     if (this.values[key] && this.values[otherKey] && this.values[key] !== this.values[otherKey]) {
+      if (!this.errors[key]) {
+        this.errors[key] = message
+      }
+    }
+  }
+
+  unique(key: keyof V, values: any[], message: string) {
+    const value = this.values[key]
+    if (value && values.indexOf(value) !== -1) {
       if (!this.errors[key]) {
         this.errors[key] = message
       }

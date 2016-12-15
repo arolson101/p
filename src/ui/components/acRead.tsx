@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Grid } from 'react-bootstrap'
+import { Grid, PageHeader } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { DbInfo, Institution, Account } from '../../docs'
@@ -19,14 +19,14 @@ interface ConnectedProps {
 type AllProps = Props & RouteProps<Account.Params> & ConnectedProps
 
 export const AcReadComponent = (props: AllProps) => {
-  const { institution, account } = props
+  const { institution, account, router } = props
   return (
     <div>
       {account && institution &&
         <Grid>
           <Breadcrumbs {...props}/>
-          <h1>{institution.name}</h1>
-          <h2>{account.name}</h2>
+          <PageHeader>{account.name} <small>{account.number}</small></PageHeader>
+          <Link to={Account.to.update(account)}>update</Link>
         </Grid>
       }
     </div>
