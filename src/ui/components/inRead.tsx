@@ -29,7 +29,13 @@ export const InReadComponent = (props: AllProps) => {
           <PageHeader>{institution.name}</PageHeader>
           <ul>
             {institution.accounts.map(id => accounts.get(id)).map(account => account &&
-              <li key={account._id}><Link to={Account.to.read(account)}>{account.name}</Link></li>
+              <li key={account._id}>
+                <Link to={Account.to.read(account)}>
+                  <i className={Account.icons[account.type]}/>
+                  {' '}
+                  {account.name}
+                </Link>
+              </li>
             )}
           </ul>
           <p><Link to={Institution.to.accountCreate(institution)}>add account</Link></p>

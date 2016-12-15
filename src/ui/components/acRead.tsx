@@ -26,7 +26,11 @@ export const AcReadComponent = (props: AllProps) => {
         <Grid>
           <Breadcrumbs {...props}/>
           <PageHeader>
-            {account.name} <small>{account.number}</small>
+            <i className={Account.icons[account.type]}/>
+            {' '}
+            {account.name}
+            {' '}
+            <small>{account.number}</small>
           </PageHeader>
           <div><Link to={Account.to.update(account)}>update</Link></div>
           <div><Link to={Account.to.del(account)}>delete</Link></div>

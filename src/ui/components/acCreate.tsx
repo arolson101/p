@@ -88,7 +88,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   const account: Account = {
     institution: institution._id,
     name: values.name,
-    type: Account.Type.CHECKING,
+    type: values.type,
     number: values.number,
     visible: true
   }

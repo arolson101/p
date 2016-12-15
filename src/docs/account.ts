@@ -1,4 +1,5 @@
 import * as docURI from 'docuri'
+import { defineMessages } from 'react-intl'
 import { Institution } from './institution'
 import { makeid, Lookup } from '../util'
 import { TCacheSetAction } from './index'
@@ -14,12 +15,44 @@ export interface Account {
 
 export namespace Account {
   // see ofx4js.domain.data.banking.AccountType
-  export enum Type {
-    CHECKING,
-    SAVINGS,
-    MONEYMRKT,
-    CREDITLINE,
-    CREDITCARD,
+  export type Type = 'CHECKING' | 'SAVINGS' | 'MONEYMRKT' | 'CREDITLINE' | 'CREDITCARD'
+  export const Type = {
+    CHECKING: 'CHECKING' as Type,
+    SAVINGS: 'SAVINGS' as Type,
+    MONEYMRKT: 'MONEYMRKT' as Type,
+    CREDITLINE: 'CREDITLINE' as Type,
+    CREDITCARD: 'CREDITCARD' as Type
+  }
+
+  export const messages = defineMessages({
+    CHECKING: {
+      id: 'acUpdate.CHECKING',
+      defaultMessage: 'Checking'
+    },
+    SAVINGS: {
+      id: 'acUpdate.SAVINGS',
+      defaultMessage: 'Savings'
+    },
+    MONEYMRKT: {
+      id: 'acUpdate.MONEYMRKT',
+      defaultMessage: 'Money Market'
+    },
+    CREDITLINE: {
+      id: 'acUpdate.CREDITLINE',
+      defaultMessage: 'Credit Line'
+    },
+    CREDITCARD: {
+      id: 'acUpdate.CREDITCARD',
+      defaultMessage: 'Credit Card'
+    }
+  })
+
+  export const icons = {
+    [Account.Type.CHECKING]: 'fa fa-list-alt',
+    [Account.Type.SAVINGS]: 'fa fa-money',
+    [Account.Type.MONEYMRKT]: 'fa fa-money',
+    [Account.Type.CREDITLINE]: 'fa fa-credit-card-alt',
+    [Account.Type.CREDITCARD]: 'fa fa-credit-card'
   }
 
   export type Id = ':account' | 'create' | makeid | ''

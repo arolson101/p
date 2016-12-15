@@ -1,6 +1,6 @@
 import { Col } from 'react-bootstrap'
 import * as React from 'react'
-import { defineMessages } from 'react-intl'
+import { defineMessages, FormattedMessage } from 'react-intl'
 import { ReduxFormProps } from 'redux-form'
 import { Account } from '../../docs'
 import { Validator } from '../../util'
@@ -9,19 +9,23 @@ import { IntlProps } from './props'
 
 const messages = defineMessages({
   name: {
-    id: 'acUpdate.name',
+    id: 'acForm.name',
     defaultMessage: 'Account Name'
   },
   number: {
-    id: 'acUpdate.number',
+    id: 'acForm.number',
     defaultMessage: 'Account Number'
   },
+  type: {
+    id: 'acForm.type',
+    defaultMessage: 'Account Type'
+  },
   uniqueName: {
-    id: 'acCreate.uniqueName',
+    id: 'acForm.uniqueName',
     defaultMessage: 'This account name is already used'
   },
   uniqueNumber: {
-    id: 'acCreate.uniqueNumber',
+    id: 'acForm.uniqueNumber',
     defaultMessage: 'This account number is already used'
   }
 })
@@ -35,9 +39,10 @@ type AllProps = Props & IntlProps & ReduxFormProps<Values>
 export interface Values {
   name: string
   number: string
+  type: Account.Type
 }
 
-const { TextField } = typedFields<Values>()
+const { TextField, SelectField } = typedFields<Values>()
 
 export class AcForm extends React.Component<AllProps, any> {
 
@@ -84,7 +89,31 @@ export class AcForm extends React.Component<AllProps, any> {
             label={formatMessage(messages.number)}
           />
         </Col>
+        <Col>
+          <SelectField
+            name='type'
+            options={typeOptions}
+            clearable={false}
+            optionRenderer={accountTypeRenderer}
+            valueRenderer={accountTypeRenderer}
+            label={formatMessage(messages.type)}
+          />
+        </Col>
       </div>
     )
   }
 }
+
+const typeOptions = Object
+  .keys(Account.Type)
+  .map(type => ({
+    value: type,
+    label: type
+  }))
+
+const accountTypeRenderer = (option: {value: Account.Type, label: string}) =>
+  <span>
+    <i className={Account.icons[option.value]}/>
+    {' '}
+    <FormattedMessage {...(Account.messages as any)[Account.Type[option.value]]}/>
+  </span>
