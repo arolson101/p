@@ -4,26 +4,26 @@ import { Grid, Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose } from 'redux'
-import { deleteInstitution } from '../../actions'
-import { DbInfo, Institution } from '../../docs'
+import { deleteAccount } from '../../actions'
+import { DbInfo, Institution, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
-import { IntlProps, RouteProps, DispatchProps } from './props'
-import { selectDbInfo, selectInstitution } from './selectors'
+import { IntlProps, DispatchProps, RouteProps } from './props'
+import { selectDbInfo, selectInstitution, selectAccount } from './selectors'
 
 const messages = defineMessages({
   page: {
-    id: 'inDelete.page',
+    id: 'acDelete.page',
     defaultMessage: 'Delete'
   },
   confirm: {
-    id: 'inDelete.confirm',
-    defaultMessage: 'Delete Institution'
+    id: 'acDelete.confirm',
+    defaultMessage: 'Delete Account'
   },
   text: {
-    id: 'inDelete.text',
-    defaultMessage: "This will delete institution '{name}' and all its accounts.  Are you sure?"
+    id: 'acDelete.text',
+    defaultMessage: "This will delete account '{name}' and all its transactions.  Are you sure?"
   }
 })
 
@@ -31,41 +31,36 @@ interface ConnectedProps {
   current: CurrentDb
   dbInfo?: DbInfo.Doc
   institution?: Institution.Doc
+  account?: Account.Doc
 }
 
 interface Props {
 }
 
-type AllProps = Props & IntlProps & ConnectedProps & DispatchProps & RouteProps<Institution.Params>
+type AllProps = Props & IntlProps & ConnectedProps & DispatchProps & RouteProps<Account.Params>
 
 interface State {
   error?: string
   deleting?: boolean
 }
 
-interface Deletion {
-  _id: string
-  _rev?: string
-  _deleted: true
-}
-
-export class InDeleteComponent extends React.Component<AllProps, State> {
+export class AcDeleteComponent extends React.Component<AllProps, State> {
   state: State = {
     error: undefined,
     deleting: false
   }
 
   render() {
-    const { router, institution } = this.props
+    const { router, account } = this.props
     const { formatMessage } = this.props.intl
     const { error, deleting } = this.state
     return (
       <div>
-        {institution &&
+        {account &&
           <Grid>
             <Breadcrumbs {...this.props} page={formatMessage(messages.page)}/>
             <div>
-              <p><FormattedMessage {...messages.text} values={{name: institution.name}}/></p>
+              <p><FormattedMessage {...messages.text} values={{name: account.name}}/></p>
               {error &&
                 <Alert bsStyle='danger'>
                   {error}
@@ -81,7 +76,7 @@ export class InDeleteComponent extends React.Component<AllProps, State> {
                 </Button>
                 <Button
                   bsStyle='danger'
-                  onClick={this.inDelete}
+                  onClick={this.acDelete}
                   disabled={deleting}
                 >
                   <FormattedMessage {...messages.confirm}/>
@@ -95,11 +90,11 @@ export class InDeleteComponent extends React.Component<AllProps, State> {
   }
 
   @autobind
-  async inDelete() {
-    const { dbInfo, institution, dispatch, router } = this.props
+  async acDelete() {
+    const { dbInfo, institution, account, dispatch, router } = this.props
     try {
       this.setState({deleting: true, error: undefined})
-      await dispatch(deleteInstitution(institution!))
+      await dispatch(deleteAccount(institution!, account!))
       router.replace(DbInfo.to.read(dbInfo!))
     } catch (err) {
       this.setState({deleting: false, error: err.message})
@@ -107,13 +102,14 @@ export class InDeleteComponent extends React.Component<AllProps, State> {
   }
 }
 
-export const InDelete = compose(
+export const AcDelete = compose(
   injectIntl,
   connect(
-    (state: AppState, props: RouteProps<Institution.Params>): ConnectedProps => ({
+    (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       current: state.db.current!,
       dbInfo: selectDbInfo(state),
-      institution: selectInstitution(state, props)
+      institution: selectInstitution(state, props),
+      account: selectAccount(state, props)
     })
   )
-)(InDeleteComponent) as React.ComponentClass<Props>
+)(AcDeleteComponent) as React.ComponentClass<Props>

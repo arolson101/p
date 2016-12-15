@@ -77,6 +77,11 @@ const validate = (values: Values, props: AllProps) => {
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
+  const { formatMessage } = props.intl
+  const v = new Validator(values)
+  v.required(['name', 'number'], formatMessage(forms.required))
+  v.maybeThrowSubmissionError()
+
   const { current, router, lang } = props
   const institution = props.institution!
 

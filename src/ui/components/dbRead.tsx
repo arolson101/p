@@ -40,7 +40,7 @@ export const DbReadComponent = (props: AllProps) => {
           <li key={institution._id}>
             <Link to={Institution.to.read(institution)}>{institution.name}</Link>
             <ul>
-              {institution.accounts.map(id => accounts.get(id)!).map(account =>
+              {institution.accounts.map(id => accounts.get(id)).map(account => account &&
                 <li key={account._id}><Link to={Account.to.read(account)}>{account.name}</Link></li>
               )}
             </ul>

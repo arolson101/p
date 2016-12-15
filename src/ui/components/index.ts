@@ -1,4 +1,5 @@
 export * from './acCreate'
+export * from './acDelete'
 export * from './acRead'
 export * from './acUpdate'
 export * from './dbCreate'

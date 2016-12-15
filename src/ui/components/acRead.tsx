@@ -19,14 +19,17 @@ interface ConnectedProps {
 type AllProps = Props & RouteProps<Account.Params> & ConnectedProps
 
 export const AcReadComponent = (props: AllProps) => {
-  const { institution, account, router } = props
+  const { institution, account } = props
   return (
     <div>
       {account && institution &&
         <Grid>
           <Breadcrumbs {...props}/>
-          <PageHeader>{account.name} <small>{account.number}</small></PageHeader>
-          <Link to={Account.to.update(account)}>update</Link>
+          <PageHeader>
+            {account.name} <small>{account.number}</small>
+          </PageHeader>
+          <div><Link to={Account.to.update(account)}>update</Link></div>
+          <div><Link to={Account.to.del(account)}>delete</Link></div>
         </Grid>
       }
     </div>

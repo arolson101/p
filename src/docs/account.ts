@@ -40,7 +40,7 @@ export namespace Account {
     export const create = 'account/:institution/create'
     export const read = 'account/:institution/:account'
     export const update = 'account/:institution/:account/update'
-    export const destroy = 'account/:institution/:account/destroy'
+    export const del = 'account/:institution/:account/delete'
   }
 
   export namespace to {
@@ -54,6 +54,10 @@ export namespace Account {
 
     export const update = (account: Doc): string => {
       return '/' + account._id + '/update'
+    }
+
+    export const del = (account: Doc): string => {
+      return '/' + account._id + '/delete'
     }
   }
 
