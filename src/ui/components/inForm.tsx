@@ -1,6 +1,6 @@
 import autobind = require('autobind-decorator')
 import * as React from 'react'
-import { Col } from 'react-bootstrap'
+import { Row, Col } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import { ReduxFormProps } from 'redux-form'
 import { Institution } from '../../docs'
@@ -111,79 +111,91 @@ export class InForm extends React.Component<AllProps, any> {
     const { intl: { formatMessage }, filist } = this.props
     return (
       <div>
-        <Col sm={12}>
-          <SelectField
-            autofocus
-            name='fi'
-            label={formatMessage(messages.fi)}
-            options={filist}
-            labelKey='name'
-            valueKey='id'
-            onChange={this.onChangeFI}
-          />
-        </Col>
-        <Col sm={6}>
-          <TextField
-            name='name'
-            label={formatMessage(messages.name)}
-          />
-        </Col>
-        <Col sm={6}>
-          <TextField
-            name='web'
-            label={formatMessage(messages.web)}
-          />
-        </Col>
-        <Col sm={6}>
-          <MultilineTextField
-            name='address'
-            rows={4}
-            label={formatMessage(messages.address)}
-          />
-        </Col>
-        <Col sm={6}>
-          <MultilineTextField
-            name='notes'
-            rows={4}
-            label={formatMessage(messages.notes)}
-          />
-        </Col>
-        <Col sm={12}>
-          <CheckboxField
-            name='online'
-            label={formatMessage(messages.online)}
-          />
-        </Col>
-        <Col sm={6} xs={6}>
-          <TextField
-            name='username'
-            label={formatMessage(messages.username)}
-          />
-        </Col>
-        <Col sm={6} xs={6}>
-          <TextField
-            name='password'
-            label={formatMessage(messages.password)}
-          />
-        </Col>
-        <Col sm={3} xs={6}>
-          <TextField
-            name='fid'
-            label={formatMessage(messages.fid)}
-          />
-        </Col>
-        <Col sm={3} xs={6}>
-          <TextField
-            name='org'
-            label={formatMessage(messages.org)}
-          />
-        </Col>
-        <Col sm={6}>
-          <TextField
-            name='ofx'
-            label={formatMessage(messages.ofx)}
-          />
-        </Col>
+        <Row>
+          <Col sm={12}>
+            <SelectField
+              autofocus
+              name='fi'
+              label={formatMessage(messages.fi)}
+              options={filist}
+              labelKey='name'
+              valueKey='id'
+              onChange={this.onChangeFI}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col sm={6}>
+            <TextField
+              name='name'
+              label={formatMessage(messages.name)}
+            />
+          </Col>
+          <Col sm={6}>
+            <TextField
+              name='web'
+              label={formatMessage(messages.web)}
+            />
+          </Col>
+          <Col sm={6}>
+            <MultilineTextField
+              name='address'
+              rows={4}
+              label={formatMessage(messages.address)}
+            />
+          </Col>
+          <Col sm={6}>
+            <MultilineTextField
+              name='notes'
+              rows={4}
+              label={formatMessage(messages.notes)}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col sm={12}>
+            <CheckboxField
+              name='online'
+              label={formatMessage(messages.online)}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col sm={6} xs={6}>
+            <TextField
+              name='username'
+              label={formatMessage(messages.username)}
+            />
+          </Col>
+          <Col sm={6} xs={6}>
+            <TextField
+              name='password'
+              label={formatMessage(messages.password)}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col sm={3} xs={6}>
+            <TextField
+              name='fid'
+              label={formatMessage(messages.fid)}
+            />
+          </Col>
+          <Col sm={3} xs={6}>
+            <TextField
+              name='org'
+              label={formatMessage(messages.org)}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col sm={6}>
+            <TextField
+              name='ofx'
+              label={formatMessage(messages.ofx)}
+            />
+          </Col>
+        </Row>
       </div>
     )
   }
