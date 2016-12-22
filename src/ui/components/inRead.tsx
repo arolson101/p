@@ -7,9 +7,9 @@ import { DbInfo, Institution, Account } from '../../docs'
 import { AppState } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps } from './props'
-import { selectDbInfo, selectInstitution } from './selectors'
+import { selectDbInfo, selectInstitution, selectInstitutionAccounts } from './selectors'
 
-export const messages = defineMessages({
+const messages = defineMessages({
   noAccounts: {
     id: 'inRead.noAccounts',
     defaultMessage: 'No Accounts'
@@ -21,14 +21,13 @@ interface Props {}
 interface ConnectedProps {
   institution?: Institution.Doc
   dbInfo?: DbInfo.Doc
-  accounts?: Account.Cache
+  accounts?: Account.Doc[]
 }
 
 type AllProps = Props & RouteProps<Institution.Params> & ConnectedProps
 
 export const InReadComponent = (props: AllProps) => {
-  const { institution, router } = props
-  const accounts = props.accounts!
+  const { institution, accounts, router } = props
   return (
     <div>
       {institution &&
@@ -40,9 +39,9 @@ export const InReadComponent = (props: AllProps) => {
             <Button bsSize='small' href={router.createHref(Institution.to.update(institution))}>update</Button>
             <Button bsSize='small' href={router.createHref(Institution.to.del(institution))}>delete</Button>
           </ButtonGroup>
-          {institution.accounts.length > 0 ? (
+          {accounts && accounts.length > 0 ? (
             <ul>
-              {institution.accounts.map(id => accounts.get(id)).map(account => account &&
+              {accounts.map(account => account &&
                 <li key={account._id}>
                   <Link to={Account.to.read(account)}>
                     <i className={Account.icons[account.type]}/>
@@ -65,6 +64,6 @@ export const InRead = connect(
   (state: AppState, props: RouteProps<Institution.Params>): ConnectedProps => ({
     dbInfo: selectDbInfo(state),
     institution: selectInstitution(state, props),
-    accounts: state.db.current && state.db.current.cache.accounts!
+    accounts: selectInstitutionAccounts(state, props)
   })
 )(InReadComponent) as React.ComponentClass<Props>
