@@ -53,6 +53,7 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
               <Route path={DbInfo.routes.create} component={Components.DbCreate}/>
               <Route path={DbInfo.routes.read} component={Components.DbRead}/>
               <Route onEnter={requireAuth(store)}>
+                <Route path={Institution.routes.accounts} component={Components.InAccounts}/>
                 <Route path={Institution.routes.create} component={Components.InCreate}/>
                 <Route path={Institution.routes.read} component={Components.InRead}/>
                 <Route path={Institution.routes.update} component={Components.InUpdate}/>

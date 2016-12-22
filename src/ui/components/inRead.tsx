@@ -35,7 +35,7 @@ export const InReadComponent = (props: AllProps) => {
           <Breadcrumbs {...props}/>
           <PageHeader>{institution.name}</PageHeader>
           <ButtonGroup className='pull-right'>
-            <Button bsSize='small' href={router.createHref(Institution.to.accountCreate(institution))}>add account</Button>
+            <Button bsSize='small' href={router.createHref(Institution.to.accounts(institution))}>accounts</Button>
             <Button bsSize='small' href={router.createHref(Institution.to.update(institution))}>update</Button>
             <Button bsSize='small' href={router.createHref(Institution.to.del(institution))}>delete</Button>
           </ButtonGroup>
