@@ -49,6 +49,10 @@ export class AcForm extends React.Component<AllProps, any> {
   static validate( v: Validator<Values>, props: IntlProps,otherNames: string[], otherNumbers: string[]) {
     const { formatMessage } = props.intl
     v.unique('name', otherNames, formatMessage(messages.uniqueName))
+  }
+
+  static warn( v: Validator<Values>, props: IntlProps,otherNames: string[], otherNumbers: string[]) {
+    const { formatMessage } = props.intl
     v.unique('number', otherNumbers, formatMessage(messages.uniqueNumber))
   }
 

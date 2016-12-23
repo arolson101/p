@@ -61,6 +61,7 @@ const WrappedControl = <Name extends string, Props>(Component: any, componentPro
     return (
       <RB.FormGroup controlId={name} {...{validationState: error ? 'error' : warning ? 'warning' : undefined}}>
         <RB.ControlLabel>{label}</RB.ControlLabel>
+        <RB.FormControl.Feedback />
         <Component {...componentProps} {...fieldProps} {...input} onChange={onChange}/>
         {(error || warning) && <RB.HelpBlock>{error || warning}</RB.HelpBlock>}
       </RB.FormGroup>

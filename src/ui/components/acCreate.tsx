@@ -76,6 +76,16 @@ const validate = (values: Values, props: AllProps) => {
   return v.errors
 }
 
+const warn = (values: Values, props: AllProps) => {
+  const v = new Validator(values)
+  if (props.accounts) {
+    const names = props.accounts.map(acct => acct.name)
+    const numbers = props.accounts.map(acct => acct.number)
+    AcForm.warn(v, props, names, numbers)
+  }
+  return v.errors
+}
+
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
   const { formatMessage } = props.intl
   const v = new Validator(values)
@@ -113,6 +123,7 @@ export const AcCreate = compose(
   ),
   reduxForm<AllProps, Values>({
     form: 'AcCreate',
-    validate
+    validate,
+    warn
   })
 )(AcCreateComponent) as React.ComponentClass<Props>
