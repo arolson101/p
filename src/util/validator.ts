@@ -31,9 +31,9 @@ export class Validator<V> {
     }
   }
 
-  unique(key: keyof V, values: any[], message: string) {
-    const value = this.values[key]
-    if (value && values.indexOf(value) !== -1) {
+  unique(key: keyof V, values: string[], message: string) {
+    const value: string = this.values[key] as any
+    if (value && values.findIndex(x => x.toLowerCase() === value.toLowerCase()) !== -1) {
       if (!this.errors[key]) {
         this.errors[key] = message
       }

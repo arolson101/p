@@ -108,10 +108,13 @@ export const getAccounts = (institution: Institution.Doc, formatMessage: FormatM
           await current.db.bulkDocs([...changes, institution])
         }
       }
+      return res.join('\n')
+
     } catch (ex) {
-      res.push(formatMessage(validated ? messages.error : messages.validationFailed), ex.message)
+      res.push(formatMessage(validated ? messages.error : messages.validationFailed))
+      res.push(ex.message)
+      throw new Error(res.join('\n'))
     }
-    return res.join('\n')
   }
 
 const accountExists = (cache: Account.Cache, institution: Institution.Doc, num: string): boolean => {
