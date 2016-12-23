@@ -100,7 +100,7 @@ export class InForm extends React.Component<AllProps, any> {
     const { institution, initialize, filist } = props
     if (institution) {
       const fi = filist.findIndex(fi => fi.name === institution.fi) + 1
-      const values = institution ? { ...institution, fi } : {}
+      const values = institution ? { ...institution, ...institution.login, fi } : {}
       initialize(values)
     } else {
       initialize({online: true})
@@ -170,6 +170,7 @@ export class InForm extends React.Component<AllProps, any> {
           <Col sm={6} xs={6}>
             <TextField
               name='password'
+              type='password'
               label={formatMessage(messages.password)}
             />
           </Col>
