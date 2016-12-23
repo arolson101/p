@@ -1,6 +1,5 @@
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { AppThunk } from '../state'
-import { wait } from '../util'
 import { Institution, Account } from '../docs'
 import * as ofx4js from 'ofx4js'
 
@@ -40,6 +39,10 @@ export const messages = defineMessages({
     id: 'getAccounts.nopassword',
     defaultMessage: "'password' is not set"
   },
+  validationFailed: {
+    id: 'getAccounts.validationFailed',
+    defaultMessage: 'Error in institution settings:'
+  },
   error: {
     id: 'getAccounts.error',
     defaultMessage: 'Error getting account list from server:'
@@ -63,6 +66,7 @@ export const getAccounts = (institution: Institution.Doc, formatMessage: FormatM
     const { current } = getState().db
     if (!current) { throw new Error('no db') }
     const res = []
+    let validated = false
     try {
       const { fid, org, ofx, name, login } = institution
       if (!fid) { throw new Error(formatMessage(messages.nofid)) }
@@ -74,6 +78,7 @@ export const getAccounts = (institution: Institution.Doc, formatMessage: FormatM
       if (!username) { throw new Error(formatMessage(messages.nousername)) }
       if (!password) { throw new Error(formatMessage(messages.nopassword)) }
       const accounts = await readAccountProfiles({ fid, org, ofx, name, username, password })
+      validated = true
       res.push(formatMessage(messages.success))
       if (accounts.length === 0) {
         res.push(formatMessage(messages.noaccounts))
@@ -83,7 +88,7 @@ export const getAccounts = (institution: Institution.Doc, formatMessage: FormatM
         }
       }
     } catch (ex) {
-      res.push(formatMessage(messages.error), ex.message)
+      res.push(formatMessage(validated ? messages.error : messages.validationFailed), ex.message)
     }
     return res.join('\n')
   }
