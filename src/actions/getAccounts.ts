@@ -51,9 +51,13 @@ export const messages = defineMessages({
     id: 'getAccounts.success',
     defaultMessage: 'Downloaded account list from server:'
   },
-  accountInfo: {
-    id: 'getAccounts.accountInfo',
-    defaultMessage: '{number} - {name} ({type})'
+  accountExists: {
+    id: 'getAccounts.accountExists',
+    defaultMessage: '{number} - {name} ({type}) (already exists)'
+  },
+  accountAdded: {
+    id: 'getAccounts.accountAdded',
+    defaultMessage: '{number} - {name} ({type}) (created)'
   },
   noaccounts: {
     id: 'getAccounts.noaccounts',
@@ -63,8 +67,6 @@ export const messages = defineMessages({
 
 export const getAccounts = (institution: Institution.Doc, formatMessage: FormatMessage): AppThunk =>
   async (dispatch, getState) => {
-    const { current } = getState().db
-    if (!current) { throw new Error('no db') }
     const res = []
     let validated = false
     try {
@@ -83,8 +85,27 @@ export const getAccounts = (institution: Institution.Doc, formatMessage: FormatM
       if (accounts.length === 0) {
         res.push(formatMessage(messages.noaccounts))
       } else {
+        const { db: { current }, i18n: { lang } } = getState()
+        if (!current) { throw new Error('no db') }
+        const changes: PouchDB.Core.Document<any>[] = []
         for (let account of accounts) {
-          res.push(formatMessage(messages.accountInfo, account))
+          if (!accountExists(current.cache.accounts, institution, account.number)) {
+            res.push(formatMessage(messages.accountAdded, account))
+            const info: Account = {
+              ...account,
+              institution: institution._id,
+              visible: true
+            }
+            const doc = Account.doc(info, lang)
+            institution.accounts.push(doc._id)
+            changes.push(doc)
+          } else {
+            res.push(formatMessage(messages.accountExists, account))
+          }
+        }
+
+        if (changes.length > 0) {
+          await current.db.bulkDocs([...changes, institution])
         }
       }
     } catch (ex) {
@@ -93,7 +114,16 @@ export const getAccounts = (institution: Institution.Doc, formatMessage: FormatM
     return res.join('\n')
   }
 
-export interface ReadAccountProfilesParams {
+const accountExists = (cache: Account.Cache, institution: Institution.Doc, num: string): boolean => {
+  for (let account of cache.values()) {
+    if (account.institution === institution._id && account.number === num) {
+      return institution.accounts.indexOf(account._id) !== -1
+    }
+  }
+  return false
+}
+
+interface ReadAccountProfilesParams {
   fid: string
   org: string
   ofx: string
@@ -103,7 +133,13 @@ export interface ReadAccountProfilesParams {
   password: string
 }
 
-const readAccountProfiles = async (params: ReadAccountProfilesParams): Promise<Account[]> => {
+interface AccountInfo {
+  type: Account.Type
+  name: string
+  number: string
+}
+
+const readAccountProfiles = async (params: ReadAccountProfilesParams): Promise<AccountInfo[]> => {
   let DefaultApplicationContext = ofx4js.client.context.DefaultApplicationContext
   let OFXApplicationContextHolder = ofx4js.client.context.OFXApplicationContextHolder
   OFXApplicationContextHolder.setCurrentContext(new DefaultApplicationContext('QWIN', '2300'))
@@ -126,29 +162,30 @@ const readAccountProfiles = async (params: ReadAccountProfilesParams): Promise<A
 
 const convertAccountType = (acctType: ofx4js.domain.data.banking.AccountType): Account.Type => {
   let str = ofx4js.domain.data.banking.AccountType[acctType]
-  console.assert(str in Account.Type)
+  if (!(str in Account.Type)) {
+    console.warn(`unknown account type: {str}`)
+    str = Account.Type.CHECKING
+  }
   return str as Account.Type
 }
 
-const convertAccountList = (accountProfiles: AccountProfile[]): Account[] => {
-  return accountProfiles.map(convertAccount).filter(acct => acct !== undefined) as Account[]
+const convertAccountList = (accountProfiles: AccountProfile[]): AccountInfo[] => {
+  return accountProfiles.map(convertAccount).filter(acct => acct !== undefined) as AccountInfo[]
 }
 
-const convertAccount = (accountProfile: AccountProfile): Account | undefined => {
+const convertAccount = (accountProfile: AccountProfile): AccountInfo | undefined => {
   if (accountProfile.getBankSpecifics()) {
     return {
       name: accountProfile.getDescription(),
       type: convertAccountType(accountProfile.getBankSpecifics().getBankAccount().getAccountType()),
-      number: accountProfile.getBankSpecifics().getBankAccount().getAccountNumber(),
-      visible: true
-    } as Account
+      number: accountProfile.getBankSpecifics().getBankAccount().getAccountNumber()
+    }
   } else if (accountProfile.getCreditCardSpecifics()) {
     return {
       name: accountProfile.getDescription(),
       type: Account.Type.CREDITCARD,
-      number: accountProfile.getCreditCardSpecifics().getCreditCardAccount().getAccountNumber(),
-      visible: true
-    } as Account
+      number: accountProfile.getCreditCardSpecifics().getCreditCardAccount().getAccountNumber()
+    }
   } else if (accountProfile.getInvestmentSpecifics()) {
     // TODO: support investment accounts
     console.warn('investment account not supported: ', accountProfile)

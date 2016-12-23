@@ -77,6 +77,7 @@ export class InAccountsComponent extends React.Component<AllProps, State> {
             }
             <ButtonGroup>
               <Button disabled={!institution.online} onClick={this.getAccountList}>get account list from server</Button>
+              <Button href={router.createHref(Institution.to.update(institution))}>edit</Button>
               <Button href={router.createHref(Institution.to.accountCreate(institution))}>add account</Button>
             </ButtonGroup>
 
