@@ -89,7 +89,7 @@ export const getAccounts = (institution: Institution.Doc, formatMessage: FormatM
         if (!current) { throw new Error('no db') }
         const changes: PouchDB.Core.Document<any>[] = []
         for (let account of accounts) {
-          if (!accountExists(current.cache.accounts, institution, account.number)) {
+          if (!accountExists(current.cache.accounts, institution, account.number, account.type)) {
             res.push(formatMessage(messages.accountAdded, account))
             const info: Account = {
               ...account,
@@ -117,9 +117,9 @@ export const getAccounts = (institution: Institution.Doc, formatMessage: FormatM
     }
   }
 
-const accountExists = (cache: Account.Cache, institution: Institution.Doc, num: string): boolean => {
+const accountExists = (cache: Account.Cache, institution: Institution.Doc, num: string, type: Account.Type): boolean => {
   for (let account of cache.values()) {
-    if (account.institution === institution._id && account.number === num) {
+    if (account.institution === institution._id && account.number === num && account.type === type) {
       return institution.accounts.indexOf(account._id) !== -1
     }
   }

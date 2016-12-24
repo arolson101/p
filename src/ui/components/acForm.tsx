@@ -46,13 +46,11 @@ const { TextField, SelectField } = typedFields<Values>()
 
 export class AcForm extends React.Component<AllProps, any> {
 
-  static validate( v: Validator<Values>, props: IntlProps,otherNames: string[], otherNumbers: string[]) {
+  static validate(v: Validator<Values>, props: IntlProps, otherAccounts: Account.Doc[]) {
     const { formatMessage } = props.intl
+    const otherNames = otherAccounts.map(acct => acct.name)
+    const otherNumbers = otherAccounts.filter(acct => acct.type === v.values.type).map(acct => acct.number)
     v.unique('name', otherNames, formatMessage(messages.uniqueName))
-  }
-
-  static warn( v: Validator<Values>, props: IntlProps,otherNames: string[], otherNumbers: string[]) {
-    const { formatMessage } = props.intl
     v.unique('number', otherNumbers, formatMessage(messages.uniqueNumber))
   }
 

@@ -71,21 +71,7 @@ const validate = (values: Values, props: AllProps) => {
   if (props.account && props.accounts) {
     const thisid = props.account._id
     const otherAccounts = props.accounts.filter(acct => acct._id !== thisid)
-    const names = otherAccounts.map(acct => acct.name)
-    const numbers = otherAccounts.map(acct => acct.number)
-    AcForm.validate(v, props, names, numbers)
-  }
-  return v.errors
-}
-
-const warn = (values: Values, props: AllProps) => {
-  const v = new Validator(values)
-  if (props.account && props.accounts) {
-    const thisid = props.account._id
-    const otherAccounts = props.accounts.filter(acct => acct._id !== thisid)
-    const names = otherAccounts.map(acct => acct.name)
-    const numbers = otherAccounts.map(acct => acct.number)
-    AcForm.warn(v, props, names, numbers)
+    AcForm.validate(v, props, otherAccounts)
   }
   return v.errors
 }
@@ -126,7 +112,6 @@ export const AcUpdate = compose(
   ),
   reduxForm<AllProps, Values>({
     form: 'AcUpdate',
-    validate,
-    warn
+    validate
   })
 )(AcUpdateComponent) as React.ComponentClass<Props>

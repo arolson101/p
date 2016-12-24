@@ -69,19 +69,7 @@ export const AcCreateComponent = (props: AllProps) => {
 const validate = (values: Values, props: AllProps) => {
   const v = new Validator(values)
   if (props.accounts) {
-    const names = props.accounts.map(acct => acct.name)
-    const numbers = props.accounts.map(acct => acct.number)
-    AcForm.validate(v, props, names, numbers)
-  }
-  return v.errors
-}
-
-const warn = (values: Values, props: AllProps) => {
-  const v = new Validator(values)
-  if (props.accounts) {
-    const names = props.accounts.map(acct => acct.name)
-    const numbers = props.accounts.map(acct => acct.number)
-    AcForm.warn(v, props, names, numbers)
+    AcForm.validate(v, props, props.accounts)
   }
   return v.errors
 }
@@ -123,7 +111,6 @@ export const AcCreate = compose(
   ),
   reduxForm<AllProps, Values>({
     form: 'AcCreate',
-    validate,
-    warn
+    validate
   })
 )(AcCreateComponent) as React.ComponentClass<Props>
