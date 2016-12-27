@@ -46,7 +46,6 @@ export namespace Institution {
     export const read = 'institution/:institution'
     export const update = 'institution/:institution/update'
     export const del = 'institution/:institution/delete'
-    export const accounts = 'institution/:institution/accounts'
   }
 
   export namespace to {
@@ -72,10 +71,6 @@ export namespace Institution {
         throw new Error('not a institution docid: ' + institution._id)
       }
       return '/' + Account.docId({institution: iparams.institution, account: 'create'})
-    }
-
-    export const accounts = (institution: Doc): string => {
-      return '/' + institution._id + '/accounts'
     }
   }
 
