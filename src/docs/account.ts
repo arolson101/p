@@ -77,8 +77,11 @@ export namespace Account {
   }
 
   export namespace to {
-    export const create = () => {
-      return '/' + routes.create
+    export const create = (bank: Bank.Doc) => {
+      const iparams = Bank.docId(bank._id)
+      if (!iparams) { throw new Error('not a bank docId: ' + bank._id) }
+      const create = docId({ accountId: 'create', bankId: iparams.bankId })
+      return '/' + create
     }
 
     export const read = (account: Doc): string => {

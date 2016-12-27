@@ -29,6 +29,10 @@ const messages = defineMessages({
     id: 'inRead.showAll',
     defaultMessage: 'Show all accounts'
   },
+  addAccount: {
+    id: 'inRead.addAccount',
+    defaultMessage: 'Add account'
+  },
   getAccounts: {
     id: 'inRead.getAccounts',
     defaultMessage: 'Get account list from server'
@@ -94,19 +98,27 @@ export class BankReadComponent extends React.Component<AllProps, State> {
 
             <ButtonGroup className='pull-right'>
             <DropdownButton bsSize='small' id='in-action-menu' title={formatMessage(messages.settings)} pullRight>
-              {/* update */}
-              <MenuItem href={router.createHref(Bank.to.update(bank))}>
-                <FormattedMessage {...messages.update}/>
-              </MenuItem>
+              <MenuItem header>View</MenuItem>
               {/* showAll */}
-              <MenuItem checked={showAll} onClick={this.toggleShowAll}>
+              <MenuItem active={showAll} onClick={this.toggleShowAll}>
                 <FormattedMessage {...messages.showAll}/>
+              </MenuItem>
+              <MenuItem divider />
+              <MenuItem header>Accounts</MenuItem>
+              {/* add account */}
+              <MenuItem href={router.createHref(Account.to.create(bank))}>
+                <FormattedMessage {...messages.addAccount}/>
               </MenuItem>
               {/* get account list */}
               <MenuItem disabled={!bank.online} onClick={this.getAccountList}>
                 <FormattedMessage {...messages.getAccounts}/>
               </MenuItem>
               <MenuItem divider />
+              <MenuItem header>Institution</MenuItem>
+              {/* update */}
+              <MenuItem href={router.createHref(Bank.to.update(bank))}>
+                <FormattedMessage {...messages.update}/>
+              </MenuItem>
               {/* delete */}
               <MenuItem href={router.createHref(Bank.to.del(bank))}>
                 <FormattedMessage {...messages.delete}/>
