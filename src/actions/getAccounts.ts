@@ -1,6 +1,6 @@
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { AppThunk } from '../state'
-import { Institution, Account } from '../docs'
+import { Bank, Account } from '../docs'
 import * as ofx4js from 'ofx4js'
 
 import FinancialInstitutionImpl = ofx4js.client.impl.FinancialInstitutionImpl
@@ -65,12 +65,12 @@ export const messages = defineMessages({
   }
 })
 
-export const getAccounts = (institution: Institution.Doc, formatMessage: FormatMessage): AppThunk =>
+export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppThunk =>
   async (dispatch, getState) => {
     const res = []
     let validated = false
     try {
-      const { fid, org, ofx, name, login } = institution
+      const { fid, org, ofx, name, login } = bank
       if (!fid) { throw new Error(formatMessage(messages.nofid)) }
       if (!org) { throw new Error(formatMessage(messages.noorg)) }
       if (!ofx) { throw new Error(formatMessage(messages.noofx)) }
@@ -89,15 +89,15 @@ export const getAccounts = (institution: Institution.Doc, formatMessage: FormatM
         if (!current) { throw new Error('no db') }
         const changes: PouchDB.Core.Document<any>[] = []
         for (let account of accounts) {
-          if (!accountExists(current.cache.accounts, institution, account.number, account.type)) {
+          if (!accountExists(current.cache.accounts, bank, account.number, account.type)) {
             res.push(formatMessage(messages.accountAdded, account))
             const info: Account = {
               ...account,
-              institution: institution._id,
+              bank: bank._id,
               visible: true
             }
             const doc = Account.doc(info, lang)
-            institution.accounts.push(doc._id)
+            bank.accounts.push(doc._id)
             changes.push(doc)
           } else {
             res.push(formatMessage(messages.accountExists, account))
@@ -105,7 +105,7 @@ export const getAccounts = (institution: Institution.Doc, formatMessage: FormatM
         }
 
         if (changes.length > 0) {
-          await current.db.bulkDocs([...changes, institution])
+          await current.db.bulkDocs([...changes, bank])
         }
       }
       return res.join('\n')
@@ -117,10 +117,10 @@ export const getAccounts = (institution: Institution.Doc, formatMessage: FormatM
     }
   }
 
-const accountExists = (cache: Account.Cache, institution: Institution.Doc, num: string, type: Account.Type): boolean => {
+const accountExists = (cache: Account.Cache, bank: Bank.Doc, num: string, type: Account.Type): boolean => {
   for (let account of cache.values()) {
-    if (account.institution === institution._id && account.number === num && account.type === type) {
-      return institution.accounts.indexOf(account._id) !== -1
+    if (account.bank === bank._id && account.number === num && account.type === type) {
+      return bank.accounts.indexOf(account._id) !== -1
     }
   }
   return false

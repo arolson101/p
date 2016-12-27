@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { Breadcrumb } from 'react-bootstrap'
-import { DbInfo, Institution, Account } from '../../docs'
+import { DbInfo, Bank, Account } from '../../docs'
 import { RouteProps } from './props'
 
 interface Props {
   dbInfo?: DbInfo.Doc
-  institution?: Institution.Doc
+  bank?: Bank.Doc
   account?: Account.Doc
   page?: string
 }
@@ -13,24 +13,24 @@ interface Props {
 type AllProps = Props & RouteProps<any>
 
 export const Breadcrumbs = (props: AllProps) => {
-  const { router, dbInfo, institution, account, page } = props
+  const { router, dbInfo, bank, account, page } = props
 
   return (
     <Breadcrumb>
       {dbInfo &&
         <Breadcrumb.Item
-          active={!institution && !account && !page}
+          active={!bank && !account && !page}
           href={router.createHref(DbInfo.to.read(dbInfo))}
         >
           {dbInfo.title}
         </Breadcrumb.Item>
       }
-      {institution &&
+      {bank &&
         <Breadcrumb.Item
           active={!account && !page}
-          href={router.createHref(Institution.to.read(institution))}
+          href={router.createHref(Bank.to.read(bank))}
         >
-          {institution.name}
+          {bank.name}
         </Breadcrumb.Item>
       }
       {account &&

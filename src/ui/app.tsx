@@ -3,7 +3,7 @@ import * as React from 'react'
 import { Router, Route, IndexRoute } from 'react-router'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
-import { DbInfo, Institution, Account } from '../docs'
+import { DbInfo, Bank, Account } from '../docs'
 import { AppState, dbActions } from '../state'
 import * as Components from './components'
 
@@ -53,10 +53,10 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
               <Route path={DbInfo.routes.create} component={Components.DbCreate}/>
               <Route path={DbInfo.routes.read} component={Components.DbRead}/>
               <Route onEnter={requireAuth(store)}>
-                <Route path={Institution.routes.create} component={Components.InCreate}/>
-                <Route path={Institution.routes.read} component={Components.InRead}/>
-                <Route path={Institution.routes.update} component={Components.InUpdate}/>
-                <Route path={Institution.routes.del} component={Components.InDelete}/>
+                <Route path={Bank.routes.create} component={Components.BankCreate}/>
+                <Route path={Bank.routes.read} component={Components.InRead}/>
+                <Route path={Bank.routes.update} component={Components.BankUpdate}/>
+                <Route path={Bank.routes.del} component={Components.BankDelete}/>
                 <Route path={Account.routes.create} component={Components.AcCreate}/>
                 <Route path={Account.routes.read} component={Components.AcRead}/>
                 <Route path={Account.routes.update} component={Components.AcUpdate}/>

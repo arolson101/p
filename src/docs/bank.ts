@@ -1,0 +1,109 @@
+import * as docURI from 'docuri'
+import { makeid, Lookup } from '../util'
+import { AppThunk } from '../state'
+import { TCacheSetAction } from './index'
+import { Account } from './account'
+
+export interface Bank {
+  fi?: string
+
+  name: string
+  web?: string
+  address?: string
+  notes?: string
+
+  online?: boolean
+
+  fid?: string
+  org?: string
+  ofx?: string
+
+  login?: {
+    username: string
+    password: string
+  }
+
+  accounts: Account.DocId[]
+}
+
+export namespace Bank {
+  export type Id = ':bank' | 'create' | makeid | ''
+  export type DocId = 'bank/:bank'
+  export type Doc = PouchDB.Core.Document<Bank> & { _id: DocId; _rev?: string }
+  export interface Params { bank: Id }
+  export const docId = docURI.route<Params, DocId>('bank/:bank')
+  export const startkey = docId({bank: ''})
+  export const endkey = docId({bank: ''}) + '\uffff'
+  export const all: PouchDB.Selector = {
+    $and: [
+      { _id: { $gt: startkey } },
+      { _id: { $lt: endkey } }
+    ]
+  }
+
+  export namespace routes {
+    export const create = 'bank/create'
+    export const read = 'bank/:bank'
+    export const update = 'bank/:bank/update'
+    export const del = 'bank/:bank/delete'
+  }
+
+  export namespace to {
+    export const create = () => {
+      return '/' + routes.create
+    }
+
+    export const read = (bank: Doc): string => {
+      return '/' + bank._id
+    }
+
+    export const update = (bank: Doc): string => {
+      return '/' + bank._id + '/update'
+    }
+
+    export const del = (bank: Doc): string => {
+      return '/' + bank._id + '/delete'
+    }
+
+    export const accountCreate = (bank: Doc): string => {
+      const iparams = docId(bank._id)
+      if (!iparams) {
+        throw new Error('not a bank docid: ' + bank._id)
+      }
+      return '/' + Account.docId({bank: iparams.bank, account: 'create'})
+    }
+  }
+
+  export const isDocId = (id: string): boolean => {
+    return !!docId(id as DocId)
+  }
+
+  export const isDoc = (doc: Doc): boolean => {
+    return !!docId(doc._id)
+  }
+
+  export const doc = (bank: Bank, lang: string): Doc => {
+    const _id = docId({ bank: makeid(bank.name, lang) })
+    return { _id, ...bank }
+  }
+
+  export const CHANGE_ACTION = 'bank/change'
+
+  export type Cache = Lookup<DocId, Doc>
+  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
+
+  export type CACHE_SET = 'bank/cacheSet'
+  export const CACHE_SET = 'bank/cacheSet'
+  export type CacheSetAction = TCacheSetAction<CACHE_SET, DocId, Doc>
+  export const cacheSetAction = (cache: Cache): CacheSetAction => ({
+    type: CACHE_SET,
+    cache
+  })
+
+  export const cacheUpdateAction = (handle?: PouchDB.Database<any>): AppThunk =>
+    async (dispatch) => {
+      const results = handle ? await handle.find({selector: all}) : { docs: [] }
+      const cache = createCache(results.docs)
+      dispatch(cacheSetAction(cache))
+    }
+}

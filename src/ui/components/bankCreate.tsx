@@ -4,13 +4,13 @@ import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { DbInfo, Institution } from '../../docs'
+import { DbInfo, Bank } from '../../docs'
 import { AppState, FI, CurrentDb } from '../../state'
 import { Validator } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
 import { IntlProps, RouteProps } from './props'
-import { Values, InForm } from './inForm'
+import { Values, BankForm } from './bankForm'
 import { selectDbInfo } from './selectors'
 
 const messages = defineMessages({
@@ -30,16 +30,16 @@ interface ConnectedProps {
 interface Props {
 }
 
-type AllProps = Props & IntlProps & ConnectedProps & RouteProps<Institution.Params> & ReduxFormProps<Values>
+type AllProps = Props & IntlProps & ConnectedProps & RouteProps<Bank.Params> & ReduxFormProps<Values>
 
-export const InCreateComponent = (props: AllProps) => {
+export const BankCreateComponent = (props: AllProps) => {
   const { handleSubmit } = props
   const { formatMessage } = props.intl
   return (
     <Grid>
       <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
       <form onSubmit={handleSubmit(submit)}>
-        <InForm {...props} />
+        <BankForm {...props} />
         <div>
           <ButtonToolbar className='pull-right'>
             <Button
@@ -68,7 +68,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.maybeThrowSubmissionError()
 
   const { current, filist, lang } = props
-  const institution: Institution = {
+  const bank: Bank = {
     fi: values.fi ? filist[values.fi - 1].name : undefined,
     name: values.name,
     web: values.web,
@@ -83,13 +83,13 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
     },
     accounts: []
   }
-  const doc = Institution.doc(institution, lang)
+  const doc = Bank.doc(bank, lang)
   await current.db.put(doc)
 
-  props.router.replace(Institution.to.read(doc))
+  props.router.replace(Bank.to.read(doc))
 }
 
-export const InCreate = compose(
+export const BankCreate = compose(
   injectIntl,
   connect(
     (state: AppState): ConnectedProps => ({
@@ -102,4 +102,4 @@ export const InCreate = compose(
   reduxForm<AllProps, Values>({
     form: 'InCreate'
   })
-)(InCreateComponent) as React.ComponentClass<Props>
+)(BankCreateComponent) as React.ComponentClass<Props>

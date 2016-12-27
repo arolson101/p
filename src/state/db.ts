@@ -2,7 +2,7 @@ import * as CryptoPouch from 'crypto-pouch'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction, Dispatch } from 'redux'
-import { createIndices, DbInfo, docChangeActionTesters, Institution, Account } from '../docs'
+import { createIndices, DbInfo, docChangeActionTesters, Bank, Account } from '../docs'
 import { AppThunk } from './'
 
 PouchDB.plugin(PouchFind)
@@ -20,7 +20,7 @@ export interface CurrentDb {
   db: PouchDB.Database<any>
   changes: PouchDB.ChangeEmitter
   cache: {
-    institutions: Institution.Cache
+    banks: Bank.Cache
     accounts: Account.Cache
   }
 }
@@ -114,13 +114,13 @@ const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
     })
     .on('change', handleChange(db, dispatch))
 
-    let results = await db.find({selector: Institution.all})
-    const institutions = Institution.createCache(results.docs)
+    let results = await db.find({selector: Bank.all})
+    const banks = Bank.createCache(results.docs)
 
     results = await db.find({selector: Account.all})
     const accounts = Account.createCache(results.docs)
 
-    const cache = { institutions, accounts }
+    const cache = { banks, accounts }
 
     dispatch(setDb({info, db, changes, cache}))
   }
@@ -148,7 +148,7 @@ type Actions =
   SetMetaDbAction |
   SetDbAction |
   DbInfo.CacheSetAction |
-  Institution.CacheSetAction |
+  Bank.CacheSetAction |
   Account.CacheSetAction |
   { type: '' }
 
@@ -169,8 +169,8 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
     case DbInfo.CACHE_SET:
       return { ...state, meta: { ...state.meta, infos: action.cache } }
 
-    case Institution.CACHE_SET:
-      return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, institutions: action.cache } } }
+    case Bank.CACHE_SET:
+      return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, banks: action.cache } } }
 
     case Account.CACHE_SET:
       return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, accounts: action.cache } } }

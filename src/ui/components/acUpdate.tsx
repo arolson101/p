@@ -4,13 +4,13 @@ import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { DbInfo, Institution, Account } from '../../docs'
+import { DbInfo, Bank, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Validator } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
 import { IntlProps, RouteProps } from './props'
-import { selectDbInfo, selectInstitution, selectInstitutionAccounts, selectAccount } from './selectors'
+import { selectDbInfo, selectBank, selectBankAccounts, selectAccount } from './selectors'
 import { Values, AcForm } from './acForm'
 
 const messages = defineMessages({
@@ -23,7 +23,7 @@ const messages = defineMessages({
 interface ConnectedProps {
   current?: CurrentDb
   dbInfo?: DbInfo.Doc
-  institution?: Institution.Doc
+  bank?: Bank.Doc
   accounts?: Account.Doc[]
   account?: Account.Doc
 }
@@ -34,11 +34,11 @@ interface Props {
 type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps<Account.Params>
 
 export const AcUpdateComponent = (props: AllProps) => {
-  const { institution, account, handleSubmit, router } = props
+  const { bank, account, handleSubmit, router } = props
   const { formatMessage } = props.intl
   return (
     <div>
-      {institution && account &&
+      {bank && account &&
         <Grid>
           <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
           <form onSubmit={handleSubmit(submit)}>
@@ -105,8 +105,8 @@ export const AcUpdate = compose(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       current: state.db.current,
       dbInfo: selectDbInfo(state),
-      institution: selectInstitution(state, props),
-      accounts: selectInstitutionAccounts(state, props),
+      bank: selectBank(state, props),
+      accounts: selectBankAccounts(state, props),
       account: selectAccount(state, props)
     })
   ),

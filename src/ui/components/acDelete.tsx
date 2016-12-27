@@ -5,12 +5,12 @@ import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose } from 'redux'
 import { deleteAccount } from '../../actions'
-import { DbInfo, Institution, Account } from '../../docs'
+import { DbInfo, Bank, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
 import { IntlProps, DispatchProps, RouteProps } from './props'
-import { selectDbInfo, selectInstitution, selectAccount } from './selectors'
+import { selectDbInfo, selectBank, selectAccount } from './selectors'
 
 const messages = defineMessages({
   page: {
@@ -30,7 +30,7 @@ const messages = defineMessages({
 interface ConnectedProps {
   current: CurrentDb
   dbInfo?: DbInfo.Doc
-  institution?: Institution.Doc
+  bank?: Bank.Doc
   account?: Account.Doc
 }
 
@@ -91,10 +91,10 @@ export class AcDeleteComponent extends React.Component<AllProps, State> {
 
   @autobind
   async acDelete() {
-    const { dbInfo, institution, account, dispatch, router } = this.props
+    const { dbInfo, bank, account, dispatch, router } = this.props
     try {
       this.setState({deleting: true, error: undefined})
-      await dispatch(deleteAccount(institution!, account!))
+      await dispatch(deleteAccount(bank!, account!))
       router.replace(DbInfo.to.read(dbInfo!))
     } catch (err) {
       this.setState({deleting: false, error: err.message})
@@ -108,7 +108,7 @@ export const AcDelete = compose(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       current: state.db.current!,
       dbInfo: selectDbInfo(state),
-      institution: selectInstitution(state, props),
+      bank: selectBank(state, props),
       account: selectAccount(state, props)
     })
   )

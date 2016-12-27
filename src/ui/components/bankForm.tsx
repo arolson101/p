@@ -3,7 +3,7 @@ import * as React from 'react'
 import { Row, Col } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import { ReduxFormProps } from 'redux-form'
-import { Institution } from '../../docs'
+import { Bank } from '../../docs'
 import { FI, emptyfi, CurrentDb } from '../../state'
 import { formatAddress } from '../../util'
 import { typedFields } from './forms'
@@ -60,7 +60,7 @@ interface Props {
   filist: FI[]
   current: CurrentDb
   lang: string
-  institution?: Institution
+  bank?: Bank
 }
 
 type AllProps = IntlProps & Props & ReduxFormProps<Values>
@@ -85,22 +85,22 @@ export interface Values {
 
 const { TextField, SelectField, MultilineTextField, CheckboxField } = typedFields<Values>()
 
-export class InForm extends React.Component<AllProps, any> {
+export class BankForm extends React.Component<AllProps, any> {
   componentWillMount() {
     this.initializeValues(this.props)
   }
 
   compontWillReceiveProps(nextProps: AllProps) {
-    if (this.props.institution !== nextProps.institution) {
+    if (this.props.bank !== nextProps.bank) {
       this.initializeValues(nextProps)
     }
   }
 
   initializeValues(props: AllProps) {
-    const { institution, initialize, filist } = props
-    if (institution) {
-      const fi = filist.findIndex(fi => fi.name === institution.fi) + 1
-      const values = institution ? { ...institution, ...institution.login, fi } : {}
+    const { bank, initialize, filist } = props
+    if (bank) {
+      const fi = filist.findIndex(fi => fi.name === bank.fi) + 1
+      const values = bank ? { ...bank, ...bank.login, fi } : {}
       initialize(values)
     } else {
       initialize({online: true})

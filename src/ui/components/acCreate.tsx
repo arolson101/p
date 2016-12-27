@@ -4,13 +4,13 @@ import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { DbInfo, Institution, Account } from '../../docs'
+import { DbInfo, Bank, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Validator } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
 import { IntlProps, RouteProps } from './props'
-import { selectDbInfo, selectInstitution, selectInstitutionAccounts } from './selectors'
+import { selectDbInfo, selectBank, selectBankAccounts } from './selectors'
 import { Values, AcForm } from './acForm'
 
 const messages = defineMessages({
@@ -23,7 +23,7 @@ const messages = defineMessages({
 interface ConnectedProps {
   current?: CurrentDb
   dbInfo?: DbInfo.Doc
-  institution?: Institution.Doc
+  bank?: Bank.Doc
   accounts?: Account.Doc[]
   lang: string
 }
@@ -34,11 +34,11 @@ interface Props {
 type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps<Account.Params>
 
 export const AcCreateComponent = (props: AllProps) => {
-  const { institution, handleSubmit, router } = props
+  const { bank, handleSubmit, router } = props
   const { formatMessage } = props.intl
   return (
     <div>
-      {institution &&
+      {bank &&
         <Grid>
           <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
           <form onSubmit={handleSubmit(submit)}>
@@ -81,10 +81,10 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.maybeThrowSubmissionError()
 
   const { current, router, lang } = props
-  const institution = props.institution!
+  const bank = props.bank!
 
   const account: Account = {
-    institution: institution._id,
+    bank: bank._id,
     name: values.name,
     type: values.type,
     number: values.number,
@@ -92,8 +92,8 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   }
 
   const doc = Account.doc(account, lang)
-  institution.accounts.push(doc._id)
-  await current!.db.bulkDocs([doc, institution])
+  bank.accounts.push(doc._id)
+  await current!.db.bulkDocs([doc, bank])
 
   router.replace(Account.to.read(doc))
 }
@@ -105,8 +105,8 @@ export const AcCreate = compose(
       current: state.db.current,
       lang: state.i18n.lang,
       dbInfo: selectDbInfo(state),
-      institution: selectInstitution(state, props),
-      accounts: selectInstitutionAccounts(state, props)
+      bank: selectBank(state, props),
+      accounts: selectBankAccounts(state, props)
     })
   ),
   reduxForm<AllProps, Values>({

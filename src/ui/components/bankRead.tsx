@@ -6,11 +6,11 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { compose } from 'redux'
 import { getAccounts } from '../../actions'
-import { DbInfo, Institution, Account } from '../../docs'
+import { DbInfo, Bank, Account } from '../../docs'
 import { AppState } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps, IntlProps, DispatchProps } from './props'
-import { selectDbInfo, selectInstitution, selectInstitutionAccounts } from './selectors'
+import { selectDbInfo, selectBank, selectBankAccounts } from './selectors'
 
 const messages = defineMessages({
   noAccounts: {
@@ -58,12 +58,12 @@ const messages = defineMessages({
 interface Props {}
 
 interface ConnectedProps {
-  institution?: Institution.Doc
+  bank?: Bank.Doc
   dbInfo?: DbInfo.Doc
   accounts?: Account.Doc[]
 }
 
-type AllProps = Props & RouteProps<Institution.Params> & ConnectedProps & IntlProps & DispatchProps
+type AllProps = Props & RouteProps<Bank.Params> & ConnectedProps & IntlProps & DispatchProps
 
 interface State {
   showAll?: boolean
@@ -73,7 +73,7 @@ interface State {
   error?: string
 }
 
-export class InReadComponent extends React.Component<AllProps, State> {
+export class BankReadComponent extends React.Component<AllProps, State> {
   state = {
     showAll: false,
     showModal: false,
@@ -83,19 +83,19 @@ export class InReadComponent extends React.Component<AllProps, State> {
   }
 
   render() {
-    const { institution, accounts, router, intl: { formatMessage } } = this.props
+    const { bank, accounts, router, intl: { formatMessage } } = this.props
     const { working, showModal, message, error, showAll } = this.state
     return (
       <div>
-        {institution &&
+        {bank &&
           <Grid>
             <Breadcrumbs {...this.props}/>
-            <PageHeader>{institution.name}</PageHeader>
+            <PageHeader>{bank.name}</PageHeader>
 
             <ButtonGroup className='pull-right'>
             <DropdownButton bsSize='small' id='in-action-menu' title={formatMessage(messages.settings)} pullRight>
               {/* update */}
-              <MenuItem href={router.createHref(Institution.to.update(institution))}>
+              <MenuItem href={router.createHref(Bank.to.update(bank))}>
                 <FormattedMessage {...messages.update}/>
               </MenuItem>
               {/* showAll */}
@@ -103,12 +103,12 @@ export class InReadComponent extends React.Component<AllProps, State> {
                 <FormattedMessage {...messages.showAll}/>
               </MenuItem>
               {/* get account list */}
-              <MenuItem disabled={!institution.online} onClick={this.getAccountList}>
+              <MenuItem disabled={!bank.online} onClick={this.getAccountList}>
                 <FormattedMessage {...messages.getAccounts}/>
               </MenuItem>
               <MenuItem divider />
               {/* delete */}
-              <MenuItem href={router.createHref(Institution.to.del(institution))}>
+              <MenuItem href={router.createHref(Bank.to.del(bank))}>
                 <FormattedMessage {...messages.delete}/>
               </MenuItem>
             </DropdownButton>
@@ -179,10 +179,10 @@ export class InReadComponent extends React.Component<AllProps, State> {
 
   @autobind
   async getAccountList() {
-    const { dispatch, institution, intl: { formatMessage } } = this.props
+    const { dispatch, bank, intl: { formatMessage } } = this.props
     this.setState({ showModal: true, working: true, message: undefined, error: undefined })
     try {
-      const message = await dispatch(getAccounts(institution!, formatMessage))
+      const message = await dispatch(getAccounts(bank!, formatMessage))
       this.setState({ working: false, message })
     } catch (ex) {
       this.setState({ working: false, error: ex.message })
@@ -211,10 +211,10 @@ const Nl2br = (props: {text: string}) => {
 export const InRead = compose(
   injectIntl,
   connect(
-    (state: AppState, props: RouteProps<Institution.Params>): ConnectedProps => ({
+    (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => ({
       dbInfo: selectDbInfo(state),
-      institution: selectInstitution(state, props),
-      accounts: selectInstitutionAccounts(state, props)
+      bank: selectBank(state, props),
+      accounts: selectBankAccounts(state, props)
     })
   )
-)(InReadComponent) as React.ComponentClass<Props>
+)(BankReadComponent) as React.ComponentClass<Props>

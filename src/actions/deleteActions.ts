@@ -1,5 +1,5 @@
 import { AppThunk } from '../state'
-import { Institution, Account } from '../docs'
+import { Bank, Account } from '../docs'
 
 interface Deletion {
   _id: string
@@ -7,12 +7,12 @@ interface Deletion {
   _deleted: true
 }
 
-export const deleteInstitution = (institution: Institution.Doc): AppThunk =>
+export const deleteBank = (bank: Bank.Doc): AppThunk =>
   async (dispatch, getState) => {
     const { current } = getState().db
     if (!current) { throw new Error('no db') }
     let deletions: Deletion[] = []
-    for (let accountid of institution.accounts) {
+    for (let accountid of bank.accounts) {
       const account = current.cache.accounts.get(accountid)
       if (account) {
         deletions.push({
@@ -24,21 +24,21 @@ export const deleteInstitution = (institution: Institution.Doc): AppThunk =>
       // TODO: delete transactions
     }
     deletions.push({
-      _id: institution._id,
-      _rev: institution._rev,
+      _id: bank._id,
+      _rev: bank._rev,
       _deleted: true
     })
     await current.db.bulkDocs(deletions)
   }
 
-export const deleteAccount = (institution: Institution.Doc, account: Account.Doc): AppThunk =>
+export const deleteAccount = (bank: Bank.Doc, account: Account.Doc): AppThunk =>
   async (dispatch, getState) => {
     const { current } = getState().db
     if (!current) { throw new Error('no db') }
 
-    const idx = institution.accounts.indexOf(account._id)
+    const idx = bank.accounts.indexOf(account._id)
     if (idx !== -1) {
-      institution.accounts.splice(idx, 1)
+      bank.accounts.splice(idx, 1)
     }
 
     let deletions: Deletion[] = []
@@ -48,5 +48,5 @@ export const deleteAccount = (institution: Institution.Doc, account: Account.Doc
       _deleted: true
     })
     // TODO: delete transactions
-    await current.db.bulkDocs([institution, deletions])
+    await current.db.bulkDocs([bank, deletions])
   }

@@ -4,14 +4,14 @@ import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { DbInfo, Institution } from '../../docs'
+import { DbInfo, Bank } from '../../docs'
 import { AppState, FI, CurrentDb } from '../../state'
 import { Validator } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
-import { Values, InForm } from './inForm'
+import { Values, BankForm } from './bankForm'
 import { IntlProps, RouteProps } from './props'
-import { selectDbInfo, selectInstitution } from './selectors'
+import { selectDbInfo, selectBank } from './selectors'
 
 const messages = defineMessages({
   page: {
@@ -25,25 +25,25 @@ interface ConnectedProps {
   current: CurrentDb
   lang: string
   dbInfo?: DbInfo.Doc
-  institution?: Institution.Doc
+  bank?: Bank.Doc
 }
 
 interface Props {
 }
 
-type AllProps = Props & IntlProps & ConnectedProps & RouteProps<Institution.Params> & ReduxFormProps<Values>
+type AllProps = Props & IntlProps & ConnectedProps & RouteProps<Bank.Params> & ReduxFormProps<Values>
 
-export class InUpdateComponent extends React.Component<AllProps, any> {
+export class BankUpdateComponent extends React.Component<AllProps, any> {
   render() {
-    const { handleSubmit, router, institution } = this.props
+    const { handleSubmit, router, bank } = this.props
     const { formatMessage } = this.props.intl
     return (
       <div>
-        {institution &&
+        {bank &&
           <Grid>
             <Breadcrumbs {...this.props} page={formatMessage(messages.page)}/>
             <form onSubmit={handleSubmit(submit)}>
-              <InForm {...this.props} />
+              <BankForm {...this.props} />
               <Col>
                 <ButtonToolbar className='pull-right'>
                   <Button
@@ -75,9 +75,9 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.required(['name'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
 
-  const { institution, current, filist, router } = props
-  const doc: Institution.Doc = {
-    ...institution,
+  const { bank, current, filist, router } = props
+  const doc: Bank.Doc = {
+    ...bank,
 
     fi: values.fi ? filist[values.fi - 1].name : undefined,
     name: values.name,
@@ -94,21 +94,21 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   }
   await current.db.put(doc)
 
-  router.replace(Institution.to.read(doc))
+  router.replace(Bank.to.read(doc))
 }
 
-export const InUpdate = compose(
+export const BankUpdate = compose(
   injectIntl,
   connect(
-    (state: AppState, props: RouteProps<Institution.Params>): ConnectedProps => ({
+    (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => ({
       filist: state.fi.list,
       current: state.db.current!,
       lang: state.i18n.locale,
       dbInfo: selectDbInfo(state),
-      institution: selectInstitution(state, props)
+      bank: selectBank(state, props)
     })
   ),
   reduxForm<AllProps, Values>({
     form: 'InUpdate'
   })
-)(InUpdateComponent) as React.ComponentClass<Props>
+)(BankUpdateComponent) as React.ComponentClass<Props>

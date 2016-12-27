@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Grid } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { DbInfo, Institution, Account } from '../../docs'
+import { DbInfo, Bank, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Lookup } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
@@ -20,34 +20,30 @@ interface ConnectedProps {
 
 type AllProps = React.Props<any> & Props & ConnectedProps & RouteProps<DbInfo.Params>
 
-type InstitutionWithAccounts = Institution.Doc & {
-  accounts: Account.Doc[]
-}
-
 export const DbReadComponent = (props: AllProps) => {
   if (!props.current || props.current.info._id !== DbInfo.docId({db: props.params.db})) {
     return <DbLogin {...props}/>
   }
 
-  const { institutions, accounts } = props.current.cache
+  const { banks, accounts } = props.current.cache
 
   return (
     <Grid>
       <Breadcrumbs {...props}/>
       institutions:
       <ul>
-        {Lookup.map(institutions, institution =>
-          <li key={institution._id}>
-            <Link to={Institution.to.read(institution)}>{institution.name}</Link>
+        {Lookup.map(banks, bank =>
+          <li key={bank._id}>
+            <Link to={Bank.to.read(bank)}>{bank.name}</Link>
             <ul>
-              {institution.accounts.map(id => accounts.get(id)).map(account => account &&
+              {bank.accounts.map(id => accounts.get(id)).map(account => account &&
                 <li key={account._id}><Link to={Account.to.read(account)}>{account.name}</Link></li>
               )}
             </ul>
           </li>
         )}
       </ul>
-      <Link to={Institution.to.create()}>add institution</Link>
+      <Link to={Bank.to.create()}>add bank</Link>
     </Grid>
   )
 }

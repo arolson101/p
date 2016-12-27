@@ -4,13 +4,13 @@ import { Grid, Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose } from 'redux'
-import { deleteInstitution } from '../../actions'
-import { DbInfo, Institution } from '../../docs'
+import { deleteBank } from '../../actions'
+import { DbInfo, Bank } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
 import { IntlProps, RouteProps, DispatchProps } from './props'
-import { selectDbInfo, selectInstitution } from './selectors'
+import { selectDbInfo, selectBank } from './selectors'
 
 const messages = defineMessages({
   page: {
@@ -23,20 +23,20 @@ const messages = defineMessages({
   },
   text: {
     id: 'inDelete.text',
-    defaultMessage: "This will delete institution '{name}' and all its accounts.  Are you sure?"
+    defaultMessage: "This will delete bank '{name}' and all its accounts.  Are you sure?"
   }
 })
 
 interface ConnectedProps {
   current: CurrentDb
   dbInfo?: DbInfo.Doc
-  institution?: Institution.Doc
+  bank?: Bank.Doc
 }
 
 interface Props {
 }
 
-type AllProps = Props & IntlProps & ConnectedProps & DispatchProps & RouteProps<Institution.Params>
+type AllProps = Props & IntlProps & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
 
 interface State {
   error?: string
@@ -49,23 +49,23 @@ interface Deletion {
   _deleted: true
 }
 
-export class InDeleteComponent extends React.Component<AllProps, State> {
+export class BankDeleteComponent extends React.Component<AllProps, State> {
   state: State = {
     error: undefined,
     deleting: false
   }
 
   render() {
-    const { router, institution } = this.props
+    const { router, bank } = this.props
     const { formatMessage } = this.props.intl
     const { error, deleting } = this.state
     return (
       <div>
-        {institution &&
+        {bank &&
           <Grid>
             <Breadcrumbs {...this.props} page={formatMessage(messages.page)}/>
             <div>
-              <p><FormattedMessage {...messages.text} values={{name: institution.name}}/></p>
+              <p><FormattedMessage {...messages.text} values={{name: bank.name}}/></p>
               {error &&
                 <Alert bsStyle='danger'>
                   {error}
@@ -96,10 +96,10 @@ export class InDeleteComponent extends React.Component<AllProps, State> {
 
   @autobind
   async inDelete() {
-    const { dbInfo, institution, dispatch, router } = this.props
+    const { dbInfo, bank, dispatch, router } = this.props
     try {
       this.setState({deleting: true, error: undefined})
-      await dispatch(deleteInstitution(institution!))
+      await dispatch(deleteBank(bank!))
       router.replace(DbInfo.to.read(dbInfo!))
     } catch (err) {
       this.setState({deleting: false, error: err.message})
@@ -107,13 +107,13 @@ export class InDeleteComponent extends React.Component<AllProps, State> {
   }
 }
 
-export const InDelete = compose(
+export const BankDelete = compose(
   injectIntl,
   connect(
-    (state: AppState, props: RouteProps<Institution.Params>): ConnectedProps => ({
+    (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => ({
       current: state.db.current!,
       dbInfo: selectDbInfo(state),
-      institution: selectInstitution(state, props)
+      bank: selectBank(state, props)
     })
   )
-)(InDeleteComponent) as React.ComponentClass<Props>
+)(BankDeleteComponent) as React.ComponentClass<Props>

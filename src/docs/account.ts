@@ -1,12 +1,12 @@
 import * as docURI from 'docuri'
 import { defineMessages } from 'react-intl'
-import { Institution } from './institution'
+import { Bank } from './bank'
 import { makeid, Lookup } from '../util'
 import { TCacheSetAction } from './index'
 import { AppThunk } from '../state'
 
 export interface Account {
-  institution: Institution.DocId
+  bank: Bank.DocId
   name: string
   type: Account.Type
   number: string
@@ -56,10 +56,10 @@ export namespace Account {
   }
 
   export type Id = ':account' | 'create' | makeid | ''
-  export type DocId = 'account/:institution/:account'
+  export type DocId = 'account/:bank/:account'
   export type Doc = PouchDB.Core.Document<Account> & { _id: DocId; _rev?: string }
-  export interface Params { institution: Institution.Id, account: Id }
-  export const docId = docURI.route<Params, DocId>('account/:institution/:account')
+  export interface Params { bank: Bank.Id, account: Id }
+  export const docId = docURI.route<Params, DocId>('account/:bank/:account')
   export const startkey = 'account/'
   export const endkey = 'account/\uffff'
   export const all: PouchDB.Selector = {
@@ -70,10 +70,10 @@ export namespace Account {
   }
 
   export namespace routes {
-    export const create = 'account/:institution/create'
-    export const read = 'account/:institution/:account'
-    export const update = 'account/:institution/:account/update'
-    export const del = 'account/:institution/:account/delete'
+    export const create = 'account/:bank/create'
+    export const read = 'account/:bank/:account'
+    export const update = 'account/:bank/:account/update'
+    export const del = 'account/:bank/:account/delete'
   }
 
   export namespace to {
@@ -111,12 +111,12 @@ export namespace Account {
   }
 
   export const doc = (account: Account, lang: string): Doc => {
-    const iparams = Institution.docId(account.institution)
+    const iparams = Bank.docId(account.bank)
     if (!iparams) {
-      throw new Error('invalid institution docid: ' + account.institution)
+      throw new Error('invalid bank docid: ' + account.bank)
     }
     const _id = docId({
-      institution: iparams.institution,
+      bank: iparams.bank,
       account: makeid(account.name, lang)
     })
     return { _id, ...account }
@@ -125,7 +125,7 @@ export namespace Account {
   export const createIndices = (db: PouchDB.Database<any>) => {
     // return db.createIndex({
     //   index: {
-    //     fields: ['institution']
+    //     fields: ['bank']
     //   }
     // })
   }
