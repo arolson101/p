@@ -27,13 +27,13 @@ export interface Bank {
 }
 
 export namespace Bank {
-  export type Id = ':bank' | 'create' | makeid | ''
-  export type DocId = 'bank/:bank'
+  export type Id = ':bankId' | 'create' | makeid
+  export type DocId = 'bank/:bankId'
   export type Doc = PouchDB.Core.Document<Bank> & { _id: DocId; _rev?: string }
-  export interface Params { bank: Id }
-  export const docId = docURI.route<Params, DocId>('bank/:bank')
-  export const startkey = docId({bank: ''})
-  export const endkey = docId({bank: ''}) + '\uffff'
+  export interface Params { bankId: Id }
+  export const docId = docURI.route<Params, DocId>('bank/:bankId')
+  export const startkey = 'bank/'
+  export const endkey = 'bank/\uffff'
   export const all: PouchDB.Selector = {
     $and: [
       { _id: { $gt: startkey } },
@@ -43,9 +43,9 @@ export namespace Bank {
 
   export namespace routes {
     export const create = 'bank/create'
-    export const read = 'bank/:bank'
-    export const update = 'bank/:bank/update'
-    export const del = 'bank/:bank/delete'
+    export const read = 'bank/:bankId'
+    export const update = 'bank/:bankId/update'
+    export const del = 'bank/:bankId/delete'
   }
 
   export namespace to {
@@ -70,7 +70,7 @@ export namespace Bank {
       if (!iparams) {
         throw new Error('not a bank docid: ' + bank._id)
       }
-      return '/' + Account.docId({bank: iparams.bank, account: 'create'})
+      return '/' + Account.docId({bankId: iparams.bankId, accountId: 'create'})
     }
   }
 
@@ -83,7 +83,7 @@ export namespace Bank {
   }
 
   export const doc = (bank: Bank, lang: string): Doc => {
-    const _id = docId({ bank: makeid(bank.name, lang) })
+    const _id = docId({ bankId: makeid(bank.name, lang) })
     return { _id, ...bank }
   }
 

@@ -55,11 +55,11 @@ export namespace Account {
     [Account.Type.CREDITCARD]: 'fa fa-credit-card'
   }
 
-  export type Id = ':account' | 'create' | makeid | ''
-  export type DocId = 'account/:bank/:account'
+  export type Id = ':accountId' | 'create' | makeid
+  export type DocId = 'account/:bankId/:accountId'
   export type Doc = PouchDB.Core.Document<Account> & { _id: DocId; _rev?: string }
-  export interface Params { bank: Bank.Id, account: Id }
-  export const docId = docURI.route<Params, DocId>('account/:bank/:account')
+  export interface Params { bankId: Bank.Id, accountId: Id }
+  export const docId = docURI.route<Params, DocId>('account/:bankId/:accountId')
   export const startkey = 'account/'
   export const endkey = 'account/\uffff'
   export const all: PouchDB.Selector = {
@@ -70,10 +70,10 @@ export namespace Account {
   }
 
   export namespace routes {
-    export const create = 'account/:bank/create'
-    export const read = 'account/:bank/:account'
-    export const update = 'account/:bank/:account/update'
-    export const del = 'account/:bank/:account/delete'
+    export const create = 'account/:bankId/create'
+    export const read = 'account/:bankId/:accountId'
+    export const update = 'account/:bankId/:accountId/update'
+    export const del = 'account/:bankId/:accountId/delete'
   }
 
   export namespace to {
@@ -107,7 +107,7 @@ export namespace Account {
     if (!aparts) {
       throw new Error('not an account id: ' + account)
     }
-    return aparts.account
+    return aparts.accountId
   }
 
   export const doc = (account: Account, lang: string): Doc => {
@@ -116,8 +116,8 @@ export namespace Account {
       throw new Error('invalid bank docid: ' + account.bank)
     }
     const _id = docId({
-      bank: iparams.bank,
-      account: makeid(account.name, lang)
+      bankId: iparams.bankId,
+      accountId: makeid(account.name, lang)
     })
     return { _id, ...account }
   }
