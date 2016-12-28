@@ -57,10 +57,10 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
                 <Route path={Bank.routes.read} component={Components.InRead}/>
                 <Route path={Bank.routes.update} component={Components.BankUpdate}/>
                 <Route path={Bank.routes.del} component={Components.BankDelete}/>
-                <Route path={Account.routes.create} component={Components.AcCreate}/>
-                <Route path={Account.routes.read} component={Components.AcRead}/>
-                <Route path={Account.routes.update} component={Components.AcUpdate}/>
-                <Route path={Account.routes.del} component={Components.AcDelete}/>
+                <Route path={Account.routes.create} component={Components.AccountCreate}/>
+                <Route path={Account.routes.read} component={Components.AccountRead}/>
+                <Route path={Account.routes.update} component={Components.AccountUpdate}/>
+                <Route path={Account.routes.del} component={Components.AccountDelete}/>
               </Route>
               <Route path='*' component={NotFoundRoute}/>
             </Route>

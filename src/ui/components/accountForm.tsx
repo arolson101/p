@@ -44,7 +44,7 @@ export interface Values {
 
 const { TextField, SelectField } = typedFields<Values>()
 
-export class AcForm extends React.Component<AllProps, any> {
+export class AccountForm extends React.Component<AllProps, any> {
 
   static validate(v: Validator<Values>, props: IntlProps, otherAccounts: Account.Doc[]) {
     const { formatMessage } = props.intl

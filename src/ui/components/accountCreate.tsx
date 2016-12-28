@@ -10,13 +10,13 @@ import { Validator } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
 import { IntlProps, RouteProps } from './props'
-import { selectDbInfo, selectBank, selectBankAccounts, selectAccount } from './selectors'
-import { Values, AcForm } from './acForm'
+import { selectDbInfo, selectBank, selectBankAccounts } from './selectors'
+import { Values, AccountForm } from './accountForm'
 
 const messages = defineMessages({
   page: {
-    id: 'acUpdate.page',
-    defaultMessage: 'Edit'
+    id: 'acCreate.page',
+    defaultMessage: 'Add Account'
   }
 })
 
@@ -25,21 +25,21 @@ interface ConnectedProps {
   dbInfo?: DbInfo.Doc
   bank?: Bank.Doc
   accounts?: Account.Doc[]
-  account?: Account.Doc
+  lang: string
 }
 
 type AllProps = IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps<Account.Params>
 
-export const AcUpdateComponent = (props: AllProps) => {
-  const { bank, account, handleSubmit, router } = props
+export const AccountCreateComponent = (props: AllProps) => {
+  const { bank, handleSubmit, router } = props
   const { formatMessage } = props.intl
   return (
     <div>
-      {bank && account &&
+      {bank &&
         <Grid>
           <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
           <form onSubmit={handleSubmit(submit)}>
-            <AcForm {...props} account={account}/>
+            <AccountForm {...props}/>
             <div>
               <ButtonToolbar className='pull-right'>
                 <Button
@@ -52,7 +52,7 @@ export const AcUpdateComponent = (props: AllProps) => {
                   type='submit'
                   bsStyle='primary'
                 >
-                  {formatMessage(forms.save)}
+                  {formatMessage(forms.create)}
                 </Button>
               </ButtonToolbar>
             </div>
@@ -65,10 +65,8 @@ export const AcUpdateComponent = (props: AllProps) => {
 
 const validate = (values: Values, props: AllProps) => {
   const v = new Validator(values)
-  if (props.account && props.accounts) {
-    const thisid = props.account._id
-    const otherAccounts = props.accounts.filter(acct => acct._id !== thisid)
-    AcForm.validate(v, props, otherAccounts)
+  if (props.accounts) {
+    AccountForm.validate(v, props, props.accounts)
   }
   return v.errors
 }
@@ -79,36 +77,37 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.required(['name', 'number'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
 
-  const { current, router } = props
-  const account = props.account!
+  const { current, router, lang } = props
+  const bank = props.bank!
 
-  const doc: Account.Doc = {
-    ...account,
-
+  const account: Account = {
+    bank: bank._id,
     name: values.name,
     type: values.type,
     number: values.number,
     visible: true
   }
 
-  await current!.db.put(doc)
+  const doc = Account.doc(account, lang)
+  bank.accounts.push(doc._id)
+  await current!.db.bulkDocs([doc, bank])
 
   router.replace(Account.to.read(doc))
 }
 
-export const AcUpdate = compose(
+export const AccountCreate = compose(
   injectIntl,
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       current: state.db.current,
+      lang: state.i18n.lang,
       dbInfo: selectDbInfo(state),
       bank: selectBank(state, props),
-      accounts: selectBankAccounts(state, props),
-      account: selectAccount(state, props)
+      accounts: selectBankAccounts(state, props)
     })
   ),
   reduxForm<AllProps, Values>({
-    form: 'AcUpdate',
+    form: 'AcCreate',
     validate
   })
-)(AcUpdateComponent) as React.ComponentClass<AllProps>
+)(AccountCreateComponent) as React.ComponentClass<{}>

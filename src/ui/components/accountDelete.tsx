@@ -41,7 +41,7 @@ interface State {
   deleting?: boolean
 }
 
-export class AcDeleteComponent extends React.Component<AllProps, State> {
+export class AccountDeleteComponent extends React.Component<AllProps, State> {
   state: State = {
     error: undefined,
     deleting: false
@@ -99,7 +99,7 @@ export class AcDeleteComponent extends React.Component<AllProps, State> {
   }
 }
 
-export const AcDelete = compose(
+export const AccountDelete = compose(
   injectIntl,
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
@@ -109,4 +109,4 @@ export const AcDelete = compose(
       account: selectAccount(state, props)
     })
   )
-)(AcDeleteComponent) as React.ComponentClass<{}>
+)(AccountDeleteComponent) as React.ComponentClass<{}>
