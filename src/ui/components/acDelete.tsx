@@ -34,10 +34,7 @@ interface ConnectedProps {
   account?: Account.Doc
 }
 
-interface Props {
-}
-
-type AllProps = Props & IntlProps & ConnectedProps & DispatchProps & RouteProps<Account.Params>
+type AllProps = IntlProps & ConnectedProps & DispatchProps & RouteProps<Account.Params>
 
 interface State {
   error?: string
@@ -112,4 +109,4 @@ export const AcDelete = compose(
       account: selectAccount(state, props)
     })
   )
-)(AcDeleteComponent) as React.ComponentClass<Props>
+)(AcDeleteComponent) as React.ComponentClass<{}>

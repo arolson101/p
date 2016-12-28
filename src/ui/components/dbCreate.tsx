@@ -25,14 +25,11 @@ interface ConnectedProps {
   lang: string
 }
 
-interface Props {
-}
-
 interface DispatchedProps {
   createDb(title: string, password: string, lang: string): Promise<DbInfo.Doc>
 }
 
-type AllProps = Props & IntlProps & ConnectedProps & DispatchedProps & ReduxFormProps<Values> & RouteProps<any>
+type AllProps = IntlProps & ConnectedProps & DispatchedProps & ReduxFormProps<Values> & RouteProps<any>
 
 interface Values {
   name: string
@@ -118,4 +115,4 @@ export const DbCreate = compose(
     form: 'DbCreate',
     validate
   })
-)(DbCreateComponent) as React.ComponentClass<Props>
+)(DbCreateComponent) as React.ComponentClass<{}>

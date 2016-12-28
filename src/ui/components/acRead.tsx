@@ -8,15 +8,13 @@ import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps } from './props'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
 
-interface Props {}
-
 interface ConnectedProps {
   dbInfo?: DbInfo.Doc
   bank?: Bank.Doc
   account?: Account.Doc
 }
 
-type AllProps = Props & RouteProps<Account.Params> & ConnectedProps
+type AllProps = RouteProps<Account.Params> & ConnectedProps
 
 export const AcReadComponent = (props: AllProps) => {
   const { bank, account } = props
@@ -46,4 +44,4 @@ export const AcRead = connect(
     bank: selectBank(state, props),
     account: selectAccount(state, props)
   })
-)(AcReadComponent) as React.ComponentClass<Props>
+)(AcReadComponent) as React.ComponentClass<{}>

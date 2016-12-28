@@ -10,15 +10,12 @@ import { RouteProps } from './props'
 import { DbLogin } from './dbLogin'
 import { selectDbInfo } from './selectors'
 
-interface Props {
-}
-
 interface ConnectedProps {
   dbInfo?: DbInfo.Doc
   current?: CurrentDb
 }
 
-type AllProps = React.Props<any> & Props & ConnectedProps & RouteProps<DbInfo.Params>
+type AllProps = React.Props<any> & ConnectedProps & RouteProps<DbInfo.Params>
 
 export const DbReadComponent = (props: AllProps) => {
   if (!props.current || props.current.info._id !== DbInfo.docId({db: props.params.db})) {
@@ -43,7 +40,7 @@ export const DbReadComponent = (props: AllProps) => {
           </li>
         )}
       </ul>
-      <Link to={Bank.to.create()}>add bank</Link>
+      <Link to={Bank.to.create()}>add institution</Link>
     </Grid>
   )
 }
@@ -53,4 +50,4 @@ export const DbRead = connect(
     dbInfo: selectDbInfo(state),
     current: state.db.current
   })
-)(DbReadComponent as any) as React.ComponentClass<Props>
+)(DbReadComponent as any) as React.ComponentClass<{}>

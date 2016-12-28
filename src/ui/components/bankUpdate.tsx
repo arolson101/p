@@ -28,10 +28,7 @@ interface ConnectedProps {
   bank?: Bank.Doc
 }
 
-interface Props {
-}
-
-type AllProps = Props & IntlProps & ConnectedProps & RouteProps<Bank.Params> & ReduxFormProps<Values>
+type AllProps = IntlProps & ConnectedProps & RouteProps<Bank.Params> & ReduxFormProps<Values>
 
 export class BankUpdateComponent extends React.Component<AllProps, any> {
   render() {
@@ -111,4 +108,4 @@ export const BankUpdate = compose(
   reduxForm<AllProps, Values>({
     form: 'InUpdate'
   })
-)(BankUpdateComponent) as React.ComponentClass<Props>
+)(BankUpdateComponent) as React.ComponentClass<{}>

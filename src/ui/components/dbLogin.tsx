@@ -15,14 +15,11 @@ interface Params {
   db: DbInfo.Id
 }
 
-interface Props {
-}
-
 interface ConnectedProps {
   dbDoc: DbInfo.Doc
 }
 
-type AllProps = Props & DispatchProps & RouteProps<Params> & ConnectedProps & IntlProps & ReduxFormProps<Values>
+type AllProps = DispatchProps & RouteProps<Params> & ConnectedProps & IntlProps & ReduxFormProps<Values>
 
 interface Values {
   password: string
@@ -138,4 +135,4 @@ export const DbLogin = compose(
   reduxForm<AllProps, Values>({
     form: 'Password'
   })
-)(DbLoginComponent) as React.ComponentClass<Props>
+)(DbLoginComponent) as React.ComponentClass<{}>

@@ -31,8 +31,7 @@ interface ConnectedProps {
   dbInfos: DbInfo.Cache
 }
 
-interface Props {}
-type AllProps = RouteProps<any> & ConnectedProps & Props
+type AllProps = RouteProps<any> & ConnectedProps
 
 export const DbListComponent = (props: AllProps) => (
   <Grid>
@@ -66,4 +65,4 @@ export const DbList = connect(
   (state: AppState): ConnectedProps => ({
     dbInfos: state.db.meta.infos
   })
-)(DbListComponent) as React.ComponentClass<Props>
+)(DbListComponent) as React.ComponentClass<{}>

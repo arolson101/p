@@ -59,15 +59,13 @@ const messages = defineMessages({
   }
 })
 
-interface Props {}
-
 interface ConnectedProps {
   bank?: Bank.Doc
   dbInfo?: DbInfo.Doc
   accounts?: Account.Doc[]
 }
 
-type AllProps = Props & RouteProps<Bank.Params> & ConnectedProps & IntlProps & DispatchProps
+type AllProps = RouteProps<Bank.Params> & ConnectedProps & IntlProps & DispatchProps
 
 interface State {
   showAll?: boolean
@@ -229,4 +227,4 @@ export const InRead = compose(
       accounts: selectBankAccounts(state, props)
     })
   )
-)(BankReadComponent) as React.ComponentClass<Props>
+)(BankReadComponent) as React.ComponentClass<{}>

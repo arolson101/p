@@ -28,10 +28,7 @@ interface ConnectedProps {
   lang: string
 }
 
-interface Props {
-}
-
-type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps<Account.Params>
+type AllProps = IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps<Account.Params>
 
 export const AcCreateComponent = (props: AllProps) => {
   const { bank, handleSubmit, router } = props
@@ -113,4 +110,4 @@ export const AcCreate = compose(
     form: 'AcCreate',
     validate
   })
-)(AcCreateComponent) as React.ComponentClass<Props>
+)(AcCreateComponent) as React.ComponentClass<{}>

@@ -27,10 +27,7 @@ interface ConnectedProps {
   dbInfo?: DbInfo.Doc
 }
 
-interface Props {
-}
-
-type AllProps = Props & IntlProps & ConnectedProps & RouteProps<Bank.Params> & ReduxFormProps<Values>
+type AllProps = IntlProps & ConnectedProps & RouteProps<Bank.Params> & ReduxFormProps<Values>
 
 export const BankCreateComponent = (props: AllProps) => {
   const { handleSubmit } = props
@@ -102,4 +99,4 @@ export const BankCreate = compose(
   reduxForm<AllProps, Values>({
     form: 'InCreate'
   })
-)(BankCreateComponent) as React.ComponentClass<Props>
+)(BankCreateComponent) as React.ComponentClass<{}>

@@ -28,10 +28,7 @@ interface ConnectedProps {
   account?: Account.Doc
 }
 
-interface Props {
-}
-
-type AllProps = Props & IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps<Account.Params>
+type AllProps = IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps<Account.Params>
 
 export const AcUpdateComponent = (props: AllProps) => {
   const { bank, account, handleSubmit, router } = props
@@ -114,4 +111,4 @@ export const AcUpdate = compose(
     form: 'AcUpdate',
     validate
   })
-)(AcUpdateComponent) as React.ComponentClass<Props>
+)(AcUpdateComponent) as React.ComponentClass<AllProps>

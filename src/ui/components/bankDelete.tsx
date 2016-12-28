@@ -33,10 +33,7 @@ interface ConnectedProps {
   bank?: Bank.Doc
 }
 
-interface Props {
-}
-
-type AllProps = Props & IntlProps & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
+type AllProps = IntlProps & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
 
 interface State {
   error?: string
@@ -116,4 +113,4 @@ export const BankDelete = compose(
       bank: selectBank(state, props)
     })
   )
-)(BankDeleteComponent) as React.ComponentClass<Props>
+)(BankDeleteComponent) as React.ComponentClass<{}>
