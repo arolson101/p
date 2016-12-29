@@ -101,7 +101,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
 
   const { router } = props
   const dbInfo = await dispatch(dbActions.createDb(values.name, values.password, props.lang))
-  router.replace(DbInfo.to.read(dbInfo))
+  router.replace(DbInfo.to.view(dbInfo))
 }
 
 export const DbCreate = compose(

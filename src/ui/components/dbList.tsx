@@ -40,7 +40,7 @@ export const DbListComponent = (props: AllProps) => (
         <ListGroup>
           {Lookup.map(props.dbInfos, dbInfo =>
             <ListGroupItem
-              href={props.router.createHref(DbInfo.to.read(dbInfo))}
+              href={props.router.createHref(DbInfo.to.view(dbInfo))}
               key={dbInfo._id}
             >
               <h4><i {...icons.openDb}/> {dbInfo.title}</h4>

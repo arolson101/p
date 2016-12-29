@@ -83,7 +83,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   const doc = Bank.doc(bank, lang)
   await current.db.put(doc)
 
-  props.router.replace(Bank.to.read(doc))
+  props.router.replace(Bank.to.view(doc))
 }
 
 export const BankCreate = compose(

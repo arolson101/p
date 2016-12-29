@@ -30,7 +30,7 @@ interface ConnectedProps {
 
 type AllProps = IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps<Account.Params>
 
-export const AccountUpdateComponent = (props: AllProps) => {
+export const AccountEditComponent = (props: AllProps) => {
   const { bank, account, handleSubmit, router } = props
   const { formatMessage } = props.intl
   return (
@@ -93,10 +93,10 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
 
   await current!.db.put(doc)
 
-  router.replace(Account.to.read(doc))
+  router.replace(Account.to.view(doc))
 }
 
-export const AccountUpdate = compose(
+export const AccountEdit = compose(
   injectIntl,
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
@@ -111,4 +111,4 @@ export const AccountUpdate = compose(
     form: 'AcUpdate',
     validate
   })
-)(AccountUpdateComponent) as React.ComponentClass<AllProps>
+)(AccountEditComponent) as React.ComponentClass<AllProps>

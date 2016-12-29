@@ -92,7 +92,7 @@ export class AccountDeleteComponent extends React.Component<AllProps, State> {
     try {
       this.setState({deleting: true, error: undefined})
       await dispatch(deleteAccount(bank!, account!))
-      router.replace(DbInfo.to.read(dbInfo!))
+      router.replace(DbInfo.to.view(dbInfo!))
     } catch (err) {
       this.setState({deleting: false, error: err.message})
     }

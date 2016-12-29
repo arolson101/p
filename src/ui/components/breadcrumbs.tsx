@@ -20,7 +20,7 @@ export const Breadcrumbs = (props: AllProps) => {
       {dbInfo &&
         <Breadcrumb.Item
           active={!bank && !account && !page}
-          href={router.createHref(DbInfo.to.read(dbInfo))}
+          href={router.createHref(DbInfo.to.view(dbInfo))}
         >
           {dbInfo.title}
         </Breadcrumb.Item>
@@ -28,7 +28,7 @@ export const Breadcrumbs = (props: AllProps) => {
       {bank &&
         <Breadcrumb.Item
           active={!account && !page}
-          href={router.createHref(Bank.to.read(bank))}
+          href={router.createHref(Bank.to.view(bank))}
         >
           {bank.name}
         </Breadcrumb.Item>
@@ -36,7 +36,7 @@ export const Breadcrumbs = (props: AllProps) => {
       {account &&
         <Breadcrumb.Item
           active={!page}
-          href={router.createHref(Account.to.read(account))}
+          href={router.createHref(Account.to.view(account))}
         >
           {account.name}
         </Breadcrumb.Item>

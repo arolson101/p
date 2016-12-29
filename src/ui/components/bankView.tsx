@@ -75,7 +75,7 @@ interface State {
   error?: string
 }
 
-export class BankReadComponent extends React.Component<AllProps, State> {
+export class BankViewComponent extends React.Component<AllProps, State> {
   state = {
     showAll: false,
     showModal: false,
@@ -114,7 +114,7 @@ export class BankReadComponent extends React.Component<AllProps, State> {
               <MenuItem divider />
               <MenuItem header>Institution</MenuItem>
               {/* update */}
-              <MenuItem href={router.createHref(Bank.to.update(bank))}>
+              <MenuItem href={router.createHref(Bank.to.edit(bank))}>
                 <FormattedMessage {...messages.update}/>
               </MenuItem>
               {/* delete */}
@@ -138,13 +138,13 @@ export class BankReadComponent extends React.Component<AllProps, State> {
                 </thead>
                 <tbody>
                   {accounts.filter(account => account.visible || showAll).map(account => account &&
-                    <tr key={account._id} href={router.createHref(Account.to.read(account))}>
+                    <tr key={account._id} href={router.createHref(Account.to.view(account))}>
                       {showAll &&
                         <td>{account.visible}</td>
                       }
                       <td><FormattedMessage {...Account.messages[account.type]}/></td>
-                      <td><Link to={Account.to.read(account)}>{account.name}</Link></td>
-                      <td><Link to={Account.to.read(account)}>{account.number}</Link></td>
+                      <td><Link to={Account.to.view(account)}>{account.name}</Link></td>
+                      <td><Link to={Account.to.view(account)}>{account.number}</Link></td>
                     </tr>
                   )}
                 </tbody>
@@ -218,7 +218,7 @@ const Nl2br = (props: {text: string}) => {
   )
 }
 
-export const InRead = compose(
+export const BankView = compose(
   injectIntl,
   connect(
     (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => ({
@@ -227,4 +227,4 @@ export const InRead = compose(
       accounts: selectBankAccounts(state, props)
     })
   )
-)(BankReadComponent) as React.ComponentClass<{}>
+)(BankViewComponent) as React.ComponentClass<{}>

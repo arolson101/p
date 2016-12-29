@@ -51,15 +51,15 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
               <IndexRoute component={Components.DbList}/>
               <Route path='logout' onEnter={logout(store)}/>
               <Route path={DbInfo.routes.create} component={Components.DbCreate}/>
-              <Route path={DbInfo.routes.read} component={Components.DbRead}/>
+              <Route path={DbInfo.routes.view} component={Components.DbView}/>
               <Route onEnter={requireAuth(store)}>
                 <Route path={Bank.routes.create} component={Components.BankCreate}/>
-                <Route path={Bank.routes.read} component={Components.InRead}/>
-                <Route path={Bank.routes.update} component={Components.BankUpdate}/>
+                <Route path={Bank.routes.view} component={Components.BankView}/>
+                <Route path={Bank.routes.edit} component={Components.BankEdit}/>
                 <Route path={Bank.routes.del} component={Components.BankDelete}/>
                 <Route path={Account.routes.create} component={Components.AccountCreate}/>
-                <Route path={Account.routes.read} component={Components.AccountRead}/>
-                <Route path={Account.routes.update} component={Components.AccountUpdate}/>
+                <Route path={Account.routes.view} component={Components.AccountView}/>
+                <Route path={Account.routes.update} component={Components.AccountEdit}/>
                 <Route path={Account.routes.del} component={Components.AccountDelete}/>
               </Route>
               <Route path='*' component={NotFoundRoute}/>

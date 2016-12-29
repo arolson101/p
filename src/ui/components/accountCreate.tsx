@@ -92,7 +92,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   bank.accounts.push(doc._id)
   await current!.db.bulkDocs([doc, bank])
 
-  router.replace(Account.to.read(doc))
+  router.replace(Account.to.view(doc))
 }
 
 export const AccountCreate = compose(

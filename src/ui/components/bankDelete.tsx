@@ -97,7 +97,7 @@ export class BankDeleteComponent extends React.Component<AllProps, State> {
     try {
       this.setState({deleting: true, error: undefined})
       await dispatch(deleteBank(bank!))
-      router.replace(DbInfo.to.read(dbInfo!))
+      router.replace(DbInfo.to.view(dbInfo!))
     } catch (err) {
       this.setState({deleting: false, error: err.message})
     }

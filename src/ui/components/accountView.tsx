@@ -16,7 +16,7 @@ interface ConnectedProps {
 
 type AllProps = RouteProps<Account.Params> & ConnectedProps
 
-export const AccountReadComponent = (props: AllProps) => {
+export const AccountViewComponent = (props: AllProps) => {
   const { bank, account } = props
   return (
     <div>
@@ -28,7 +28,7 @@ export const AccountReadComponent = (props: AllProps) => {
             {' '}
             <small>{account.number}</small>
           </PageHeader>
-          <div><Link to={Account.to.update(account)}>update</Link></div>
+          <div><Link to={Account.to.edit(account)}>update</Link></div>
           <div><Link to={Account.to.del(account)}>delete</Link></div>
         </Grid>
       }
@@ -36,10 +36,10 @@ export const AccountReadComponent = (props: AllProps) => {
   )
 }
 
-export const AccountRead = connect(
+export const AccountView = connect(
   (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
     dbInfo: selectDbInfo(state),
     bank: selectBank(state, props),
     account: selectAccount(state, props)
   })
-)(AccountReadComponent) as React.ComponentClass<{}>
+)(AccountViewComponent) as React.ComponentClass<{}>

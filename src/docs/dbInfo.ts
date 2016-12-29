@@ -24,9 +24,8 @@ export namespace DbInfo {
 
   export namespace routes {
     export const create = 'dbInfo/create'
-    export const read = 'dbInfo/:db'
-    export const update = 'dbInfo/:db/update'
-    export const destroy = 'dbInfo/:db/destroy'
+    export const view = 'dbInfo/:db'
+    export const edit = 'dbInfo/:db/edit'
   }
 
   export namespace to {
@@ -34,12 +33,12 @@ export namespace DbInfo {
       return '/' + routes.create
     }
 
-    export const read = (dbInfo: Doc) => {
+    export const view = (dbInfo: Doc) => {
       return '/' + dbInfo._id
     }
 
-    export const update = (dbInfo: Doc) => {
-      return '/' + dbInfo._id + '/update'
+    export const edit = (dbInfo: Doc) => {
+      return '/' + dbInfo._id + '/edit'
     }
   }
 

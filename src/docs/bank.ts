@@ -43,8 +43,8 @@ export namespace Bank {
 
   export namespace routes {
     export const create = 'bank/create'
-    export const read = 'bank/:bankId'
-    export const update = 'bank/:bankId/update'
+    export const view = 'bank/:bankId'
+    export const edit = 'bank/:bankId/edit'
     export const del = 'bank/:bankId/delete'
   }
 
@@ -53,12 +53,12 @@ export namespace Bank {
       return '/' + routes.create
     }
 
-    export const read = (bank: Doc): string => {
+    export const view = (bank: Doc): string => {
       return '/' + bank._id
     }
 
-    export const update = (bank: Doc): string => {
-      return '/' + bank._id + '/update'
+    export const edit = (bank: Doc): string => {
+      return '/' + bank._id + '/edit'
     }
 
     export const del = (bank: Doc): string => {

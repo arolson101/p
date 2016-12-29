@@ -17,7 +17,7 @@ interface ConnectedProps {
 
 type AllProps = React.Props<any> & ConnectedProps & RouteProps<DbInfo.Params>
 
-export const DbReadComponent = (props: AllProps) => {
+export const DbViewComponent = (props: AllProps) => {
   if (!props.current || props.current.info._id !== DbInfo.docId({db: props.params.db})) {
     return <DbLogin {...props}/>
   }
@@ -31,10 +31,10 @@ export const DbReadComponent = (props: AllProps) => {
       <ul>
         {Lookup.map(banks, bank =>
           <li key={bank._id}>
-            <Link to={Bank.to.read(bank)}>{bank.name}</Link>
+            <Link to={Bank.to.view(bank)}>{bank.name}</Link>
             <ul>
               {bank.accounts.map(id => accounts.get(id)).map(account => account &&
-                <li key={account._id}><Link to={Account.to.read(account)}>{account.name}</Link></li>
+                <li key={account._id}><Link to={Account.to.view(account)}>{account.name}</Link></li>
               )}
             </ul>
           </li>
@@ -45,9 +45,9 @@ export const DbReadComponent = (props: AllProps) => {
   )
 }
 
-export const DbRead = connect(
+export const DbView = connect(
   (state: AppState, props: RouteProps<DbInfo.Params>): ConnectedProps => ({
     dbInfo: selectDbInfo(state),
     current: state.db.current
   })
-)(DbReadComponent as any) as React.ComponentClass<{}>
+)(DbViewComponent as any) as React.ComponentClass<{}>

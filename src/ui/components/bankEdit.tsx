@@ -30,7 +30,7 @@ interface ConnectedProps {
 
 type AllProps = IntlProps & ConnectedProps & RouteProps<Bank.Params> & ReduxFormProps<Values>
 
-export class BankUpdateComponent extends React.Component<AllProps, any> {
+export class BankEditComponent extends React.Component<AllProps, any> {
   render() {
     const { handleSubmit, router, bank } = this.props
     const { formatMessage } = this.props.intl
@@ -91,10 +91,10 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   }
   await current.db.put(doc)
 
-  router.replace(Bank.to.read(doc))
+  router.replace(Bank.to.view(doc))
 }
 
-export const BankUpdate = compose(
+export const BankEdit = compose(
   injectIntl,
   connect(
     (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => ({
@@ -108,4 +108,4 @@ export const BankUpdate = compose(
   reduxForm<AllProps, Values>({
     form: 'InUpdate'
   })
-)(BankUpdateComponent) as React.ComponentClass<{}>
+)(BankEditComponent) as React.ComponentClass<{}>
