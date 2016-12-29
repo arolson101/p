@@ -24,8 +24,6 @@ export const AccountReadComponent = (props: AllProps) => {
         <Grid>
           <Breadcrumbs {...props}/>
           <PageHeader>
-            <i className={Account.icons[account.type]}/>
-            {' '}
             {account.name}
             {' '}
             <small>{account.number}</small>

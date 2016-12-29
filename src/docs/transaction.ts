@@ -1,10 +1,15 @@
 import * as docURI from 'docuri'
 import { Account } from './account'
 
+export interface Split {
+  [categoryId: string]: number
+}
+
 export interface Transaction {
   time: Date
   payee: string
   amount: number
+  split: Split
 }
 
 export namespace Transaction {

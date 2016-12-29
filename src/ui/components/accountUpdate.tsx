@@ -11,7 +11,7 @@ import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
 import { IntlProps, RouteProps } from './props'
 import { selectDbInfo, selectBank, selectBankAccounts, selectAccount } from './selectors'
-import { Values, AccountForm } from './acForm'
+import { Values, AccountForm } from './accountForm'
 
 const messages = defineMessages({
   page: {
