@@ -106,6 +106,6 @@ export const BankEdit = compose(
     })
   ),
   reduxForm<AllProps, Values>({
-    form: 'InUpdate'
+    form: 'BankEdit'
   })
 )(BankEditComponent) as React.ComponentClass<{}>

@@ -1,6 +1,7 @@
 export * from './formatAddress'
 export * from './lookup'
 export * from './makeid'
+export * from './makeCancelable'
 export * from './observeStore'
 export * from './validator'
 export * from './wait'

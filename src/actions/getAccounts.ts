@@ -96,7 +96,7 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
               bank: bank._id,
               visible: true
             }
-            const doc = Account.doc(info, lang)
+            const doc = Account.doc(bank, info, lang)
             bank.accounts.push(doc._id)
             changes.push(doc)
           } else {
@@ -119,7 +119,7 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
 
 const accountExists = (cache: Account.Cache, bank: Bank.Doc, num: string, type: Account.Type): boolean => {
   for (let account of cache.values()) {
-    if (account.bank === bank._id && account.number === num && account.type === type) {
+    if (Account.getBank(account) === bank._id && account.number === num && account.type === type) {
       return bank.accounts.indexOf(account._id) !== -1
     }
   }

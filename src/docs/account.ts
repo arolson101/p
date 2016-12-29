@@ -6,7 +6,6 @@ import { TCacheSetAction } from './index'
 import { AppThunk } from '../state'
 
 export interface Account {
-  bank: Bank.DocId
   name: string
   type: Account.Type
   number: string
@@ -113,16 +112,24 @@ export namespace Account {
     return aparts.accountId
   }
 
-  export const doc = (account: Account, lang: string): Doc => {
-    const iparams = Bank.docId(account.bank)
+  export const doc = (bank: Bank.Doc, account: Account, lang: string): Doc => {
+    const iparams = Bank.docId(bank._id)
     if (!iparams) {
-      throw new Error('invalid bank docid: ' + account.bank)
+      throw new Error('invalid bankId: ' + bank._id)
     }
     const _id = docId({
       bankId: iparams.bankId,
       accountId: makeid(account.name, lang)
     })
     return { _id, ...account }
+  }
+
+  export const getBank = (account: Account.Doc): Bank.DocId => {
+    const aparams = docId(account._id)
+    if (!aparams) {
+      throw new Error('invalid accountId: ' + account._id)
+    }
+    return Bank.docId(aparams)
   }
 
   export const createIndices = (db: PouchDB.Database<any>) => {

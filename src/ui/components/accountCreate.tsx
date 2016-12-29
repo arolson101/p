@@ -81,14 +81,13 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   const bank = props.bank!
 
   const account: Account = {
-    bank: bank._id,
     name: values.name,
     type: values.type,
     number: values.number,
     visible: true
   }
 
-  const doc = Account.doc(account, lang)
+  const doc = Account.doc(bank, account, lang)
   bank.accounts.push(doc._id)
   await current!.db.bulkDocs([doc, bank])
 
