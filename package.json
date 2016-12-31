@@ -21,7 +21,7 @@
     "docuri": "^4.2.1",
     "font-awesome": "^4.7.0",
     "normalizr": "^2.2.1",
-    "ofx4js": "^1.1.2",
+    "ofx4js": "^1.1.3",
     "pouchdb-browser": "^6.0.7",
     "pouchdb-find": "^0.10.4",
     "ramda": "^0.22.1",

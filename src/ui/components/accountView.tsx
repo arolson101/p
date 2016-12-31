@@ -6,12 +6,12 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
+import { getTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
-import { makeCancelable, CancelablePromise } from '../../util'
+import { CancelablePromise } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
-import { typedFields } from './forms'
-import { RouteProps } from './props'
+import { RouteProps, DispatchProps } from './props'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
 
 interface ConnectedProps {
@@ -21,10 +21,10 @@ interface ConnectedProps {
   current: CurrentDb
 }
 
-type AllProps = RouteProps<Account.Params> & ConnectedProps & ReduxFormProps<Values>
+type AllProps = RouteProps<Account.Params> & ConnectedProps & DispatchProps & ReduxFormProps<Values>
 
 interface State {
-  transactions?: Transaction[]
+  transactions?: PouchDB.Core.AllDocsResponse<Transaction>
 }
 
 interface Values {
@@ -32,8 +32,6 @@ interface Values {
   payee: string
   amount: string
 }
-
-const { TextField } = typedFields<Values>()
 
 export class AccountViewComponent extends React.Component<AllProps, State> {
   state: State = {
@@ -57,10 +55,14 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
   }
 
   async loadTransactions(props: AllProps) {
-    if (props.current && props.account) {
-      const results = await props.current.db.find({selector: Transaction.allForAccount(props.account)})
-      this.setState({transactions: results.docs})
-    }
+    // if (props.current && props.account) {
+    //   const startkey = Transaction.startkeyForAccount(props.account)
+    //   const endkey = Transaction.endkeyForAccount(props.account)
+    //   // const skip = 4000
+    //   // const limit = 100
+    //   const results = await props.current.db.allDocs({startkey, endkey, include_docs: true})
+    //   this.setState({transactions: results})
+    // }
   }
 
   render() {
@@ -86,17 +88,18 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
                 </tr>
               </thead>
               <tbody>
-                {transactions && transactions.map(tx =>
-                  <tr key={tx.time.valueOf()}>
-                    <td>{tx.time.toString()}</td>
-                    <td>{tx.payee}</td>
-                    <td>{tx.amount}</td>
+                {transactions && transactions.rows.map(row =>
+                  <tr key={row.doc!.time.valueOf()}>
+                    <td>{row.doc!.time.toString()}</td>
+                    <td>{row.doc!.payee}</td>
+                    <td>{row.doc!.amount}</td>
                     <td>?</td>
                   </tr>
                 )}
               </tbody>
             </Table>
-            <div><Button onClick={this.addTransaction}>add transaction</Button></div>
+            <div><Button onClick={this.downloadTransactions}>download transactions</Button></div>
+            <div><Button onClick={this.addTransaction}>create transactions</Button></div>
             <div><Link to={Account.to.edit(account)}>update</Link></div>
             <div><Link to={Account.to.del(account)}>delete</Link></div>
           </Grid>
@@ -109,7 +112,7 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
   async addTransaction() {
     const { current, account } = this.props
     const txs: Transaction.Doc[] = []
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 1000; i++) {
       const tx: Transaction = {
         time: new Date(2016, 11, i, Math.trunc(Math.random() * 24), Math.trunc(Math.random() * 60)),
         payee: 'payee ' + i + ' ' + Math.random() * 100,
@@ -121,6 +124,13 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
     }
 
     current.db.bulkDocs(txs)
+    this.loadTransactions(this.props)
+  }
+
+  @autobind
+  async downloadTransactions() {
+    const { dispatch, bank, account } = this.props
+    dispatch(getTransactions(bank!, account!, new Date(2016, 11, 1), new Date(2016, 11, 30), (str) => str.defaultMessage!))
   }
 }
 

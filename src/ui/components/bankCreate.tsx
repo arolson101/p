@@ -65,18 +65,14 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   v.maybeThrowSubmissionError()
 
   const { current, filist, lang } = props
+  const { fi, username, password, ...newValues } = values
   const bank: Bank = {
-    fi: values.fi ? filist[values.fi - 1].name : undefined,
-    name: values.name,
-    web: values.web,
-    address: values.address,
-    online: values.online,
-    fid: values.fid,
-    org: values.org,
-    ofx: values.ofx,
+    ...newValues,
+
+    fi: fi ? filist[fi - 1].name : undefined,
     login: {
-      username: values.username,
-      password: values.password
+      username: username,
+      password: password
     },
     accounts: []
   }

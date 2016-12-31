@@ -46,6 +46,23 @@ const messages = defineMessages({
     id: 'inForm.ofx',
     defaultMessage: 'OFX Server'
   },
+  bankid: {
+    id: 'inForm.bankid',
+    defaultMessage: 'Routing Number',
+    description: `Bank identifier, A-9
+      Use of this field by country:
+      COUNTRY     Interpretation
+      BEL         Bank code
+      CAN         Routing and transit number
+      CHE         Clearing number
+      DEU         Bankleitzahl
+      ESP         Entidad
+      FRA         Banque
+      GBR         Sort code
+      ITA         ABI
+      NLD         Not used (field contents ignored)
+      USA         Routing and transit number`
+  },
   username: {
     id: 'inForm.username',
     defaultMessage: 'Username'
@@ -72,6 +89,7 @@ export interface Values {
   web: string
   address: string
   notes: string
+  bankid: string
 
   online: boolean
 
@@ -194,6 +212,12 @@ export class BankForm extends React.Component<AllProps, any> {
             <TextField
               name='ofx'
               label={formatMessage(messages.ofx)}
+            />
+          </Col>
+          <Col sm={6}>
+            <TextField
+              name='bankid'
+              label={formatMessage(messages.bankid)}
             />
           </Col>
         </Row>
