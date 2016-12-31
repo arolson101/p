@@ -55,14 +55,14 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
   }
 
   async loadTransactions(props: AllProps) {
-    // if (props.current && props.account) {
-    //   const startkey = Transaction.startkeyForAccount(props.account)
-    //   const endkey = Transaction.endkeyForAccount(props.account)
-    //   // const skip = 4000
-    //   // const limit = 100
-    //   const results = await props.current.db.allDocs({startkey, endkey, include_docs: true})
-    //   this.setState({transactions: results})
-    // }
+    if (props.current && props.account) {
+      const startkey = Transaction.startkeyForAccount(props.account)
+      const endkey = Transaction.endkeyForAccount(props.account)
+      // const skip = 4000
+      // const limit = 100
+      const results = await props.current.db.allDocs({startkey, endkey, include_docs: true})
+      this.setState({transactions: results})
+    }
   }
 
   render() {
@@ -89,7 +89,7 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
               </thead>
               <tbody>
                 {transactions && transactions.rows.map(row =>
-                  <tr key={row.doc!.time.valueOf()}>
+                  <tr key={row.doc!._id}>
                     <td>{row.doc!.time.toString()}</td>
                     <td>{row.doc!.payee}</td>
                     <td>{row.doc!.amount}</td>

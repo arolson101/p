@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import * as docURI from 'docuri'
 import { Bank } from './bank'
 import { Account } from './account'
@@ -7,6 +8,7 @@ export interface Split {
 }
 
 export interface Transaction {
+  serverid?: string
   time: Date
   payee: string
   amount: number
@@ -20,13 +22,15 @@ export namespace Transaction {
 
   export const CHANGE_ACTION = 'db/TransactionChange'
   export const docId = docURI.route<Params, DocId>('transaction/:bankId/:accountId/:time')
-  export const startkeyForAccount = (account: Account.Doc) => docId({ ...accountParts(account), time: ''})
-  export const endkeyForAccount = (account: Account.Doc) => docId({ ...accountParts(account), time: ''}) + '\uffff'
-  export const allForAccount = (account: Account.Doc): PouchDB.Selector => {
+  export const startkeyForAccount = (account: Account.Doc, time?: Date) =>
+    docId({ ...accountParts(account), time: time ? timeKey(time) : ''})
+  export const endkeyForAccount = (account: Account.Doc, time?: Date) =>
+    docId({ ...accountParts(account), time: time ? timeKey(time) : ''}) + '\uffff'
+  export const allForAccount = (account: Account.Doc, start?: Date, end?: Date): PouchDB.Selector => {
     return ({
       $and: [
-        { _id: { $gt: startkeyForAccount(account) } },
-        { _id: { $lt: endkeyForAccount(account) } }
+        { _id: { $gt: startkeyForAccount(account, start) } },
+        { _id: { $lt: endkeyForAccount(account, end) } }
       ]
     })
   }
@@ -43,8 +47,12 @@ export namespace Transaction {
     return !!docId(id as DocId)
   }
 
+  const timeKey = (time: Date): string => {
+    return time.valueOf().toString()
+  }
+
   export const doc = (account: Account.Doc, transaction: Transaction): Doc => {
-    const time = transaction.time.valueOf().toString()
+    const time = timeKey(transaction.time) + randomBytes(4).toString('hex')
     const _id = docId({ ...accountParts(account), time })
     return { _id, ...transaction }
   }

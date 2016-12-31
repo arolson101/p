@@ -1,6 +1,6 @@
 import { defineMessages, FormattedMessage } from 'react-intl'
-import { AppThunk } from '../state'
-import { Bank, Account } from '../docs'
+import { AppThunk, CurrentDb } from '../state'
+import { Bank, Account, Transaction } from '../docs'
 import { createConnection, checkLogin, getBankAccountDetails } from './online'
 
 type FormatMessage = (messageDescriptor: FormattedMessage.MessageDescriptor, values?: Object) => string
@@ -9,11 +9,15 @@ const messages = defineMessages({
   success: {
     id: 'getAccounts.success',
     defaultMessage: 'Downloaded {count} transactions from server'
+  },
+  empty: {
+    id: 'getAccounts.empty',
+    defaultMessage: 'Server did not send a transaction list!'
   }
 })
 
 export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Date, end: Date, formatMessage: FormatMessage): AppThunk =>
-  async (dispatch, getState) => {
+  async (dispatch, getState): Promise<string> => {
     const res = []
     try {
       const service = createConnection(bank, formatMessage)
@@ -22,13 +26,47 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
       const bankAccount = service.loadBankAccount(accountDetails, username, password)
       const statement = await bankAccount.readStatement(start, end)
       console.log(statement)
-      const transactions = statement.getTransactionList() ? statement.getTransactionList().getTransactions() : []
-      const count = transactions.length
-      res.push(formatMessage(messages.success, {count}))
-      return res.join('\n')
 
+      const transactionList = statement.getTransactionList()
+      if (transactionList) {
+        const { db: { current } } = getState()
+        if (!current) { throw new Error('no db') }
+        const existingTransactions = await getExistingTransactions(current, account, start, end)
+        const newTransactions = transactionList.getTransactions() || []
+        const changes: PouchDB.Core.Document<any>[] = []
+        for (let newTransaction of newTransactions) {
+          const transaction = findMatchingTransaction(existingTransactions, newTransaction)
+          if (!transaction) {
+            const transaction: Transaction = {
+              serverid: newTransaction.getId(),
+              time: newTransaction.getDatePosted(),
+              payee: newTransaction.getName(),
+              amount: newTransaction.getAmount(),
+              split: {}
+            }
+            const doc = Transaction.doc(account, transaction)
+            changes.push(doc)
+          }
+        }
+
+        await current.db.bulkDocs(changes)
+        return formatMessage(messages.success, {count: changes.length})
+      } else {
+        return formatMessage(messages.empty)
+      }
     } catch (ex) {
-      res.push(ex.message)
-      throw new Error(res.join('\n'))
+      throw new Error(ex.message)
     }
   }
+
+const getExistingTransactions = async (current: CurrentDb, account: Account.Doc, start: Date, end: Date): Promise<Transaction[]> => {
+  const startkey = Transaction.startkeyForAccount(account, start)
+  const endkey = Transaction.endkeyForAccount(account, end)
+  const existingTransactions = await current.db.allDocs({ startkey, endkey, include_docs: true })
+  return existingTransactions.rows.map(row => row.doc)
+}
+
+const findMatchingTransaction = (existingTransactions: Transaction[], newTransaction: ofx4js.domain.data.common.Transaction) => {
+  const id = newTransaction.getId()
+  return existingTransactions.find(existingTransaction => existingTransaction.serverid === id)
+}
