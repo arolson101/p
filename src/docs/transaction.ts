@@ -10,7 +10,8 @@ export interface Split {
 export interface Transaction {
   serverid?: string
   time: Date
-  payee: string
+  name: string
+  memo: string
   amount: number
   split: Split
 }

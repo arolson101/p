@@ -1,12 +1,12 @@
 import autobind = require('autobind-decorator')
 import * as React from 'react'
 import { Table, Button, Grid, PageHeader } from 'react-bootstrap'
-import { injectIntl } from 'react-intl'
+import { injectIntl, FormattedDate } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { getTransactions } from '../../actions'
+import { getTransactions, deleteTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { CancelablePromise } from '../../util'
@@ -89,9 +89,13 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
               </thead>
               <tbody>
                 {transactions && transactions.rows.map(row =>
-                  <tr key={row.doc!._id}>
-                    <td>{row.doc!.time.toString()}</td>
-                    <td>{row.doc!.payee}</td>
+                  <tr key={row.doc!.serverid}>
+                    <td><FormattedDate value={row.doc!.time}/></td>
+                    <td>
+                      {row.doc!.name}
+                      {row.doc!.memo && <br/>}
+                      <small>{row.doc!.memo}</small>
+                    </td>
                     <td>{row.doc!.amount}</td>
                     <td>?</td>
                   </tr>
@@ -100,6 +104,7 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
             </Table>
             <div><Button onClick={this.downloadTransactions}>download transactions</Button></div>
             <div><Button onClick={this.addTransaction}>create transactions</Button></div>
+            <div><Button onClick={this.deleteTransactions}>delete transactions</Button></div>
             <div><Link to={Account.to.edit(account)}>update</Link></div>
             <div><Link to={Account.to.del(account)}>delete</Link></div>
           </Grid>
@@ -115,7 +120,8 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
     for (let i = 0; i < 1000; i++) {
       const tx: Transaction = {
         time: new Date(2016, 11, i, Math.trunc(Math.random() * 24), Math.trunc(Math.random() * 60)),
-        payee: 'payee ' + i + ' ' + Math.random() * 100,
+        name: 'payee ' + i + ' ' + Math.random() * 100,
+        memo: '',
         amount: (Math.random() - 0.5) * 1000,
         split: {}
       }
@@ -130,7 +136,15 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
   @autobind
   async downloadTransactions() {
     const { dispatch, bank, account } = this.props
-    dispatch(getTransactions(bank!, account!, new Date(2016, 11, 1), new Date(2016, 11, 30), (str) => str.defaultMessage!))
+    await dispatch(getTransactions(bank!, account!, new Date(2016, 11, 1), new Date(2016, 11, 31), (str) => str.defaultMessage!))
+    this.loadTransactions(this.props)
+  }
+
+  @autobind
+  async deleteTransactions() {
+    const { dispatch, account } = this.props
+    await dispatch(deleteTransactions(account!))
+    this.loadTransactions(this.props)
   }
 }
 

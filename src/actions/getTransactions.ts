@@ -35,16 +35,24 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
         const newTransactions = transactionList.getTransactions() || []
         const changes: PouchDB.Core.Document<any>[] = []
         for (let newTransaction of newTransactions) {
+          const time = newTransaction.getDatePosted()
+          if (time < start || time >= end) {
+            // not sure why bank would give us transactions outside of our date range, but it happens!
+            continue
+          }
           const transaction = findMatchingTransaction(existingTransactions, newTransaction)
           if (!transaction) {
             const transaction: Transaction = {
               serverid: newTransaction.getId(),
-              time: newTransaction.getDatePosted(),
-              payee: newTransaction.getName(),
+              time,
+              name: newTransaction.getName(),
+              memo: newTransaction.getMemo(),
               amount: newTransaction.getAmount(),
               split: {}
             }
             const doc = Transaction.doc(account, transaction)
+            console.assert(doc.time >= start)
+            console.assert(doc.time < end)
             changes.push(doc)
           }
         }

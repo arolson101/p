@@ -1,5 +1,5 @@
-import { AppThunk } from '../state'
-import { Bank, Account } from '../docs'
+import { AppThunk, CurrentDb } from '../state'
+import { Bank, Account, Transaction } from '../docs'
 
 interface Deletion {
   _id: string
@@ -20,8 +20,9 @@ export const deleteBank = (bank: Bank.Doc): AppThunk =>
           _rev: account._rev,
           _deleted: true
         })
+        const transactions = await getTransactions(current, account)
+        deletions.push(...transactions)
       }
-      // TODO: delete transactions
     }
     deletions.push({
       _id: bank._id,
@@ -47,6 +48,28 @@ export const deleteAccount = (bank: Bank.Doc, account: Account.Doc): AppThunk =>
       _rev: account._rev,
       _deleted: true
     })
-    // TODO: delete transactions
-    await current.db.bulkDocs([bank, deletions])
+
+    const transactions = await getTransactions(current, account)
+    deletions.push(...transactions)
+
+    await current.db.bulkDocs([bank, ...deletions])
+  }
+
+const getTransactions = async (current: CurrentDb, account: Account.Doc): Promise<Deletion[]> => {
+  const results = await current.db.allDocs({
+    startkey: Transaction.startkeyForAccount(account),
+    endkey: Transaction.endkeyForAccount(account),
+    include_docs: false
+  })
+  return results.rows.map(row => ({_id: row.id, _rev: row.value.rev, _deleted: true } as Deletion))
+}
+
+export const deleteTransactions = (account: Account.Doc): AppThunk =>
+  async (dispatch, getState) => {
+    const { current } = getState().db
+    if (!current) { throw new Error('no db') }
+
+    let deletions: Deletion[] = await getTransactions(current, account)
+
+    await current.db.bulkDocs(deletions)
   }
