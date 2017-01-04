@@ -1,6 +1,6 @@
 import autobind = require('autobind-decorator')
 import * as React from 'react'
-import { Row, Col } from 'react-bootstrap'
+import { Row, Col, Collapse } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import { ReduxFormProps } from 'redux-form'
 import { Bank } from '../../docs'
@@ -11,43 +11,51 @@ import { IntlProps } from './props'
 
 const messages = defineMessages({
   fi: {
-    id: 'inForm.fi',
+    id: 'bankForm.fi',
     defaultMessage: 'Institution'
   },
+  fiHelp: {
+    id: 'bankForm.fiHelp',
+    defaultMessage: 'Choose a financial institution from the list or fill in the details below'
+  },
+  fiPlaceholder: {
+    id: 'bankForm.fiPlaceholder',
+    defaultMessage: 'Select financial institution...'
+  },
   name: {
-    id: 'inForm.name',
+    id: 'bankForm.name',
     defaultMessage: 'Name'
   },
   web: {
-    id: 'inForm.web',
+    id: 'bankForm.web',
     defaultMessage: 'Website'
   },
   address: {
-    id: 'inForm.address',
+    id: 'bankForm.address',
     defaultMessage: 'Address'
   },
   notes: {
-    id: 'inForm.notes',
+    id: 'bankForm.notes',
     defaultMessage: 'Notes'
   },
   online: {
-    id: 'inForm.online',
+    id: 'bankForm.online',
     defaultMessage: 'Online'
   },
   fid: {
-    id: 'inForm.fid',
+    id: 'bankForm.fid',
     defaultMessage: 'Fid'
   },
   org: {
-    id: 'inForm.org',
+    id: 'bankForm.org',
     defaultMessage: 'Org'
   },
   ofx: {
-    id: 'inForm.ofx',
+    id: 'bankForm.ofx',
     defaultMessage: 'OFX Server'
   },
   bankid: {
-    id: 'inForm.bankid',
+    id: 'bankForm.bankid',
     defaultMessage: 'Routing Number',
     description: `Bank identifier, A-9
       Use of this field by country:
@@ -64,11 +72,11 @@ const messages = defineMessages({
       USA         Routing and transit number`
   },
   username: {
-    id: 'inForm.username',
+    id: 'bankForm.username',
     defaultMessage: 'Username'
   },
   password: {
-    id: 'inForm.password',
+    id: 'bankForm.password',
     defaultMessage: 'Password'
   }
 })
@@ -78,6 +86,7 @@ interface Props {
   current: CurrentDb
   lang: string
   bank?: Bank
+  online: boolean
 }
 
 type AllProps = IntlProps & Props & ReduxFormProps<Values>
@@ -126,7 +135,7 @@ export class BankForm extends React.Component<AllProps, any> {
   }
 
   render() {
-    const { intl: { formatMessage }, filist } = this.props
+    const { intl: { formatMessage }, filist, online } = this.props
     return (
       <div>
         <Row>
@@ -139,6 +148,8 @@ export class BankForm extends React.Component<AllProps, any> {
               labelKey='name'
               valueKey='id'
               onChange={this.onChangeFI}
+              help={formatMessage(messages.fiHelp)}
+              placeholder={formatMessage(messages.fiPlaceholder)}
             />
           </Col>
         </Row>
@@ -178,49 +189,54 @@ export class BankForm extends React.Component<AllProps, any> {
             />
           </Col>
         </Row>
-        <Row>
-          <Col sm={6} xs={6}>
-            <TextField
-              name='username'
-              label={formatMessage(messages.username)}
-            />
-          </Col>
-          <Col sm={6} xs={6}>
-            <TextField
-              name='password'
-              type='password'
-              label={formatMessage(messages.password)}
-            />
-          </Col>
-        </Row>
-        <Row>
-          <Col sm={3} xs={6}>
-            <TextField
-              name='fid'
-              label={formatMessage(messages.fid)}
-            />
-          </Col>
-          <Col sm={3} xs={6}>
-            <TextField
-              name='org'
-              label={formatMessage(messages.org)}
-            />
-          </Col>
-        </Row>
-        <Row>
-          <Col sm={6}>
-            <TextField
-              name='ofx'
-              label={formatMessage(messages.ofx)}
-            />
-          </Col>
-          <Col sm={6}>
-            <TextField
-              name='bankid'
-              label={formatMessage(messages.bankid)}
-            />
-          </Col>
-        </Row>
+        <Collapse in={online}>
+          <div>
+            <Row>
+              <Col sm={6} xs={6}>
+                <TextField
+                  name='username'
+                  label={formatMessage(messages.username)}
+                />
+              </Col>
+              <Col sm={6} xs={6}>
+                <TextField
+                  name='password'
+                  type='password'
+                  label={formatMessage(messages.password)}
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col sm={3} xs={6}>
+                <TextField
+                  name='fid'
+                  label={formatMessage(messages.fid)}
+                />
+              </Col>
+              <Col sm={3} xs={6}>
+                <TextField
+                  name='org'
+                  label={formatMessage(messages.org)}
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col sm={6}>
+                <TextField
+                  name='ofx'
+                  label={formatMessage(messages.ofx)}
+                />
+              </Col>
+              <Col sm={6}>
+                <TextField
+                  name='bankid'
+                  label={formatMessage(messages.bankid)}
+                  help='This will be auto-filled if you get account list from server'
+                />
+              </Col>
+            </Row>
+          </div>
+        </Collapse>
       </div>
     )
   }

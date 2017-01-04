@@ -46,12 +46,13 @@ export const forms = defineMessages({
 interface FieldGroupProps<Name> {
   name: Name
   label: string
+  help?: string
   onChange?: (newValue: any) => any
 }
 
 const WrappedControl = <Name extends string, Props>(Component: any, componentProps?: Props) =>
   (props: FieldGroupProps<Name> & Partial<InjectedFieldProps<string>> & Props) => {
-    const { input, meta, ...fieldProps } = props as any
+    const { input, meta, help, ...fieldProps } = props as any
     const { name, label } = fieldProps
     const { error, warning } = meta
     const onChange = (e: any) => {
@@ -64,8 +65,8 @@ const WrappedControl = <Name extends string, Props>(Component: any, componentPro
         {' '}
         <RB.FormControl.Feedback />
         <Component {...componentProps} {...fieldProps} {...input} onChange={onChange}/>
-        {(error || warning) &&
-          <RB.HelpBlock>{error || warning}</RB.HelpBlock>
+        {(error || warning || help) &&
+          <RB.HelpBlock>{error || warning || help}</RB.HelpBlock>
         }
       </RB.FormGroup>
     )

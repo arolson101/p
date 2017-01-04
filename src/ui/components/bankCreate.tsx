@@ -3,7 +3,7 @@ import { Grid, Button, ButtonToolbar } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Dispatch, compose } from 'redux'
-import { reduxForm, ReduxFormProps } from 'redux-form'
+import { reduxForm, ReduxFormProps, formValueSelector } from 'redux-form'
 import { DbInfo, Bank } from '../../docs'
 import { AppState, FI, CurrentDb } from '../../state'
 import { Validator } from '../../util'
@@ -25,6 +25,7 @@ interface ConnectedProps {
   current: CurrentDb
   lang: string
   dbInfo?: DbInfo.Doc
+  online: boolean
 }
 
 type AllProps = IntlProps & ConnectedProps & RouteProps<Bank.Params> & ReduxFormProps<Values>
@@ -82,17 +83,23 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   props.router.replace(Bank.to.view(doc))
 }
 
+const formName = 'BankCreate'
+
 export const BankCreate = compose(
   injectIntl,
   connect(
-    (state: AppState): ConnectedProps => ({
-      filist: state.fi.list,
-      current: state.db.current!,
-      lang: state.i18n.locale,
-      dbInfo: selectDbInfo(state)
-    })
+    (state: AppState): ConnectedProps => {
+      const selector = formValueSelector<Values>(formName)
+      return ({
+        filist: state.fi.list,
+        current: state.db.current!,
+        lang: state.i18n.locale,
+        dbInfo: selectDbInfo(state),
+        online: selector(state, 'online')
+      })
+    }
   ),
   reduxForm<AllProps, Values>({
-    form: 'InCreate'
+    form: formName
   })
 )(BankCreateComponent) as React.ComponentClass<{}>

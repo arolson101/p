@@ -535,8 +535,8 @@ export interface FieldArrayProps {
 
 export class FieldArray extends React.Component<any, any> {}
 
-export type selector = (state: Object, ...field: string[]) => any;
+export type selector<Values> = (state: Object, ...field: (keyof Values)[]) => any;
 
-export function formValueSelector(form: string, getFormState?: Function): selector;
+export function formValueSelector<Values>(form: string, getFormState?: Function): selector<Values>;
 
 }
