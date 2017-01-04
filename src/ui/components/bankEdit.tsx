@@ -91,21 +91,19 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
 }
 
 const formName = 'BankEdit'
+const formSelector = formValueSelector<Values>(formName)
 
 export const BankEdit = compose(
   injectIntl,
   connect(
-    (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => {
-      const selector = formValueSelector<Values>(formName)
-      return ({
-        filist: state.fi.list,
-        current: state.db.current!,
-        lang: state.i18n.locale,
-        dbInfo: selectDbInfo(state),
-        bank: selectBank(state, props),
-        online: selector(state, 'online')
-      })
-    }
+    (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => ({
+      filist: state.fi.list,
+      current: state.db.current!,
+      lang: state.i18n.locale,
+      dbInfo: selectDbInfo(state),
+      bank: selectBank(state, props),
+      online: formSelector(state, 'online')
+    })
   ),
   reduxForm<AllProps, Values>({
     form: formName
