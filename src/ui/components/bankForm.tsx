@@ -71,6 +71,10 @@ const messages = defineMessages({
       NLD         Not used (field contents ignored)
       USA         Routing and transit number`
   },
+  bankidHelp: {
+    id: 'bankForm.bankidHelp',
+    defaultMessage: '(This will be auto-filled if you get account list from server)'
+  },
   username: {
     id: 'bankForm.username',
     defaultMessage: 'Username'
@@ -231,7 +235,7 @@ export class BankForm extends React.Component<AllProps, any> {
                 <TextField
                   name='bankid'
                   label={formatMessage(messages.bankid)}
-                  help='This will be auto-filled if you get account list from server'
+                  help={formatMessage(messages.bankidHelp)}
                 />
               </Col>
             </Row>
