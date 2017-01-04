@@ -6,6 +6,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
+import { AutoSizer, List } from 'react-virtualized'
 import { getTransactions, deleteTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
@@ -13,6 +14,7 @@ import { CancelablePromise } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps, DispatchProps } from './props'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
+import { Container, Item } from './flex'
 
 interface ConnectedProps {
   dbInfo?: DbInfo.Doc
@@ -31,6 +33,34 @@ interface Values {
   date: string
   payee: string
   amount: string
+}
+
+// List data as an array of strings
+const list = [
+  'Brian Vaughn',
+  'Brian Vaughn',
+  'Brian Vaughn',
+  'Brian Vaughn',
+  'Brian Vaughn',
+  'Brian Vaughn',
+  // And so on...
+];
+
+function rowRenderer (props: {
+  key: any,         // Unique key within array of rows
+  index: any,       // Index of row within collection
+  isScrolling: any, // The List is currently being scrolled
+  isVisible: any,   // This row is visible within the List (eg it is not an overscanned row)
+  style: any        // Style object to be applied to row (to position it)
+}) {
+  return (
+    <div
+      key={props.key}
+      style={props.style}
+    >
+      {list[props.index]}
+    </div>
+  )
 }
 
 export class AccountViewComponent extends React.Component<AllProps, State> {
@@ -69,16 +99,28 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
     const { bank, account } = this.props
     const { transactions } = this.state
     return (
-      <div>
+      <Container column style={{height: '100%', flex: 1}}>
         {account && bank &&
-          <Grid>
+          <Grid style={{height: '100%', display: 'flex', flex: 1, flexDirection: 'column'}}>
             <Breadcrumbs {...this.props}/>
             <PageHeader>
               {account.name}
               {' '}
               <small>{account.number}</small>
             </PageHeader>
-            <Table>
+            <Item flex='1' style={{minHeight: 100}}>
+              <AutoSizer>
+                {(props: { height: number, width: number }) => (
+                  <List
+                    rowCount={list.length}
+                    rowHeight={20}
+                    rowRenderer={rowRenderer}
+                    {...props}
+                  />
+                )}
+              </AutoSizer>
+            </Item>
+            {/*<Table>
               <thead>
                 <tr>
                   <th>date</th>
@@ -101,7 +143,7 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
                   </tr>
                 )}
               </tbody>
-            </Table>
+            </Table>*/}
             <div><Button onClick={this.downloadTransactions}>download transactions</Button></div>
             <div><Button onClick={this.addTransaction}>create transactions</Button></div>
             <div><Button onClick={this.deleteTransactions}>delete transactions</Button></div>
@@ -109,7 +151,7 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
             <div><Link to={Account.to.del(account)}>delete</Link></div>
           </Grid>
         }
-      </div>
+      </Container>
     )
   }
 

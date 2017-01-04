@@ -14,11 +14,11 @@ export const Container = (props: ContainerProps & React.Props<any> & React.HTMLP
   )
 }
 
-interface ContainerProps {
+interface ItemProps {
   flex?: number | string
 }
 
-export const Item = (props: ContainerProps & React.Props<any> & React.HTMLProps<HTMLDivElement>) => {
+export const Item = (props: ItemProps & React.Props<any> & React.HTMLProps<HTMLDivElement>) => {
   const { children, style, flex, ...divProps } = props
   return (
     <div style={{flex: flex || '0', ...style}} {...divProps}>
