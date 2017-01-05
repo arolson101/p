@@ -1,9 +1,11 @@
 import * as History from 'history'
 import { routerMiddleware } from 'react-router-redux'
 import { createStore, applyMiddleware, combineReducers, Dispatch, ThunkAction } from 'redux'
+import { responsiveStoreEnhancer } from 'redux-responsive'
 import ReduxThunk from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension'
 
+export * from './browser'
 export * from './db'
 export * from './form'
 export * from './fi'
@@ -11,6 +13,7 @@ export * from './i18n'
 export * from './router'
 export * from './ui'
 
+import { BrowserSlice } from './browser'
 import { DbSlice, DbInit } from './db'
 import { FiSlice, FiInit } from './fi'
 import { FormSlice } from './form'
@@ -19,6 +22,7 @@ import { RouterSlice } from './router'
 import { UiSlice } from './ui'
 
 export type AppState =
+  BrowserSlice &
   DbSlice &
   FiSlice &
   FormSlice &
@@ -27,6 +31,7 @@ export type AppState =
   UiSlice
 
 export const AppState = combineReducers<AppState>({
+  ...BrowserSlice,
   ...DbSlice,
   ...FiSlice,
   ...FormSlice,
@@ -52,6 +57,7 @@ export const createAppStore = (history: History.History) => {
   const store = createStore<AppState>(
     AppState,
     composeWithDevTools(
+      responsiveStoreEnhancer,
       applyMiddleware(ReduxThunk, routingMiddleware)
     )
   )
