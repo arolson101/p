@@ -1,12 +1,13 @@
 import autobind = require('autobind-decorator')
 import * as React from 'react'
-import { Table, Button, Grid, PageHeader } from 'react-bootstrap'
-import { injectIntl, FormattedDate } from 'react-intl'
+import { Button, Grid, PageHeader } from 'react-bootstrap'
+import { injectIntl, FormattedDate, FormattedNumber } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { compose } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
-import { AutoSizer, List } from 'react-virtualized'
+import { AutoSizer, Table, Column } from 'react-virtualized'
+import 'react-virtualized/styles.css'
 import { getTransactions, deleteTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
@@ -33,34 +34,6 @@ interface Values {
   date: string
   payee: string
   amount: string
-}
-
-// List data as an array of strings
-const list = [
-  'Brian Vaughn',
-  'Brian Vaughn',
-  'Brian Vaughn',
-  'Brian Vaughn',
-  'Brian Vaughn',
-  'Brian Vaughn',
-  // And so on...
-];
-
-function rowRenderer (props: {
-  key: any,         // Unique key within array of rows
-  index: any,       // Index of row within collection
-  isScrolling: any, // The List is currently being scrolled
-  isVisible: any,   // This row is visible within the List (eg it is not an overscanned row)
-  style: any        // Style object to be applied to row (to position it)
-}) {
-  return (
-    <div
-      key={props.key}
-      style={props.style}
-    >
-      {list[props.index]}
-    </div>
-  )
 }
 
 export class AccountViewComponent extends React.Component<AllProps, State> {
@@ -111,39 +84,40 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
             <Item flex='1' style={{minHeight: 100}}>
               <AutoSizer>
                 {(props: { height: number, width: number }) => (
-                  <List
-                    rowCount={list.length}
-                    rowHeight={20}
-                    rowRenderer={rowRenderer}
+                  <Table
+                    headerHeight={20}
+                    rowCount={transactions ? transactions.rows.length : 0}
+                    rowHeight={50}
+                    rowGetter={this.rowGetter}
+                    rowClassName={this.rowClassName}
                     {...props}
-                  />
+                  >
+                    <Column
+                      label='Date'
+                      dataKey='time'
+                      cellRenderer={this.dateCellRenderer}
+                      width={100}
+                    />
+                    <Column
+                      label='Name'
+                      dataKey='name'
+                      width={300}
+                      flexGrow={1}
+                      cellDataGetter={this.getTransaction}
+                      cellRenderer={this.nameCellRenderer}
+                    />
+                    <Column
+                      label='Amount'
+                      dataKey='amount'
+                      headerClassName='alignRight'
+                      style={{textAlign: 'right'}}
+                      cellRenderer={this.currencyCellRenderer}
+                      width={100}
+                    />
+                  </Table>
                 )}
               </AutoSizer>
             </Item>
-            {/*<Table>
-              <thead>
-                <tr>
-                  <th>date</th>
-                  <th>payee</th>
-                  <th>amount</th>
-                  <th>balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions && transactions.rows.map(row =>
-                  <tr key={row.doc!.serverid}>
-                    <td><FormattedDate value={row.doc!.time}/></td>
-                    <td>
-                      {row.doc!.name}
-                      {row.doc!.memo && <br/>}
-                      <small>{row.doc!.memo}</small>
-                    </td>
-                    <td>{row.doc!.amount}</td>
-                    <td>?</td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>*/}
             <div><Button onClick={this.downloadTransactions}>download transactions</Button></div>
             <div><Button onClick={this.addTransaction}>create transactions</Button></div>
             <div><Button onClick={this.deleteTransactions}>delete transactions</Button></div>
@@ -153,6 +127,49 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
         }
       </Container>
     )
+  }
+
+  @autobind
+  rowClassName (props: { index: number }) {
+    const { index } = props
+    if (index < 0) {
+      return 'headerRow'
+    } else {
+      return index % 2 === 0 ? 'evenRow' : 'oddRow'
+    }
+  }
+
+  @autobind
+  getTransaction(props: Column.CellDataGetterArgs) {
+    const transaction = props.rowData as Transaction
+    return transaction
+  }
+
+  @autobind
+  nameCellRenderer(props: Column.CellRendererArgs) {
+    const transaction = props.cellData as Transaction
+    return <div>
+      {transaction.name}<br/>
+      <small>{transaction.memo}</small>
+    </div>
+  }
+
+  @autobind
+  dateCellRenderer(props: Column.CellRendererArgs) {
+    return <FormattedDate value={props.cellData} />
+  }
+
+  @autobind
+  currencyCellRenderer(props: Column.CellRendererArgs) {
+    return <FormattedNumber value={props.cellData} style='currency' currency='USD' currencyDisplay='symbol' />
+  }
+
+  @autobind
+  rowGetter(props: {index: number}): any {
+    const { index } = props
+    const { transactions } = this.state
+    const transaction = transactions!.rows[index].doc as Transaction
+    return transaction
   }
 
   @autobind

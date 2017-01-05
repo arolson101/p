@@ -424,6 +424,29 @@ declare module "react-virtualized" {
   }
 
   export namespace List {
+    export interface RowRendererParams {
+      /**
+       * Unique key within array of rows
+       */
+      key: string
+      /**
+       * Index of row within collection
+       */
+      index: number
+      /**
+       * Style object to be applied to row (to position it)
+       */
+      style: Object
+      /**
+       * The List is currently being scrolled
+       */
+      isScrolling: boolean
+      /**
+       * This row is visible within the List (eg it is not an overscanned row)
+       */
+      isVisible: boolean
+    }
+
     export interface Props {
       /**
        * Outer height of List is set to "auto". This property should only be used in conjunction with the
@@ -480,7 +503,7 @@ declare module "react-virtualized" {
        * ({ index: number, key: string, style: Object, isScrolling: boolean }): React.PropTypes.node
        * and the returned element must handle index, key and style.
        */
-      rowRenderer: (props: { index: number, key: string, style: Object, isScrolling: boolean }) => React.ReactNode
+      rowRenderer: (props: RowRendererParams) => React.ReactNode
       /**
        * Controls the alignment scrolled-to-rows. The default ("auto") scrolls the least amount possible to ensure
        * that the specified row is fully visible. Use "start" to always align rows to the top of the list and "end"
@@ -765,27 +788,30 @@ declare module "react-virtualized" {
   }
 
   export namespace Column {
-    export type CellDataGetter = (props: {
-      columnData: any,
-      dataKey: string,
+    export interface CellDataGetterArgs {
+      columnData: any
+      dataKey: string
       rowData: any
-    }) => any
-    export type CellRenderer = (props: {
-      cellData: any,
-      columnData: any,
-      dataKey: string,
-      isScrolling: boolean,
-      rowData: any,
+    }
+    export type CellDataGetter = (props: CellDataGetterArgs) => any
+    export interface CellRendererArgs {
+      cellData: any
+      columnData: any
+      dataKey: string
+      isScrolling: boolean
+      rowData: any
       rowIndex: number
-    }) => React.ReactNode
-    export type HeaderRenderer = (props: {
-      columnData: any,
-      dataKey: string,
-      disableSort: boolean,
-      label: string,
-      sortBy: string,
+    }
+    export type CellRenderer = (props: CellRendererArgs) => React.ReactNode
+    export interface HeaderRendererArgs {
+      columnData: any
+      dataKey: string
+      disableSort: boolean
+      label: string
+      sortBy: string
       sortDirection: SortDirection
-    }) => React.ReactElement<any>
+    }
+    export type HeaderRenderer = (props: HeaderRendererArgs) => React.ReactElement<any>
 
     export interface Props {
       /**
