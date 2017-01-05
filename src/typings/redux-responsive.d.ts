@@ -1,20 +1,21 @@
 declare module 'redux-responsive' {
-  export var responsiveStateReducer: any
-  export var responsiveStoreEnhancer: any
+  export function responsiveStateReducer(): ResponsiveState
+  export function responsiveStoreEnhancer(): any
 
-  export interface ResponsiveBreakpoints {
-    extraSmall: boolean
-    small: boolean
-    medium: boolean
-    large: boolean
-    infinity: boolean
+  export interface ResponsiveBreakpoints<T> {
+    extraSmall: T
+    small: T
+    medium: T
+    large: T
+    infinity: T
   }
 
   export interface ResponsiveState {
+    breakpoints: ResponsiveBreakpoints<number>
     mediaType: string
     orientation: "portrait"| "landscape" | null
-    lessThan: ResponsiveBreakpoints
-    greaterThan: ResponsiveBreakpoints
-    is: ResponsiveBreakpoints
+    lessThan: ResponsiveBreakpoints<boolean>
+    greaterThan: ResponsiveBreakpoints<boolean>
+    is: ResponsiveBreakpoints<boolean>
   }
 }

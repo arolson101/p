@@ -10,7 +10,7 @@ import { AutoSizer, Table, Column } from 'react-virtualized'
 import 'react-virtualized/styles.css'
 import { getTransactions, deleteTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
-import { AppState, CurrentDb } from '../../state'
+import { AppState, CurrentDb, ResponsiveState } from '../../state'
 import { CancelablePromise } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps, DispatchProps } from './props'
@@ -22,6 +22,7 @@ interface ConnectedProps {
   bank?: Bank.Doc
   account?: Account.Doc
   current: CurrentDb
+  browser: ResponsiveState
 }
 
 type AllProps = RouteProps<Account.Params> & ConnectedProps & DispatchProps & ReduxFormProps<Values>
@@ -69,8 +70,10 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
   }
 
   render() {
-    const { bank, account } = this.props
+    const { bank, account, browser } = this.props
     const { transactions } = this.state
+    const sideBySide = browser.greaterThan.small
+    const listMaxWidth = sideBySide ? browser.breakpoints.extraSmall : Infinity
     return (
       <Container column>
         {account && bank &&
@@ -81,43 +84,53 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
               {' '}
               <small>{account.number}</small>
             </PageHeader>
-            <Item style={{height: 500}}>
-              <AutoSizer>
-                {(props: { height: number, width: number }) => (
-                  <Table
-                    headerHeight={20}
-                    rowCount={transactions ? transactions.rows.length : 0}
-                    rowHeight={50}
-                    rowGetter={this.rowGetter}
-                    rowClassName={this.rowClassName}
-                    {...props}
-                  >
-                    <Column
-                      label='Date'
-                      dataKey='time'
-                      cellRenderer={this.dateCellRenderer}
-                      width={100}
-                    />
-                    <Column
-                      label='Name'
-                      dataKey='name'
-                      width={300}
-                      flexGrow={1}
-                      cellDataGetter={this.getTransaction}
-                      cellRenderer={this.nameCellRenderer}
-                    />
-                    <Column
-                      label='Amount'
-                      dataKey='amount'
-                      headerClassName='alignRight'
-                      style={{textAlign: 'right'}}
-                      cellRenderer={this.currencyCellRenderer}
-                      width={100}
-                    />
-                  </Table>
-                )}
-              </AutoSizer>
-            </Item>
+            <Container>
+              <Item flex={1} style={{height: 500, maxWidth: listMaxWidth}}>
+                <AutoSizer>
+                  {(props: AutoSizer.ChildrenProps) => (
+                    <Container>
+                      <Table
+                        style={{flex: 1, maxWidth: listMaxWidth}}
+                        headerHeight={20}
+                        rowCount={transactions ? transactions.rows.length : 0}
+                        rowHeight={50}
+                        rowGetter={this.rowGetter}
+                        rowClassName={this.rowClassName}
+                        {...props}
+                      >
+                        <Column
+                          label='Date'
+                          dataKey='time'
+                          cellRenderer={this.dateCellRenderer}
+                          width={100}
+                        />
+                        <Column
+                          label='Name'
+                          dataKey='name'
+                          width={300}
+                          flexGrow={1}
+                          cellDataGetter={this.getTransaction}
+                          cellRenderer={this.nameCellRenderer}
+                        />
+                        <Column
+                          label='Amount'
+                          dataKey='amount'
+                          headerClassName='alignRight'
+                          style={{textAlign: 'right'}}
+                          cellRenderer={this.currencyCellRenderer}
+                          width={100}
+                        />
+                      </Table>
+                    </Container>
+                  )}
+                </AutoSizer>
+              </Item>
+              {sideBySide &&
+                <Item flex={1}>
+                  content!
+                </Item>
+              }
+            </Container>
             <div><Button onClick={this.downloadTransactions}>download transactions</Button></div>
             <div><Button onClick={this.addTransaction}>create transactions</Button></div>
             <div><Button onClick={this.deleteTransactions}>delete transactions</Button></div>
@@ -214,7 +227,8 @@ export const AccountView = compose(
       dbInfo: selectDbInfo(state),
       bank: selectBank(state, props),
       account: selectAccount(state, props),
-      current: state.db.current!
+      current: state.db.current!,
+      browser: state.browser
     })
   ),
   reduxForm<AllProps, Values>({
