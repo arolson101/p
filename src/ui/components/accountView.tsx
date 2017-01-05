@@ -72,16 +72,16 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
     const { bank, account } = this.props
     const { transactions } = this.state
     return (
-      <Container column style={{height: '100%', flex: 1}}>
+      <Container column>
         {account && bank &&
-          <Grid style={{height: '100%', display: 'flex', flex: 1, flexDirection: 'column'}}>
+          <Grid>
             <Breadcrumbs {...this.props}/>
             <PageHeader>
               {account.name}
               {' '}
               <small>{account.number}</small>
             </PageHeader>
-            <Item flex='1' style={{minHeight: 100}}>
+            <Item style={{height: 500}}>
               <AutoSizer>
                 {(props: { height: number, width: number }) => (
                   <Table
