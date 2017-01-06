@@ -17,16 +17,14 @@ export interface Transaction {
 }
 
 export namespace Transaction {
-  export type DocId = 'transaction/:bankId/:accountId/:time'
+  export type DocId = 'transaction/:bankId/:accountId/:txId'
   export type Doc = PouchDB.Core.Document<Transaction> & { _id: DocId; _rev?: string }
-  export interface Params { bankId: Bank.Id, accountId: Account.Id, time: string }
-
-  export const CHANGE_ACTION = 'db/TransactionChange'
-  export const docId = docURI.route<Params, DocId>('transaction/:bankId/:accountId/:time')
+  export interface Params { bankId: Bank.Id, accountId: Account.Id, txId: string }
+  export const docId = docURI.route<Params, DocId>('transaction/:bankId/:accountId/:txId')
   export const startkeyForAccount = (account: Account.Doc, time?: Date) =>
-    docId({ ...accountParts(account), time: time ? timeKey(time) : ''})
+    docId({ ...accountParts(account), txId: time ? timeKey(time) : ''})
   export const endkeyForAccount = (account: Account.Doc, time?: Date) =>
-    docId({ ...accountParts(account), time: time ? timeKey(time) : ''}) + '\uffff'
+    docId({ ...accountParts(account), txId: time ? timeKey(time) : ''}) + '\uffff'
   export const allForAccount = (account: Account.Doc, start?: Date, end?: Date): PouchDB.Selector => {
     return ({
       $and: [
@@ -34,6 +32,21 @@ export namespace Transaction {
         { _id: { $lt: endkeyForAccount(account, end) } }
       ]
     })
+  }
+
+  export namespace routes {
+    export const view = 'transaction/:bankId/:accountId/:txId'
+    export const edit = 'transaction/:bankId/:accountId/:txId/edit'
+  }
+
+  export namespace to {
+    export const view = (transaction: Doc): string => {
+      return '/' + transaction._id
+    }
+
+    export const edit = (transaction: Doc): string => {
+      return '/' + transaction._id + '/edit'
+    }
   }
 
   const accountParts = (account: Account.Doc) => {
@@ -53,8 +66,8 @@ export namespace Transaction {
   }
 
   export const doc = (account: Account.Doc, transaction: Transaction): Doc => {
-    const time = timeKey(transaction.time) + randomBytes(4).toString('hex')
-    const _id = docId({ ...accountParts(account), time })
+    const txId = timeKey(transaction.time) + randomBytes(4).toString('hex')
+    const _id = docId({ ...accountParts(account), txId })
     return { _id, ...transaction }
   }
 }

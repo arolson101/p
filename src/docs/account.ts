@@ -71,7 +71,7 @@ export namespace Account {
   export namespace routes {
     export const create = 'account/:bankId/create'
     export const view = 'account/:bankId/:accountId'
-    export const update = 'account/:bankId/:accountId/edit'
+    export const edit = 'account/:bankId/:accountId/edit'
     export const del = 'account/:bankId/:accountId/delete'
   }
 

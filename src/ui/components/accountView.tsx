@@ -16,6 +16,7 @@ import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps, DispatchProps } from './props'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
 import { Container, Item } from './flex'
+import { TransactionDetail } from './transactionDetail'
 
 interface ConnectedProps {
   dbInfo?: DbInfo.Doc
@@ -29,6 +30,7 @@ type AllProps = RouteProps<Account.Params> & ConnectedProps & DispatchProps & Re
 
 interface State {
   transactions?: PouchDB.Core.AllDocsResponse<Transaction>
+  selection?: number
 }
 
 interface Values {
@@ -39,7 +41,8 @@ interface Values {
 
 export class AccountViewComponent extends React.Component<AllProps, State> {
   state: State = {
-    transactions: undefined
+    transactions: undefined,
+    selection: undefined
   }
 
   loadTransactionsPromise?: CancelablePromise<any> = undefined
@@ -71,11 +74,12 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
 
   render() {
     const { bank, account, browser } = this.props
-    const { transactions } = this.state
+    const { transactions, selection } = this.state
     const sideBySide = browser.greaterThan.small
     const listMaxWidth = sideBySide ? browser.breakpoints.extraSmall : Infinity
+    const transaction = transactions && (selection !== undefined) && transactions.rows[selection].doc as Transaction.Doc
     return (
-      <Container column>
+      <div>
         {account && bank &&
           <Grid>
             <Breadcrumbs {...this.props}/>
@@ -96,6 +100,7 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
                         rowHeight={50}
                         rowGetter={this.rowGetter}
                         rowClassName={this.rowClassName}
+                        onRowClick={sideBySide ? this.onRowClickSetSelection : this.onRowClickHref}
                         {...props}
                       >
                         <Column
@@ -127,7 +132,9 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
               </Item>
               {sideBySide &&
                 <Item flex={1}>
-                  content!
+                  {transaction &&
+                    <TransactionDetail {...this.props} transaction={transaction} />
+                  }
                 </Item>
               }
             </Container>
@@ -138,7 +145,7 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
             <div><Link to={Account.to.del(account)}>delete</Link></div>
           </Grid>
         }
-      </Container>
+      </div>
     )
   }
 
@@ -183,6 +190,23 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
     const { transactions } = this.state
     const transaction = transactions!.rows[index].doc as Transaction
     return transaction
+  }
+
+  @autobind
+  onRowClickSetSelection(props: {index: number}) {
+    this.setState({selection: props.index})
+  }
+
+  @autobind
+  onRowClickHref(props: {index: number}) {
+    const { index } = props
+    const { transactions } = this.state
+    const { router } = this.props
+    const transaction = transactions && (index >= 0) && transactions.rows[index].doc as Transaction.Doc
+    if (transaction) {
+      const href = router.createHref(Transaction.to.view(transaction))
+      router.push(Transaction.to.view(transaction))
+    }
   }
 
   @autobind
