@@ -16,6 +16,7 @@ import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps, DispatchProps } from './props'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
 import { Container, Item } from './flex'
+import { queryState, QueryStateProps } from './queryState'
 import { TransactionDetail } from './transactionDetail'
 
 interface ConnectedProps {
@@ -26,11 +27,10 @@ interface ConnectedProps {
   browser: ResponsiveState
 }
 
-type AllProps = RouteProps<Account.Params> & ConnectedProps & DispatchProps & ReduxFormProps<Values>
+type AllProps = RouteProps<Account.Params> & ConnectedProps & DispatchProps & ReduxFormProps<Values> & QueryStateProps<PageState>
 
 interface State {
   transactions?: PouchDB.Core.AllDocsResponse<Transaction>
-  selection?: number
 }
 
 interface Values {
@@ -39,10 +39,14 @@ interface Values {
   amount: string
 }
 
+interface PageState {
+  scroll: number
+  selection: number
+}
+
 export class AccountViewComponent extends React.Component<AllProps, State> {
   state: State = {
-    transactions: undefined,
-    selection: undefined
+    transactions: undefined
   }
 
   loadTransactionsPromise?: CancelablePromise<any> = undefined
@@ -73,11 +77,11 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
   }
 
   render() {
-    const { bank, account, browser } = this.props
-    const { transactions, selection } = this.state
+    const { bank, account, browser, pageState: { scroll, selection }, setPageState } = this.props
+    const { transactions } = this.state
     const sideBySide = browser.greaterThan.small
     const listMaxWidth = sideBySide ? browser.breakpoints.extraSmall : Infinity
-    const transaction = transactions && (selection !== undefined) && transactions.rows[selection].doc as Transaction.Doc
+    const transaction = transactions && (selection !== -1) && transactions.rows[selection].doc as Transaction.Doc
     return (
       <div>
         {account && bank &&
@@ -92,41 +96,41 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
               <Item flex={1} style={{height: 500, maxWidth: listMaxWidth}}>
                 <AutoSizer>
                   {(props: AutoSizer.ChildrenProps) => (
-                    <Container>
-                      <Table
-                        style={{flex: 1, maxWidth: listMaxWidth}}
-                        headerHeight={20}
-                        rowCount={transactions ? transactions.rows.length : 0}
-                        rowHeight={50}
-                        rowGetter={this.rowGetter}
-                        rowClassName={this.rowClassName}
-                        onRowClick={sideBySide ? this.onRowClickSetSelection : this.onRowClickHref}
-                        {...props}
-                      >
-                        <Column
-                          label='Date'
-                          dataKey='time'
-                          cellRenderer={this.dateCellRenderer}
-                          width={100}
-                        />
-                        <Column
-                          label='Name'
-                          dataKey='name'
-                          width={300}
-                          flexGrow={1}
-                          cellDataGetter={this.getTransaction}
-                          cellRenderer={this.nameCellRenderer}
-                        />
-                        <Column
-                          label='Amount'
-                          dataKey='amount'
-                          headerClassName='alignRight'
-                          style={{textAlign: 'right'}}
-                          cellRenderer={this.currencyCellRenderer}
-                          width={100}
-                        />
-                      </Table>
-                    </Container>
+                    <Table
+                      onScroll={e => setPageState({scroll: e.scrollTop})}
+                      scrollTop={1 * scroll}
+                      style={{flex: 1, maxWidth: listMaxWidth}}
+                      headerHeight={20}
+                      rowCount={transactions ? transactions.rows.length : 0}
+                      rowHeight={50}
+                      rowGetter={this.rowGetter}
+                      rowClassName={this.rowClassName}
+                      onRowClick={sideBySide ? this.onRowClickSetSelection : this.onRowClickHref}
+                      {...props}
+                    >
+                      <Column
+                        label='Date'
+                        dataKey='time'
+                        cellRenderer={this.dateCellRenderer}
+                        width={100}
+                      />
+                      <Column
+                        label='Name'
+                        dataKey='name'
+                        width={300}
+                        flexGrow={1}
+                        cellDataGetter={this.getTransaction}
+                        cellRenderer={this.nameCellRenderer}
+                      />
+                      <Column
+                        label='Amount'
+                        dataKey='amount'
+                        headerClassName='alignRight'
+                        style={{textAlign: 'right'}}
+                        cellRenderer={this.currencyCellRenderer}
+                        width={100}
+                      />
+                    </Table>
                   )}
                 </AutoSizer>
               </Item>
@@ -194,7 +198,8 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
 
   @autobind
   onRowClickSetSelection(props: {index: number}) {
-    this.setState({selection: props.index})
+    const { setPageState } = this.props
+    setPageState({selection: props.index})
   }
 
   @autobind
@@ -204,7 +209,6 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
     const { router } = this.props
     const transaction = transactions && (index >= 0) && transactions.rows[index].doc as Transaction.Doc
     if (transaction) {
-      const href = router.createHref(Transaction.to.view(transaction))
       router.push(Transaction.to.view(transaction))
     }
   }
@@ -244,8 +248,16 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
   }
 }
 
+const formName = 'AccountView'
+
 export const AccountView = compose(
   injectIntl,
+  queryState<PageState>({
+    initial: {
+      scroll: 0,
+      selection: -1
+    }
+  }),
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       dbInfo: selectDbInfo(state),
@@ -256,6 +268,6 @@ export const AccountView = compose(
     })
   ),
   reduxForm<AllProps, Values>({
-    form: 'AccountView'
+    form: formName
   })
 )(AccountViewComponent) as React.ComponentClass<{}>

@@ -539,4 +539,136 @@ export type selector<Values> = (state: Object, ...field: (keyof Values)[]) => an
 
 export function formValueSelector<Values>(form: string, getFormState?: Function): selector<Values>;
 
+export function getFormValues<Values>(form: string): (state: any) => Values
+
+
+/**
+ * Inserts an item into a field array at the specified index
+ */
+export function arrayInsert(form: string, field:String, index:Number, value:any): Redux.Action
+/**
+ * Moves an item from one index in the array to another. In effect, it performs a remove and an insert, so the item already at the to position will be bumped to a higher index, not overwritten.
+ */
+export function arrayMove(form: string, field: string, from: number, to: number): Redux.Action
+/**
+ * Removes an item from the end of a field array
+ */
+export function arrayPop(form: string, field: string): Redux.Action
+
+/**
+ * Appends an item to the end of a field array
+ */
+export function arrayPush(form: string, field: string, value:any): Redux.Action
+
+/**
+ * Removes an item at the specified index from a field array
+ */
+export function arrayRemove(form: string, field: string, index:Number): Redux.Action
+
+/**
+ * Removes all the items from the specified array.
+ */
+export function arrayRemoveAll(form: string, field: string): Redux.Action
+
+/**
+ * Removes an item from the beginning of a field array
+ */
+export function arrayShift(form: string, field: string): Redux.Action
+
+/**
+ * ADVANCED USAGE - Inserts and/or removes items from a field array. Works similarly to Array.splice.
+ */
+export function arraySplice(form: string, field: string, index:Number, removeNum:Number, value:any): Redux.Action
+
+/**
+ * Swaps two items at the specified indexes in a field array
+ */
+export function arraySwap(form: string, field: string, indexA:Number, indexB:Number): Redux.Action
+
+/**
+ * Inserts an item at the beginning of a field array
+ */
+export function arrayUnshift(form: string, field: string, value:any): Redux.Action
+
+/**
+ * Saves the value to the field and sets its autofilled property to true.
+ */
+export function autofill(form: string, field: string, value: string): Redux.Action
+
+/**
+ * Saves the value to the field.
+ */
+export function blur(form: string, field: string, value:any): Redux.Action
+
+/**
+ * Saves the value to the field.
+ */
+export function change(form: string, field: string, value:any): Redux.Action
+
+/**
+ * Destroys the form, removing all its state.
+ */
+export function destroy(form: string): Redux.Action
+
+/**
+ * Marks the given field as active and visited.
+ */
+export function focus(form: string, field: string): Redux.Action
+
+/**
+ * Sets the initial values in the form with which future data values will be compared to calculate dirty and pristine. The data parameter may contain deep nested array and object values that match the shape of your form fields. If the keepDirty parameter is true, the values of currently dirty fields will be retained to avoid overwriting user edits.
+ */
+export function initialize(form: string, data:Object, keepDirty:boolean): Redux.Action
+
+/**
+ * Registers a field with the form. The type parameter can be Field or FieldArray.
+ */
+export function registerField(form: string, name: string, type: string): Redux.Action
+
+/**
+ * Resets the values in the form back to the values past in with the most recent initialize action.
+ */
+export function reset(form: string): Redux.Action
+
+/**
+ * Flips the asyncValidating flag true.
+ */
+export function startAsyncValidation(form: string): Redux.Action
+
+/**
+ * Flips the submitting flag true.
+ */
+export function startSubmit(form: string): Redux.Action
+
+/**
+ * Flips the submitting flag false and populates submitError for each field.
+ */
+export function stopSubmit(form: string, errors:Object): Redux.Action
+
+/**
+ * Flips the asyncValidating flag false and populates asyncError for each field.
+ */
+export function stopAsyncValidation(form: string, errors:Object): Redux.Action
+
+/**
+ * Triggers a submission of the specified form.
+ */
+export function submit(form: string): Redux.Action
+
+/**
+ * Marks all the fields passed in as touched.
+ */
+export function touch(form: string, ...fields: string[]): Redux.Action
+
+/**
+ * Unregisters a field with the form.
+ */
+export function unregisterField(form: string, name: string): Redux.Action
+
+/**
+ * Resets the 'touched' flag for all the fields passed in.
+ */
+export function untouch(form: string, ...fields: string[]): Redux.Action
+
+
 }

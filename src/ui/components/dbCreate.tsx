@@ -9,6 +9,7 @@ import { AppState, dbActions } from '../../state'
 import { Validator } from '../../util'
 import { forms, typedFields } from './forms'
 import { IntlProps, RouteProps } from './props'
+import { queryState } from './queryState'
 
 const messages = defineMessages({
   welcome: {
@@ -104,15 +105,21 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
   router.replace(DbInfo.to.view(dbInfo))
 }
 
+const formName = 'DbCreate'
+
 export const DbCreate = compose(
   injectIntl,
+  queryState<Values>({
+    formName,
+    formFields: ['name']}
+  ),
   connect(
     (state: AppState): ConnectedProps => ({
       lang: state.i18n.lang
     })
   ),
   reduxForm<AllProps, Values>({
-    form: 'DbCreate',
+    form: formName,
     validate
   })
 )(DbCreateComponent) as React.ComponentClass<{}>
