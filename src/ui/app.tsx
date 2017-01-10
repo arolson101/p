@@ -24,7 +24,8 @@ const requireAuth = (store: Redux.Store<AppState>) =>
   (nextState: any, replace: any) => {
     if (!store.getState().db.current) {
       replace({
-        pathname: '/'
+        pathname: DbInfo.routes.view,
+        state: { nextPathname: nextState.location.pathname }
       })
     }
   }

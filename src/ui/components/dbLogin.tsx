@@ -106,14 +106,18 @@ const selectDbDoc = (state: AppState, props: RouteProps<Params>) => {
 }
 
 const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-  const { formatMessage } = props.intl
+  const { intl: { formatMessage }, router, location } = props
   const v = new Validator(values)
   v.required(['password'], formatMessage(forms.required))
   v.maybeThrowSubmissionError()
 
   try {
     await dispatch(dbActions.loadDb(props.dbDoc, values.password))
-    // no need to go anywhere - dbRead will switch to rendering authenticated view
+    if (location.state && (location.state as any).nextPathname) {
+      router.replace((location.state as any).nextPathname)
+    } else {
+      // no need to go anywhere - dbRead will switch to rendering authenticated view
+    }
   } catch (error) {
     throw new SubmissionError<Values>({password: error.message})
   }
