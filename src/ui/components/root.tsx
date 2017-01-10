@@ -14,7 +14,8 @@ export const Root = (props: RouteProps<any>) => (
         event.preventDefault()
         props.router.goForward()
       }}>&gt;</a>{' '}
-      [ {props.location.pathname + props.location.search} ]{' '}
+      <input style={{width: 350}} type='text' readOnly value={props.location.pathname + props.location.search}/>
+      {' '}
       <Link to='/'>/</Link>{' '}
       <Link to='/logout'>/logout</Link>{' '}
     </Item>
