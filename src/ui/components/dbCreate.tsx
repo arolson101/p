@@ -109,10 +109,6 @@ const formName = 'DbCreate'
 
 export const DbCreate = compose(
   injectIntl,
-  queryState<Values>({
-    formName,
-    formFields: ['name']}
-  ),
   connect(
     (state: AppState): ConnectedProps => ({
       lang: state.i18n.lang
@@ -121,5 +117,9 @@ export const DbCreate = compose(
   reduxForm<AllProps, Values>({
     form: formName,
     validate
-  })
+  }),
+  queryState<Values>({
+    formName,
+    formFields: ['name']}
+  )
 )(DbCreateComponent) as React.ComponentClass<{}>

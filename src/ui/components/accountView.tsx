@@ -246,12 +246,6 @@ const formName = 'AccountView'
 export const AccountView = compose(
   injectIntl,
   resolver,
-  queryState<PageState>({
-    initial: {
-      scroll: 0,
-      selection: -1
-    }
-  }),
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       dbInfo: selectDbInfo(state),
@@ -263,5 +257,11 @@ export const AccountView = compose(
   ),
   reduxForm<AllProps, Values>({
     form: formName
+  }),
+  queryState<PageState>({
+    initial: {
+      scroll: 0,
+      selection: -1
+    }
   })
 )(AccountViewComponent) as React.ComponentClass<{}>
