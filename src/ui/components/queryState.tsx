@@ -41,21 +41,21 @@ export const queryState = <Values extends any>(config: Config<Values>) => {
 
         for (let key in query) {
           let val = (query as any)[key]
-          if (!isNaN(val)) {
+          if (val && !isNaN(val)) {
             (query as any)[key] = +val
           } else if (val === 'true' || val === 'false') {
             (query as any)[key] = Boolean(val)
           }
         }
 
-        if (config.formName) {
-          for (let field in query) {
-            let val = (query as any)[field]
-            dispatch(change(config.formName, field, val))
+        this.setState(query as any, () => {
+          if (config.formName) {
+            for (let field in query) {
+              let val = (query as any)[field]
+              dispatch(change(config.formName, field, val))
+            }
           }
-        }
-
-        this.setState(query as any)
+        })
       }
 
       update(props: AllProps, state: Values) {

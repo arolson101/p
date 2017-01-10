@@ -8,9 +8,10 @@ import { DbInfo, Bank } from '../../docs'
 import { AppState, FI, CurrentDb } from '../../state'
 import { Validator } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
+import { Values, BankForm } from './bankForm'
 import { forms } from './forms'
 import { IntlProps, RouteProps } from './props'
-import { Values, BankForm } from './bankForm'
+import { queryState } from './queryState'
 import { selectDbInfo } from './selectors'
 
 const messages = defineMessages({
@@ -98,6 +99,12 @@ export const BankCreate = compose(
     })
   ),
   reduxForm<AllProps, Values>({
-    form: formName
+    form: formName,
+    initialValues: {
+      online: true
+    }
+  }),
+  queryState<Values>({
+    formName
   })
 )(BankCreateComponent) as React.ComponentClass<{}>

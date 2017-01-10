@@ -133,8 +133,6 @@ export class BankForm extends React.Component<AllProps, any> {
       const fi = filist.findIndex(fi => fi.name === bank.fi) + 1
       const values = bank ? { ...bank, ...bank.login, fi } : {}
       initialize(values)
-    } else {
-      initialize({online: true})
     }
   }
 
