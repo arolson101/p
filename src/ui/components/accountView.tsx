@@ -92,7 +92,7 @@ export class AccountViewComponent extends React.Component<AllProps, any> {
                   {(props: AutoSizer.ChildrenProps) => (
                     <Table
                       onScroll={e => setPageState({scroll: e.scrollTop})}
-                      scrollTop={1 * scroll}
+                      scrollTop={scroll}
                       style={{flex: 1, maxWidth: listMaxWidth}}
                       headerHeight={20}
                       rowCount={transactions ? transactions.rows.length : 0}

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
-import { getFormValues, initialize } from 'redux-form'
+import { getFormValues, change } from 'redux-form'
 import { AppState } from '../../state'
 import { RouteProps, DispatchProps } from './props'
 
@@ -37,20 +37,25 @@ export const queryState = <Values extends any>(config: Config<Values>) => {
       }
 
       componentWillMount() {
-        const { pageState: { formValues }, location: { query }, dispatch } = this.props
-        const values = { ...formValues, ...(this.state as any) }
+        const { location: { query }, dispatch } = this.props
 
-        if (config.formName && !equivelant(values, query)) {
-          dispatch(initialize(config.formName, query, false))
-        }
-
-        const nextState = {} as any
         for (let key in query) {
-          if (!config.formName || config.formName.indexOf(key) === -1) {
-            nextState[key] = (query as any)[key]
+          let val = (query as any)[key]
+          if (!isNaN(val)) {
+            (query as any)[key] = +val
+          } else if (val === 'true' || val === 'false') {
+            (query as any)[key] = Boolean(val)
           }
         }
-        this.setState(nextState)
+
+        if (config.formName) {
+          for (let field in query) {
+            let val = (query as any)[field]
+            dispatch(change(config.formName, field, val))
+          }
+        }
+
+        this.setState(query as any)
       }
 
       update(props: AllProps, state: Values) {
@@ -86,15 +91,12 @@ export const queryState = <Values extends any>(config: Config<Values>) => {
   }
 }
 
-/**
- * Note: expects that they have the same keys
- */
 const equivelant = (values1: any, values2: any): boolean =>
   // tslint:disable-next-line:triple-equals
   Object.keys(values1).every(key => values1[key] == values2[key])
 
-const cleanValues = (fields: string[] = [], values: Object = {}) =>
-  fields.reduce(
+const cleanValues = (fields?: string[], values: Object = {}) =>
+  (fields || Object.keys(values)).reduce(
     (x, key) => {
       x[key] = ((values as any)[key] || '').toString()
       return x
