@@ -11,12 +11,12 @@ import 'react-virtualized/styles.css'
 import { getTransactions, deleteTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb, ResponsiveState } from '../../state'
-import { CancelablePromise } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
-import { RouteProps, DispatchProps } from './props'
-import { selectDbInfo, selectBank, selectAccount } from './selectors'
 import { Container, Item } from './flex'
+import { RouteProps, DispatchProps } from './props'
 import { queryState, QueryStateProps } from './queryState'
+import { resolver, ResolveProps } from './resolver'
+import { selectDbInfo, selectBank, selectAccount } from './selectors'
 import { TransactionDetail } from './transactionDetail'
 
 interface ConnectedProps {
@@ -27,10 +27,20 @@ interface ConnectedProps {
   browser: ResponsiveState
 }
 
-type AllProps = RouteProps<Account.Params> & ConnectedProps & DispatchProps & ReduxFormProps<Values> & QueryStateProps<PageState>
+type AsyncProps = ResolveProps<{
+  transactions: PouchDB.Core.AllDocsResponse<Transaction>
+}>
 
-interface State {
-  transactions?: PouchDB.Core.AllDocsResponse<Transaction>
+type AllProps = RouteProps<Account.Params>
+  & ConnectedProps
+  & DispatchProps
+  & ReduxFormProps<Values>
+  & QueryStateProps<PageState>
+  & AsyncProps
+
+interface PageState {
+  scroll: number
+  selection: number
 }
 
 interface Values {
@@ -39,46 +49,30 @@ interface Values {
   amount: string
 }
 
-interface PageState {
-  scroll: number
-  selection: number
-}
-
-export class AccountViewComponent extends React.Component<AllProps, State> {
-  state: State = {
-    transactions: undefined
-  }
-
-  loadTransactionsPromise?: CancelablePromise<any> = undefined
-
+export class AccountViewComponent extends React.Component<AllProps, any> {
   componentDidMount() {
     this.loadTransactions(this.props)
   }
 
   componentWillReceiveProps(nextProps: AllProps) {
-    this.loadTransactions(nextProps)
-  }
-
-  componentWillUnmount() {
-    if (this.loadTransactionsPromise) {
-      this.loadTransactionsPromise.cancel()
+    if (this.props.account !== nextProps.account) {
+      this.loadTransactions(nextProps)
     }
   }
 
-  async loadTransactions(props: AllProps) {
+  loadTransactions(props: AllProps) {
     if (props.current && props.account) {
       const startkey = Transaction.startkeyForAccount(props.account)
       const endkey = Transaction.endkeyForAccount(props.account)
       // const skip = 4000
       // const limit = 100
-      const results = await props.current.db.allDocs({startkey, endkey, include_docs: true})
-      this.setState({transactions: results})
+      const promise = props.current.db.allDocs({startkey, endkey, include_docs: true})
+      props.resolve('transactions', promise, false)
     }
   }
 
   render() {
-    const { bank, account, browser, pageState: { scroll, selection }, setPageState } = this.props
-    const { transactions } = this.state
+    const { bank, account, browser, pageState: { scroll, selection }, setPageState, resolved: { transactions } } = this.props
     const sideBySide = browser.greaterThan.small
     const listMaxWidth = sideBySide ? browser.breakpoints.extraSmall : Infinity
     const transaction = transactions && (selection !== -1) && transactions.rows[selection].doc as Transaction.Doc
@@ -191,7 +185,7 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
   @autobind
   rowGetter(props: {index: number}): any {
     const { index } = props
-    const { transactions } = this.state
+    const { resolved: { transactions } } = this.props
     const transaction = transactions!.rows[index].doc as Transaction
     return transaction
   }
@@ -205,8 +199,7 @@ export class AccountViewComponent extends React.Component<AllProps, State> {
   @autobind
   onRowClickHref(props: {index: number}) {
     const { index } = props
-    const { transactions } = this.state
-    const { router } = this.props
+    const { resolved: { transactions }, router } = this.props
     const transaction = transactions && (index >= 0) && transactions.rows[index].doc as Transaction.Doc
     if (transaction) {
       router.push(Transaction.to.view(transaction))
@@ -252,6 +245,7 @@ const formName = 'AccountView'
 
 export const AccountView = compose(
   injectIntl,
+  resolver,
   queryState<PageState>({
     initial: {
       scroll: 0,

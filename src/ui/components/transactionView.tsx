@@ -9,7 +9,6 @@ import { CancelablePromise } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps, DispatchProps } from './props'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
-import { Container } from './flex'
 import { TransactionDetail } from './transactionDetail'
 
 interface ConnectedProps {
