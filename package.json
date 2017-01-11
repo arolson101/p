@@ -35,6 +35,7 @@
     "react-router-redux": "^4.0.7",
     "react-select": "^1.0.0-rc.2",
     "react-virtualized": "^8.8.1",
+    "recompose": "^0.21.2",
     "redux": "^3.6.0",
     "redux-devtools-extension": "^1.0.0",
     "redux-form": "^6.2.0",
@@ -43,6 +44,7 @@
     "redux-ui": "0.0.15",
     "reselect": "^2.5.4",
     "rrule-alt": "^2.2.3",
+    "rxjs": "^5.0.3",
     "shortid": "^2.2.6",
     "speakingurl": "^10.0.0"
   },
@@ -63,6 +65,7 @@
     "@types/react-router": "^2.0.39",
     "@types/react-router-redux": "^4.0.34",
     "@types/react-select": "^1.0.37",
+    "@types/recompose": "^0.20.2",
     "@types/redux": "^3.6.31",
     "@types/redux-thunk": "^2.1.31",
     "@types/reselect": "^2.0.27",
