@@ -1,11 +1,12 @@
 import { withRouter } from 'react-router'
-import { compose, withHandlers, withState } from 'recompose'
+import { compose, /*withHandlers,*/ mapPropsStream, withState } from 'recompose'
+import * as Rx from 'rxjs'
 import { RouteProps } from './props'
 
 export const withQuerySyncedState = <T extends {}>(name: string, setter: string, dflt: T, convert: (val: string) => T) => {
   return compose(
     withRouter,
-    withState(name, '_' + setter, (props: RouteProps<any>) => {
+    withState(name, setter, (props: RouteProps<any>) => {
       const query = props.location.query as any
       if (name in query) {
         return convert(query[name])
@@ -13,25 +14,25 @@ export const withQuerySyncedState = <T extends {}>(name: string, setter: string,
         return dflt
       }
     }),
-    withHandlers({
-      [setter]: (props: RouteProps<any>) => (value: T) => {
-        const { ['_' + setter]: stateSetter, [name]: existingValue, location, router } = props
-        if (value !== existingValue) {
-          const nextLocation = { ...location, query: { ...location.query, [name]: value }}
-          router.replace(nextLocation)
-          stateSetter(value)
-        }
-      }
-    })
-    // mapPropsStream((props$: Rx.Observable<AllProps>) => {
-    //   const update$ = props$
-    //     .debounceTime(500)
-    //     .distinctUntilKeyChanged(name)
-    //     .do(({ router, location, [name]: value }) => {
+    // withHandlers({
+    //   [setter]: (props: RouteProps<any>) => (value: T) => {
+    //     const { ['_' + setter]: stateSetter, [name]: existingValue, location, router } = props
+    //     if (value !== existingValue) {
     //       const nextLocation = { ...location, query: { ...location.query, [name]: value }}
     //       router.replace(nextLocation)
-    //     })
-    //   return props$.combineLatest(update$, props => props)
+    //       stateSetter(value)
+    //     }
+    //   }
     // })
+    mapPropsStream((props$: Rx.Observable<any>) => {
+      const update$ = props$
+        .debounceTime(500)
+        .distinctUntilKeyChanged(name)
+        .do(({ router, location, [name]: value }) => {
+          const nextLocation = { ...location, query: { ...location.query, [name]: value }}
+          router.replace(nextLocation)
+        })
+      return props$.combineLatest(update$, props => props)
+    })
   )
 }
