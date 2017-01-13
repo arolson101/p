@@ -27,6 +27,23 @@ const messages = defineMessages({
   uniqueNumber: {
     id: 'acForm.uniqueNumber',
     defaultMessage: 'This account number is already used'
+  },
+  bankid: {
+    id: 'bankForm.bankid',
+    defaultMessage: 'Routing Number',
+    description: `Bank identifier, A-9
+      Use of this field by country:
+      COUNTRY     Interpretation
+      BEL         Bank code
+      CAN         Routing and transit number
+      CHE         Clearing number
+      DEU         Bankleitzahl
+      ESP         Entidad
+      FRA         Banque
+      GBR         Sort code
+      ITA         ABI
+      NLD         Not used (field contents ignored)
+      USA         Routing and transit number`
   }
 })
 
@@ -40,6 +57,7 @@ export interface Values {
   name: string
   number: string
   type: Account.Type
+  bankid: string
 }
 
 const { TextField, SelectField } = typedFields<Values>()
@@ -101,6 +119,12 @@ export class AccountForm extends React.Component<AllProps, any> {
             label={formatMessage(messages.type)}
           />
         </Col>
+        <Col>
+          <TextField
+            name='bankid'
+            label={formatMessage(messages.bankid)}
+          />
+        </Col>
       </div>
     )
   }
@@ -115,7 +139,5 @@ const typeOptions = Object
 
 const accountTypeRenderer = (option: {value: Account.Type, label: string}) =>
   <span>
-    <i className={Account.icons[option.value]}/>
-    {' '}
     <FormattedMessage {...(Account.messages as any)[Account.Type[option.value]]}/>
   </span>

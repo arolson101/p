@@ -14,7 +14,6 @@ export interface Bank {
 
   online?: boolean
 
-  bankid?: string
   fid?: string
   org?: string
   ofx?: string

@@ -105,7 +105,7 @@ export const fromAccountType = (str: Account.Type): ofx4js.domain.data.banking.A
 }
 
 export const getBankAccountDetails = (bank: Bank.Doc, account: Account.Doc, formatMessage: FormatMessage) => {
-  const { bankid } = bank
+  const { bankid } = account
   if (!bankid) { throw new Error(formatMessage(messages.nobankid)) }
   const accountNumber = account.number
   if (!accountNumber) { throw new Error(formatMessage(messages.noAccountNumber)) }

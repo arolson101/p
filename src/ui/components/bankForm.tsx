@@ -54,27 +54,6 @@ const messages = defineMessages({
     id: 'bankForm.ofx',
     defaultMessage: 'OFX Server'
   },
-  bankid: {
-    id: 'bankForm.bankid',
-    defaultMessage: 'Routing Number',
-    description: `Bank identifier, A-9
-      Use of this field by country:
-      COUNTRY     Interpretation
-      BEL         Bank code
-      CAN         Routing and transit number
-      CHE         Clearing number
-      DEU         Bankleitzahl
-      ESP         Entidad
-      FRA         Banque
-      GBR         Sort code
-      ITA         ABI
-      NLD         Not used (field contents ignored)
-      USA         Routing and transit number`
-  },
-  bankidHelp: {
-    id: 'bankForm.bankidHelp',
-    defaultMessage: '(This will be auto-filled if you get account list from server)'
-  },
   username: {
     id: 'bankForm.username',
     defaultMessage: 'Username'
@@ -223,17 +202,10 @@ export class BankForm extends React.Component<AllProps, any> {
               </Col>
             </Row>
             <Row>
-              <Col sm={6}>
+              <Col>
                 <TextField
                   name='ofx'
                   label={formatMessage(messages.ofx)}
-                />
-              </Col>
-              <Col sm={6}>
-                <TextField
-                  name='bankid'
-                  label={formatMessage(messages.bankid)}
-                  help={formatMessage(messages.bankidHelp)}
                 />
               </Col>
             </Row>

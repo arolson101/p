@@ -84,6 +84,7 @@ const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllPr
     name: values.name,
     type: values.type,
     number: values.number,
+    bankid: values.bankid,
     visible: true
   }
 

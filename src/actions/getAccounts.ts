@@ -29,10 +29,6 @@ const messages = defineMessages({
   noaccounts: {
     id: 'getAccounts.noaccounts',
     defaultMessage: 'No accounts'
-  },
-  setBankId: {
-    id: 'getAccounts.setBankId',
-    defaultMessage: 'Setting routing number to {bankid}'
   }
 })
 
@@ -51,7 +47,7 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
         const { db: { current }, i18n: { lang } } = getState()
         if (!current) { throw new Error('no db') }
         const changes: PouchDB.Core.Document<any>[] = []
-        let bankid = bank.bankid
+        let bankid = ''
 
         for (let accountProfile of accountProfiles) {
           const accountName = accountProfile.getDescription()
@@ -86,6 +82,7 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
             name: accountName,
             type: accountType,
             number: accountNumber,
+            bankid,
             visible: true
           }
 
@@ -99,12 +96,7 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
           }
         }
 
-        if (bank.bankid !== bankid) {
-          res.push(formatMessage(messages.setBankId, {bankid}))
-        }
-
-        if (changes.length > 0 || bank.bankid !== bankid) {
-          bank.bankid = bankid
+        if (changes.length > 0) {
           await current.db.bulkDocs([...changes, bank])
         }
       }

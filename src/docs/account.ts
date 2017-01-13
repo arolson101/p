@@ -10,6 +10,7 @@ export interface Account {
   type: Account.Type
   number: string
   visible: boolean
+  bankid: string
 }
 
 export namespace Account {
