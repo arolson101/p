@@ -69,7 +69,7 @@ export const DbList = connect(
 )(DbListComponent) as React.ComponentClass<{}>
 
 import * as Rx from 'rxjs'
-import { compose, setObservableConfig, withState, withHandlers, withProps, branch, renderComponent, mapPropsStream } from 'recompose'
+import { compose, setObservableConfig, setDisplayName, withState, withHandlers, withProps, branch, renderComponent, mapPropsStream } from 'recompose'
 
 type TestProps = {
   toggleVisibility: React.EventHandler<React.MouseEvent<HTMLButtonElement>>
@@ -115,45 +115,69 @@ const spinnerWhileLoading = <Props extends {}>(hasLoaded: (props: Props) => bool
 
 import { wait } from '../../util'
 
-const titleEventually = async() => {
+const titleEventually = async(i: number) => {
   await wait(2000)
-  return 'title finally returned!'
+  if (i % 2 == 1) {
+    throw new Error('error message')
+  }
+  return `title finally returned (${i})!`
 }
 
-// Now use the `spinnerWhileLoading()` helper to add a loading spinner to any
-// base component
-const enhance = compose(
-  withProps(() => ({
-    title: titleEventually(),
-    author: 'author',
-    content: 'content'
-  })),
+const TestComponent = ({ request, onClick }: any) =>
+  <article>
+    <Test2 request={request} foo='bar'/>
+    <button onClick={onClick}>click</button>
+  </article>
+const Test = compose(
+  setDisplayName('Test'),
+  withState('request', 'setRequest', () => titleEventually(i++)),
+  withProps(({setRequest}) => ({
+    onClick: () => setRequest(titleEventually(i++))
+  }))
+)(TestComponent)
+
+
+let i = 0
+
+import { InferableComponentEnhancer } from 'recompose'
+
+const ResolvePromise = (key: string, loadingRender: InferableComponentEnhancer, errorRender: InferableComponentEnhancer) => compose(
+  setDisplayName('ResolvePromise'),
   mapPropsStream((props$: Rx.Observable<any>) => {
     const promise$ = props$
-      .pluck('title')
-      .switchMap((promise: Promise<string>) => promise)
-      .map(value => ({title: value}))
+      .pluck(key)
+      .map((promise: any) => promise.then((value: any) => value, (err: any) => err))
+      .switch<Rx.Observable<any>>()
+      .map(value => ({[key]: value}))
 
-    const rest$ = props$
-      .map(props => ({ ...props, title: undefined}))
-
-    return rest$
+    return props$
+      .map(props => ({ ...props, [key]: undefined}))
       .merge(promise$)
-      .scan((acc, value) => ({...acc, ...value}), {})
+      .scan((x, y) => Object.assign({}, x, y))
   }),
-  spinnerWhileLoading(
-    (props: any) => props.title && props.author && props.content
+  branch(
+    ({[key]: err}) => err instanceof Error,
+    errorRender!
+  ),
+  branch(
+    ({[key]: value}) => !value,
+    loadingRender!
   )
 )
-const TestComponent = ({ title, author, content }: any) =>
+
+const Test2Component = ({ request }: any) =>
   <article>
-    <h1>{title}</h1>
-    <h2>By {author.name}</h2>
-    <div>{content}</div>
+    <div>request: {request}</div>
   </article>
 
-const Test = enhance(TestComponent)
-
+const Test2 = compose(
+  setDisplayName('Test2'),
+  ResolvePromise(
+    'request',
+    renderComponent(() => <div>spinner</div>),
+    renderComponent(({request}) => <div>error: {request.message}</div>)
+  )
+)(Test2Component) as React.ComponentClass<{request: Promise<string>, foo: string}>
 
 import rxjsconfig from 'recompose/rxjsObservableConfig'
 setObservableConfig(rxjsconfig)

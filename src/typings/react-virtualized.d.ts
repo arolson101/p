@@ -5,7 +5,7 @@ declare module "react-virtualized" {
   /**
    * Renders scattered or non-linear data. Unlike Grid, which renders checkerboard data, Collection can render
    * arbitrarily positioned- even overlapping- data.
-   * 
+   *
    * Note that this component's measuring and layout phase is more expensive than Grid since it can not assume
    * a correlation between a cell's index and position. For this reason it will take signifnicantly longer to
    * initialize than the more linear/checkerboard components.
@@ -14,7 +14,7 @@ declare module "react-virtualized" {
 
     /**
      * Recomputes cell sizes and positions.
-     * 
+     *
      * This function should be called if cell sizes or positions have changed but nothing else has. Since
      * Collection only receives cellCount (and not the underlying List or Array) it has no way of detecting
      *  when the underlying data changes.
@@ -133,7 +133,7 @@ declare module "react-virtualized" {
   export class Grid extends React.Component<Grid.Props, any> {
     /**
      * Pre-measure all columns and rows in a Grid.
-     * 
+     *
      * Typically cells are only measured as needed and estimated sizes are used for cells that have not yet
      * been measured. This method ensures that the next call to getTotalSize() returns an exact size (as opposed
      * to just an estimated one).
@@ -141,10 +141,10 @@ declare module "react-virtualized" {
     measureAllCells(): void
     /**
      * Recomputes row heights and column widths after the specified index (both default to 0).
-     * 
+     *
      * This function should be called if dynamic column or row sizes have changed but nothing else has. Since Grid
      * only receives columnCount and rowCount it has no way of detecting when the underlying data changes.
-     * 
+     *
      * This method will also force a render cycle (via forceUpdate) to ensure that the updated measurements are
      * reflected in the rendered grid.
      */
@@ -286,7 +286,7 @@ declare module "react-virtualized" {
        */
       columnCount: number
       /**
-       * Either a fixed column width (number) or a function that returns the width of a column given its index: 
+       * Either a fixed column width (number) or a function that returns the width of a column given its index:
        * ({ index: number }): number
        */
       columnWidth: number | ColumnWidth
@@ -295,7 +295,7 @@ declare module "react-virtualized" {
        */
       containerStyle?: Object
       /**
-       * Used to estimate the total width of a Grid before all of its columns have actually been measured. The 
+       * Used to estimate the total width of a Grid before all of its columns have actually been measured. The
        * estimated total width is adjusted as columns are rendered.
        */
       estimatedColumnSize?: number
@@ -317,7 +317,7 @@ declare module "react-virtualized" {
        */
       noContentRenderer?: NoContentRenderer
       /**
-       * Callback invoked with information about the section of the Grid that was just rendered. This callback is only 
+       * Callback invoked with information about the section of the Grid that was just rendered. This callback is only
        * invoked when visible rows have changed: ({ columnOverscanStartIndex: number, columnOverscanStopIndex: number,
        *  columnStartIndex: number, columnStopIndex: number, rowOverscanStartIndex: number, rowOverscanStopIndex: number,
        *  rowStartIndex: number, rowStopIndex: number }): void
@@ -357,8 +357,8 @@ declare module "react-virtualized" {
        */
       scrollLeft?: number
       /**
-       * Controls the alignment of scrolled-to-cells. The default ("auto") scrolls the least amount possible to 
-       * ensure that the specified cell is fully visible. Use "start" to always align cells to the top/left of 
+       * Controls the alignment of scrolled-to-cells. The default ("auto") scrolls the least amount possible to
+       * ensure that the specified cell is fully visible. Use "start" to always align cells to the top/left of
        * the Grid and "end" to align them bottom/right. Use "center" to align specified cell in the middle of container.
        */
       scrollToAlignment?: 'auto' | 'start' | 'end' | 'center'
@@ -395,7 +395,7 @@ declare module "react-virtualized" {
   export class List extends React.Component<List.Props, any> {
     /**
      * Forcefull re-render the inner Grid component.
-     * 
+     *
      * Calling forceUpdate on List may not re-render the inner Grid since it uses shallowCompare as a performance
      * optimization. Use this method if you want to manually trigger a re-render. This may be appropriate if the
      * underlying row data has changed but the row sizes themselves have not.
@@ -403,7 +403,7 @@ declare module "react-virtualized" {
     forceUpdateGrid(): void
     /**
      * Pre-measure all rows in a List.
-     * 
+     *
      * Typically rows are only measured as needed and estimated heights are used for cells that have not yet been
      * measured. This method ensures that the next call to getTotalSize() returns an exact size (as opposed to just
      * an estimated one).
@@ -411,12 +411,12 @@ declare module "react-virtualized" {
     measureAllRows(): void
     /**
      * Recompute row heights and offsets after the specified index (defaults to 0).
-     * 
+     *
      * List has no way of knowing when its underlying list data has changed since it only receives a rowHeight property.
      * If the rowHeight is a number it can compare before and after values but if it is a function that comparison is
      * error prone. In the event that a dynamic rowHeight function is in use and the row heights have changed this
      * function should be manually called by the "smart" container parent.
-     * 
+     *
      * This method will also force a render cycle (via forceUpdate) to ensure that the updated measurements are
      * reflected in the rendered list.
      */
@@ -535,14 +535,14 @@ declare module "react-virtualized" {
 
 
   /**
-   * Table component with fixed headers and windowed rows for improved performance with large data sets. This 
+   * Table component with fixed headers and windowed rows for improved performance with large data sets. This
    * component expects explicit width and height parameters. Table content can scroll vertically but it is not
    * meant to scroll horizontally.
    */
-  export class Table extends React.Component<Table.Props, any> {
+  export class Table<T> extends React.Component<Table.Props<T>, any> {
     /**
      * Forcefull re-render the inner Grid component.
-     * 
+     *
      * Calling forceUpdate on Table may not re-render the inner Grid since it uses shallowCompare as a performance
      * optimization. Use this method if you want to manually trigger a re-render. This may be appropriate if the
      * underlying row data has changed but the row sizes themselves have not.
@@ -550,7 +550,7 @@ declare module "react-virtualized" {
     forceUpdateGrid(): void
     /**
      * Pre-measure all rows in a Table.
-     * 
+     *
      * Typically rows are only measured as needed and estimated heights are used for cells that have not yet been
      * measured. This method ensures that the next call to getTotalSize() returns an exact size (as opposed to just
      * an estimated one).
@@ -558,12 +558,12 @@ declare module "react-virtualized" {
     measureAllRows(): void
     /**
      * Recompute row heights and offsets after the specified index (defaults to 0).
-     * 
+     *
      * Table has no way of knowing when its underlying list data has changed since it only receives a rowHeight
      * property. If the rowHeight is a number it can compare before and after values but if it is a function that
      * comparison is error prone. In the event that a dynamic rowHeight function is in use and the row heights have
      * changed this function should be manually called by the "smart" container parent.
-     * 
+     *
      * This method will also force a render cycle (via forceUpdate) to ensure that the updated measurements are
      * reflected in the rendered table.
      */
@@ -609,12 +609,20 @@ declare module "react-virtualized" {
        */
       rowData: Function
       /**
-       * Row-level style object      
+       * Row-level style object
        */
       style: Object
     }) => React.ReactElement<any>
+    export type RowGetterProps = { index: number }
+    export type RowGetter = (props: RowGetterProps) => any
+    export type RowClassNameProps = { index: number }
+    export type RowClassName = (props: RowClassNameProps) => string
+    export type OnRowClickProps = { index: number }
+    export type OnRowClick = (props: OnRowClickProps) => void
+    export type OnScrollProps = { clientHeight: number, scrollHeight: number, scrollTop: number }
+    export type OnScroll = (props: OnScrollProps) => void
 
-    export interface Props {
+    export interface Props<T> {
       /**
        * Outer height of Table is set to "auto". This property should only be used in conjunction with the
        * WindowScroller HOC.
@@ -623,7 +631,7 @@ declare module "react-virtualized" {
       /**
        * One or more Columns describing the data displayed in this table
        */
-      children?:	Column | Column[]
+      children?:	Column<T> | Column<T>[]
       /**
        * Optional custom CSS class name to attach to root Table element.
        */
@@ -676,7 +684,7 @@ declare module "react-virtualized" {
       /**
        * Callback invoked when a user clicks on a table row. ({ index: number }): void
        */
-      onRowClick?: (props: { index: number }) => void
+      onRowClick?: OnRowClick
       /**
        * Callback invoked when a user double-clicks on a table row. ({ index: number }): void
        */
@@ -703,13 +711,13 @@ declare module "react-virtualized" {
        * Callback invoked whenever the scroll offset changes within the inner scrollable region:
        * ({ clientHeight: number, scrollHeight: number, scrollTop: number }): void
        */
-      onScroll?: (props: { clientHeight: number, scrollHeight: number, scrollTop: number }) => void
+      onScroll?: OnScroll
       /**
        * CSS class to apply to all table rows (including the header row). This value may be either a static
        * string or a function with the signature ({ index: number }): string.
        * Note that for the header row an index of -1 is provided.
        */
-      rowClassName?: string | ((props: { index: number }) => string)
+      rowClassName?: string | RowClassName
       /**
        * Number of rows in table.
        */
@@ -717,7 +725,7 @@ declare module "react-virtualized" {
       /**
        * Callback responsible for returning a data row given an index. ({ index: int }): any
        */
-      rowGetter: (props: { index: number }) => any
+      rowGetter: RowGetter
       /**
        * Either a fixed row height (number) or a function that returns the height of a row given its index:
        * ({ index: number }): number
@@ -784,25 +792,25 @@ declare module "react-virtualized" {
   /**
    * Describes the header and cell contents of a table column.
    */
-  export class Column extends React.Component<Column.Props, any> {
+  export class Column<T> extends React.Component<Column.Props, any> {
   }
 
   export namespace Column {
-    export interface CellDataGetterArgs {
-      columnData: any
+    export interface CellDataGetterArgs<T> {
+      columnData: T
       dataKey: string
       rowData: any
     }
-    export type CellDataGetter = (props: CellDataGetterArgs) => any
-    export interface CellRendererArgs {
-      cellData: any
+    export type CellDataGetter<T> = (props: CellDataGetterArgs<T>) => any
+    export interface CellRendererArgs<T> {
+      cellData: T
       columnData: any
       dataKey: string
       isScrolling: boolean
       rowData: any
       rowIndex: number
     }
-    export type CellRenderer = (props: CellRendererArgs) => React.ReactNode
+    export type CellRenderer<T> = (props: CellRendererArgs<T>) => React.ReactNode
     export interface HeaderRendererArgs {
       columnData: any
       dataKey: string
@@ -817,11 +825,11 @@ declare module "react-virtualized" {
       /**
        * Callback responsible for returning a cell's data, given its dataKey. Learn more
        */
-      cellDataGetter?: CellDataGetter
+      cellDataGetter?: CellDataGetter<any>
       /**
        * Callback responsible for rendering a cell's contents. Learn more
        */
-      cellRenderer?: CellRenderer
+      cellRenderer?: CellRenderer<any>
       /**
        * CSS class to apply to rendered cell container
        */
@@ -885,7 +893,7 @@ declare module "react-virtualized" {
    * High-order component that decorates another virtualized component and responds to arrow-key events by
    * scrolling one row or column at a time. This provides a snap-to behavior rather than the default browser
    * scrolling behavior.
-   * 
+   *
    * Note that unlike the other HOCs in react-virtualized, the ArrowKeyStepper adds a <div> element around its
    * children in order to attach a key-down event handler. The appearance of this wrapper element can be
    * customized using the className property.
@@ -930,7 +938,7 @@ declare module "react-virtualized" {
 
     export interface ChildrenProps {
       /**
-       * Pass-through callback to be attached to child component; informs the key-stepper which range of 
+       * Pass-through callback to be attached to child component; informs the key-stepper which range of
        * cells are currently visible.
        */
       onSectionRendered: Function
@@ -981,12 +989,12 @@ declare module "react-virtualized" {
   }
 
   /**
-   * High-order component that automatically measures a cell's contents by temporarily rendering it in a 
+   * High-order component that automatically measures a cell's contents by temporarily rendering it in a
    * way that is not visible to the user. Specify a fixed width to measure dynamic height (or vice versa).
-   * 
-   * This is an advanced component and has some limitations and performance considerations. See below for 
+   *
+   * This is an advanced component and has some limitations and performance considerations. See below for
    * more information.
-   * 
+   *
    * CellMeasurer is intended for use with Grid components but can be adapted to work with List as well.
    */
   export class CellMeasurer extends React.Component<CellMeasurer.Props, any> {
@@ -998,7 +1006,7 @@ declare module "react-virtualized" {
     export interface Props {
       /**
        * Renders a cell given its indices. ({ columnIndex: number, rowIndex: number, index: number }): PropTypes.node.
-       * 
+       *
        * NOTE: index is just an alias to rowIndex
        */
       cellRenderer: CellRenderer
@@ -1104,7 +1112,7 @@ declare module "react-virtualized" {
 
     export interface ChildrenProps {
       /**
-       * This number reflects the lesser of the overall Grid width or the width of all columns. Use this 
+       * This number reflects the lesser of the overall Grid width or the width of all columns. Use this
        * to make your Grid shrink to fit sparse content.
        */
       adjustedWidth: number
@@ -1122,11 +1130,11 @@ declare module "react-virtualized" {
 
   /**
    * High-order component that manages just-in-time fetching of data as a user scrolls up or down in a list.
-   * 
+   *
    * Note that this component is inteded to assist with row-loading. As such it is best suited for use with
    * Table and List (although it can also be used with Grid). This HOC is not compatible with the Collection
    * component.
-   * 
+   *
    * This is an advanced component and can be confusing in certain situations. See below for more information.
    */
   export class InfiniteLoader extends React.Component<InfiniteLoader.Props, any> {
@@ -1184,7 +1192,7 @@ declare module "react-virtualized" {
 
 
   /**
-   * High order component that simplifies the process of synchronizing scrolling between two or more 
+   * High order component that simplifies the process of synchronizing scrolling between two or more
    * virtualized components.
    */
   export class ScrollSync extends React.Component<ScrollSync.Props, any> {
@@ -1193,7 +1201,7 @@ declare module "react-virtualized" {
   export namespace ScrollSync {
     export interface Props {
       /**
-       * Function responsible for rendering 2 or more virtualized components. See below for details 
+       * Function responsible for rendering 2 or more virtualized components. See below for details
        * about this function's signature.
        */
       children?:	React.StatelessComponent<ChildrenProps>
@@ -1238,7 +1246,7 @@ declare module "react-virtualized" {
    * High-order component that enables a Table or List component to be scrolled based on the
    * window's scroll positions. This can be used to create layouts similar to Facebook or Twitter
    * news feeds.
-   * 
+   *
    * Note that this HOC does not currently work with a horizontally-scrolling Grid as horizontal
    * scrolls reset the internal scrollTop. This may change with a future release but for the time
    * being this HOC is should be used with Table or List only.
@@ -1246,7 +1254,7 @@ declare module "react-virtualized" {
   export class WindowScroller extends React.Component<WindowScroller.Props, any> {
     /**
      * Recalculates scroll position from the top of page.
-     * 
+     *
      * This methoed is automatically triggered when the component mounts as well as when the
      * browser resizes. It should be manually called if the page header (eg any items in the
      * DOM "above" the WindowScroller) resizes or changes.
