@@ -9,7 +9,6 @@ import { AppState, dbActions } from '../../state'
 import { Validator } from '../../util'
 import { forms, typedFields } from './forms'
 import { IntlProps, RouteProps } from './props'
-import { queryState } from './queryState'
 
 const messages = defineMessages({
   welcome: {
@@ -117,9 +116,5 @@ export const DbCreate = compose(
   reduxForm<AllProps, Values>({
     form: formName,
     validate
-  }),
-  queryState<Values>({
-    formName,
-    formFields: ['name']}
-  )
+  })
 )(DbCreateComponent) as React.ComponentClass<{}>

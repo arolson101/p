@@ -11,7 +11,6 @@ import { Breadcrumbs } from './breadcrumbs'
 import { Values, BankForm } from './bankForm'
 import { forms } from './forms'
 import { IntlProps, RouteProps } from './props'
-import { queryState } from './queryState'
 import { selectDbInfo } from './selectors'
 
 const messages = defineMessages({
@@ -103,8 +102,5 @@ export const BankCreate = compose(
     initialValues: {
       online: true
     }
-  }),
-  queryState<Values>({
-    formName
   })
 )(BankCreateComponent) as React.ComponentClass<{}>

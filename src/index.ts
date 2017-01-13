@@ -1,6 +1,11 @@
+import { setObservableConfig } from 'recompose'
+import rxjsconfig from 'recompose/rxjsObservableConfig'
+
 require('bootstrap/dist/css/bootstrap.css')
 require('font-awesome/css/font-awesome.css')
 require('react-select/dist/react-select.css')
+
+setObservableConfig(rxjsconfig)
 
 import { main } from './main'
 

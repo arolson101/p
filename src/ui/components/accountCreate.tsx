@@ -11,7 +11,6 @@ import { Breadcrumbs } from './breadcrumbs'
 import { Values, AccountForm } from './accountForm'
 import { forms } from './forms'
 import { IntlProps, RouteProps } from './props'
-import { queryState } from './queryState'
 import { selectDbInfo, selectBank, selectBankAccounts } from './selectors'
 
 const messages = defineMessages({
@@ -111,8 +110,5 @@ export const AccountCreate = compose(
   reduxForm<AllProps, Values>({
     form: formName,
     validate
-  }),
-  queryState<Values>({
-    formName
   })
 )(AccountCreateComponent) as React.ComponentClass<{}>

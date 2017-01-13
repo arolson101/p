@@ -4,7 +4,6 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { reduxForm, ReduxFormProps } from 'redux-form'
 import { AutoSizer } from 'react-virtualized'
-import { withRouter } from 'react-router'
 import { compose, setDisplayName, withHandlers, withState, pure } from 'recompose'
 import { getTransactions, deleteTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
@@ -176,7 +175,6 @@ type EnhancedPProps = PProps & ConnectedPProps & RouteProps<any> & {
 
 const enhance2 = compose<EnhancedPProps, PProps>(
   setDisplayName('TransactionListDetails'),
-  withRouter,
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedPProps => ({
       browser: state.browser

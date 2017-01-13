@@ -35,7 +35,6 @@ type AllProps = RouteProps<any> & ConnectedProps
 
 export const DbListComponent = ({ dbInfos, router }: AllProps) => (
   <Grid>
-  <Test/>
     {dbInfos &&
       <div>
         <ListGroup>
@@ -67,94 +66,3 @@ export const DbList = connect(
     dbInfos: state.db.meta.infos
   })
 )(DbListComponent) as React.ComponentClass<{}>
-
-import * as Rx from 'rxjs'
-import { compose, setObservableConfig, setDisplayName, withState, withHandlers, withProps, branch, renderComponent, mapPropsStream } from 'recompose'
-
-type TestProps = {
-  toggleVisibility: React.EventHandler<React.MouseEvent<HTMLButtonElement>>
-  isVisible: boolean
-  title: string
-  message: string
-}
-
-// const TestComponent = ({ title, message, toggleVisibility, isVisible }: TestProps) =>
-//   <div>
-//     <h1>{title}</h1>
-//     {isVisible ? <p>I'm visible</p> : <p> Not Visible </p>}
-//     <p>{message}</p>
-//     <button onClick={toggleVisibility}> Click me! </button>
-//   </div>
-
-// const Test = compose(
-//   withState('isVisible', 'toggleVis', false),
-//   withHandlers({
-//     toggleVisibility: ({ toggleVis, isVisible }) => {
-//      return () => {
-//        return toggleVis(!isVisible)
-//      }
-//     }
-//   }),
-//   withProps(({ isVisible }) => {
-//     return {
-//       title: isVisible ? 'This is the visible title' : 'This is the default title',
-//       message: isVisible ? 'Hello I am Visible' : 'I am not visible yet, click the button!'
-//     }
-//   })
-// )(TestComponent)
-
-// `hasLoaded()` is a function that returns whether or not the component
-// has all the props it needs
-const Spinner = () => <div>loading</div>
-
-const spinnerWhileLoading = <Props extends {}>(hasLoaded: (props: Props) => boolean) =>
-  branch<Props>(
-    props => !hasLoaded(props),
-    renderComponent(() => <div>spinner</div>)
-  )
-
-import { wait } from '../../util'
-
-const titleEventually = async(i: number) => {
-  await wait(2000)
-  if (i % 2 == 1) {
-    throw new Error('error message')
-  }
-  return `title finally returned (${i})!`
-}
-
-const TestComponent = ({ request, onClick }: any) =>
-  <article>
-    <Test2 request={request} foo='bar'/>
-    <button onClick={onClick}>click</button>
-  </article>
-const Test = compose(
-  setDisplayName('Test'),
-  withState('request', 'setRequest', () => titleEventually(i++)),
-  withProps(({setRequest}) => ({
-    onClick: () => setRequest(titleEventually(i++))
-  }))
-)(TestComponent)
-
-
-let i = 0
-
-import { InferableComponentEnhancer } from 'recompose'
-import { withResolveProp } from './resolveProp'
-
-const Test2Component = ({ request }: any) =>
-  <article>
-    <div>request: {request}</div>
-  </article>
-
-const Test2 = compose(
-  setDisplayName('Test2'),
-  withResolveProp(
-    'request',
-    renderComponent(() => <div>spinner</div>),
-    renderComponent(({request}) => <div>error: {request.message}</div>)
-  )
-)(Test2Component) as React.ComponentClass<{request: Promise<string>, foo: string}>
-
-import rxjsconfig from 'recompose/rxjsObservableConfig'
-setObservableConfig(rxjsconfig)
