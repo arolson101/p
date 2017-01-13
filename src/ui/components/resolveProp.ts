@@ -6,19 +6,22 @@ type Renderer<T> = ComponentEnhancer<T, T>
 export const resolveProp = (key: string, loadingRender: Renderer<{}>, errorRender: Renderer<{error: Error}>) => compose(
   setDisplayName('resolveProp'),
   mapPropsStream((props$: Rx.Observable<any>) => {
-    const promise$ = props$
-      .pluck(key)
-      // .distinct()
-      .map((promise: any) => promise.then((value: any) => value, (err: any) => err))
-      .switch<Rx.Observable<any>>()
-      .map(value => ({[key]: value}))
-      .distinct()
-      .do((x: any) => console.log('final: ', x))
+    const value$ = props$
+      .distinctUntilKeyChanged(key)
+      .flatMap(props => {
+        const value = props[key] as Promise<any>
+        const currentValue = Rx.Observable.of(undefined)
+        const futureValue = Rx.Observable.fromPromise(value.then(
+          x => x,
+          // tslint:disable-next-line:handle-callback-err
+          err => err
+        ))
+        return Rx.Observable.of(currentValue, futureValue)
+      })
+      .switch()
 
     return props$
-      .map(props => ({ ...props, [key]: undefined}))
-      .merge(promise$)
-      .scan((x, y) => Object.assign({}, x, y))
+      .combineLatest(value$, (props, value) => ({...props, [key]: value}))
   }),
   branch(
     ({[key]: error}) => error instanceof Error,

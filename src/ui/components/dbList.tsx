@@ -140,30 +140,7 @@ const Test = compose(
 let i = 0
 
 import { InferableComponentEnhancer } from 'recompose'
-
-const ResolvePromise = (key: string, loadingRender: InferableComponentEnhancer, errorRender: InferableComponentEnhancer) => compose(
-  setDisplayName('ResolvePromise'),
-  mapPropsStream((props$: Rx.Observable<any>) => {
-    const promise$ = props$
-      .pluck(key)
-      .map((promise: any) => promise.then((value: any) => value, (err: any) => err))
-      .switch<Rx.Observable<any>>()
-      .map(value => ({[key]: value}))
-
-    return props$
-      .map(props => ({ ...props, [key]: undefined}))
-      .merge(promise$)
-      .scan((x, y) => Object.assign({}, x, y))
-  }),
-  branch(
-    ({[key]: err}) => err instanceof Error,
-    errorRender!
-  ),
-  branch(
-    ({[key]: value}) => !value,
-    loadingRender!
-  )
-)
+import { resolveProp } from './resolveProp'
 
 const Test2Component = ({ request }: any) =>
   <article>
@@ -172,7 +149,7 @@ const Test2Component = ({ request }: any) =>
 
 const Test2 = compose(
   setDisplayName('Test2'),
-  ResolvePromise(
+  resolveProp(
     'request',
     renderComponent(() => <div>spinner</div>),
     renderComponent(({request}) => <div>error: {request.message}</div>)

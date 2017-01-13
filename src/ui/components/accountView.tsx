@@ -74,7 +74,7 @@ const withQueryParam = <T extends {}>(name: string, setter: string, dflt: T, con
         if (value !== existingValue) {
           // console.log(setter, value)
           const nextLocation = { ...location, query: { ...location.query, [name]: value }}
-          // router.replace(nextLocation)
+          router.replace(nextLocation)
           stateSetter(value)
         }
       }
