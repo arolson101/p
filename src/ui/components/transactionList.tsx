@@ -2,8 +2,9 @@ import * as React from 'react'
 import { FormattedDate, FormattedNumber } from 'react-intl'
 import { Table, Column } from 'react-virtualized'
 import 'react-virtualized/styles.css'
-import { compose, ComponentEnhancer, setDisplayName, withHandlers, withProps, pure } from 'recompose'
+import { compose, renderComponent, ComponentEnhancer, setDisplayName, withHandlers, withProps, pure } from 'recompose'
 import { Transaction } from '../../docs'
+import { resolveProp } from './resolveProp'
 
 interface BaseProps {
   scrollTop: number
@@ -112,37 +113,6 @@ export const TransactionList = enhance((props: EnhancedProps) => {
     />
   </Table>
 }) as React.ComponentClass<Props>
-
-
-import * as Rx from 'rxjs'
-import { branch, renderComponent } from 'recompose'
-import { mapPropsStream } from 'recompose'
-
-type Renderer<T> = ComponentEnhancer<T, T>
-
-const resolveProp = (key: string, loadingRender: Renderer<{}>, errorRender: Renderer<{error: Error}>) => compose(
-  setDisplayName('ResolvePromise'),
-  mapPropsStream((props$: Rx.Observable<any>) => {
-    const promise$ = props$
-      .pluck(key)
-      .map((promise: any) => promise.then((value: any) => value, (err: any) => err))
-      .switch<Rx.Observable<any>>()
-      .map(value => ({[key]: value}))
-
-    return props$
-      .map(props => ({ ...props, [key]: undefined}))
-      .merge(promise$)
-      .scan((x, y) => Object.assign({}, x, y))
-  }),
-  branch(
-    ({[key]: error}) => error instanceof Error,
-    errorRender
-  ),
-  branch(
-    ({[key]: value}) => !value,
-    loadingRender
-  )
-)
 
 interface PProps extends BaseProps {
   transactions: Promise<Transaction.Doc[]>

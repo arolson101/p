@@ -18,7 +18,7 @@ export interface IntlProps {
   intl: InjectedIntlProps
 }
 
-interface InjectedRouter {
+export interface InjectedRouter {
     push: (pathOrLoc: History.LocationDescriptor) => void
     replace: (pathOrLoc: History.LocationDescriptor) => void
     go: (n: number) => void

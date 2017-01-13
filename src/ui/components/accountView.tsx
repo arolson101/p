@@ -7,15 +7,14 @@ import { Link } from 'react-router'
 import { reduxForm, ReduxFormProps } from 'redux-form'
 import { AutoSizer } from 'react-virtualized'
 import 'react-virtualized/styles.css'
-import { compose, ComponentEnhancer, setDisplayName, withHandlers, withProps, withState, pure } from 'recompose'
+import { compose, ComponentEnhancer, setDisplayName, mapProps, withHandlers, defaultProps, withProps, withState, mapPropsStream, pure } from 'recompose'
 import { getTransactions, deleteTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb, ResponsiveState } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { Container, Item } from './flex'
-import { RouteProps, DispatchProps } from './props'
+import { RouteProps, DispatchProps, InjectedRouter } from './props'
 import { queryState, QueryStateProps } from './queryState'
-import { resolver, ResolveProps } from './resolver'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
 import { TransactionDetail } from './transactionDetail'
 import { ResolvedTransactionList } from './transactionList'
@@ -58,8 +57,42 @@ type EnhancedProps = AllProps & {
   deleteTransactions(): void
 }
 
+import * as Rx from 'rxjs'
 
-const enhance = compose(
+const withQueryParam = <T extends {}>(name: string, setter: string, dflt: T, convert: (val: string) => T) => {
+  return compose(
+    withState(name, '_' + setter, (props: RouteProps<any>) => {
+      if (name in props.params) {
+        return convert(props.params[name])
+      } else {
+        return dflt
+      }
+    }),
+    withHandlers({
+      [setter]: (props: AllProps) => (value: T) => {
+        const { ['_' + setter]: stateSetter, [name]: existingValue, location, router } = props
+        if (value !== existingValue) {
+          // console.log(setter, value)
+          const nextLocation = { ...location, query: { ...location.query, [name]: value }}
+          // router.replace(nextLocation)
+          stateSetter(value)
+        }
+      }
+    })
+    // mapPropsStream((props$: Rx.Observable<AllProps>) => {
+    //   const update$ = props$
+    //     .debounceTime(500)
+    //     .distinctUntilKeyChanged(name)
+    //     .do(({ router, location, [name]: value }) => {
+    //       const nextLocation = { ...location, query: { ...location.query, [name]: value }}
+    //       router.replace(nextLocation)
+    //     })
+    //   return props$.combineLatest(update$, props => props)
+    // })
+  )
+}
+
+const enhance = compose<EnhancedProps, AllProps>(
   setDisplayName('AccountViewComponent'),
   withHandlers({
     loadTransactions: (props: AllProps) => async() => {
@@ -73,12 +106,8 @@ const enhance = compose(
       const results = await props.current.db.allDocs({startkey, endkey, include_docs: true})
       const docs = results.rows.map(row => row.doc as Transaction.Doc)
       return docs
-    }
-  }),
-  withState('scrollTop', 'setScrollTop', 0),
-  withState('transactions', 'setTransactions', ({loadTransactions}: EnhancedProps) => loadTransactions()),
-  withState('selectedIndex', 'setSelectedIndex', -1),
-  withHandlers({
+    },
+
     addTransactions: (props: EnhancedProps) => async() => {
       const { current, account, loadTransactions } = props
       const txs: Transaction.Doc[] = []
@@ -110,11 +139,14 @@ const enhance = compose(
       loadTransactions()
     }
   }),
+  withState('transactions', 'setTransactions', ({loadTransactions}: EnhancedProps) => loadTransactions()),
+  withQueryParam('scrollTop', 'setScrollTop', 0, parseFloat),
+  withQueryParam('selectedIndex', 'setSelectedIndex', -1, parseFloat),
   pure
-) as ComponentEnhancer<AllProps, {}>
+)
 
 
-export const AccountViewComponent = enhance((props: AllProps & EnhancedProps) => {
+export const AccountViewComponent = enhance((props) => {
   const { bank, account, browser, scrollTop, setScrollTop, selectedIndex, transactions } = props
   const { downloadTransactions, addTransactions, deleteTransactions } = props
   const { selectedTransaction, router } = props
