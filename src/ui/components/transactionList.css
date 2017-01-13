@@ -1,0 +1,24 @@
+.Table {
+  width: 100%;
+  margin-top: 15px;
+}
+
+.headerRow,
+.selectedRow,
+.evenRow,
+.oddRow {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.oddRow {
+  background-color: #fafafa;
+}
+
+.selectedRow {
+  background-color: Highlight;
+  color: HighlightText;
+}
+
+.headerColumn {
+  text-transform: none;
+}

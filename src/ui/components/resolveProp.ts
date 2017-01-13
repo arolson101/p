@@ -3,7 +3,7 @@ import { compose, branch, ComponentEnhancer, mapPropsStream, setDisplayName } fr
 
 type Renderer<T> = ComponentEnhancer<T, T>
 
-export const resolveProp = (key: string, loadingRender: Renderer<{}>, errorRender: Renderer<{error: Error}>) => compose(
+export const withResolveProp = (key: string, loadingRender: Renderer<{}>, errorRender: Renderer<{error: Error}>) => compose(
   setDisplayName('resolveProp'),
   mapPropsStream((props$: Rx.Observable<any>) => {
     const value$ = props$

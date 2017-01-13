@@ -1,30 +1,27 @@
-import autobind = require('autobind-decorator')
 import * as React from 'react'
 import { Button, Grid, PageHeader } from 'react-bootstrap'
-import { injectIntl } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { reduxForm, ReduxFormProps } from 'redux-form'
 import { AutoSizer } from 'react-virtualized'
-import 'react-virtualized/styles.css'
-import { compose, ComponentEnhancer, setDisplayName, mapProps, withHandlers, defaultProps, withProps, withState, mapPropsStream, pure } from 'recompose'
+import { withRouter } from 'react-router'
+import { compose, setDisplayName, withHandlers, withState, pure } from 'recompose'
 import { getTransactions, deleteTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb, ResponsiveState } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { Container, Item } from './flex'
-import { RouteProps, DispatchProps, InjectedRouter } from './props'
-import { queryState, QueryStateProps } from './queryState'
+import { RouteProps, DispatchProps } from './props'
+import { withQuerySyncedState } from './queryState'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
 import { TransactionDetail } from './transactionDetail'
-import { ResolvedTransactionList } from './transactionList'
+import { TransactionList } from './transactionList'
 
 interface ConnectedProps {
   dbInfo?: DbInfo.Doc
   bank?: Bank.Doc
   account?: Account.Doc
   current: CurrentDb
-  browser: ResponsiveState
 }
 
 type AllProps = RouteProps<Account.Params>
@@ -44,11 +41,6 @@ interface Values {
 }
 
 type EnhancedProps = AllProps & {
-  scrollTop: number
-  setScrollTop: (scrollTop: number) => void
-  selectedIndex: number
-  setSelectedIndex: (selectedIndex: number) => void
-  selectedTransaction?: Transaction.Doc
   transactions: Promise<Transaction.Doc[]>
   loadTransactions(): Promise<Transaction.Doc[]>
   setTransactions(promise: Promise<Transaction.Doc[]>): void
@@ -57,43 +49,21 @@ type EnhancedProps = AllProps & {
   deleteTransactions(): void
 }
 
-import * as Rx from 'rxjs'
+const formName = 'AccountView'
 
-const withQueryParam = <T extends {}>(name: string, setter: string, dflt: T, convert: (val: string) => T) => {
-  return compose(
-    withState(name, '_' + setter, (props: RouteProps<any>) => {
-      if (name in props.params) {
-        return convert(props.params[name])
-      } else {
-        return dflt
-      }
-    }),
-    withHandlers({
-      [setter]: (props: AllProps) => (value: T) => {
-        const { ['_' + setter]: stateSetter, [name]: existingValue, location, router } = props
-        if (value !== existingValue) {
-          // console.log(setter, value)
-          const nextLocation = { ...location, query: { ...location.query, [name]: value }}
-          router.replace(nextLocation)
-          stateSetter(value)
-        }
-      }
-    })
-    // mapPropsStream((props$: Rx.Observable<AllProps>) => {
-    //   const update$ = props$
-    //     .debounceTime(500)
-    //     .distinctUntilKeyChanged(name)
-    //     .do(({ router, location, [name]: value }) => {
-    //       const nextLocation = { ...location, query: { ...location.query, [name]: value }}
-    //       router.replace(nextLocation)
-    //     })
-    //   return props$.combineLatest(update$, props => props)
-    // })
-  )
-}
-
-const enhance = compose<EnhancedProps, AllProps>(
+const enhance = compose<EnhancedProps, {}>(
   setDisplayName('AccountViewComponent'),
+  connect(
+    (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
+      dbInfo: selectDbInfo(state),
+      bank: selectBank(state, props),
+      account: selectAccount(state, props),
+      current: state.db.current!
+    })
+  ),
+  reduxForm<AllProps, Values>({
+    form: formName
+  }),
   withHandlers({
     loadTransactions: (props: AllProps) => async() => {
       if (!props.current || !props.account) {
@@ -140,27 +110,12 @@ const enhance = compose<EnhancedProps, AllProps>(
     }
   }),
   withState('transactions', 'setTransactions', ({loadTransactions}: EnhancedProps) => loadTransactions()),
-  withQueryParam('scrollTop', 'setScrollTop', 0, parseFloat),
-  withQueryParam('selectedIndex', 'setSelectedIndex', -1, parseFloat),
   pure
 )
 
-
-export const AccountViewComponent = enhance((props) => {
-  const { bank, account, browser, scrollTop, setScrollTop, selectedIndex, transactions } = props
+export const AccountView = enhance((props) => {
+  const { bank, account, transactions } = props
   const { downloadTransactions, addTransactions, deleteTransactions } = props
-  const { selectedTransaction, router } = props
-  const sideBySide = browser.greaterThan.small
-  const listMaxWidth = sideBySide ? browser.breakpoints.extraSmall : Infinity
-  // const setScrollTop = (scroll: number) => setPageState({scroll})
-  const setSelectedIndex = (selection: number) => {
-    // setPageState({selection})
-    if (!sideBySide) {
-      if (selectedTransaction) {
-        router.push(Transaction.to.view(selectedTransaction))
-      }
-    }
-  }
   return (
     <div>
       {account && bank && transactions &&
@@ -172,28 +127,13 @@ export const AccountViewComponent = enhance((props) => {
             <small>{account.number}</small>
           </PageHeader>
           <Container>
-            <Item flex={1} style={{height: 500, maxWidth: listMaxWidth}}>
+            <Item flex={1} style={{height: 500}}>
               <AutoSizer>
-                {(props: AutoSizer.ChildrenProps) => (
-                  <ResolvedTransactionList
-                    transactions={transactions}
-                    setScrollTop={setScrollTop}
-                    scrollTop={scrollTop}
-                    selectedIndex={selectedIndex}
-                    setSelectedIndex={setSelectedIndex}
-                    maxWidth={listMaxWidth}
-                    {...props}
-                  />
+                {(autoSizerProps: AutoSizer.ChildrenProps) => (
+                  <TransactionListDetails transactions={transactions} {...autoSizerProps} />
                 )}
               </AutoSizer>
             </Item>
-            {sideBySide &&
-              <Item flex={1}>
-                {selectedTransaction &&
-                  <TransactionDetail {...props} transaction={selectedTransaction} />
-                }
-              </Item>
-            }
           </Container>
           <div><Button onClick={downloadTransactions}>download transactions</Button></div>
           <div><Button onClick={addTransactions}>create transactions</Button></div>
@@ -206,27 +146,88 @@ export const AccountViewComponent = enhance((props) => {
   )
 })
 
-const formName = 'AccountView'
+const SpinnerRender = () => <div>loading</div>
+const ErrorRender = ({ transactions: error }: { transactions: Error }) => <div>error: {error.message}</div>
 
-export const AccountView = compose(
-  injectIntl,
-  // resolver,
+import { withProps, renderComponent } from 'recompose'
+import { withResolveProp } from './resolveProp'
+
+interface PProps {
+  transactions: Promise<Transaction.Doc[]>
+  width: number
+  height: number
+}
+
+interface ConnectedPProps {
+  browser: ResponsiveState
+}
+
+type EnhancedPProps = PProps & ConnectedPProps & RouteProps<any> & {
+  width: number
+  height: number
+  scrollTop: number
+  sideBySide: boolean
+  setScrollTop: (scrollTop: number) => void
+  selectedIndex: number
+  setSelectedIndex(selectedIndex: number): void
+  onSetSelectedIndex(selectedIndex: number): void
+  transactions: Transaction.Doc[]
+}
+
+const enhance2 = compose<EnhancedPProps, PProps>(
+  setDisplayName('TransactionListDetails'),
+  withRouter,
   connect(
-    (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
-      dbInfo: selectDbInfo(state),
-      bank: selectBank(state, props),
-      account: selectAccount(state, props),
-      current: state.db.current!,
+    (state: AppState, props: RouteProps<Account.Params>): ConnectedPProps => ({
       browser: state.browser
     })
   ),
-  reduxForm<AllProps, Values>({
-    form: formName
+  withResolveProp(
+    'transactions',
+    renderComponent(SpinnerRender),
+    renderComponent(ErrorRender)
+  ),
+  withProps(({browser}: EnhancedPProps) => ({
+    sideBySide: browser.greaterThan.small
+  })),
+  withQuerySyncedState('scrollTop', 'setScrollTop', 0, parseFloat),
+  withQuerySyncedState('selectedIndex', 'setSelectedIndex', -1, parseFloat),
+  withHandlers({
+    onSetSelectedIndex: ({setSelectedIndex, transactions, sideBySide, router}: EnhancedPProps) => (selectedIndex: number) => {
+      setSelectedIndex(selectedIndex)
+      if (!sideBySide && selectedIndex !== -1) {
+        router.push(Transaction.to.view(transactions[selectedIndex]))
+      }
+    }
   }),
-  // queryState<PageState>({
-  //   initial: {
-  //     scroll: 0,
-  //     selection: -1
-  //   }
-  // })
-)(AccountViewComponent) as React.ComponentClass<{}>
+  pure
+)
+
+const TransactionListDetails = enhance2((props) => {
+  const { sideBySide, browser, scrollTop, setScrollTop, onSetSelectedIndex, selectedIndex, transactions } = props
+  const listMaxWidth = sideBySide ? browser.breakpoints.extraSmall : Infinity
+  const selectedTransaction = selectedIndex !== -1 ? transactions[selectedIndex] : undefined
+  return (
+    <Container>
+      <Item flex={1} style={{maxWidth: listMaxWidth}}>
+        <TransactionList
+          transactions={transactions}
+          setScrollTop={setScrollTop}
+          scrollTop={scrollTop}
+          selectedIndex={selectedIndex}
+          setSelectedIndex={onSetSelectedIndex}
+          maxWidth={listMaxWidth}
+          width={Math.min(props.width, listMaxWidth)}
+          height={props.height}
+        />
+      </Item>
+      {sideBySide &&
+        <Item flex={1}>
+          {selectedTransaction &&
+            <TransactionDetail {...props} transaction={selectedTransaction} />
+          }
+        </Item>
+      }
+    </Container>
+  )
+})

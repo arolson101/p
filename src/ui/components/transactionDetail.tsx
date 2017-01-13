@@ -2,13 +2,12 @@ import * as React from 'react'
 import { Link } from 'react-router'
 import 'react-virtualized/styles.css'
 import { Transaction } from '../../docs'
-import { DispatchProps } from './props'
 
 interface ConnectedProps {
   transaction: Transaction.Doc
 }
 
-type AllProps = ConnectedProps & DispatchProps
+type AllProps = ConnectedProps
 
 export class TransactionDetail extends React.Component<AllProps, any> {
   render() {

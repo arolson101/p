@@ -11,19 +11,3 @@ html, body, #root {
 .alignRight {
     text-align: right
 }
-
-.Table {
-  width: 100%;
-  margin-top: 15px;
-}
-.headerRow,
-.evenRow,
-.oddRow {
-  border-bottom: 1px solid #e0e0e0;
-}
-.oddRow {
-  background-color: #fafafa;
-}
-.headerColumn {
-  text-transform: none;
-}

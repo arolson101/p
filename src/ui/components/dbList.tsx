@@ -140,7 +140,7 @@ const Test = compose(
 let i = 0
 
 import { InferableComponentEnhancer } from 'recompose'
-import { resolveProp } from './resolveProp'
+import { withResolveProp } from './resolveProp'
 
 const Test2Component = ({ request }: any) =>
   <article>
@@ -149,7 +149,7 @@ const Test2Component = ({ request }: any) =>
 
 const Test2 = compose(
   setDisplayName('Test2'),
-  resolveProp(
+  withResolveProp(
     'request',
     renderComponent(() => <div>spinner</div>),
     renderComponent(({request}) => <div>error: {request.message}</div>)

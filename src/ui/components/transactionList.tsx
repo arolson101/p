@@ -2,11 +2,12 @@ import * as React from 'react'
 import { FormattedDate, FormattedNumber } from 'react-intl'
 import { Table, Column } from 'react-virtualized'
 import 'react-virtualized/styles.css'
-import { compose, renderComponent, ComponentEnhancer, setDisplayName, withHandlers, withProps, pure } from 'recompose'
+import { compose, setDisplayName, withHandlers, withProps, pure } from 'recompose'
 import { Transaction } from '../../docs'
-import { resolveProp } from './resolveProp'
+import './transactionList.css'
 
-interface BaseProps {
+interface Props {
+  transactions: Transaction.Doc[]
   scrollTop: number
   setScrollTop: (scrollTop: number) => void
   selectedIndex: number
@@ -14,10 +15,6 @@ interface BaseProps {
   maxWidth: number
   width: number
   height: number
-}
-
-interface Props extends BaseProps {
-  transactions: Transaction.Doc[]
 }
 
 interface EnhancedProps extends Props {
@@ -31,7 +28,7 @@ interface EnhancedProps extends Props {
   currencyCellRenderer: Column.CellRenderer<number>
 }
 
-const enhance = compose(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('TransactionList'),
   withHandlers({
     onScroll: ({setScrollTop}: Props) => (e: Table.OnScrollProps) => {
@@ -49,7 +46,7 @@ const enhance = compose(
         return index % 2 === 0 ? 'evenRow' : 'oddRow'
       }
     },
-    onRowClick: ({setSelectedIndex}: Props) => ({index}: Table.OnRowClickProps) => {
+    onRowClick: ({setSelectedIndex, transactions}: Props) => ({index}: Table.OnRowClickProps) => {
       setSelectedIndex(index)
     }
   }),
@@ -71,9 +68,9 @@ const enhance = compose(
     )
   }),
   pure
-) as ComponentEnhancer<EnhancedProps, Props>
+)
 
-export const TransactionList = enhance((props: EnhancedProps) => {
+export const TransactionList = enhance((props) => {
   const { rowGetter, onRowClick, getTransaction, rowClassName, nameCellRenderer, dateCellRenderer, currencyCellRenderer } = props
   const { transactions, onScroll, scrollTop, maxWidth, width, height } = props
   return <Table
@@ -112,17 +109,4 @@ export const TransactionList = enhance((props: EnhancedProps) => {
       width={100}
     />
   </Table>
-}) as React.ComponentClass<Props>
-
-interface PProps extends BaseProps {
-  transactions: Promise<Transaction.Doc[]>
-}
-
-const SpinnerRender = () => <div>loading</div>
-const ErrorRender = ({ transactions: error }: { transactions: Error }) => <div>error: {error.message}</div>
-
-export const ResolvedTransactionList = resolveProp(
-  'transactions',
-  renderComponent(SpinnerRender),
-  renderComponent(ErrorRender)
-)(TransactionList) as React.ComponentClass<PProps>
+})
