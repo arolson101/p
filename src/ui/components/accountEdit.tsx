@@ -27,8 +27,8 @@ interface ConnectedProps {
 }
 
 interface EnhancedProps {
-  cancel: () => void
-  submit: SubmitFunction<Values>
+  onCancel: () => void
+  onSubmit: SubmitFunction<Values>
 }
 
 type AllProps = IntlProps & EnhancedProps & ConnectedProps & RouteProps<Account.Params>
@@ -70,14 +70,14 @@ const enhance = compose<AllProps, {}>(
 )
 
 export const AccountEdit = enhance((props: AllProps) => {
-  const { bank, account, accounts, submit, cancel } = props
+  const { bank, account, accounts, onSubmit, onCancel } = props
   const { formatMessage } = props.intl
   return (
     <div>
       {bank && account &&
         <Grid>
           <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
-          <AccountForm {...props} account={account} accounts={accounts} onSubmit={submit} cancel={cancel}/>
+          <AccountForm {...props} account={account} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
         </Grid>
       }
     </div>

@@ -1,13 +1,18 @@
-import autobind = require('autobind-decorator')
 import * as React from 'react'
-import { Row, Col, Collapse } from 'react-bootstrap'
-import { defineMessages } from 'react-intl'
-import { ReduxFormProps } from 'redux-form'
+import { Row, Col, Collapse, ButtonToolbar, Button } from 'react-bootstrap'
+import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
+import { connect } from 'react-redux'
+import { compose, setDisplayName, withProps } from 'recompose'
+import { reduxForm, formValueSelector, ReduxFormProps, SubmitFunction } from 'redux-form'
 import { Bank } from '../../docs'
-import { FI, emptyfi, CurrentDb } from '../../state'
+import { Validator } from '../../util'
+import { AppState, FI, emptyfi, CurrentDb } from '../../state'
+import { withPropChangeCallback } from '../enhancers'
 import { formatAddress } from '../../util'
-import { typedFields } from './forms'
+import { typedFields, forms } from './forms'
 import { IntlProps } from './props'
+
+export { SubmitFunction }
 
 const messages = defineMessages({
   fi: {
@@ -65,14 +70,23 @@ const messages = defineMessages({
 })
 
 interface Props {
+  bank?: Bank.Doc
+  onSubmit: SubmitFunction<Values>
+  onCancel: () => void
+}
+
+interface ConnectedProps {
   filist: FI[]
   current: CurrentDb
   lang: string
-  bank?: Bank
   online: boolean
 }
 
-type AllProps = IntlProps & Props & ReduxFormProps<Values>
+interface EnhancedProps {
+  onChangeFI: (index: number) => void
+}
+
+type AllProps = IntlProps & EnhancedProps & ConnectedProps & Props & ReduxFormProps<Values>
 
 export interface Values {
   fi: number
@@ -94,135 +108,171 @@ export interface Values {
 }
 
 const { TextField, SelectField, MultilineTextField, CheckboxField } = typedFields<Values>()
+const formName = 'bankForm'
+const formSelector = formValueSelector<Values>(formName)
 
-export class BankForm extends React.Component<AllProps, any> {
-  componentWillMount() {
-    this.initializeValues(this.props)
-  }
-
-  compontWillReceiveProps(nextProps: AllProps) {
-    if (this.props.bank !== nextProps.bank) {
-      this.initializeValues(nextProps)
+const enhance = compose<AllProps, Props>(
+  setDisplayName('AccountForm'),
+  injectIntl,
+  connect(
+    (state: AppState): ConnectedProps => ({
+      filist: state.fi.list,
+      current: state.db.current!,
+      lang: state.i18n.locale,
+      online: formSelector(state, 'online')
+    })
+  ),
+  reduxForm<AllProps, Values>({
+    form: formName,
+    validate: (values: Values, props: AllProps) => {
+      const { intl: { formatMessage } } = props
+      const v = new Validator(values)
+      v.required(['name'], formatMessage(forms.required))
+      return v.errors
+    },
+    initialValues: {
+      online: true
     }
-  }
-
-  initializeValues(props: AllProps) {
-    const { bank, initialize, filist } = props
+  }),
+  withPropChangeCallback('bank', (props: AllProps) => {
+    const { bank, filist, initialize, reset } = props
     if (bank) {
       const fi = filist.findIndex(fi => fi.name === bank.fi) + 1
-      const values = bank ? { ...bank, ...bank.login, fi } : {}
-      initialize(values)
+      const values = { ...bank, ...bank.login, fi }
+      initialize(values, false)
+      reset()
     }
-  }
+  }),
+  withProps((props: AllProps) => ({
+    onChangeFI: (index: number) => {
+      const { filist, change } = props
+      const value = index ? filist[index - 1] : emptyfi
 
-  render() {
-    const { intl: { formatMessage }, filist, online } = this.props
-    return (
-      <div>
-        <Row>
-          <Col sm={12}>
-            <SelectField
-              autofocus
-              name='fi'
-              label={formatMessage(messages.fi)}
-              options={filist}
-              labelKey='name'
-              valueKey='id'
-              onChange={this.onChangeFI}
-              help={formatMessage(messages.fiHelp)}
-              placeholder={formatMessage(messages.fiPlaceholder)}
-            />
-          </Col>
-        </Row>
-        <Row>
-          <Col sm={6}>
-            <TextField
-              name='name'
-              label={formatMessage(messages.name)}
-            />
-          </Col>
-          <Col sm={6}>
-            <TextField
-              name='web'
-              label={formatMessage(messages.web)}
-            />
-          </Col>
-          <Col sm={6}>
-            <MultilineTextField
-              name='address'
-              rows={4}
-              label={formatMessage(messages.address)}
-            />
-          </Col>
-          <Col sm={6}>
-            <MultilineTextField
-              name='notes'
-              rows={4}
-              label={formatMessage(messages.notes)}
-            />
-          </Col>
-        </Row>
-        <Row>
-          <Col sm={12}>
-            <CheckboxField
-              name='online'
-              label={formatMessage(messages.online)}
-            />
-          </Col>
-        </Row>
-        <Collapse in={online}>
-          <div>
-            <Row>
-              <Col sm={6} xs={6}>
-                <TextField
-                  name='username'
-                  label={formatMessage(messages.username)}
-                />
-              </Col>
-              <Col sm={6} xs={6}>
-                <TextField
-                  name='password'
-                  type='password'
-                  label={formatMessage(messages.password)}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col sm={3} xs={6}>
-                <TextField
-                  name='fid'
-                  label={formatMessage(messages.fid)}
-                />
-              </Col>
-              <Col sm={3} xs={6}>
-                <TextField
-                  name='org'
-                  label={formatMessage(messages.org)}
-                />
-              </Col>
-              <Col sm={6} xs={12}>
-                <TextField
-                  name='ofx'
-                  label={formatMessage(messages.ofx)}
-                />
-              </Col>
-            </Row>
-          </div>
-        </Collapse>
-      </div>
-    )
-  }
+      change('name', value.name)
+      change('web', value.profile.siteURL)
+      change('address', formatAddress(value))
+      change('fid', value.fid)
+      change('org', value.org)
+      change('ofx', value.ofx)
+    }
+  }))
+)
 
-  @autobind
-  onChangeFI(index: number) {
-    const { filist, change } = this.props
-    const value = index ? filist[index - 1] : emptyfi
-
-    change('name', value.name)
-    change('web', value.profile.siteURL)
-    change('address', formatAddress(value))
-    change('fid', value.fid)
-    change('org', value.org)
-    change('ofx', value.ofx)
-  }
-}
+export const BankForm = enhance((props) => {
+const { handleSubmit, bank, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist, online } = props
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Row>
+        <Col sm={12}>
+          <SelectField
+            autofocus
+            name='fi'
+            label={formatMessage(messages.fi)}
+            options={filist}
+            labelKey='name'
+            valueKey='id'
+            onChange={onChangeFI}
+            help={formatMessage(messages.fiHelp)}
+            placeholder={formatMessage(messages.fiPlaceholder)}
+          />
+        </Col>
+      </Row>
+      <Row>
+        <Col sm={6}>
+          <TextField
+            name='name'
+            label={formatMessage(messages.name)}
+          />
+        </Col>
+        <Col sm={6}>
+          <TextField
+            name='web'
+            label={formatMessage(messages.web)}
+          />
+        </Col>
+      </Row>
+      <Row>
+        <Col sm={6}>
+          <MultilineTextField
+            name='address'
+            rows={4}
+            label={formatMessage(messages.address)}
+          />
+        </Col>
+        <Col sm={6}>
+          <MultilineTextField
+            name='notes'
+            rows={4}
+            label={formatMessage(messages.notes)}
+          />
+        </Col>
+      </Row>
+      <Row>
+        <Col sm={12}>
+          <CheckboxField
+            name='online'
+            label={formatMessage(messages.online)}
+          />
+        </Col>
+      </Row>
+      <Collapse in={online}>
+        <div>
+          <Row>
+            <Col sm={6} xs={6}>
+              <TextField
+                name='username'
+                label={formatMessage(messages.username)}
+              />
+            </Col>
+            <Col sm={6} xs={6}>
+              <TextField
+                name='password'
+                type='password'
+                label={formatMessage(messages.password)}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col sm={3} xs={6}>
+              <TextField
+                name='fid'
+                label={formatMessage(messages.fid)}
+              />
+            </Col>
+            <Col sm={3} xs={6}>
+              <TextField
+                name='org'
+                label={formatMessage(messages.org)}
+              />
+            </Col>
+            <Col sm={6} xs={12}>
+              <TextField
+                name='ofx'
+                label={formatMessage(messages.ofx)}
+              />
+            </Col>
+          </Row>
+        </div>
+      </Collapse>
+      <ButtonToolbar className='pull-right'>
+        <Button
+          type='button'
+          onClick={onCancel}
+        >
+          <FormattedMessage {...forms.cancel}/>
+        </Button>
+        <Button
+          type='submit'
+          bsStyle='primary'
+          id='open-dropdown'
+        >
+          {bank ? (
+            <FormattedMessage {...forms.save}/>
+          ) : (
+            <FormattedMessage {...forms.create}/>
+          )}
+        </Button>
+      </ButtonToolbar>
+    </form>
+  )
+})

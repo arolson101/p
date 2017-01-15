@@ -8,9 +8,8 @@ import { Account } from '../../docs'
 import { Validator } from '../../util'
 import { AppState } from '../../state'
 import { withPropChangeCallback } from '../enhancers'
-import { typedFields } from './forms'
+import { typedFields, forms } from './forms'
 import { IntlProps } from './props'
-import { forms } from './forms'
 
 export { SubmitFunction }
 
@@ -58,7 +57,7 @@ interface Props {
   account?: Account.Doc
   accounts: Account.Doc[]
   onSubmit: SubmitFunction<Values>
-  cancel: () => void
+  onCancel: () => void
 }
 
 interface ConnectedProps {
@@ -101,9 +100,6 @@ const enhance = compose<AllProps, Props>(
       const values = account
       initialize(values, false)
       reset()
-    } else {
-      initialize({}, false)
-      reset()
     }
   }),
   connect(
@@ -114,7 +110,7 @@ const enhance = compose<AllProps, Props>(
 )
 
 export const AccountForm = enhance((props) => {
-  const { account, type, onSubmit, cancel, handleSubmit } = props
+  const { account, type, onSubmit, onCancel, handleSubmit } = props
   const { formatMessage } = props.intl
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -152,7 +148,7 @@ export const AccountForm = enhance((props) => {
       <ButtonToolbar className='pull-right'>
         <Button
           type='button'
-          onClick={cancel}
+          onClick={onCancel}
         >
           <FormattedMessage {...forms.cancel}/>
         </Button>

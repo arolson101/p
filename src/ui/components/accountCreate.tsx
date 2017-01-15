@@ -27,8 +27,8 @@ interface ConnectedProps {
 }
 
 interface EnhancedProps {
-  cancel: () => void
-  submit: SubmitFunction<Values>
+  onCancel: () => void
+  onSubmit: SubmitFunction<Values>
 }
 
 type AllProps = IntlProps & EnhancedProps & ConnectedProps & RouteProps<Account.Params>
@@ -45,11 +45,11 @@ const enhance = compose<AllProps, {}>(
       accounts: selectBankAccounts(state, props)
     })
   ),
-  withProps(({router}: AllProps) => ({
-    cancel: () => {
+  withProps(({router}: AllProps): EnhancedProps => ({
+    onCancel: () => {
       router.goBack()
     },
-    submit: async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
+    onSubmit: async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
       const { current, router, lang } = props
       const bank = props.bank!
 
@@ -71,14 +71,14 @@ const enhance = compose<AllProps, {}>(
 )
 
 export const AccountCreate = enhance((props) => {
-  const { bank, accounts, submit, cancel } = props
+  const { bank, accounts, onSubmit, onCancel } = props
   const { formatMessage } = props.intl
   return (
     <div>
       {bank &&
         <Grid>
           <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
-          <AccountForm {...props} accounts={accounts} onSubmit={submit} cancel={cancel}/>
+          <AccountForm {...props} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
         </Grid>
       }
     </div>
