@@ -65,16 +65,15 @@ const enhance = compose<EnhancedProps, {}>(
   }),
   withHandlers({
     loadTransactions: (props: AllProps) => async() => {
-      if (!props.current || !props.account) {
-        throw new Error('no db or account')
+      if (props.current && props.account) {
+        const startkey = Transaction.startkeyForAccount(props.account)
+        const endkey = Transaction.endkeyForAccount(props.account)
+        // const skip = 4000
+        // const limit = 100
+        const results = await props.current.db.allDocs({startkey, endkey, include_docs: true})
+        const docs = results.rows.map(row => row.doc as Transaction.Doc)
+        return docs
       }
-      const startkey = Transaction.startkeyForAccount(props.account)
-      const endkey = Transaction.endkeyForAccount(props.account)
-      // const skip = 4000
-      // const limit = 100
-      const results = await props.current.db.allDocs({startkey, endkey, include_docs: true})
-      const docs = results.rows.map(row => row.doc as Transaction.Doc)
-      return docs
     },
 
     addTransactions: (props: EnhancedProps) => async() => {

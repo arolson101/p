@@ -150,6 +150,7 @@ export interface InjectedFieldProps<Name> {
   meta: InjectedFieldMetaProps
 }
 
+export type SubmitFunction<TValues> = (data: TValues, dispatch?: Dispatch<any>, props?: any) => Promise<any> | void
 
 export interface ReduxFormProps<TValues> {
 
@@ -266,12 +267,12 @@ export interface ReduxFormProps<TValues> {
     // }}/>
     handleSubmit(event: SyntheticEvent<any>): void;
     handleSubmit(event: React.MouseEvent<HTMLButtonElement>): void;
-    handleSubmit(submit: (data: TValues, dispatch?: Dispatch<any>, props?: any) => Promise<any> | void): FormEventHandler<any>;
+    handleSubmit(submit: SubmitFunction<TValues>): FormEventHandler<any>;
 
     // Initializes the form data to the given values. All dirty and pristine state will be determined
     // by comparing the current data with these initialized values. This is a bound action creator, so
     // it returns nothing.
-    initialize(data:Object) : void
+    initialize(data: Object, keepDirty?: boolean) : void
 
     // The same initialValues object passed to reduxForm to initialize the form data.
     initialValues : TValues
@@ -616,7 +617,11 @@ export function destroy(form: string): Redux.Action
 export function focus(form: string, field: string): Redux.Action
 
 /**
- * Sets the initial values in the form with which future data values will be compared to calculate dirty and pristine. The data parameter may contain deep nested array and object values that match the shape of your form fields. If the keepDirty parameter is true, the values of currently dirty fields will be retained to avoid overwriting user edits.
+ * Sets the initial values in the form with which future data values will be compared
+ * to calculate dirty and pristine. The data parameter may contain deep nested array 
+ * and object values that match the shape of your form fields. If the keepDirty parameter
+ * is true, the values of currently dirty fields will be retained to avoid overwriting
+ * user edits.
  */
 export function initialize(form: string, data:Object, keepDirty:boolean): Redux.Action
 

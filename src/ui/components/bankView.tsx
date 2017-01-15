@@ -142,7 +142,7 @@ export class BankViewComponent extends React.Component<AllProps, State> {
                       {showAll &&
                         <td>{account.visible}</td>
                       }
-                      <td><FormattedMessage {...Account.messages[account.type]}/></td>
+                      <td>{account.type && <FormattedMessage {...Account.messages[account.type]}/>}</td>
                       <td><Link to={Account.to.view(account)}>{account.name}</Link></td>
                       <td><Link to={Account.to.view(account)}>{account.number}</Link></td>
                     </tr>

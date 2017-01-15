@@ -200,9 +200,7 @@ export class BankForm extends React.Component<AllProps, any> {
                   label={formatMessage(messages.org)}
                 />
               </Col>
-            </Row>
-            <Row>
-              <Col>
+              <Col sm={6} xs={12}>
                 <TextField
                   name='ofx'
                   label={formatMessage(messages.ofx)}

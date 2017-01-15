@@ -11,10 +11,14 @@ export const selectBank = (state: AppState, props: RouteProps<Bank.Params>) => {
   return state.db.current && state.db.current.cache.banks.get(id)
 }
 
+const empty: any[] = []
+
 export const selectBankAccounts = (state: AppState, props: RouteProps<Bank.Params>) => {
   const bank = selectBank(state, props)
   if (bank) {
     return bank.accounts.map(aid => state.db.current!.cache.accounts.get(aid)!).filter(acc => acc)
+  } else {
+    return empty as Account.Doc[]
   }
 }
 

@@ -1,17 +1,15 @@
-import { Grid, Button, ButtonToolbar } from 'react-bootstrap'
+import { Grid } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { Dispatch, compose } from 'redux'
-import { reduxForm, ReduxFormProps } from 'redux-form'
+import { compose, setDisplayName, withProps } from 'recompose'
+import { Dispatch } from 'redux'
 import { DbInfo, Bank, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
-import { Validator } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
-import { forms } from './forms'
 import { IntlProps, RouteProps } from './props'
 import { selectDbInfo, selectBank, selectBankAccounts, selectAccount } from './selectors'
-import { Values, AccountForm } from './accountForm'
+import { Values, AccountForm, SubmitFunction } from './accountForm'
 
 const messages = defineMessages({
   page: {
@@ -24,79 +22,19 @@ interface ConnectedProps {
   current?: CurrentDb
   dbInfo?: DbInfo.Doc
   bank?: Bank.Doc
-  accounts?: Account.Doc[]
+  accounts: Account.Doc[]
   account?: Account.Doc
 }
 
-type AllProps = IntlProps & ConnectedProps & ReduxFormProps<Values> & RouteProps<Account.Params>
-
-export const AccountEditComponent = (props: AllProps) => {
-  const { bank, account, handleSubmit, router } = props
-  const { formatMessage } = props.intl
-  return (
-    <div>
-      {bank && account &&
-        <Grid>
-          <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
-          <form onSubmit={handleSubmit(submit)}>
-            <AccountForm {...props} account={account}/>
-            <div>
-              <ButtonToolbar className='pull-right'>
-                <Button
-                  type='button'
-                  onClick={() => router.goBack()}
-                >
-                  {formatMessage(forms.cancel)}
-                </Button>
-                <Button
-                  type='submit'
-                  bsStyle='primary'
-                >
-                  {formatMessage(forms.save)}
-                </Button>
-              </ButtonToolbar>
-            </div>
-          </form>
-        </Grid>
-      }
-    </div>
-  )
+interface EnhancedProps {
+  cancel: () => void
+  submit: SubmitFunction<Values>
 }
 
-const validate = (values: Values, props: AllProps) => {
-  const v = new Validator(values)
-  if (props.account && props.accounts) {
-    const thisid = props.account._id
-    const otherAccounts = props.accounts.filter(acct => acct._id !== thisid)
-    AccountForm.validate(v, props, otherAccounts)
-  }
-  return v.errors
-}
+type AllProps = IntlProps & EnhancedProps & ConnectedProps & RouteProps<Account.Params>
 
-const submit = async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-  const { formatMessage } = props.intl
-  const v = new Validator(values)
-  v.required(['name', 'number'], formatMessage(forms.required))
-  v.maybeThrowSubmissionError()
-
-  const { current, router } = props
-  const account = props.account!
-
-  const doc: Account.Doc = {
-    ...account,
-
-    name: values.name,
-    type: values.type,
-    number: values.number,
-    visible: true
-  }
-
-  await current!.db.put(doc)
-
-  router.replace(Account.to.view(doc))
-}
-
-export const AccountEdit = compose(
+const enhance = compose<AllProps, {}>(
+  setDisplayName('AccountEdit'),
   injectIntl,
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
@@ -107,8 +45,41 @@ export const AccountEdit = compose(
       account: selectAccount(state, props)
     })
   ),
-  reduxForm<AllProps, Values>({
-    form: 'AcUpdate',
-    validate
-  })
-)(AccountEditComponent) as React.ComponentClass<AllProps>
+  withProps(({router}: AllProps) => ({
+    cancel: () => {
+      router.goBack()
+    },
+    submit: async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
+      const { current } = props
+      const account = props.account!
+
+      const doc: Account.Doc = {
+        ...account,
+
+        name: values.name,
+        type: values.type,
+        number: values.number,
+        visible: true
+      }
+
+      await current!.db.put(doc)
+
+      router.replace(Account.to.view(doc))
+    }
+  }))
+)
+
+export const AccountEdit = enhance((props: AllProps) => {
+  const { bank, account, accounts, submit, cancel } = props
+  const { formatMessage } = props.intl
+  return (
+    <div>
+      {bank && account &&
+        <Grid>
+          <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
+          <AccountForm {...props} account={account} accounts={accounts} onSubmit={submit} cancel={cancel}/>
+        </Grid>
+      }
+    </div>
+  )
+})
