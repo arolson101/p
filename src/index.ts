@@ -1,6 +1,11 @@
 import { setObservableConfig } from 'recompose'
 import rxjsconfig from 'recompose/rxjsObservableConfig'
 
+const __DEVELOPMENT__ = (process.env.NODE_ENV === 'development')
+if (__DEVELOPMENT__) {
+  global.Perf = require('react-addons-perf')
+}
+
 require('bootstrap/dist/css/bootstrap.css')
 require('font-awesome/css/font-awesome.css')
 require('react-select/dist/react-select.css')
