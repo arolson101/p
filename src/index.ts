@@ -14,8 +14,8 @@ if (!root) {
   throw new Error('root node not found')
 }
 
-if (!(global as any).mainWasRun) {
-  (global as any).mainWasRun = true
+if (!global.mainWasRun) {
+  global.mainWasRun = true
   new Promise((resolve) => resolve(main(root)))
 }
 
