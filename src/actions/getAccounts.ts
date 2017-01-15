@@ -18,6 +18,10 @@ const messages = defineMessages({
     id: 'getAccounts.accountAdded',
     defaultMessage: '{number} - {name} ({type}) (created)'
   },
+  setBankId: {
+    id: 'getAccounts.setBankId',
+    defaultMessage: '{number} - {name} ({type}) (updated bankid to {bankid})'
+  },
   investmentAccountNotSupported: {
     id: 'getAccounts.investmentAccountNotSupported',
     defaultMessage: 'Investment account not supported: {name}'
@@ -47,12 +51,12 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
         const { db: { current }, i18n: { lang } } = getState()
         if (!current) { throw new Error('no db') }
         const changes: PouchDB.Core.Document<any>[] = []
-        let bankid = ''
 
         for (let accountProfile of accountProfiles) {
           const accountName = accountProfile.getDescription()
           let accountType: Account.Type
           let accountNumber: string
+          let bankid = ''
 
           if (accountProfile.getBankSpecifics()) {
             const bankSpecifics = accountProfile.getBankSpecifics()
@@ -86,11 +90,16 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
             visible: true
           }
 
-          if (!accountExists(current.cache.accounts, bank, accountNumber, accountType)) {
+          const existingAccount = findExistingAccount(current.cache.accounts, bank, accountNumber, accountType)
+          if (!existingAccount) {
             res.push(formatMessage(messages.accountAdded, account))
             const doc = Account.doc(bank, account, lang)
             bank.accounts.push(doc._id)
             changes.push(doc)
+          } else if (existingAccount.bankid !== bankid) {
+            existingAccount.bankid = bankid
+            changes.push(existingAccount)
+            res.push(formatMessage(messages.setBankId, existingAccount))
           } else {
             res.push(formatMessage(messages.accountExists, account))
           }
@@ -108,11 +117,12 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
     }
   }
 
-const accountExists = (cache: Account.Cache, bank: Bank.Doc, num: string, type: Account.Type): boolean => {
+const findExistingAccount = (cache: Account.Cache, bank: Bank.Doc, num: string, type: Account.Type): undefined | Account.Doc => {
   for (let account of cache.values()) {
     if (Account.getBank(account) === bank._id && account.number === num && account.type === type) {
-      return bank.accounts.indexOf(account._id) !== -1
+      console.assert(bank.accounts.indexOf(account._id) !== -1)
+      return account
     }
   }
-  return false
+  return undefined
 }
