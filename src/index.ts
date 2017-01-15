@@ -19,6 +19,6 @@ if (!(global as any).mainWasRun) {
   new Promise((resolve) => resolve(main(root)))
 }
 
-if ((module as any).hot) {
-  (module as any).hot.accept()
+if (module.hot) {
+  module.hot.accept()
 }

@@ -11,8 +11,8 @@ export const main = async (element: Element) => {
   const store = createAppStore(history)
   const syncedHistory = syncHistoryWithStore(history, store)
 
-  if ((module as any).hot) {
-    (module as any).hot.accept('./state', () => {
+  if (module.hot) {
+    module.hot.accept('./state', () => {
       console.log('---- redux change')
       store.replaceReducer(require('./state').AppState)
     })
