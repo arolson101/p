@@ -74,10 +74,12 @@ const enhance = compose<EnhancedProps, {}>(
         const docs = results.rows.map(row => row.doc as Transaction.Doc)
         return docs
       }
-    },
-
+    }
+  }),
+  withState('transactions', 'setTransactions', ({loadTransactions}: EnhancedProps) => loadTransactions()),
+  withHandlers({
     addTransactions: (props: EnhancedProps) => async() => {
-      const { current, account, loadTransactions } = props
+      const { current, account, setTransactions, loadTransactions } = props
       const txs: Transaction.Doc[] = []
       for (let i = 0; i < 1000; i++) {
         const tx: Transaction = {
@@ -92,22 +94,21 @@ const enhance = compose<EnhancedProps, {}>(
       }
 
       current.db.bulkDocs(txs)
-      loadTransactions()
+      setTransactions(loadTransactions())
     },
 
     downloadTransactions: (props: EnhancedProps) => async () => {
-      const { dispatch, bank, account, loadTransactions } = props
+      const { dispatch, bank, account, setTransactions, loadTransactions } = props
       await dispatch(getTransactions(bank!, account!, new Date(2016, 11, 1), new Date(2016, 11, 31), (str) => str.defaultMessage!))
-      loadTransactions()
+      setTransactions(loadTransactions())
     },
 
     deleteTransactions: (props: EnhancedProps) => async() => {
-      const { dispatch, account, loadTransactions } = props
+      const { dispatch, account, setTransactions, loadTransactions } = props
       await dispatch(deleteTransactions(account!))
-      loadTransactions()
+      setTransactions(loadTransactions())
     }
   }),
-  withState('transactions', 'setTransactions', ({loadTransactions}: EnhancedProps) => loadTransactions()),
   pure
 )
 

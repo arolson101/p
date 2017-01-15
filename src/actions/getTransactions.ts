@@ -1,7 +1,7 @@
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { AppThunk, CurrentDb } from '../state'
 import { Bank, Account, Transaction } from '../docs'
-import { createConnection, checkLogin, getBankAccountDetails } from './online'
+import { createConnection, getFinancialAccount } from './online'
 
 type FormatMessage = (messageDescriptor: FormattedMessage.MessageDescriptor, values?: Object) => string
 
@@ -21,12 +21,9 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
     const res = []
     try {
       const service = createConnection(bank, formatMessage)
-      const { username, password } = checkLogin(bank, formatMessage)
-      const accountDetails = getBankAccountDetails(bank, account, formatMessage)
-      const bankAccount = service.loadBankAccount(accountDetails, username, password)
-      const statement = await bankAccount.readStatement(start, end)
-      console.log(statement)
+      const bankAccount = getFinancialAccount(service, bank, account, formatMessage)
 
+      const statement = await bankAccount.readStatement(start, end)
       const transactionList = statement.getTransactionList()
       if (transactionList) {
         const { db: { current } } = getState()

@@ -57,6 +57,7 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
           let accountType: Account.Type
           let accountNumber: string
           let bankid = ''
+          let key = ''
 
           if (accountProfile.getBankSpecifics()) {
             const bankSpecifics = accountProfile.getBankSpecifics()
@@ -71,6 +72,7 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
             const creditCardAccount = creditCardSpecifics.getCreditCardAccount()
             accountType = Account.Type.CREDITCARD
             accountNumber = creditCardAccount.getAccountNumber()
+            key = creditCardAccount.getAccountKey()
 
           } else if (accountProfile.getInvestmentSpecifics()) {
             // TODO: support investment accounts
@@ -87,6 +89,7 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
             type: accountType,
             number: accountNumber,
             bankid,
+            key,
             visible: true
           }
 

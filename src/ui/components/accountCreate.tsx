@@ -54,10 +54,7 @@ const enhance = compose<AllProps, {}>(
       const bank = props.bank!
 
       const account: Account = {
-        name: values.name,
-        type: values.type,
-        number: values.number,
-        bankid: values.bankid,
+        ...values,
         visible: true
       }
 

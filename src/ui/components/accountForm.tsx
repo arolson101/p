@@ -35,7 +35,7 @@ const messages = defineMessages({
     defaultMessage: 'This account number is already used'
   },
   bankid: {
-    id: 'bankForm.bankid',
+    id: 'acForm.bankid',
     defaultMessage: 'Routing Number',
     description: `Bank identifier, A-9
       Use of this field by country:
@@ -50,6 +50,10 @@ const messages = defineMessages({
       ITA         ABI
       NLD         Not used (field contents ignored)
       USA         Routing and transit number`
+  },
+  key: {
+    id: 'acForm.key',
+    defaultMessage: 'Account Key (for international accounts)'
   }
 })
 
@@ -71,6 +75,7 @@ export interface Values {
   number: string
   type: Account.Type
   bankid: string
+  key: string
 }
 
 const { TextField, SelectField } = typedFields<Values>()
@@ -142,6 +147,14 @@ export const AccountForm = enhance((props) => {
           <TextField
             name='bankid'
             label={formatMessage(messages.bankid)}
+          />
+        </Col>
+      }
+      {(type === Account.Type.CREDITCARD) &&
+        <Col>
+          <TextField
+            name='key'
+            label={formatMessage(messages.key)}
           />
         </Col>
       }

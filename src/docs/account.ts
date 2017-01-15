@@ -11,6 +11,7 @@ export interface Account {
   number: string
   visible: boolean
   bankid: string
+  key: string
 }
 
 export namespace Account {

@@ -45,21 +45,17 @@ const enhance = compose<AllProps, {}>(
       account: selectAccount(state, props)
     })
   ),
-  withProps(({router}: AllProps) => ({
-    cancel: () => {
+  withProps(({router}: AllProps): EnhancedProps => ({
+    onCancel: () => {
       router.goBack()
     },
-    submit: async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
+    onSubmit: async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
       const { current } = props
       const account = props.account!
 
       const doc: Account.Doc = {
         ...account,
-
-        name: values.name,
-        type: values.type,
-        number: values.number,
-        visible: true
+        ...values
       }
 
       await current!.db.put(doc)
