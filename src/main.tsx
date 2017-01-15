@@ -14,7 +14,7 @@ export const main = async (element: Element) => {
   if (module.hot) {
     module.hot.accept('./state', () => {
       console.log('---- redux change')
-      store.replaceReducer(require('./state').AppState)
+      store.replaceReducer(require<any>('./state/index').AppState)
     })
   }
 

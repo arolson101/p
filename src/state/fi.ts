@@ -78,7 +78,7 @@ export const FiSlice = {
 
 export const FiInit = (): AppThunk =>
   async (dispatch) => {
-    const filist: FinancialInstitution[] = require('json-loader!filist/filist.json')
+    const filist: FinancialInstitution[] = require<FinancialInstitution[]>('json-loader!filist/filist.json')
     const fis = filist.map((fi, index) => ({...fi, id: index + 1}))
     dispatch(setFi(fis))
   }
