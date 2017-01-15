@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Row, Col, Collapse, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, withProps } from 'recompose'
+import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, formValueSelector, ReduxFormProps, SubmitFunction } from 'redux-form'
 import { Bank } from '../../docs'
 import { Validator } from '../../util'
@@ -113,6 +113,12 @@ const formSelector = formValueSelector<Values>(formName)
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
+  onlyUpdateForPropTypes,
+  setPropTypes({
+    bank: React.PropTypes.object,
+    onSubmit: React.PropTypes.func.isRequired,
+    onCancel: React.PropTypes.func.isRequired
+  }),
   injectIntl,
   connect(
     (state: AppState): ConnectedProps => ({

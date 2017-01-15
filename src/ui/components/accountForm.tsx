@@ -2,7 +2,7 @@ import { Col, ButtonToolbar, Button } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, formValueSelector, ReduxFormProps, SubmitFunction } from 'redux-form'
 import { Account } from '../../docs'
 import { Validator } from '../../util'
@@ -84,6 +84,13 @@ const formSelector = formValueSelector<Values>(formName)
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
+  onlyUpdateForPropTypes,
+  setPropTypes({
+    account: React.PropTypes.object,
+    accounts: React.PropTypes.array.isRequired,
+    onSubmit: React.PropTypes.func.isRequired,
+    onCancel: React.PropTypes.func.isRequired
+  }),
   injectIntl,
   reduxForm<AllProps, Values>({
     form: formName,

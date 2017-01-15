@@ -2,7 +2,7 @@ import { Grid } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, withProps } from 'recompose'
+import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Dispatch } from 'redux'
 import { DbInfo, Bank, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
@@ -35,6 +35,8 @@ type AllProps = IntlProps & EnhancedProps & ConnectedProps & RouteProps<Account.
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('AccountEdit'),
+  onlyUpdateForPropTypes,
+  setPropTypes({}),
   injectIntl,
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
