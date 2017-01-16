@@ -27,3 +27,6 @@ declare module NodeJS {
 interface NodeModule {
   hot: __WebpackModuleApi.Hot
 }
+
+declare const __DEVELOPMENT__: boolean
+declare const __TEST__: boolean
