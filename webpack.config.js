@@ -2,7 +2,7 @@ var webpack = require("webpack");
 var fs = require("fs");
 var path = require("path");
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
-
+var CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'development'
@@ -25,7 +25,7 @@ fs.readdirSync(path.join(__dirname, 'node_modules'))
 module.exports = {
   context: path.join(__dirname, 'src'),
   entry: [
-    "./index.ts"
+    "./index.tsx"
   ],
   output: {
     devtoolModuleFilenameTemplate: (info) => `file:///${path.normalize(info.absoluteResourcePath).replace(/\\/g, '/')}`,
@@ -52,7 +52,7 @@ module.exports = {
     noParse: ['ws'],
 
     loaders: [
-      { test: /\.tsx?$/, loaders: ['react-hot-loader/webpack', 'ts-loader'] },
+      { test: /\.tsx?$/, loaders: ['react-hot-loader/webpack', 'awesome-typescript-loader'] },
       { test: /\.css$/, loader: ExtractTextPlugin.extract('style-loader', 'css-loader') },
       { test: /\.(svg|woff|woff2|ttf|eot)($|\?)/, loader: "file?name=fonts/[name].[ext]" },
       { test: /\.(png|gif|jpg)($|\?)/, loader: "file?name=images/[name].[ext]" },
@@ -72,6 +72,8 @@ module.exports = {
   },
 
   plugins: [
+    new CheckerPlugin(),
+
     // globals
     new webpack.ProvidePlugin({
       //_: "lodash",
