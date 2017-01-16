@@ -41,7 +41,7 @@ module.exports = {
   target: 'electron-renderer',
 
   // Enable sourcemaps for debugging webpack's output.
-  devtool: "source-map",
+  devtool: "eval",
 
   resolve: {
       // Add '.ts' and '.tsx' as resolvable extensions.
