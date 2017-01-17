@@ -21,7 +21,7 @@ export const Breadcrumbs = (props: AllProps) => {
       {dbInfo &&
         <Breadcrumb.Item
           active={!bank && !account && !page && !transaction}
-          href={router.createHref(DbInfo.to.view(dbInfo))}
+          href={router.createHref(DbInfo.to.home())}
         >
           {dbInfo.title}
         </Breadcrumb.Item>

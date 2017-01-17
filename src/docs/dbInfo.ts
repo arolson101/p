@@ -23,22 +23,12 @@ export namespace DbInfo {
   }
 
   export namespace routes {
-    export const create = 'dbInfo/create'
-    export const view = 'dbInfo/:db'
-    export const edit = 'dbInfo/:db/edit'
+    export const home = 'home'
   }
 
   export namespace to {
-    export const create = () => {
-      return '/' + routes.create
-    }
-
-    export const view = (dbInfo: Doc) => {
-      return '/' + dbInfo._id
-    }
-
-    export const edit = (dbInfo: Doc) => {
-      return '/' + dbInfo._id + '/edit'
+    export const home = () => {
+      return '/home'
     }
   }
 

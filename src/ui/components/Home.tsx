@@ -14,7 +14,7 @@ interface ConnectedProps {
   current: CurrentDb
 }
 
-type AllProps = React.Props<any> & ConnectedProps & RouteProps<DbInfo.Params>
+type AllProps = React.Props<any> & ConnectedProps & RouteProps<any>
 
 export const DbViewComponent = (props: AllProps) => {
   const { banks, accounts } = props.current.cache
@@ -41,8 +41,8 @@ export const DbViewComponent = (props: AllProps) => {
   )
 }
 
-export const DbView = connect(
-  (state: AppState, props: RouteProps<DbInfo.Params>): ConnectedProps => ({
+export const Home = connect(
+  (state: AppState): ConnectedProps => ({
     dbInfo: selectDbInfo(state),
     current: selectCurrentDb(state)
   })

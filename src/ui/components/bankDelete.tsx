@@ -93,11 +93,11 @@ export class BankDeleteComponent extends React.Component<AllProps, State> {
 
   @autobind
   async inDelete() {
-    const { dbInfo, bank, dispatch, router } = this.props
+    const { bank, dispatch, router } = this.props
     try {
       this.setState({deleting: true, error: undefined})
       await dispatch(deleteBank(bank!))
-      router.replace(DbInfo.to.view(dbInfo!))
+      router.replace(DbInfo.to.home())
     } catch (err) {
       this.setState({deleting: false, error: err.message})
     }

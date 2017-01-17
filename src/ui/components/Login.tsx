@@ -37,7 +37,6 @@ interface ConnectedProps {
 interface EnhancedProps {
   activeId: string
   setActiveId: (activeId: string) => void
-  onSelect: (e: any) => void
   deselect: () => void
   onLogin: (dbInfo: DbInfo.Doc) => void
 }
@@ -53,14 +52,11 @@ const enhance = compose<AllProps, {}>(
   ),
   withState('activeId', 'setActiveId', ''),
   withHandlers({
-    onSelect: (props: AllProps) => (e: number) => {
-      // console.log('onSelect', e.target.parentElement.)
-    },
     deselect: ({setActiveId}: AllProps) => () => {
       setActiveId('')
     },
     onLogin: ({router}: AllProps) => (dbInfo: DbInfo.Doc) => {
-      router.push(DbInfo.to.view(dbInfo))
+      router.push(DbInfo.to.home())
     }
   })
 )
@@ -68,7 +64,7 @@ const enhance = compose<AllProps, {}>(
 const activeProps = { bsStyle: 'info' }
 const createId = '_create'
 
-export const Login = enhance(({ dbInfos, router, activeId, setActiveId, onSelect, deselect, onLogin }) => (
+export const Login = enhance(({ dbInfos, router, activeId, setActiveId, deselect, onLogin }) => (
   <Grid>
     {dbInfos &&
       <div>

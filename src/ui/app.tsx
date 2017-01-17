@@ -30,12 +30,6 @@ const requireAuth = (store: Redux.Store<AppState>) =>
     }
   }
 
-const logout = (store: Redux.Store<AppState>) =>
-  () => {
-    if (store.getState().db.current) {
-      store.dispatch(dbActions.unloadDb())
-    }
-  }
 
 class AppComponent extends React.Component<Props & ConnectedProps, any> {
   render() {
@@ -48,8 +42,8 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
             <Route path='/' component={Components.Root}>
               <IndexRoute component={Components.Login}/>
 
-              <Route onEnter={requireAuth(store)} onLeave={logout(store)}>
-                <Route path={DbInfo.routes.view} component={Components.DbView}/>
+              <Route onEnter={requireAuth(store)}>
+                <Route path={DbInfo.routes.home} component={Components.Home} />
                 <Route path={Bank.routes.create} component={Components.BankCreate}/>
                 <Route path={Bank.routes.view} component={Components.BankView}/>
                 <Route path={Bank.routes.edit} component={Components.BankEdit}/>
