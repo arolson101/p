@@ -24,6 +24,12 @@ export namespace Lookup {
     : []
   )
 
+  export const filter = <K, T>(lookup: Lookup<K, T>, pred: (item: T) => boolean): T[] => (
+    lookup
+    ? Array.from(lookup.values()).filter(pred)
+    : []
+  )
+
   export const hasAny = (lookup: Lookup<any, any>): boolean => (
     lookup
     ? lookup.size !== 0

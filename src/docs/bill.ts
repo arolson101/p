@@ -7,7 +7,7 @@ import * as RRule from 'rrule-alt'
 export interface Bill {
   name: string
   notes?: string
-  rrule: RRule
+  rrule?: RRule
 }
 
 export namespace Bill {

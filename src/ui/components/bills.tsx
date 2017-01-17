@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Grid } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { compose, setDisplayName } from 'recompose'
+import { compose, setDisplayName, withProps } from 'recompose'
 import { Bill } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Lookup } from '../../util'
@@ -13,6 +13,10 @@ interface ConnectedProps {
   current: CurrentDb
 }
 
+interface EnhancedProps {
+  // onCreate
+}
+
 type AllProps = React.Props<any> & ConnectedProps & RouteProps<any>
 
 const enhance = compose<AllProps, {}>(
@@ -21,7 +25,10 @@ const enhance = compose<AllProps, {}>(
     (state: AppState, props: RouteProps<any>): ConnectedProps => ({
       current: state.db.current!
     })
-  )
+  ),
+  withProps((props: AllProps) => {
+
+  })
 )
 
 export const Bills = enhance((props: AllProps) => {
@@ -29,7 +36,7 @@ export const Bills = enhance((props: AllProps) => {
 
   return (
     <Grid>
-      <Breadcrumbs {...props}/>
+      <Breadcrumbs {...props} page='bills'/>
       bills:
       <ul>
         {Lookup.map(bills, bill =>
@@ -38,6 +45,7 @@ export const Bills = enhance((props: AllProps) => {
           </li>
         )}
       </ul>
+      <div><Link to={Bill.to.create()}>add bill</Link></div>
     </Grid>
   )
 })
