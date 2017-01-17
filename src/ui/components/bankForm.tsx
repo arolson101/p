@@ -128,14 +128,17 @@ const enhance = compose<AllProps, Props>(
       online: formSelector(state, 'online')
     })
   ),
-  reduxForm<AllProps, Values>({
-    form: formName,
-    validate: (values: Values, props: AllProps) => {
+  withProps(({onSubmit}) => ({
+    onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
       const { intl: { formatMessage } } = props
       const v = new Validator(values)
       v.required(['name'], formatMessage(forms.required))
-      return v.errors
-    },
+      v.maybeThrowSubmissionError()
+      onSubmit(values, dispatch, props)
+    }
+  })),
+  reduxForm<AllProps, Values>({
+    form: formName,
     initialValues: {
       online: true
     }

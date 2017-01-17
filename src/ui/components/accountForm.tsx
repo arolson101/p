@@ -2,7 +2,7 @@ import { Col, ButtonToolbar, Button } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import { reduxForm, formValueSelector, ReduxFormProps, SubmitFunction } from 'redux-form'
 import { Account } from '../../docs'
 import { Validator } from '../../util'
@@ -92,6 +92,15 @@ const enhance = compose<AllProps, Props>(
     onCancel: React.PropTypes.func.isRequired
   }),
   injectIntl,
+  withProps(({onSubmit}) => ({
+    onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
+      const { intl: { formatMessage } } = props
+      const v = new Validator(values)
+      v.required(['name'], formatMessage(forms.required))
+      v.maybeThrowSubmissionError()
+      onSubmit(values, dispatch, props)
+    }
+  })),
   reduxForm<AllProps, Values>({
     form: formName,
     validate: (values: Values, props: AllProps) => {
@@ -100,7 +109,7 @@ const enhance = compose<AllProps, Props>(
       const otherAccounts = accounts.filter(acct => !account || account._id !== acct._id)
       const otherNames = otherAccounts.map(acct => acct.name)
       const otherNumbers = otherAccounts.filter(acct => acct.type === v.values.type).map(acct => acct.number)
-      v.required(['name', 'number', 'type'], formatMessage(forms.required))
+      v.required(['number', 'type'], formatMessage(forms.required))
       v.unique('name', otherNames, formatMessage(messages.uniqueName))
       v.unique('number', otherNumbers, formatMessage(messages.uniqueNumber))
       return v.errors
