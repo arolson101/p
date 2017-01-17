@@ -1,12 +1,14 @@
 export * from './account'
 export * from './dbInfo'
 export * from './bank'
+export * from './bill'
 export * from './category'
 export * from './transaction'
 
 import { Account } from './account'
 import { DbInfo } from './dbInfo'
 import { Bank } from './bank'
+import { Bill } from './bill'
 import { Category } from './category'
 import { Lookup } from '../util'
 
@@ -29,6 +31,7 @@ export const docChangeActionTesters = new Map([
   [DbInfo.isDocId, DbInfo.cacheUpdateAction],
   [Account.isDocId, Account.cacheUpdateAction],
   [Bank.isDocId, Bank.cacheUpdateAction],
+  [Bill.isDocId, Bill.cacheUpdateAction],
   [Category.isDocId, Category.cacheUpdateAction]
 ])
 

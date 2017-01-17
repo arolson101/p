@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Grid } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { DbInfo, Bank, Account } from '../../docs'
+import { DbInfo, Bank, Account, Bill } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Lookup } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
@@ -40,7 +40,8 @@ export const DbViewComponent = (props: AllProps) => {
           </li>
         )}
       </ul>
-      <Link to={Bank.to.create()}>add institution</Link>
+      <Link to={Bank.to.create()}>add institution</Link><br/>
+      <Link to={Bill.to.all()}>bills</Link>
     </Grid>
   )
 }
