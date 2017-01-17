@@ -42,6 +42,7 @@ export namespace Bank {
   }
 
   export namespace routes {
+    export const all = 'banks'
     export const create = 'bank/create'
     export const view = 'bank/:bankId'
     export const edit = 'bank/:bankId/edit'
@@ -49,6 +50,10 @@ export namespace Bank {
   }
 
   export namespace to {
+    export const all = () => {
+      return '/' + routes.all
+    }
+
     export const create = () => {
       return '/' + routes.create
     }

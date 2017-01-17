@@ -28,7 +28,7 @@ export namespace DbInfo {
 
   export namespace to {
     export const home = () => {
-      return '/home'
+      return '/' + routes.home
     }
   }
 

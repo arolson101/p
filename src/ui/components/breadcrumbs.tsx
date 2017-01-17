@@ -4,7 +4,6 @@ import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { RouteProps } from './props'
 
 interface Props {
-  dbInfo?: DbInfo.Doc
   bank?: Bank.Doc
   account?: Account.Doc
   transaction?: Transaction.Doc
@@ -14,18 +13,16 @@ interface Props {
 type AllProps = Props & RouteProps<any>
 
 export const Breadcrumbs = (props: AllProps) => {
-  const { router, dbInfo, bank, account, transaction, page } = props
+  const { router, bank, account, transaction, page } = props
 
   return (
     <Breadcrumb>
-      {dbInfo &&
-        <Breadcrumb.Item
-          active={!bank && !account && !page && !transaction}
-          href={router.createHref(DbInfo.to.home())}
-        >
-          {dbInfo.title}
-        </Breadcrumb.Item>
-      }
+      <Breadcrumb.Item
+        active={!bank && !account && !page && !transaction}
+        href={router.createHref(DbInfo.to.home())}
+      >
+        home
+      </Breadcrumb.Item>
       {bank &&
         <Breadcrumb.Item
           active={!account && !page && !transaction}

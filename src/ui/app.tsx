@@ -4,7 +4,7 @@ import { Router, Route, IndexRoute } from 'react-router'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
 import { DbInfo, Bank, Account, Transaction, Bill } from '../docs'
-import { AppState, dbActions } from '../state'
+import { AppState } from '../state'
 import * as Components from './components'
 
 interface Props {
@@ -30,7 +30,6 @@ const requireAuth = (store: Redux.Store<AppState>) =>
     }
   }
 
-
 class AppComponent extends React.Component<Props & ConnectedProps, any> {
   render() {
     const { store, locale, history } = this.props
@@ -41,9 +40,9 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
           <Router history={history}>
             <Route path='/' component={Components.Root}>
               <IndexRoute component={Components.Login}/>
-
               <Route onEnter={requireAuth(store)}>
                 <Route path={DbInfo.routes.home} component={Components.Home} />
+                <Route path={Bank.routes.all} component={Components.Accounts} />
                 <Route path={Bank.routes.create} component={Components.BankCreate}/>
                 <Route path={Bank.routes.view} component={Components.BankView}/>
                 <Route path={Bank.routes.edit} component={Components.BankEdit}/>
@@ -54,7 +53,6 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
                 <Route path={Account.routes.del} component={Components.AccountDelete}/>
                 <Route path={Transaction.routes.view} component={Components.TransactionView}/>
                 <Route path={Bill.routes.all} component={Components.Bills}/>
-                <Route path='*' component={NotFoundRoute}/>
               </Route>
               <Route path='*' component={NotFoundRoute}/>
             </Route>
