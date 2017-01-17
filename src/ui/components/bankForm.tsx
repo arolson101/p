@@ -10,7 +10,7 @@ import { AppState, FI, emptyfi, CurrentDb } from '../../state'
 import { withPropChangeCallback } from '../enhancers'
 import { formatAddress } from '../../util'
 import { typedFields, forms } from './forms'
-import { IntlProps } from './props'
+import { IntlProps, PropTypes } from './props'
 
 export { SubmitFunction }
 
@@ -70,7 +70,7 @@ const messages = defineMessages({
 })
 
 interface Props {
-  bank?: Bank.Doc
+  edit?: Bank.Doc
   onSubmit: SubmitFunction<Values>
   onCancel: () => void
 }
@@ -115,10 +115,10 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
   onlyUpdateForPropTypes,
   setPropTypes({
-    bank: React.PropTypes.object,
+    edit: React.PropTypes.object,
     onSubmit: React.PropTypes.func.isRequired,
     onCancel: React.PropTypes.func.isRequired
-  }),
+  } as PropTypes<Props>),
   injectIntl,
   connect(
     (state: AppState): ConnectedProps => ({
@@ -143,11 +143,11 @@ const enhance = compose<AllProps, Props>(
       online: true
     }
   }),
-  withPropChangeCallback('bank', (props: AllProps) => {
-    const { bank, filist, initialize, reset } = props
-    if (bank) {
-      const fi = filist.findIndex(fi => fi.name === bank.fi) + 1
-      const values = { ...bank, ...bank.login, fi }
+  withPropChangeCallback('edit', (props: AllProps) => {
+    const { edit, filist, initialize, reset } = props
+    if (edit) {
+      const fi = filist.findIndex(fi => fi.name === edit.fi) + 1
+      const values = { ...edit, ...edit.login, fi }
       initialize(values, false)
       reset()
     }
@@ -168,7 +168,7 @@ const enhance = compose<AllProps, Props>(
 )
 
 export const BankForm = enhance((props) => {
-const { handleSubmit, bank, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist, online } = props
+const { handleSubmit, edit, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist, online } = props
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Row>
@@ -275,7 +275,7 @@ const { handleSubmit, bank, onSubmit, onCancel, onChangeFI, intl: { formatMessag
           bsStyle='primary'
           id='open-dropdown'
         >
-          {bank ? (
+          {edit ? (
             <FormattedMessage {...forms.save}/>
           ) : (
             <FormattedMessage {...forms.create}/>

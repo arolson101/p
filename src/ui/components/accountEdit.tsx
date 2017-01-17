@@ -75,7 +75,7 @@ export const AccountEdit = enhance((props: AllProps) => {
       {bank && account &&
         <Grid>
           <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
-          <AccountForm {...props} account={account} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
+          <AccountForm {...props} edit={account} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
         </Grid>
       }
     </div>

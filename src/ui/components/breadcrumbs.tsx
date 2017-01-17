@@ -25,6 +25,13 @@ export const Breadcrumbs = (props: AllProps) => {
       </Breadcrumb.Item>
       {bank &&
         <Breadcrumb.Item
+          href={router.createHref(Bank.to.all())}
+        >
+          accounts
+        </Breadcrumb.Item>
+      }
+      {bank &&
+        <Breadcrumb.Item
           active={!account && !page && !transaction}
           href={router.createHref(Bank.to.view(bank))}
         >

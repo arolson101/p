@@ -9,7 +9,7 @@ import { Validator } from '../../util'
 import { AppState } from '../../state'
 import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms } from './forms'
-import { IntlProps } from './props'
+import { IntlProps, PropTypes } from './props'
 
 export { SubmitFunction }
 
@@ -58,7 +58,7 @@ const messages = defineMessages({
 })
 
 interface Props {
-  account?: Account.Doc
+  edit?: Account.Doc
   accounts: Account.Doc[]
   onSubmit: SubmitFunction<Values>
   onCancel: () => void
@@ -86,14 +86,14 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
   onlyUpdateForPropTypes,
   setPropTypes({
-    account: React.PropTypes.object,
+    edit: React.PropTypes.object,
     accounts: React.PropTypes.array.isRequired,
     onSubmit: React.PropTypes.func.isRequired,
     onCancel: React.PropTypes.func.isRequired
-  }),
+  } as PropTypes<Props>),
   injectIntl,
   withProps(({onSubmit}) => ({
-    onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
+    onSubmit: (values: Values, dispatch: any, props: AllProps) => {
       const { intl: { formatMessage } } = props
       const v = new Validator(values)
       v.required(['name'], formatMessage(forms.required))
@@ -105,8 +105,8 @@ const enhance = compose<AllProps, Props>(
     form: formName,
     validate: (values: Values, props: AllProps) => {
       const v = new Validator(values)
-      const { account, accounts, intl: { formatMessage } } = props
-      const otherAccounts = accounts.filter(acct => !account || account._id !== acct._id)
+      const { edit, accounts, intl: { formatMessage } } = props
+      const otherAccounts = accounts.filter(acct => !edit || edit._id !== acct._id)
       const otherNames = otherAccounts.map(acct => acct.name)
       const otherNumbers = otherAccounts.filter(acct => acct.type === v.values.type).map(acct => acct.number)
       v.required(['number', 'type'], formatMessage(forms.required))
@@ -115,10 +115,10 @@ const enhance = compose<AllProps, Props>(
       return v.errors
     }
   }),
-  withPropChangeCallback('account', (props: AllProps) => {
-    const { account, initialize, reset } = props
-    if (account) {
-      const values = account
+  withPropChangeCallback('edit', (props: AllProps) => {
+    const { edit, initialize, reset } = props
+    if (edit) {
+      const values = edit
       initialize(values, false)
       reset()
     }
@@ -131,7 +131,7 @@ const enhance = compose<AllProps, Props>(
 )
 
 export const AccountForm = enhance((props) => {
-  const { account, type, onSubmit, onCancel, handleSubmit } = props
+  const { edit, type, onSubmit, onCancel, handleSubmit } = props
   const { formatMessage } = props.intl
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -185,7 +185,7 @@ export const AccountForm = enhance((props) => {
           type='submit'
           bsStyle='primary'
         >
-          {account ? (
+          {edit ? (
             <FormattedMessage {...forms.save}/>
           ) : (
             <FormattedMessage {...forms.create}/>
