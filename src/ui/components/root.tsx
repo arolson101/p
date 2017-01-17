@@ -16,8 +16,7 @@ export const Root = (props: RouteProps<any>) => (
       }}>&gt;</a>{' '}
       <input style={{width: 350}} type='text' readOnly value={props.location.pathname + props.location.search}/>
       {' '}
-      <Link to='/'>/</Link>{' '}
-      <Link to='/logout'>/logout</Link>{' '}
+      <Link to='/'>/ (root)</Link>{' '}
     </Item>
     <Item flex='1' style={{flexDirection: 'column'}}>
       {props.children}

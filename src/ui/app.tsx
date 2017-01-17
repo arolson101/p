@@ -24,20 +24,17 @@ const requireAuth = (store: Redux.Store<AppState>) =>
   (nextState: any, replace: any) => {
     if (!store.getState().db.current) {
       replace({
-        pathname: DbInfo.routes.view,
+        pathname: '/',
         state: { nextPathname: nextState.location.pathname }
       })
     }
   }
 
 const logout = (store: Redux.Store<AppState>) =>
-  (nextState: any, replace: any) => {
+  () => {
     if (store.getState().db.current) {
       store.dispatch(dbActions.unloadDb())
     }
-    replace({
-      pathname: '/'
-    })
   }
 
 class AppComponent extends React.Component<Props & ConnectedProps, any> {
@@ -49,11 +46,10 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
         <IntlProvider locale={locale}>
           <Router history={history}>
             <Route path='/' component={Components.Root}>
-              <IndexRoute component={Components.DbList}/>
-              <Route path='logout' onEnter={logout(store)}/>
-              <Route path={DbInfo.routes.create} component={Components.DbCreate}/>
-              <Route path={DbInfo.routes.view} component={Components.DbView}/>
-              <Route onEnter={requireAuth(store)}>
+              <IndexRoute component={Components.Login}/>
+
+              <Route onEnter={requireAuth(store)} onLeave={logout(store)}>
+                <Route path={DbInfo.routes.view} component={Components.DbView}/>
                 <Route path={Bank.routes.create} component={Components.BankCreate}/>
                 <Route path={Bank.routes.view} component={Components.BankView}/>
                 <Route path={Bank.routes.edit} component={Components.BankEdit}/>

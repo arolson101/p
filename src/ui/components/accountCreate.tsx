@@ -9,7 +9,7 @@ import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { Values, AccountForm, SubmitFunction } from './accountForm'
 import { IntlProps, RouteProps } from './props'
-import { selectDbInfo, selectBank, selectBankAccounts } from './selectors'
+import { selectCurrentDb, selectDbInfo, selectBank, selectBankAccounts } from './selectors'
 
 const messages = defineMessages({
   page: {
@@ -19,8 +19,8 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  current?: CurrentDb
-  dbInfo?: DbInfo.Doc
+  current: CurrentDb
+  dbInfo: DbInfo.Doc
   bank?: Bank.Doc
   accounts: Account.Doc[]
   lang: string
@@ -40,7 +40,7 @@ const enhance = compose<AllProps, {}>(
   injectIntl,
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
-      current: state.db.current,
+      current: selectCurrentDb(state),
       lang: state.i18n.lang,
       dbInfo: selectDbInfo(state),
       bank: selectBank(state, props),

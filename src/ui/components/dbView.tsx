@@ -7,21 +7,16 @@ import { AppState, CurrentDb } from '../../state'
 import { Lookup } from '../../util'
 import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps } from './props'
-import { DbLogin } from './dbLogin'
-import { selectDbInfo } from './selectors'
+import { selectDbInfo, selectCurrentDb } from './selectors'
 
 interface ConnectedProps {
-  dbInfo?: DbInfo.Doc
-  current?: CurrentDb
+  dbInfo: DbInfo.Doc
+  current: CurrentDb
 }
 
 type AllProps = React.Props<any> & ConnectedProps & RouteProps<DbInfo.Params>
 
 export const DbViewComponent = (props: AllProps) => {
-  if (!props.current || props.current.info._id !== DbInfo.docId({db: props.params.db})) {
-    return <DbLogin {...props}/>
-  }
-
   const { banks, accounts } = props.current.cache
 
   return (
@@ -49,6 +44,6 @@ export const DbViewComponent = (props: AllProps) => {
 export const DbView = connect(
   (state: AppState, props: RouteProps<DbInfo.Params>): ConnectedProps => ({
     dbInfo: selectDbInfo(state),
-    current: state.db.current
+    current: selectCurrentDb(state)
   })
 )(DbViewComponent as any) as React.ComponentClass<{}>

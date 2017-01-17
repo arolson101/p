@@ -2,8 +2,15 @@ import { AppState } from '../../state'
 import { Bank, Account } from '../../docs'
 import { RouteProps } from './props'
 
+export const selectCurrentDb = (state: AppState) => {
+  return state.db.current!
+}
+
 export const selectDbInfo = (state: AppState) => {
-  return state.db.current && state.db.current.info
+  if (!state.db.current) {
+    throw new Error('not logged in')
+  }
+  return state.db.current.info
 }
 
 export const selectBank = (state: AppState, props: RouteProps<Bank.Params>) => {
