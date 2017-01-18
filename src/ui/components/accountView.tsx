@@ -2,18 +2,18 @@ import * as React from 'react'
 import { Button, Grid, PageHeader } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { AutoSizer } from 'react-virtualized'
-import { compose, setDisplayName, withHandlers, withState, pure } from 'recompose'
+import { AutoSizer, Column } from 'react-virtualized'
+import { compose, setDisplayName, withHandlers, withState, renderComponent } from 'recompose'
 import { getTransactions, deleteTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
-import { AppState, CurrentDb, ResponsiveState } from '../../state'
+import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { Container, Item } from './flex'
 import { RouteProps, DispatchProps } from './props'
-import { withQuerySyncedState } from './queryState'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
 import { TransactionDetail } from './transactionDetail'
-import { TransactionList } from './transactionList'
+import { withResolveProp } from '../enhancers'
+import { ListWithDetails, getRowData, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
 
 interface ConnectedProps {
   dbInfo?: DbInfo.Doc
@@ -39,12 +39,16 @@ interface Values {
 
 type EnhancedProps = AllProps & {
   transactions: Promise<Transaction.Doc[]>
+  items: Transaction.Doc[]
   loadTransactions(): Promise<Transaction.Doc[]>
   setTransactions(promise: Promise<Transaction.Doc[]>): void
   addTransactions(): void
   downloadTransactions(): void
   deleteTransactions(): void
 }
+
+const SpinnerRender = () => <div>loading</div>
+const ErrorRender = ({ transactions: error }: { transactions: Error }) => <div>error: {error.message}</div>
 
 const enhance = compose<EnhancedProps, {}>(
   setDisplayName('AccountViewComponent'),
@@ -102,15 +106,20 @@ const enhance = compose<EnhancedProps, {}>(
       setTransactions(loadTransactions())
     }
   }),
-  pure
+  withResolveProp(
+    'transactions',
+    'items',
+    renderComponent(SpinnerRender),
+    renderComponent(ErrorRender)
+  )
 )
 
 export const AccountView = enhance((props) => {
-  const { bank, account, transactions } = props
+  const { bank, account, items } = props
   const { downloadTransactions, addTransactions, deleteTransactions } = props
   return (
     <div>
-      {account && bank && transactions &&
+      {account && bank &&
         <Grid>
           <Breadcrumbs {...props}/>
           <PageHeader>
@@ -122,7 +131,36 @@ export const AccountView = enhance((props) => {
             <Item flex={1} style={{height: 500}}>
               <AutoSizer>
                 {(autoSizerProps: AutoSizer.ChildrenProps) => (
-                  <TransactionListDetails transactions={transactions} {...autoSizerProps} />
+                  <ListWithDetails
+                    items={items}
+                    {...autoSizerProps}
+                    columns={[
+                      {
+                        label: 'Date',
+                        dataKey: 'time',
+                        cellRenderer: dateCellRenderer,
+                        width: 100
+                      },
+                      {
+                        label: 'Name',
+                        dataKey: 'name',
+                        width: 300,
+                        flexGrow: 1,
+                        cellDataGetter: getRowData,
+                        cellRenderer: nameCellRenderer
+                      },
+                      {
+                        label: 'Amount',
+                        dataKey: 'amount',
+                        headerClassName: 'alignRight',
+                        style: {textAlign: 'right'},
+                        cellRenderer: currencyCellRenderer,
+                        width: 100
+                      }
+                    ]}
+                    DetailComponent={TransactionDetail}
+                    toView={Transaction.to.view}
+                  />
                 )}
               </AutoSizer>
             </Item>
@@ -138,87 +176,9 @@ export const AccountView = enhance((props) => {
   )
 })
 
-const SpinnerRender = () => <div>loading</div>
-const ErrorRender = ({ transactions: error }: { transactions: Error }) => <div>error: {error.message}</div>
-
-import { withProps, renderComponent } from 'recompose'
-import { withResolveProp } from './resolveProp'
-
-interface PProps {
-  transactions: Promise<Transaction.Doc[]>
-  width: number
-  height: number
-}
-
-interface ConnectedPProps {
-  browser: ResponsiveState
-}
-
-type EnhancedPProps = PProps & ConnectedPProps & RouteProps<any> & {
-  width: number
-  height: number
-  scrollTop: number
-  sideBySide: boolean
-  setScrollTop: (scrollTop: number) => void
-  selectedIndex: number
-  setSelectedIndex(selectedIndex: number): void
-  onSetSelectedIndex(selectedIndex: number): void
-  transactions: Transaction.Doc[]
-}
-
-const enhance2 = compose<EnhancedPProps, PProps>(
-  setDisplayName('TransactionListDetails'),
-  connect(
-    (state: AppState, props: RouteProps<Account.Params>): ConnectedPProps => ({
-      browser: state.browser
-    })
-  ),
-  withResolveProp(
-    'transactions',
-    renderComponent(SpinnerRender),
-    renderComponent(ErrorRender)
-  ),
-  withProps(({browser}: EnhancedPProps) => ({
-    sideBySide: browser.greaterThan.small
-  })),
-  withQuerySyncedState('scrollTop', 'setScrollTop', 0, parseFloat),
-  withQuerySyncedState('selectedIndex', 'setSelectedIndex', -1, parseFloat),
-  withHandlers({
-    onSetSelectedIndex: ({setSelectedIndex, transactions, sideBySide, router}: EnhancedPProps) => (selectedIndex: number) => {
-      setSelectedIndex(selectedIndex)
-      if (!sideBySide && selectedIndex !== -1) {
-        router.push(Transaction.to.view(transactions[selectedIndex]))
-      }
-    }
-  }),
-  pure
+export const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Transaction.Doc>) => (
+  <div>
+    {cellData.name}<br/>
+    <small>{cellData.memo}</small>
+  </div>
 )
-
-const TransactionListDetails = enhance2((props) => {
-  const { sideBySide, browser, scrollTop, setScrollTop, onSetSelectedIndex, selectedIndex, transactions } = props
-  const listMaxWidth = sideBySide ? browser.breakpoints.extraSmall : Infinity
-  const selectedTransaction = selectedIndex !== -1 ? transactions[selectedIndex] : undefined
-  return (
-    <Container>
-      <Item flex={1} style={{maxWidth: listMaxWidth}}>
-        <TransactionList
-          transactions={transactions}
-          setScrollTop={setScrollTop}
-          scrollTop={scrollTop}
-          selectedIndex={selectedIndex}
-          setSelectedIndex={onSetSelectedIndex}
-          maxWidth={listMaxWidth}
-          width={Math.min(props.width, listMaxWidth)}
-          height={props.height}
-        />
-      </Item>
-      {sideBySide &&
-        <Item flex={1}>
-          {selectedTransaction &&
-            <TransactionDetail {...props} transaction={selectedTransaction} />
-          }
-        </Item>
-      }
-    </Container>
-  )
-})

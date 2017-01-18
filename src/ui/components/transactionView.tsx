@@ -64,7 +64,7 @@ export class TransactionViewComponent extends React.Component<AllProps, State> {
             <PageHeader>
               {transaction.name}
             </PageHeader>
-            <TransactionDetail {...this.props} transaction={transaction}/>
+            <TransactionDetail {...this.props} item={transaction}/>
           </Grid>
         }
       </div>

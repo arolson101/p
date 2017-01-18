@@ -2,16 +2,15 @@ import * as React from 'react'
 import { Grid } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { AutoSizer } from 'react-virtualized'
-import { compose, setDisplayName, withProps } from 'recompose'
+import { AutoSizer,Column } from 'react-virtualized'
+import { compose, setDisplayName } from 'recompose'
 import { Bill } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Container, Item } from './flex'
 import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps } from './props'
-import { withQuerySyncedState } from './queryState'
 import { selectBills } from './selectors'
-import { BillList } from './BillList'
+import { ListWithDetails, getRowData, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
 
 interface ConnectedProps {
   current: CurrentDb,
@@ -34,13 +33,15 @@ const enhance = compose<AllProps, {}>(
       current: state.db.current!,
       bills: selectBills(state)
     })
-  ),
-  withQuerySyncedState('scrollTop', 'setScrollTop', 0, parseFloat),
-  withQuerySyncedState('selectedIndex', 'setSelectedIndex', -1, parseFloat),
+  )
 )
 
+const BillDetail = ({item}: {item: Bill.Doc}) => {
+  return <div>bill detail: {item.name}</div>
+}
+
 export const Bills = enhance((props: AllProps) => {
-  const { bills, scrollTop, setScrollTop, setSelectedIndex, selectedIndex } = props
+  const { bills } = props
 
   return (
     <Grid>
@@ -49,14 +50,35 @@ export const Bills = enhance((props: AllProps) => {
         <Item flex={1} style={{height: 500}}>
           <AutoSizer>
             {(autoSizerProps: AutoSizer.ChildrenProps) => (
-              <BillList
-                bills={bills}
+              <ListWithDetails
+                items={bills}
                 {...autoSizerProps}
-                maxWidth={autoSizerProps.width}
-                setScrollTop={setScrollTop}
-                scrollTop={scrollTop}
-                selectedIndex={selectedIndex}
-                setSelectedIndex={setSelectedIndex}
+                columns={[
+                  {
+                    label: 'Date',
+                    dataKey: 'time',
+                    cellRenderer: dateCellRenderer,
+                    width: 100
+                  },
+                  {
+                    label: 'Name',
+                    dataKey: 'name',
+                    width: 300,
+                    flexGrow: 1,
+                    cellDataGetter: getRowData,
+                    cellRenderer: nameCellRenderer
+                  },
+                  {
+                    label: 'Amount',
+                    dataKey: 'amount',
+                    headerClassName: 'alignRight',
+                    style: {textAlign: 'right'},
+                    cellRenderer: currencyCellRenderer,
+                    width: 100
+                  }
+                ]}
+                DetailComponent={BillDetail}
+                toView={Bill.to.view}
               />
             )}
           </AutoSizer>
@@ -66,3 +88,10 @@ export const Bills = enhance((props: AllProps) => {
     </Grid>
   )
 })
+
+const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Bill.Doc>) => (
+  <div>
+    {cellData.name}<br/>
+    <small>{cellData.notes}</small>
+  </div>
+)

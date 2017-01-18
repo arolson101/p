@@ -3,7 +3,7 @@ import { compose, branch, ComponentEnhancer, mapPropsStream, setDisplayName } fr
 
 type Renderer<T> = ComponentEnhancer<T, T>
 
-export const withResolveProp = (key: string, loadingRender: Renderer<{}>, errorRender: Renderer<{error: Error}>) => compose(
+export const withResolveProp = (key: string, key2: string, loadingRender: Renderer<{}>, errorRender: Renderer<{error: Error}>) => compose(
   setDisplayName('resolveProp'),
   mapPropsStream((props$: Rx.Observable<any>) => {
     const value$ = props$
@@ -21,14 +21,14 @@ export const withResolveProp = (key: string, loadingRender: Renderer<{}>, errorR
       .switch()
 
     return props$
-      .combineLatest(value$, (props, value) => ({...props, [key]: value}))
+      .combineLatest(value$, (props, value) => ({...props, [key2]: value}))
   }),
   branch(
-    ({[key]: error}) => error instanceof Error,
+    ({[key2]: error}) => error instanceof Error,
     errorRender
   ),
   branch(
-    ({[key]: value}) => !value,
+    ({[key2]: value}) => !value,
     loadingRender
   )
 )
