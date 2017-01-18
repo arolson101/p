@@ -46,5 +46,3 @@ export type RouteProps<Params> = RouteComponentProps<Params, any>
 export interface DispatchProps {
   dispatch: AppDispatch
 }
-
-export type PropTypes<T> = { [K in keyof T]: React.Requireable<any> }

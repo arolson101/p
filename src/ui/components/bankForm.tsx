@@ -10,7 +10,7 @@ import { AppState, FI, emptyfi, CurrentDb } from '../../state'
 import { withPropChangeCallback } from '../enhancers'
 import { formatAddress } from '../../util'
 import { typedFields, forms } from './forms'
-import { IntlProps, PropTypes } from './props'
+import { IntlProps } from './props'
 
 export { SubmitFunction }
 

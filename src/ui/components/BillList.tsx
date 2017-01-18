@@ -1,13 +1,12 @@
 import * as React from 'react'
-import { FormattedDate, FormattedNumber } from 'react-intl'
 import { Table, Column } from 'react-virtualized'
 import 'react-virtualized/styles.css'
 import { compose, setDisplayName, withHandlers, withProps, pure } from 'recompose'
-import { Transaction } from '../../docs'
-import './transactionList.css'
+import { Bill } from '../../docs'
+import { getRowData, nameCellRenderer, dateCellRenderer, currencyCellRenderer } from './transactionList'
 
 interface Props {
-  transactions: Transaction.Doc[]
+  bills: Bill.Doc[]
   scrollTop: number
   setScrollTop: (scrollTop: number) => void
   selectedIndex: number
@@ -25,13 +24,13 @@ interface EnhancedProps extends Props {
 }
 
 const enhance = compose<EnhancedProps, Props>(
-  setDisplayName('TransactionList'),
+  setDisplayName('BillList'),
   withHandlers({
     onScroll: ({setScrollTop}: Props) => (e: Table.OnScrollProps) => {
       setScrollTop(e.scrollTop)
     },
-    rowGetter: ({transactions}: Props) => ({index}: Table.RowGetterProps) => {
-      return transactions[index]
+    rowGetter: ({bills}: Props) => ({index}: Table.RowGetterProps) => {
+      return bills[index]
     },
     rowClassName: ({selectedIndex}: Props) => ({index}: Table.RowClassNameProps) => {
       if (index < 0) {
@@ -49,16 +48,16 @@ const enhance = compose<EnhancedProps, Props>(
   pure
 )
 
-export const TransactionList = enhance((props) => {
+export const BillList = enhance((props) => {
   const { rowGetter, onRowClick, rowClassName } = props
-  const { transactions, onScroll, scrollTop, maxWidth, width, height } = props
+  const { bills, onScroll, scrollTop, maxWidth, width, height } = props
   return <Table
     tabIndex={null}
     onScroll={onScroll}
     scrollTop={scrollTop}
     style={{flex: 1, maxWidth}}
     headerHeight={20}
-    rowCount={transactions.length}
+    rowCount={bills.length}
     rowHeight={50}
     rowGetter={rowGetter}
     rowClassName={rowClassName}
@@ -90,22 +89,3 @@ export const TransactionList = enhance((props) => {
     />
   </Table>
 })
-
-export const getRowData = ({rowData}: Column.CellDataGetterArgs<Transaction.Doc>) => {
-  return rowData
-}
-
-export const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Transaction>) => (
-  <div>
-    {cellData.name}<br/>
-    <small>{cellData.memo}</small>
-  </div>
-)
-
-export const dateCellRenderer = ({cellData}: Column.CellRendererArgs<Date>) => (
-  cellData && <FormattedDate value={cellData} />
-)
-
-export const currencyCellRenderer = ({cellData}: Column.CellRendererArgs<number>) => (
-  cellData && <FormattedNumber value={cellData} style='currency' currency='USD' currencyDisplay='symbol' />
-)

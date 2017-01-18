@@ -1,3 +1,4 @@
+import { createSelector } from 'reselect'
 import { AppState } from '../../state'
 import { Bank, Account } from '../../docs'
 import { RouteProps } from './props'
@@ -33,3 +34,8 @@ export const selectAccount = (state: AppState, props: RouteProps<Account.Params>
   const id = Account.docId(props.params)
   return state.db.current && state.db.current.cache.accounts.get(id)
 }
+
+export const selectBills = createSelector(
+  (state: AppState) => state.db.current!.cache.bills,
+  (bills) => [...bills.values()]
+)

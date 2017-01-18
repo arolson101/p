@@ -775,7 +775,7 @@ declare module "react-virtualized" {
       /**
        * Optional override of inner Grid tab index default; defaults to 0.
        */
-      tabIndex?: number
+      tabIndex?: number | null
       /**
        * Width of the table
        */

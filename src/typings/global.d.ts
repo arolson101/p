@@ -30,3 +30,5 @@ interface NodeModule {
 
 declare const __DEVELOPMENT__: boolean
 declare const __TEST__: boolean
+
+type PropTypes<T> = { [K in keyof T]: React.Requireable<any> }

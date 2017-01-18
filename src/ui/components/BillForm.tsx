@@ -56,10 +56,10 @@ const enhance = compose<AllProps, Props>(
   onlyUpdateForPropTypes,
   setPropTypes({
     edit: React.PropTypes.object,
-    // bills: React.PropTypes.array.isRequired,
-    onCreate: React.PropTypes.func.isRequired,
+    bills: React.PropTypes.instanceOf(Map).isRequired,
+    onSubmit: React.PropTypes.func.isRequired,
     onCancel: React.PropTypes.func.isRequired
-  }),
+  } as PropTypes<Props>),
   connect(
     (state: AppState): ConnectedProps => ({
       lang: state.i18n.lang

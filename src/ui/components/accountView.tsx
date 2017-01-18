@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Button, Grid, PageHeader } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { reduxForm, ReduxFormProps } from 'redux-form'
 import { AutoSizer } from 'react-virtualized'
 import { compose, setDisplayName, withHandlers, withState, pure } from 'recompose'
 import { getTransactions, deleteTransactions } from '../../actions'
@@ -26,7 +25,6 @@ interface ConnectedProps {
 type AllProps = RouteProps<Account.Params>
   & ConnectedProps
   & DispatchProps
-  & ReduxFormProps<Values>
 
 interface PageState {
   scroll: number
@@ -48,8 +46,6 @@ type EnhancedProps = AllProps & {
   deleteTransactions(): void
 }
 
-const formName = 'AccountView'
-
 const enhance = compose<EnhancedProps, {}>(
   setDisplayName('AccountViewComponent'),
   connect(
@@ -60,9 +56,6 @@ const enhance = compose<EnhancedProps, {}>(
       current: state.db.current!
     })
   ),
-  reduxForm<AllProps, Values>({
-    form: formName
-  }),
   withHandlers({
     loadTransactions: (props: AllProps) => async() => {
       if (props.current && props.account) {

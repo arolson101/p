@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ButtonToolbar, Button, SplitButton, MenuItem, Form } from 'react-bootstrap'
+import { ButtonToolbar, Button, SplitButton, MenuItem } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps } from 'recompose'

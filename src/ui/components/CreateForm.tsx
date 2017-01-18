@@ -1,4 +1,4 @@
-import { Grid, Button, ButtonToolbar } from 'react-bootstrap'
+import { Button, ButtonToolbar } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
@@ -115,4 +115,3 @@ export const CreateForm = enhance((props) => {
     </form>
   )
 })
-

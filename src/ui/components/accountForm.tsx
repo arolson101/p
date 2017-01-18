@@ -9,7 +9,7 @@ import { Validator } from '../../util'
 import { AppState } from '../../state'
 import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms } from './forms'
-import { IntlProps, PropTypes } from './props'
+import { IntlProps } from './props'
 
 export { SubmitFunction }
 
