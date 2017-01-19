@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Grid } from 'react-bootstrap'
+import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { AutoSizer,Column } from 'react-virtualized'
@@ -11,6 +12,13 @@ import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps } from './props'
 import { selectBills } from './selectors'
 import { ListWithDetails, getRowData, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
+
+const messages = defineMessages({
+  page: {
+    id: 'bills.page',
+    defaultMessage: 'Bills'
+  }
+})
 
 interface ConnectedProps {
   current: CurrentDb,
@@ -45,7 +53,7 @@ export const Bills = enhance((props: AllProps) => {
 
   return (
     <Grid>
-      <Breadcrumbs {...props} page='bills'/>
+      <Breadcrumbs {...props} page={messages.page}/>
       <Container>
         <Item flex={1} style={{height: 500}}>
           <AutoSizer>

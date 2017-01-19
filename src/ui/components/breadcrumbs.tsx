@@ -1,18 +1,49 @@
 import * as React from 'react'
 import { Breadcrumb } from 'react-bootstrap'
+import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
+import { connect } from 'react-redux'
+import { compose, setDisplayName } from 'recompose'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
+import { AppState } from '../../state'
 import { RouteProps } from './props'
+import { selectDbInfo, selectBank, selectAccount } from './selectors'
+
+const messages = defineMessages({
+  home: {
+    id: 'Breadcrumbs.home',
+    defaultMessage: 'Home'
+  },
+  accounts: {
+    id: 'Breadcrumbs.accounts',
+    defaultMessage: 'Accounts'
+  }
+})
 
 interface Props {
-  bank?: Bank.Doc
-  account?: Account.Doc
   transaction?: Transaction.Doc
-  page?: string
+  page?: FormattedMessage.MessageDescriptor
 }
 
-type AllProps = Props & RouteProps<any>
+interface ConnectedProps {
+  dbInfo?: DbInfo.Doc
+  bank?: Bank.Doc
+  account?: Account.Doc
+}
 
-export const Breadcrumbs = (props: AllProps) => {
+type AllProps = Props & RouteProps<any> & ConnectedProps
+
+const enhance = compose<AllProps, Props>(
+  setDisplayName('Breadcrumbs'),
+  connect(
+    (state: AppState, props: AllProps): ConnectedProps => ({
+      dbInfo: selectDbInfo(state),
+      bank: selectBank(state, props),
+      account: selectAccount(state, props)
+  })),
+  injectIntl
+)
+
+export const Breadcrumbs = enhance((props) => {
   const { router, bank, account, transaction, page } = props
 
   return (
@@ -21,13 +52,13 @@ export const Breadcrumbs = (props: AllProps) => {
         active={!bank && !account && !page && !transaction}
         href={router.createHref(DbInfo.to.home())}
       >
-        home
+        <FormattedMessage {...messages.home}/>
       </Breadcrumb.Item>
       {bank &&
         <Breadcrumb.Item
           href={router.createHref(Bank.to.all())}
         >
-          accounts
+          <FormattedMessage {...messages.accounts}/>
         </Breadcrumb.Item>
       }
       {bank &&
@@ -56,9 +87,9 @@ export const Breadcrumbs = (props: AllProps) => {
       }
       {page &&
         <Breadcrumb.Item active>
-          {page}
+          <FormattedMessage {...page}/>
         </Breadcrumb.Item>
       }
     </Breadcrumb>
   )
-}
+})

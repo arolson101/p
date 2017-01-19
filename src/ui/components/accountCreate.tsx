@@ -1,6 +1,6 @@
 import { Grid } from 'react-bootstrap'
 import * as React from 'react'
-import { injectIntl, defineMessages } from 'react-intl'
+import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Dispatch } from 'redux'
@@ -8,7 +8,7 @@ import { DbInfo, Bank, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { Values, AccountForm, SubmitFunction } from './accountForm'
-import { IntlProps, RouteProps } from './props'
+import { RouteProps } from './props'
 import { selectCurrentDb, selectDbInfo, selectBank, selectBankAccounts } from './selectors'
 
 const messages = defineMessages({
@@ -31,13 +31,12 @@ interface EnhancedProps {
   onSubmit: SubmitFunction<Values>
 }
 
-type AllProps = IntlProps & EnhancedProps & ConnectedProps & RouteProps<Account.Params>
+type AllProps = EnhancedProps & ConnectedProps & RouteProps<Account.Params>
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('AccountEdit'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
-  injectIntl,
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       current: selectCurrentDb(state),
@@ -71,12 +70,11 @@ const enhance = compose<AllProps, {}>(
 
 export const AccountCreate = enhance((props) => {
   const { bank, accounts, onSubmit, onCancel } = props
-  const { formatMessage } = props.intl
   return (
     <div>
       {bank &&
         <Grid>
-          <Breadcrumbs {...props} page={formatMessage(messages.page)}/>
+          <Breadcrumbs {...props} page={messages.page}/>
           <AccountForm {...props} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
         </Grid>
       }

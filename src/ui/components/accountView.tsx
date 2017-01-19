@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { Button, Grid, PageHeader } from 'react-bootstrap'
+import { Grid, PageHeader, ButtonGroup, DropdownButton, MenuItem, Button } from 'react-bootstrap'
+import { defineMessages, injectIntl, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { AutoSizer, Column } from 'react-virtualized'
@@ -9,11 +10,30 @@ import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { Container, Item } from './flex'
-import { RouteProps, DispatchProps } from './props'
+import { RouteProps, DispatchProps, IntlProps } from './props'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
 import { TransactionDetail } from './transactionDetail'
 import { withResolveProp } from '../enhancers'
 import { ListWithDetails, getRowData, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
+
+const messages = defineMessages({
+  settings: {
+    id: 'accountView.settings',
+    defaultMessage: 'Options'
+  },
+  update: {
+    id: 'accountView.update',
+    defaultMessage: 'Edit'
+  },
+  delete: {
+    id: 'inRead.delete',
+    defaultMessage: 'Delete'
+  },
+  downloadTransactions: {
+    id: 'inRead.downloadTransactions',
+    defaultMessage: 'Download Transactions'
+  }
+})
 
 interface ConnectedProps {
   dbInfo?: DbInfo.Doc
@@ -24,7 +44,9 @@ interface ConnectedProps {
 
 type AllProps = RouteProps<Account.Params>
   & ConnectedProps
+  & EnhancedProps
   & DispatchProps
+  & IntlProps
 
 interface PageState {
   scroll: number
@@ -37,7 +59,7 @@ interface Values {
   amount: string
 }
 
-type EnhancedProps = AllProps & {
+interface EnhancedProps {
   transactions: Promise<Transaction.Doc[]>
   items: Transaction.Doc[]
   loadTransactions(): Promise<Transaction.Doc[]>
@@ -50,8 +72,9 @@ type EnhancedProps = AllProps & {
 const SpinnerRender = () => <div>loading</div>
 const ErrorRender = ({ transactions: error }: { transactions: Error }) => <div>error: {error.message}</div>
 
-const enhance = compose<EnhancedProps, {}>(
+const enhance = compose<AllProps, {}>(
   setDisplayName('AccountViewComponent'),
+  injectIntl,
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       dbInfo: selectDbInfo(state),
@@ -73,9 +96,9 @@ const enhance = compose<EnhancedProps, {}>(
       }
     }
   }),
-  withState('transactions', 'setTransactions', ({loadTransactions}: EnhancedProps) => loadTransactions()),
+  withState('transactions', 'setTransactions', ({loadTransactions}: AllProps) => loadTransactions()),
   withHandlers({
-    addTransactions: (props: EnhancedProps) => async() => {
+    addTransactions: (props: AllProps) => async() => {
       const { current, account, setTransactions, loadTransactions } = props
       const txs: Transaction.Doc[] = []
       for (let i = 0; i < 1000; i++) {
@@ -94,13 +117,13 @@ const enhance = compose<EnhancedProps, {}>(
       setTransactions(loadTransactions())
     },
 
-    downloadTransactions: (props: EnhancedProps) => async () => {
+    downloadTransactions: (props: AllProps) => async () => {
       const { dispatch, bank, account, setTransactions, loadTransactions } = props
       await dispatch(getTransactions(bank!, account!, new Date(2016, 11, 1), new Date(2016, 11, 31), (str) => str.defaultMessage!))
       setTransactions(loadTransactions())
     },
 
-    deleteTransactions: (props: EnhancedProps) => async() => {
+    deleteTransactions: (props: AllProps) => async() => {
       const { dispatch, account, setTransactions, loadTransactions } = props
       await dispatch(deleteTransactions(account!))
       setTransactions(loadTransactions())
@@ -115,7 +138,7 @@ const enhance = compose<EnhancedProps, {}>(
 )
 
 export const AccountView = enhance((props) => {
-  const { bank, account, items } = props
+  const { bank, account, items, router, intl: { formatMessage } } = props
   const { downloadTransactions, addTransactions, deleteTransactions } = props
   return (
     <div>
@@ -127,6 +150,40 @@ export const AccountView = enhance((props) => {
             {' '}
             <small>{account.number}</small>
           </PageHeader>
+
+          <ButtonGroup className='pull-right'>
+            <DropdownButton bsSize='small' id='in-action-menu' title={formatMessage(messages.settings)} pullRight>
+              <MenuItem header>Account</MenuItem>
+              {/* download transactions */}
+              <MenuItem onClick={downloadTransactions}>
+                <FormattedMessage {...messages.downloadTransactions}/>
+              </MenuItem>
+              {/* create transactions */}
+              {__DEVELOPMENT__ &&
+                <MenuItem disabled={!bank.online} onClick={addTransactions}>
+                  create transactions
+                </MenuItem>
+              }
+              {/* delete transactions */}
+              {__DEVELOPMENT__ &&
+                <MenuItem disabled={!bank.online} onClick={deleteTransactions}>
+                  delete transactions
+                </MenuItem>
+              }
+              <MenuItem divider />
+              <MenuItem header>Account</MenuItem>
+              {/* update */}
+              <MenuItem href={router.createHref(Account.to.edit(account))}>
+                <FormattedMessage {...messages.update}/>
+              </MenuItem>
+              {/* delete */}
+              <MenuItem href={router.createHref(Account.to.del(account))}>
+                <FormattedMessage {...messages.delete}/>
+              </MenuItem>
+
+            </DropdownButton>
+          </ButtonGroup>
+
           <Container>
             <Item flex={1} style={{height: 500}}>
               <AutoSizer>
@@ -165,11 +222,6 @@ export const AccountView = enhance((props) => {
               </AutoSizer>
             </Item>
           </Container>
-          <div><Button onClick={downloadTransactions}>download transactions</Button></div>
-          <div><Button onClick={addTransactions}>create transactions</Button></div>
-          <div><Button onClick={deleteTransactions}>delete transactions</Button></div>
-          <div><Link to={Account.to.edit(account)}>update</Link></div>
-          <div><Link to={Account.to.del(account)}>delete</Link></div>
         </Grid>
       }
     </div>

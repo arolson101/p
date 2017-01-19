@@ -1,7 +1,7 @@
 import autobind = require('autobind-decorator')
 import * as React from 'react'
 import { Grid, Alert, Button, ButtonToolbar } from 'react-bootstrap'
-import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
+import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose } from 'redux'
 import { deleteBank } from '../../actions'
@@ -9,7 +9,7 @@ import { DbInfo, Bank } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { forms } from './forms'
-import { IntlProps, RouteProps, DispatchProps } from './props'
+import { RouteProps, DispatchProps } from './props'
 import { selectDbInfo, selectBank } from './selectors'
 
 const messages = defineMessages({
@@ -33,7 +33,7 @@ interface ConnectedProps {
   bank?: Bank.Doc
 }
 
-type AllProps = IntlProps & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
+type AllProps = ConnectedProps & DispatchProps & RouteProps<Bank.Params>
 
 interface State {
   error?: string
@@ -54,13 +54,12 @@ export class BankDeleteComponent extends React.Component<AllProps, State> {
 
   render() {
     const { router, bank } = this.props
-    const { formatMessage } = this.props.intl
     const { error, deleting } = this.state
     return (
       <div>
         {bank &&
           <Grid>
-            <Breadcrumbs {...this.props} page={formatMessage(messages.page)}/>
+            <Breadcrumbs {...this.props} page={messages.page}/>
             <div>
               <p><FormattedMessage {...messages.text} values={{name: bank.name}}/></p>
               {error &&
@@ -105,7 +104,6 @@ export class BankDeleteComponent extends React.Component<AllProps, State> {
 }
 
 export const BankDelete = compose(
-  injectIntl,
   connect(
     (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => ({
       current: state.db.current!,
