@@ -3,6 +3,7 @@ import { Field, FieldProps, FieldComponent, InjectedFieldProps } from 'redux-for
 import * as RB from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import * as Select from 'react-select'
+import { DatePicker } from './DatePicker'
 
 export const forms = defineMessages({
   password: {
@@ -102,6 +103,7 @@ export const TextControl = WrappedControl(RB.FormControl, {type: 'input'})
 export const MultilineTextControl = WrappedControl(RB.FormControl, {componentClass: 'textarea'})
 export const PasswordControl = WrappedControl(RB.FormControl, {type: 'password'})
 export const SelectControl = WrappedControl<string, Select.ReactSelectProps>(RFSelect)
+export const DateControl = WrappedControl<string, React.HTMLProps<any>>(DatePicker)
 
 export const typedFields = function<Values> () {
   return ({
@@ -109,6 +111,7 @@ export const typedFields = function<Values> () {
     MultilineTextField: FieldTemplate<Values, RB.FormControlProps>(MultilineTextControl),
     PasswordField: FieldTemplate<Values, RB.FormControlProps>(PasswordControl),
     SelectField: FieldTemplate<Values, Select.ReactSelectProps>(SelectControl),
-    CheckboxField: FieldTemplate<Values, RB.CheckboxProps>(RBCheckbox)
+    CheckboxField: FieldTemplate<Values, RB.CheckboxProps>(RBCheckbox),
+    DateField: FieldTemplate<Values, React.HTMLProps<any>>(DateControl)
   })
 }

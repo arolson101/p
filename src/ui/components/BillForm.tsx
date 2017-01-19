@@ -19,6 +19,10 @@ const messages = defineMessages({
     id: 'BillForm.name',
     defaultMessage: 'Name'
   },
+  date: {
+    id: 'BillForm.date',
+    defaultMessage: 'Date'
+  },
   notes: {
     id: 'BillForm.notes',
     defaultMessage: 'Notes'
@@ -47,6 +51,7 @@ interface EnhancedProps {
 type AllProps = Props & EnhancedProps & ConnectedProps & IntlProps & ReduxFormProps<Values>
 
 export interface Values {
+  date: Date
   name: string
   notes: string
 }
@@ -67,10 +72,10 @@ const enhance = compose<AllProps, Props>(
   ),
   injectIntl,
   withProps(({onSubmit}): EnhancedProps => ({
-    onSubmit: (values: Values, dispatch: any, props: AllProps) => {
+    onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
       const { intl: { formatMessage } } = props
       const v = new Validator(values)
-      v.required(['name'], formatMessage(forms.required))
+      v.required(['name', 'date'], formatMessage(forms.required))
       v.maybeThrowSubmissionError()
       onSubmit(values, dispatch, props)
     }
@@ -95,7 +100,7 @@ const enhance = compose<AllProps, Props>(
   })
 )
 
-const { TextField } = typedFields<Values>()
+const { TextField, DateField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
   const { edit, onSubmit, onCancel, handleSubmit } = props
@@ -107,6 +112,12 @@ export const BillForm = enhance((props) => {
           name='name'
           autoFocus
           label={formatMessage(messages.name)}
+        />
+      </Col>
+      <Col>
+        <DateField
+          name='date'
+          label={formatMessage(messages.date)}
         />
       </Col>
       <Col>

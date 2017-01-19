@@ -86,7 +86,7 @@ export const Bills = enhance((props: AllProps) => {
                 columns={[
                   {
                     label: 'Date',
-                    dataKey: 'time',
+                    dataKey: 'date',
                     cellRenderer: dateCellRenderer,
                     width: 100
                   },
