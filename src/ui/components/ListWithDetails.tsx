@@ -34,11 +34,12 @@ type EnhancedProps = Props<any> & ConnectedProps & RouteProps<any> & {
   onScroll: Table.OnScroll
   rowGetter: Table.RowGetter
   rowClassName: Table.RowClassName
+  rowClassNameWithSelection: Table.RowClassName
   onRowClick: Table.OnRowClick
 }
 
 const enhance = compose<EnhancedProps, Props<any>>(
-  setDisplayName('ListDetails'),
+  setDisplayName('ListWithDetails'),
   onlyUpdateForPropTypes,
   setPropTypes({
     items: React.PropTypes.array.isRequired,
@@ -64,7 +65,7 @@ const enhance = compose<EnhancedProps, Props<any>>(
     rowGetter: ({items}: EnhancedProps) => ({index}: Table.RowGetterProps) => {
       return items[index]
     },
-    rowClassName: ({selectedIndex}: EnhancedProps) => ({index}: Table.RowClassNameProps) => {
+    rowClassNameWithSelection: ({selectedIndex}: EnhancedProps) => ({index}: Table.RowClassNameProps) => {
       if (index < 0) {
         return 'headerRow'
       } else if (index === selectedIndex) {
@@ -73,41 +74,49 @@ const enhance = compose<EnhancedProps, Props<any>>(
         return index % 2 === 0 ? 'evenRow' : 'oddRow'
       }
     },
+    rowClassName: () => ({index}: Table.RowClassNameProps) => {
+      if (index < 0) {
+        return 'headerRow'
+      } else {
+        return index % 2 === 0 ? 'evenRow' : 'oddRow'
+      }
+    },
     onRowClick: ({sideBySide, router, toView, items, setSelectedIndex}: EnhancedProps) => ({index}: Table.OnRowClickProps) => {
-      setSelectedIndex(index)
       if (!sideBySide && index !== -1) {
         router.push(toView(items[index]))
+      } else {
+        setSelectedIndex(index)
       }
     }
   })
 )
 
 export const ListWithDetails = enhance((props) => {
-  const { rowGetter, onRowClick, rowClassName, onScroll, columns, width, height } = props
+  const { rowGetter, onRowClick, rowClassName, rowClassNameWithSelection, onScroll, columns, width, height } = props
   const { sideBySide, browser, scrollTop, selectedIndex, DetailComponent, items } = props
   const listMaxWidth = sideBySide ? (browser.breakpoints.small / 2) : Infinity
   const selectedItem = selectedIndex !== -1 ? items[selectedIndex] : undefined
   return (
-    <Container>
+    <Container style={{width}}>
       <Item flex={1} style={{maxWidth: listMaxWidth}}>
         <Table
-            tabIndex={null}
-            onScroll={onScroll}
-            scrollTop={scrollTop}
-            style={{flex: 1, maxWidth: listMaxWidth}}
-            headerHeight={20}
-            rowCount={items.length}
-            rowHeight={50}
-            rowGetter={rowGetter}
-            rowClassName={rowClassName}
-            onRowClick={onRowClick}
-            height={height}
-            width={Math.min(width, listMaxWidth)}
-          >
-            {columns.map(col =>
-              <Column key={col.label} {...col}/>
-            )}
-          </Table>
+          tabIndex={null}
+          onScroll={onScroll}
+          scrollTop={scrollTop}
+          style={{flex: 1, maxWidth: listMaxWidth}}
+          headerHeight={20}
+          rowCount={items.length}
+          rowHeight={50}
+          rowGetter={rowGetter}
+          rowClassName={sideBySide ? rowClassNameWithSelection : rowClassName}
+          onRowClick={onRowClick}
+          height={height}
+          width={Math.min(width, listMaxWidth)}
+        >
+          {columns.map(col =>
+            <Column key={col.label} {...col}/>
+          )}
+        </Table>
       </Item>
       {sideBySide &&
         <Item flex={1}>
