@@ -93,10 +93,10 @@ const enhance = compose<AllProps, Props>(
   } as PropTypes<Props>),
   injectIntl,
   withProps(({onSubmit}) => ({
-    onSubmit: (values: Values, dispatch: any, props: AllProps) => {
+    onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
       const { intl: { formatMessage } } = props
       const v = new Validator(values)
-      v.required(['name'], formatMessage(forms.required))
+      v.required(['name', 'number', 'type'], formatMessage(forms.required))
       v.maybeThrowSubmissionError()
       onSubmit(values, dispatch, props)
     }
@@ -109,7 +109,6 @@ const enhance = compose<AllProps, Props>(
       const otherAccounts = accounts.filter(acct => !edit || edit._id !== acct._id)
       const otherNames = otherAccounts.map(acct => acct.name)
       const otherNumbers = otherAccounts.filter(acct => acct.type === v.values.type).map(acct => acct.number)
-      v.required(['number', 'type'], formatMessage(forms.required))
       v.unique('name', otherNames, formatMessage(messages.uniqueName))
       v.unique('number', otherNumbers, formatMessage(messages.uniqueNumber))
       return v.errors
