@@ -1,22 +1,29 @@
 import * as React from 'react'
-import { Grid } from 'react-bootstrap'
-import { defineMessages } from 'react-intl'
+import { Grid, PageHeader } from 'react-bootstrap'
+import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { Link } from 'react-router'
 import { AutoSizer,Column } from 'react-virtualized'
 import { compose, setDisplayName } from 'recompose'
 import { Bill } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
-import { Container, Item } from './flex'
 import { Breadcrumbs } from './breadcrumbs'
-import { RouteProps } from './props'
-import { selectBills } from './selectors'
+import { Container, Item } from './flex'
 import { ListWithDetails, getRowData, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
+import { selectBills } from './selectors'
+import { SettingsMenu } from './SettingsMenu'
 
 const messages = defineMessages({
   page: {
     id: 'bills.page',
     defaultMessage: 'Bills'
+  },
+  settings: {
+    id: 'inRead.settings',
+    defaultMessage: 'Options'
+  },
+  addBill: {
+    id: 'bills.addBill',
+    defaultMessage: 'Add Bill'
   }
 })
 
@@ -32,12 +39,13 @@ interface EnhancedProps {
   setSelectedIndex: (selectedIndex: number) => void
 }
 
-type AllProps = EnhancedProps & ConnectedProps & RouteProps<any>
+type AllProps = EnhancedProps & ConnectedProps
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('Bills'),
+  injectIntl,
   connect(
-    (state: AppState, props: RouteProps<any>): ConnectedProps => ({
+    (state: AppState): ConnectedProps => ({
       current: state.db.current!,
       bills: selectBills(state)
     })
@@ -54,6 +62,20 @@ export const Bills = enhance((props: AllProps) => {
   return (
     <Grid>
       <Breadcrumbs {...props} page={messages.page}/>
+
+      <SettingsMenu
+        items={[
+          {
+            message: messages.addBill,
+            to: Bill.to.create()
+          }
+        ]}
+      />
+
+      <PageHeader>
+        <FormattedMessage {...messages.page}/>
+      </PageHeader>
+
       <Container>
         <Item flex={1} style={{height: 500}}>
           <AutoSizer>
@@ -92,7 +114,6 @@ export const Bills = enhance((props: AllProps) => {
           </AutoSizer>
         </Item>
       </Container>
-      <div><Link to={Bill.to.create()}>add bill</Link></div>
     </Grid>
   )
 })

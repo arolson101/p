@@ -1,7 +1,7 @@
 import autobind = require('autobind-decorator')
 import * as React from 'react'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
-import { Alert, Grid, PageHeader, ProgressBar, Table, ButtonGroup, DropdownButton, MenuItem, Button, Modal } from 'react-bootstrap'
+import { Alert, Grid, PageHeader, ProgressBar, Table, Button, Modal } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { compose } from 'redux'
@@ -11,6 +11,7 @@ import { AppState } from '../../state'
 import { Breadcrumbs } from './breadcrumbs'
 import { RouteProps, IntlProps, DispatchProps } from './props'
 import { selectDbInfo, selectBank, selectBankAccounts } from './selectors'
+import { SettingsMenu } from './SettingsMenu'
 
 const messages = defineMessages({
   noAccounts: {
@@ -85,44 +86,56 @@ export class BankViewComponent extends React.Component<AllProps, State> {
   }
 
   render() {
-    const { bank, accounts, router, intl: { formatMessage } } = this.props
+    const { bank, accounts, router } = this.props
     const { working, showModal, message, error, showAll } = this.state
     return (
       <div>
         {bank &&
           <Grid>
             <Breadcrumbs {...this.props}/>
-            <PageHeader>{bank.name}</PageHeader>
 
-            <ButtonGroup className='pull-right'>
-            <DropdownButton bsSize='small' id='in-action-menu' title={formatMessage(messages.settings)} pullRight>
-              <MenuItem header>View</MenuItem>
-              {/* showAll */}
-              <MenuItem active={showAll} onClick={this.toggleShowAll}>
-                <FormattedMessage {...messages.showAll}/>
-              </MenuItem>
-              <MenuItem divider />
-              <MenuItem header>Accounts</MenuItem>
-              {/* add account */}
-              <MenuItem href={router.createHref(Account.to.create(bank))}>
-                <FormattedMessage {...messages.addAccount}/>
-              </MenuItem>
-              {/* get account list */}
-              <MenuItem disabled={!bank.online} onClick={this.getAccountList}>
-                <FormattedMessage {...messages.getAccounts}/>
-              </MenuItem>
-              <MenuItem divider />
-              <MenuItem header>Institution</MenuItem>
-              {/* update */}
-              <MenuItem href={router.createHref(Bank.to.edit(bank))}>
-                <FormattedMessage {...messages.update}/>
-              </MenuItem>
-              {/* delete */}
-              <MenuItem href={router.createHref(Bank.to.del(bank))}>
-                <FormattedMessage {...messages.delete}/>
-              </MenuItem>
-            </DropdownButton>
-            </ButtonGroup>
+            <SettingsMenu
+              items={[
+                {
+                  message: '_View',
+                  header: true
+                },
+                {
+                  message: messages.showAll,
+                  onClick: this.toggleShowAll
+                },
+                {
+                  message: '_Accounts',
+                  header: true
+                },
+                {
+                  message: messages.addAccount,
+                  to: Account.to.create(bank)
+                },
+                {
+                  message: messages.getAccounts,
+                  onClick: this.getAccountList,
+                  disabled: !bank.online
+                },
+                {
+                  divider: true
+                },
+                {
+                  message: '_Institution',
+                  header: true
+                },
+                {
+                  message: messages.update,
+                  to: Bank.to.edit(bank)
+                },
+                {
+                  message: messages.delete,
+                  to: Bank.to.del(bank)
+                }
+              ]}
+            />
+
+            <PageHeader>{bank.name}</PageHeader>
 
             {accounts && accounts.length > 0 ? (
               <Table hover striped>

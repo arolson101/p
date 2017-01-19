@@ -1,20 +1,20 @@
 import * as React from 'react'
-import { Grid, PageHeader, ButtonGroup, DropdownButton, MenuItem, Button } from 'react-bootstrap'
-import { defineMessages, injectIntl, FormattedMessage } from 'react-intl'
+import { Grid, PageHeader } from 'react-bootstrap'
+import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { Link } from 'react-router'
 import { AutoSizer, Column } from 'react-virtualized'
 import { compose, setDisplayName, withHandlers, withState, renderComponent } from 'recompose'
 import { getTransactions, deleteTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
+import { withResolveProp } from '../enhancers'
 import { Breadcrumbs } from './breadcrumbs'
 import { Container, Item } from './flex'
-import { RouteProps, DispatchProps, IntlProps } from './props'
-import { selectDbInfo, selectBank, selectAccount } from './selectors'
-import { TransactionDetail } from './transactionDetail'
-import { withResolveProp } from '../enhancers'
 import { ListWithDetails, getRowData, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
+import { RouteProps, DispatchProps } from './props'
+import { selectDbInfo, selectBank, selectAccount } from './selectors'
+import { SettingsMenu } from './SettingsMenu'
+import { TransactionDetail } from './transactionDetail'
 
 const messages = defineMessages({
   settings: {
@@ -26,11 +26,11 @@ const messages = defineMessages({
     defaultMessage: 'Edit'
   },
   delete: {
-    id: 'inRead.delete',
+    id: 'accountView.delete',
     defaultMessage: 'Delete'
   },
   downloadTransactions: {
-    id: 'inRead.downloadTransactions',
+    id: 'accountView.downloadTransactions',
     defaultMessage: 'Download Transactions'
   }
 })
@@ -42,11 +42,7 @@ interface ConnectedProps {
   current: CurrentDb
 }
 
-type AllProps = RouteProps<Account.Params>
-  & ConnectedProps
-  & EnhancedProps
-  & DispatchProps
-  & IntlProps
+type AllProps = ConnectedProps & EnhancedProps & DispatchProps
 
 interface PageState {
   scroll: number
@@ -74,7 +70,6 @@ const ErrorRender = ({ transactions: error }: { transactions: Error }) => <div>e
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('AccountViewComponent'),
-  injectIntl,
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       dbInfo: selectDbInfo(state),
@@ -138,51 +133,55 @@ const enhance = compose<AllProps, {}>(
 )
 
 export const AccountView = enhance((props) => {
-  const { bank, account, items, router, intl: { formatMessage } } = props
+  const { bank, account, items } = props
   const { downloadTransactions, addTransactions, deleteTransactions } = props
   return (
     <div>
       {account && bank &&
         <Grid>
           <Breadcrumbs {...props}/>
+
+          <SettingsMenu
+            items={[
+              {
+                message: '_Actions',
+                header: true
+              },
+              {
+                message: messages.downloadTransactions,
+                onClick: downloadTransactions
+              },
+              __DEVELOPMENT__ && {
+                message: 'create transactions',
+                onClick: addTransactions
+              },
+              __DEVELOPMENT__ && {
+                message: 'delete transactions',
+                onClick: deleteTransactions
+              },
+              {
+                divider: true
+              },
+              {
+                message: '_Account',
+                header: true
+              },
+              {
+                message: messages.update,
+                to: Account.to.edit(account)
+              },
+              {
+                message: messages.delete,
+                to: Account.to.del(account)
+              }
+            ]}
+          />
+
           <PageHeader>
             {account.name}
             {' '}
             <small>{account.number}</small>
           </PageHeader>
-
-          <ButtonGroup className='pull-right'>
-            <DropdownButton bsSize='small' id='in-action-menu' title={formatMessage(messages.settings)} pullRight>
-              <MenuItem header>Account</MenuItem>
-              {/* download transactions */}
-              <MenuItem onClick={downloadTransactions}>
-                <FormattedMessage {...messages.downloadTransactions}/>
-              </MenuItem>
-              {/* create transactions */}
-              {__DEVELOPMENT__ &&
-                <MenuItem disabled={!bank.online} onClick={addTransactions}>
-                  create transactions
-                </MenuItem>
-              }
-              {/* delete transactions */}
-              {__DEVELOPMENT__ &&
-                <MenuItem disabled={!bank.online} onClick={deleteTransactions}>
-                  delete transactions
-                </MenuItem>
-              }
-              <MenuItem divider />
-              <MenuItem header>Account</MenuItem>
-              {/* update */}
-              <MenuItem href={router.createHref(Account.to.edit(account))}>
-                <FormattedMessage {...messages.update}/>
-              </MenuItem>
-              {/* delete */}
-              <MenuItem href={router.createHref(Account.to.del(account))}>
-                <FormattedMessage {...messages.delete}/>
-              </MenuItem>
-
-            </DropdownButton>
-          </ButtonGroup>
 
           <Container>
             <Item flex={1} style={{height: 500}}>
