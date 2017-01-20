@@ -25,7 +25,7 @@ const __DEVELOPMENT__ = (process.env.NODE_ENV == 'development');
 
 
 if (__DEVELOPMENT__) {
-  const port = 3000;
+  const port = 3003;
   const WebpackDevServer = require('webpack-dev-server');
   const webpack = require('webpack');
   const config = require('../webpack.config.js');
