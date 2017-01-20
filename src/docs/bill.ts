@@ -6,7 +6,8 @@ import * as RRule from 'rrule-alt'
 
 export interface Bill {
   name: string
-  notes?: string
+  notes: string
+  group: string
   rrule?: RRule
 }
 

@@ -64,7 +64,7 @@ const enhance = compose<AllProps, {}>(
       const doc = Bank.doc(bank, lang)
       await current.db.put(doc)
 
-      props.router.replace(Bank.to.view(doc))
+      router.replace(Bank.to.view(doc))
     }
   }))
 )

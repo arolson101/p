@@ -1,20 +1,25 @@
+import * as R from 'ramda'
 import * as React from 'react'
 import { Col, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps, withState } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, ReduxFormProps, SubmitFunction } from 'redux-form'
 import { Bill } from '../../docs'
 import { AppState } from '../../state'
 import { Validator, Lookup } from '../../util'
 import { withPropChangeCallback } from '../enhancers'
-import { typedFields, forms } from './forms'
+import { typedFields, forms, SelectOption } from './forms'
 import { IntlProps } from './props'
 
 export { SubmitFunction }
 
 const messages = defineMessages({
+  group: {
+    id: 'BillForm.group',
+    defaultMessage: 'Group'
+  },
   name: {
     id: 'BillForm.name',
     defaultMessage: 'Name'
@@ -44,16 +49,22 @@ interface ConnectedProps {
   lang: string
 }
 
+interface State {
+  groups: SelectOption[]
+  setGroups: (groups: SelectOption[]) => void
+}
+
 interface EnhancedProps {
   onSubmit: (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => void
 }
 
-type AllProps = Props & EnhancedProps & ConnectedProps & IntlProps & ReduxFormProps<Values>
+type AllProps = Props & State & EnhancedProps & ConnectedProps & IntlProps & ReduxFormProps<Values>
 
 export interface Values {
   date: string
   name: string
   notes: string
+  group: string
 }
 
 const enhance = compose<AllProps, Props>(
@@ -71,11 +82,12 @@ const enhance = compose<AllProps, Props>(
     })
   ),
   injectIntl,
+  withState('groups', 'setGroups', (props: Props): SelectOption[] => getGroupNames(props.bills)),
   withProps(({onSubmit}): EnhancedProps => ({
     onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
       const { intl: { formatMessage } } = props
       const v = new Validator(values)
-      v.required(['name', 'date'], formatMessage(forms.required))
+      v.required(['group', 'name', 'date'], formatMessage(forms.required))
       v.maybeThrowSubmissionError()
       onSubmit(values, dispatch, props)
     }
@@ -101,13 +113,22 @@ const enhance = compose<AllProps, Props>(
   })
 )
 
-const { TextField, DateField } = typedFields<Values>()
+const { TextField, DateField, SelectCreateableField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
-  const { edit, onSubmit, onCancel, handleSubmit } = props
+  const { edit, onSubmit, onCancel, groups, handleSubmit } = props
   const { formatMessage } = props.intl
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      <Col>
+        <SelectCreateableField
+          name='group'
+          options={groups}
+          label={formatMessage(messages.group)}
+          // newOptionCreator={({label, labelKey, valueKey}) => ({ [labelKey]: label, [valueKey]: label})}
+          promptTextCreator={(label) => 'create group ' + label}
+        />
+      </Col>
       <Col>
         <TextField
           name='name'
@@ -148,3 +169,11 @@ export const BillForm = enhance((props) => {
     </form>
   )
 })
+
+const getGroupNames = R.pipe(
+  (bills: Bill.Cache) => Array.from(bills.values()),
+  R.map((bill: Bill.Doc): string => bill.group),
+  R.sortBy(R.toLower),
+  R.uniq,
+  R.map((name: string): SelectOption => ({ label: name, value: name }))
+)

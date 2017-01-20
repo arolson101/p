@@ -78,8 +78,8 @@ const WrappedControl = <Name extends string, Props>(Component: any, componentPro
   }
 
 // react-select with onChange/onBlur compatable with redux-form
-const RFSelect = (props: Select.ReactSelectProps) =>
-  <Select
+const RFCompatibleSelect = (Component: React.ComponentClass<Select.ReactSelectProps>) => (props: Select.ReactSelectProps) =>
+  <Component
     {...props}
     onChange={(e: any) => {
       const value = e && (props.valueKey ? e[props.valueKey] : e.value)
@@ -89,6 +89,11 @@ const RFSelect = (props: Select.ReactSelectProps) =>
     }}
     onBlur={() => props.onBlur && props.onBlur(props.value ? props.value : undefined as any)}
   />
+
+export interface SelectOption {
+  value: string
+  label: string
+}
 
 const RBCheckbox = (props: RB.CheckboxProps & InjectedFieldProps<any>) =>
   <RB.Checkbox
@@ -106,7 +111,8 @@ const FieldTemplate = <Values, Props>(component: FieldComponent<Props>) =>
 export const TextControl = WrappedControl(RB.FormControl, {type: 'input'})
 export const MultilineTextControl = WrappedControl(RB.FormControl, {componentClass: 'textarea'})
 export const PasswordControl = WrappedControl(RB.FormControl, {type: 'password'})
-export const SelectControl = WrappedControl<string, Select.ReactSelectProps>(RFSelect)
+export const SelectControl = WrappedControl<string, Select.ReactSelectProps>(RFCompatibleSelect(Select))
+export const SelectCreateableControl = WrappedControl<string, Select.ReactCreatableSelectProps>(RFCompatibleSelect(Select.Creatable))
 export const DateControl = WrappedControl<string, React.HTMLProps<any>>(DatePicker)
 
 export const typedFields = function<Values> () {
@@ -115,6 +121,7 @@ export const typedFields = function<Values> () {
     MultilineTextField: FieldTemplate<Values, RB.FormControlProps>(MultilineTextControl),
     PasswordField: FieldTemplate<Values, RB.FormControlProps>(PasswordControl),
     SelectField: FieldTemplate<Values, Select.ReactSelectProps>(SelectControl),
+    SelectCreateableField: FieldTemplate<Values, Select.ReactCreatableSelectProps>(SelectCreateableControl),
     CheckboxField: FieldTemplate<Values, RB.CheckboxProps>(RBCheckbox),
     DateField: FieldTemplate<Values, React.HTMLProps<any>>(DateControl)
   })
