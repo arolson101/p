@@ -76,7 +76,6 @@ const enhance = compose<AllProps, Props>(
       const { intl: { formatMessage } } = props
       const v = new Validator(values)
       v.required(['name', 'date'], formatMessage(forms.required))
-      v.date('date', formatMessage(forms.date))
       v.maybeThrowSubmissionError()
       onSubmit(values, dispatch, props)
     }
@@ -89,6 +88,7 @@ const enhance = compose<AllProps, Props>(
       const otherAccounts = Lookup.filter(bills, otherBill => !edit || otherBill._id !== edit._id)
       const otherNames = otherAccounts.map(acct => acct.name)
       v.unique('name', otherNames, formatMessage(messages.uniqueName))
+      v.date('date', formatMessage(forms.date))
       return v.errors
     }
   }),

@@ -42,8 +42,9 @@ export class Validator<V> {
   }
 
   date(key: keyof V, message: string) {
-    const value = moment(this.values[key] as any, 'L')
-    if (!value.isValid() && !this.errors[key]) {
+    const strValue = this.values[key] as any
+    const value = moment(strValue, 'L')
+    if (strValue && !value.isValid() && !this.errors[key]) {
       this.errors[key] = message
     }
   }
