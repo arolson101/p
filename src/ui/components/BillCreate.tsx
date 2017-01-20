@@ -13,8 +13,8 @@ import { selectDbInfo } from './selectors'
 
 const messages = defineMessages({
   page: {
-    id: 'inCreate.page',
-    defaultMessage: 'Add Institution'
+    id: 'BillCreate.page',
+    defaultMessage: 'Add Bill'
   }
 })
 
