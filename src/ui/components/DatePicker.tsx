@@ -4,6 +4,7 @@ import { FormControl } from 'react-bootstrap'
 import * as DateRangePicker from 'react-bootstrap-daterangepicker'
 import 'react-bootstrap-daterangepicker/css/daterangepicker.css'
 import { connect } from 'react-redux'
+import { createSelector } from 'reselect'
 import { compose, withHandlers, withState } from 'recompose'
 import { AppState } from '../../state'
 
@@ -14,7 +15,7 @@ interface Props {
 type AllProps = Props & ConnectedProps & EnhancedProps
 
 interface ConnectedProps {
-  locale: string
+  locale: ReactBootstrapDaterangepicker.Locale
 }
 
 interface EnhancedProps {
@@ -45,9 +46,29 @@ const enhance = compose<AllProps, Props>(
   }),
   connect(
     (state: AppState): ConnectedProps => ({
-      locale: state.i18n.locale
+      locale: selectLocale(state)
     })
   )
+)
+
+const selectLocale = createSelector(
+  (state: AppState) => state.i18n.locale,
+  (locale): ReactBootstrapDaterangepicker.Locale => {
+    const localeData = moment.localeData(locale)
+    return {
+      format: localeData.longDateFormat('L'),
+      separator: ' - ',
+      applyLabel: 'apply',
+      cancelLabel: 'cancel',
+      fromLabel: 'from',
+      toLabel: 'to',
+      customRangeLabel: 'custom',
+      weekLabel: 'w',
+      daysOfWeek: localeData.weekdaysMin(),
+      monthNames: localeData.months(),
+      firstDay: localeData.firstDayOfWeek()
+    }
+  }
 )
 
 export const DatePicker = enhance(({onApply, stringValue, locale, onValueChange}) => {
