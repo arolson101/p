@@ -10,6 +10,7 @@ import { AppState } from '../../state'
 
 interface Props {
   value: string
+  onChange?: (value: string) => void
 }
 
 type AllProps = Props & ConnectedProps & EnhancedProps
@@ -27,18 +28,22 @@ interface EnhancedProps {
 
 const enhance = compose<AllProps, Props>(
   withState('startDate', 'setStartDate', (props: Props) => convertToDate(props.value) || new Date()),
-  withHandlers({
-    onApply: (props: any) => (event: any, picker: DatepickerOptions) => {
+  withHandlers<AllProps, AllProps>({
+    onApply: ({onChange}) => (event: any, picker: DatepickerOptions) => {
       const value: moment.Moment = picker.startDate
-      props.onChange(value.format('L'))
+      if (onChange) {
+        onChange(value.format('L'))
+      }
     },
-    onInputChange: (props: any) => (e: React.FormEvent<any>) => {
+    onInputChange: ({onChange, setStartDate}) => (e: React.FormEvent<any>) => {
       const strValue = (e.target as any).value
       const value = convertToDate(strValue)
       if (value) {
-        props.setStartDate(value)
+        setStartDate(value)
       }
-      props.onChange(strValue)
+      if (onChange) {
+        onChange(strValue)
+      }
     }
   }),
   connect(

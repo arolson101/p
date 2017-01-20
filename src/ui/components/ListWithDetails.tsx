@@ -58,14 +58,14 @@ const enhance = compose<EnhancedProps, Props<any>>(
   ),
   withQuerySyncedState('scrollTop', 'setScrollTop', 0, parseFloat),
   withQuerySyncedState('selectedIndex', 'setSelectedIndex', -1, parseFloat),
-  withHandlers({
-    onScroll: ({setScrollTop}: EnhancedProps) => (e: Table.OnScrollProps) => {
+  withHandlers<EnhancedProps,EnhancedProps>({
+    onScroll: ({setScrollTop}) => (e: Table.OnScrollProps) => {
       setScrollTop(e.scrollTop)
     },
-    rowGetter: ({items}: EnhancedProps) => ({index}: Table.RowGetterProps) => {
+    rowGetter: ({items}) => ({index}: Table.RowGetterProps) => {
       return items[index]
     },
-    rowClassNameWithSelection: ({selectedIndex}: EnhancedProps) => ({index}: Table.RowClassNameProps) => {
+    rowClassNameWithSelection: ({selectedIndex}) => ({index}: Table.RowClassNameProps) => {
       if (index < 0) {
         return 'headerRow'
       } else if (index === selectedIndex) {
@@ -81,7 +81,7 @@ const enhance = compose<EnhancedProps, Props<any>>(
         return index % 2 === 0 ? 'evenRow' : 'oddRow'
       }
     },
-    onRowClick: ({sideBySide, router, toView, items, setSelectedIndex}: EnhancedProps) => ({index}: Table.OnRowClickProps) => {
+    onRowClick: ({sideBySide, router, toView, items, setSelectedIndex}) => ({index}: Table.OnRowClickProps) => {
       if (!sideBySide && index !== -1) {
         router.push(toView(items[index]))
       } else {

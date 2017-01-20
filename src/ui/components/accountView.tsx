@@ -78,8 +78,8 @@ const enhance = compose<AllProps, {}>(
       current: state.db.current!
     })
   ),
-  withHandlers({
-    loadTransactions: (props: AllProps) => async() => {
+  withHandlers<AllProps,AllProps>({
+    loadTransactions: (props) => async() => {
       if (props.current && props.account) {
         const startkey = Transaction.startkeyForAccount(props.account)
         const endkey = Transaction.endkeyForAccount(props.account)
@@ -92,8 +92,8 @@ const enhance = compose<AllProps, {}>(
     }
   }),
   withState('transactions', 'setTransactions', ({loadTransactions}: AllProps) => loadTransactions()),
-  withHandlers({
-    addTransactions: (props: AllProps) => async() => {
+  withHandlers<AllProps,AllProps>({
+    addTransactions: (props) => async() => {
       const { current, account, setTransactions, loadTransactions } = props
       const txs: Transaction.Doc[] = []
       for (let i = 0; i < 1000; i++) {

@@ -51,11 +51,11 @@ const enhance = compose<AllProps, {}>(
     })
   ),
   withState('activeId', 'setActiveId', ''),
-  withHandlers({
-    deselect: ({setActiveId}: AllProps) => () => {
+  withHandlers<AllProps,AllProps>({
+    deselect: ({setActiveId}) => () => {
       setActiveId('')
     },
-    onLogin: ({router}: AllProps) => (dbInfo: DbInfo.Doc) => {
+    onLogin: ({router}) => (dbInfo: DbInfo.Doc) => {
       router.push(DbInfo.to.home())
     }
   })
