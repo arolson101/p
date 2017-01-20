@@ -7,6 +7,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, withHandlers, withState } from 'recompose'
 import { AppState } from '../../state'
+import { withPropChangeCallback } from '../enhancers'
 
 interface Props {
   value: string
@@ -27,7 +28,10 @@ interface EnhancedProps {
 }
 
 const enhance = compose<AllProps, Props>(
-  withState('startDate', 'setStartDate', (props: Props) => convertToDate(props.value) || new Date()),
+  withState('startDate', 'setStartDate', undefined),
+  withPropChangeCallback('value', ({setStartDate, value}: AllProps) => {
+    setStartDate(convertToDate(value) || new Date())
+  }),
   withHandlers<AllProps, AllProps>({
     onApply: ({onChange}) => (event: any, picker: DatepickerOptions) => {
       const value: moment.Moment = picker.startDate

@@ -1,3 +1,4 @@
+import * as moment from 'moment'
 import * as R from 'ramda'
 import * as React from 'react'
 import { Col, ButtonToolbar, Button } from 'react-bootstrap'
@@ -40,13 +41,13 @@ const messages = defineMessages({
 
 interface Props {
   edit?: Bill.Doc
-  bills: Bill.Cache
-  onSubmit: SubmitFunction<Values>
+  onSubmit: SubmitFunction<Bill.Doc>
   onCancel: () => void
 }
 
 interface ConnectedProps {
   lang: string
+  bills: Bill.Cache
 }
 
 interface State {
@@ -60,7 +61,7 @@ interface EnhancedProps {
 
 type AllProps = Props & State & EnhancedProps & ConnectedProps & IntlProps & ReduxFormProps<Values>
 
-export interface Values {
+interface Values {
   date: string
   name: string
   notes: string
@@ -72,24 +73,36 @@ const enhance = compose<AllProps, Props>(
   onlyUpdateForPropTypes,
   setPropTypes({
     edit: React.PropTypes.object,
-    bills: React.PropTypes.instanceOf(Map).isRequired,
     onSubmit: React.PropTypes.func.isRequired,
     onCancel: React.PropTypes.func.isRequired
   } as PropTypes<Props>),
   connect(
     (state: AppState): ConnectedProps => ({
-      lang: state.i18n.lang
+      lang: state.i18n.lang,
+      bills: state.db.current!.cache.bills
     })
   ),
   injectIntl,
-  withState('groups', 'setGroups', (props: Props): SelectOption[] => getGroupNames(props.bills)),
-  withProps(({onSubmit}): EnhancedProps => ({
+  withState('groups', 'setGroups', (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)),
+  withProps(({onSubmit, lang, edit}: AllProps): EnhancedProps => ({
     onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
       const { intl: { formatMessage } } = props
       const v = new Validator(values)
       v.required(['group', 'name', 'date'], formatMessage(forms.required))
       v.maybeThrowSubmissionError()
-      onSubmit(values, dispatch, props)
+
+      const date = moment(values.date, 'L')
+      const bill: Bill = {
+        ...edit,
+        ...values,
+        date: {
+          year: date.year(),
+          month: date.month(),
+          date: date.date()
+        }
+      }
+      const doc = Bill.doc(bill, lang)
+      return onSubmit(doc, dispatch, props)
     }
   })),
   reduxForm<AllProps, Values>({
@@ -107,7 +120,11 @@ const enhance = compose<AllProps, Props>(
   withPropChangeCallback('edit', (props: AllProps) => {
     const { edit, initialize, reset } = props
     if (edit) {
-      initialize(edit, false)
+      const values: Values = {
+        ...edit,
+        date: moment(Bill.toDate(edit.date)).format('L')
+      } as any
+      initialize(values, false)
       reset()
     }
   })

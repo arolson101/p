@@ -6,12 +6,23 @@ import * as RRule from 'rrule-alt'
 
 export interface Bill {
   name: string
+  date: Bill.Day
   notes: string
   group: string
   rrule?: RRule
 }
 
 export namespace Bill {
+  export interface Day {
+    month: number
+    date: number
+    year: number
+  }
+
+  export const toDate = (day: Day): Date => {
+    return new Date(day.year, day.month, day.date)
+  }
+
   export type Id = ':billId' | 'create' | makeid
   export type DocId = 'bill/:billId'
   export type Doc = PouchDB.Core.Document<Bill> & { _id: DocId; _rev?: string }
@@ -72,7 +83,9 @@ export namespace Bill {
   export const CHANGE_ACTION = 'bill/change'
 
   export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
+  export const createCache = (docs: Doc[] = []): Lookup<DocId, Doc> => {
+    return Lookup.create<DocId, Doc>(docs)
+  }
 
   export type CACHE_SET = 'bill/cacheSet'
   export const CACHE_SET = 'bill/cacheSet'

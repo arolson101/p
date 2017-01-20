@@ -1,14 +1,15 @@
 import * as React from 'react'
 import { Grid, PageHeader } from 'react-bootstrap'
-import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
+import { injectIntl, FormattedDate, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { AutoSizer,Column } from 'react-virtualized'
 import { compose, setDisplayName } from 'recompose'
 import { Bill } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
+import { BillDetail } from './BillDetail'
 import { Breadcrumbs } from './breadcrumbs'
 import { Container, Item } from './flex'
-import { ListWithDetails, getRowData, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
+import { ListWithDetails, getRowData, currencyCellRenderer } from './ListWithDetails'
 import { selectBills } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
 
@@ -51,10 +52,6 @@ const enhance = compose<AllProps, {}>(
     })
   )
 )
-
-const BillDetail = ({item}: {item: Bill.Doc}) => {
-  return <div>bill detail: {item.name}</div>
-}
 
 export const Bills = enhance((props: AllProps) => {
   const { bills } = props
@@ -123,4 +120,8 @@ const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Bill.Doc>) => (
     {cellData.name}<br/>
     <small>{cellData.notes}</small>
   </div>
+)
+
+const dateCellRenderer = ({cellData}: Column.CellRendererArgs<Bill.Day>) => (
+  cellData && <FormattedDate value={Bill.toDate(cellData)} />
 )

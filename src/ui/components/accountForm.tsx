@@ -98,7 +98,7 @@ const enhance = compose<AllProps, Props>(
       const v = new Validator(values)
       v.required(['name', 'number', 'type'], formatMessage(forms.required))
       v.maybeThrowSubmissionError()
-      onSubmit(values, dispatch, props)
+      return onSubmit(values, dispatch, props)
     }
   })),
   reduxForm<AllProps, Values>({
