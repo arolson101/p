@@ -1,3 +1,4 @@
+import * as moment from 'moment'
 import { SubmissionError, ErrorsFor } from 'redux-form'
 
 export class Validator<V> {
@@ -37,6 +38,13 @@ export class Validator<V> {
       if (!this.errors[key]) {
         this.errors[key] = message
       }
+    }
+  }
+
+  date(key: keyof V, message: string) {
+    const value = moment(this.values[key] as any, 'L')
+    if (!value.isValid() && !this.errors[key]) {
+      this.errors[key] = message
     }
   }
 }

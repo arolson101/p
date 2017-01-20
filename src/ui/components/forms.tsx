@@ -41,6 +41,10 @@ export const forms = defineMessages({
   passwordsMatch: {
     id: 'forms.passwordsMatch',
     defaultMessage: 'Passwords must match'
+  },
+  date: {
+    id: 'forms.date',
+    defaultMessage: 'Invalid date'
   }
 })
 

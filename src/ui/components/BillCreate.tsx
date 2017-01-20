@@ -1,3 +1,4 @@
+import * as moment from 'moment'
 import * as React from 'react'
 import { Grid } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
@@ -50,7 +51,8 @@ const enhance = compose<AllProps, {}>(
     },
     onSubmit: async (values: Values, dispatch: Dispatch<AppState>) => {
       const bill: Bill = {
-        ...values
+        ...values,
+        date: moment(values.date, 'L').toDate()
       }
       const doc = Bill.doc(bill, lang)
       await current.db.put(doc)

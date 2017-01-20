@@ -1,5 +1,5 @@
-import { Col, ButtonToolbar, Button } from 'react-bootstrap'
 import * as React from 'react'
+import { Col, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
@@ -51,7 +51,7 @@ interface EnhancedProps {
 type AllProps = Props & EnhancedProps & ConnectedProps & IntlProps & ReduxFormProps<Values>
 
 export interface Values {
-  date: Date
+  date: string
   name: string
   notes: string
 }
@@ -76,6 +76,7 @@ const enhance = compose<AllProps, Props>(
       const { intl: { formatMessage } } = props
       const v = new Validator(values)
       v.required(['name', 'date'], formatMessage(forms.required))
+      v.date('date', formatMessage(forms.date))
       v.maybeThrowSubmissionError()
       onSubmit(values, dispatch, props)
     }
