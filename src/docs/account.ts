@@ -27,23 +27,23 @@ export namespace Account {
 
   export const messages = defineMessages({
     CHECKING: {
-      id: 'acUpdate.CHECKING',
+      id: 'Account.Type.CHECKING',
       defaultMessage: 'Checking'
     },
     SAVINGS: {
-      id: 'acUpdate.SAVINGS',
+      id: 'Account.Type.SAVINGS',
       defaultMessage: 'Savings'
     },
     MONEYMRKT: {
-      id: 'acUpdate.MONEYMRKT',
+      id: 'Account.Type.MONEYMRKT',
       defaultMessage: 'Money Market'
     },
     CREDITLINE: {
-      id: 'acUpdate.CREDITLINE',
+      id: 'Account.Type.CREDITLINE',
       defaultMessage: 'Credit Line'
     },
     CREDITCARD: {
-      id: 'acUpdate.CREDITCARD',
+      id: 'Account.Type.CREDITCARD',
       defaultMessage: 'Credit Card'
     }
   })

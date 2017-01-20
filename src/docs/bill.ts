@@ -1,4 +1,5 @@
 import * as docURI from 'docuri'
+import { defineMessages } from 'react-intl'
 import { makeid, Lookup } from '../util'
 import { AppThunk } from '../state'
 import { TCacheSetAction } from './index'
@@ -18,6 +19,33 @@ export namespace Bill {
     date: number
     year: number
   }
+
+  export type Recurrence = 'daily' | 'weekly' | 'monthly' | 'yearly'
+  export const Recurrence = {
+    daily: 'daily' as Recurrence,
+    weekly: 'weekly' as Recurrence,
+    monthly: 'monthly' as Recurrence,
+    yearly: 'yearly' as Recurrence
+  }
+
+  export const messages = defineMessages({
+    daily: {
+      id: 'Bill.Recurrence.daily',
+      defaultMessage: 'Daily'
+    },
+    weekly: {
+      id: 'Bill.Recurrence.weekly',
+      defaultMessage: 'Weekly'
+    },
+    monthly: {
+      id: 'Bill.Recurrence.monthly',
+      defaultMessage: 'Monthly'
+    },
+    yearly: {
+      id: 'Bill.Recurrence.yearly',
+      defaultMessage: 'Yearly'
+    }
+  })
 
   export const toDate = (day: Day): Date => {
     return new Date(day.year, day.month, day.date)

@@ -12,7 +12,7 @@ import { AppState } from '../../state'
 import { Validator, Lookup } from '../../util'
 import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms, SelectOption } from './forms'
-import { IntlProps } from './props'
+import { IntlProps, FormatMessageFcn } from './props'
 
 export { SubmitFunction }
 
@@ -28,6 +28,10 @@ const messages = defineMessages({
   date: {
     id: 'BillForm.date',
     defaultMessage: 'Date'
+  },
+  recurrence: {
+    id: 'BillForm.recurrence',
+    defaultMessage: 'Recurrence'
   },
   notes: {
     id: 'BillForm.notes',
@@ -63,6 +67,7 @@ type AllProps = Props & State & EnhancedProps & ConnectedProps & IntlProps & Red
 
 interface Values {
   date: string
+  recurrence: Bill.Recurrence
   name: string
   notes: string
   group: string
@@ -115,6 +120,9 @@ const enhance = compose<AllProps, Props>(
       v.unique('name', otherNames, formatMessage(messages.uniqueName))
       v.date('date', formatMessage(forms.date))
       return v.errors
+    },
+    initialValues: {
+      date: moment().format('L')
     }
   }),
   withPropChangeCallback('edit', (props: AllProps) => {
@@ -130,7 +138,7 @@ const enhance = compose<AllProps, Props>(
   })
 )
 
-const { TextField, DateField, SelectCreateableField } = typedFields<Values>()
+const { TextField, DateField, SelectField, SelectCreateableField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
   const { edit, onSubmit, onCancel, groups, handleSubmit } = props
@@ -157,6 +165,13 @@ export const BillForm = enhance((props) => {
         <DateField
           name='date'
           label={formatMessage(messages.date)}
+        />
+      </Col>
+      <Col>
+        <SelectField
+          name='recurrence'
+          options={recurrenceOptions(formatMessage)}
+          label={formatMessage(messages.recurrence)}
         />
       </Col>
       <Col>
@@ -194,3 +209,13 @@ const getGroupNames = R.pipe(
   R.uniq,
   R.map((name: string): SelectOption => ({ label: name, value: name }))
 )
+
+const recurrenceOptions = (formatMessage: FormatMessageFcn) =>
+  R.pipe(
+    R.keys,
+    R.map((name: keyof typeof Bill.messages): SelectOption => ({
+        label: formatMessage(Bill.messages[name]),
+        value: name
+      })
+    )
+  )(Bill.Recurrence)

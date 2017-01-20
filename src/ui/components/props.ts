@@ -3,6 +3,8 @@ import * as RR from 'react-router'
 import { Location, History } from 'history'
 import { AppDispatch } from '../../state'
 
+export type FormatMessageFcn = (messageDescriptor: RI.FormattedMessage.MessageDescriptor, values?: Object) => string
+
 // the .d.ts declares these as optional
 interface InjectedIntlProps {
   formatDate: (date: Date, options: RI.FormattedDate.PropsBase) => string
@@ -10,8 +12,8 @@ interface InjectedIntlProps {
   formatRelative: (value: number,options?: RI.FormattedRelative.PropsBase) => string
   formatNumber: (value: number, options?: RI.FormattedNumber.PropsBase) => string
   formatPlural: (value: number, options?: RI.FormattedPlural.PropsBase) => string
-  formatMessage: (messageDescriptor: RI.FormattedMessage.MessageDescriptor, values?: Object) => string
-  formatHTMLMessage: (messageDescriptor: RI.FormattedMessage.MessageDescriptor, values?: Object) => string
+  formatMessage: FormatMessageFcn
+  formatHTMLMessage: FormatMessageFcn
 }
 
 export interface IntlProps {
