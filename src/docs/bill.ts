@@ -20,29 +20,34 @@ export namespace Bill {
     year: number
   }
 
-  export type Recurrence = 'daily' | 'weekly' | 'monthly' | 'yearly'
-  export const Recurrence = {
-    daily: 'daily' as Recurrence,
-    weekly: 'weekly' as Recurrence,
-    monthly: 'monthly' as Recurrence,
-    yearly: 'yearly' as Recurrence
+  export type Frequency = 'once' | 'daily' | 'weekly' | 'monthly' | 'yearly'
+  export const Frequency = {
+    once: 'once' as Frequency,
+    daily: 'daily' as Frequency,
+    weekly: 'weekly' as Frequency,
+    monthly: 'monthly' as Frequency,
+    yearly: 'yearly' as Frequency
   }
 
   export const messages = defineMessages({
+    once: {
+      id: 'Bill.Frequency.once',
+      defaultMessage: 'Once'
+    },
     daily: {
-      id: 'Bill.Recurrence.daily',
+      id: 'Bill.Frequency.daily',
       defaultMessage: 'Daily'
     },
     weekly: {
-      id: 'Bill.Recurrence.weekly',
+      id: 'Bill.Frequency.weekly',
       defaultMessage: 'Weekly'
     },
     monthly: {
-      id: 'Bill.Recurrence.monthly',
+      id: 'Bill.Frequency.monthly',
       defaultMessage: 'Monthly'
     },
     yearly: {
-      id: 'Bill.Recurrence.yearly',
+      id: 'Bill.Frequency.yearly',
       defaultMessage: 'Yearly'
     }
   })
