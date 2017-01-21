@@ -13,8 +13,6 @@ import { Validator, Lookup } from '../../util'
 import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms, SelectOption } from './forms'
 import { IntlProps, FormatMessageFcn } from './props'
-import Toggle from 'react-bootstrap-toggle'
-import 'react-bootstrap-toggle/dist/bootstrap2-toggle.css'
 
 export { SubmitFunction }
 
