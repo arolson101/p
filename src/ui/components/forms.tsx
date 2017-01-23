@@ -4,6 +4,7 @@ import * as RB from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import * as Select from 'react-select'
 import { DatePicker } from './DatePicker'
+import { ButtonArray, ButtonArrayProps } from './ButtonArray'
 
 export const forms = defineMessages({
   password: {
@@ -114,6 +115,7 @@ export const PasswordControl = WrappedControl(RB.FormControl, {type: 'password'}
 export const SelectControl = WrappedControl<string, Select.ReactSelectProps>(RFCompatibleSelect(Select))
 export const SelectCreateableControl = WrappedControl<string, Select.ReactCreatableSelectProps>(RFCompatibleSelect(Select.Creatable))
 export const DateControl = WrappedControl<string, React.HTMLProps<any>>(DatePicker)
+export const ButtonArrayControl = WrappedControl<string, ButtonArrayProps>(ButtonArray)
 
 export const typedFields = function<Values> () {
   return ({
@@ -123,6 +125,7 @@ export const typedFields = function<Values> () {
     SelectField: FieldTemplate<Values, Select.ReactSelectProps>(SelectControl),
     SelectCreateableField: FieldTemplate<Values, Select.ReactCreatableSelectProps>(SelectCreateableControl),
     CheckboxField: FieldTemplate<Values, RB.CheckboxProps>(RBCheckbox),
-    DateField: FieldTemplate<Values, React.HTMLProps<any>>(DateControl)
+    DateField: FieldTemplate<Values, React.HTMLProps<any>>(DateControl),
+    ButtonArrayField: FieldTemplate<Values, ButtonArrayProps>(ButtonArrayControl)
   })
 }

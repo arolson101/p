@@ -88,6 +88,9 @@ interface Values {
   name: string
   notes: string
   group: string
+  byDay: string
+  byMonthDay: string
+  byMonth: string
 }
 
 const formName = 'BillForm'
@@ -160,7 +163,7 @@ const enhance = compose<AllProps, Props>(
   })
 )
 
-const { TextField, DateField, SelectField, SelectCreateableField } = typedFields<Values>()
+const { TextField, DateField, SelectField, SelectCreateableField, ButtonArrayField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
   const { edit, onSubmit, onCancel, groups, handleSubmit, frequency } = props
@@ -210,27 +213,28 @@ export const BillForm = enhance((props) => {
       {(frequency === Bill.Frequency.weekly) &&
         <div>
           <div>every [N] week(s)</div>
-          <ButtonToolbar>
-            <ButtonGroup>
-            {R.range(1, 8).map(day =>
-              <Button key={day} style={{width: 40, height: 40}}>{day}</Button>
-            )}
-            </ButtonGroup>
-          </ButtonToolbar>
+          <ButtonArrayField
+            name='byDay'
+            label='week day'
+            maxPerRow={7}
+            strings={daysOfWeekStr}
+            values={daysOfWeekStr}
+          />
         </div>
       }
       {(frequency === Bill.Frequency.monthly) &&
         <div>
           <div>every [N] month</div>
           <div>(*) on days<br/>
-          <ButtonToolbar>
-            <ButtonGroup>
-            {R.range(0, 31).map(day => [
-              <Button style={{width: 40, height: 40}}>{day + 1}</Button>,
-              (day % 7 === 6) && <br/>
-            ])}
-            </ButtonGroup>
-          </ButtonToolbar>
+          <ButtonArrayField
+            name='byMonthDay'
+            label='month day'
+            maxPerRow={7}
+            buttonWidth={40}
+            buttonHeight={40}
+            strings={daysOfMonth}
+            values={daysOfMonth}
+          />
 
           </div>
           <div>(*) on the<br/>
@@ -241,14 +245,13 @@ export const BillForm = enhance((props) => {
       {(frequency === Bill.Frequency.yearly) &&
         <div>
           <div>Every [N] year(s)</div>
-          <ButtonToolbar>
-            <ButtonGroup>
-            {R.range(0, 12).map(day => [
-              <Button style={{width: 40, height: 40}}>{day}</Button>,
-              (day % 4 === 3) && <br/>
-            ])}
-            </ButtonGroup>
-          </ButtonToolbar>
+          <ButtonArrayField
+            name='byMonth'
+            label='month'
+            maxPerRow={4}
+            strings={monthsStr}
+            values={months}
+          />
           <div>[X] On the<br/>
             [first/second/third/fourth/fifth/last] [SMTWTFS/day/weekday/weekend day]
           </div>
@@ -276,6 +279,13 @@ export const BillForm = enhance((props) => {
     </form>
   )
 })
+
+const daysOfWeek = R.range(1, 8)
+const daysOfWeekStr = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']
+const daysOfMonth = R.range(1, 32).map(R.toString)
+const months = R.range(1, 13).map(R.toString)
+const monthsStr = months.map(R.toString)
+
 
 const getGroupNames = R.pipe(
   (bills: Bill.Cache) => Array.from(bills.values()),
