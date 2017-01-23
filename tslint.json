@@ -6,6 +6,7 @@
       "react"
     ],
     "no-switch-case-fall-through": false,
+    "trailing-comma": [true, {"singleline": "never"}],
     "max-line-length": [
       true,
       140

@@ -10,6 +10,7 @@ export interface Bill {
   date: Bill.Day
   notes: string
   group: string
+  rruleString: string
   rrule?: RRule
 }
 

@@ -1,12 +1,14 @@
 import * as moment from 'moment'
 import * as R from 'ramda'
 import * as React from 'react'
-import { Col, ButtonGroup, ButtonToolbar, Button } from 'react-bootstrap'
-import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
+import { Row, Col, DropdownButton, MenuItem, SelectCallback, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
+import { injectIntl, defineMessages, FormattedMessage, FormattedDate } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps, withState } from 'recompose'
+import { createSelector } from 'reselect'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps, withState, withHandlers } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, ReduxFormProps, SubmitFunction, formValueSelector } from 'redux-form'
+import * as RRule from 'rrule-alt'
 import { Bill } from '../../docs'
 import { AppState } from '../../state'
 import { Validator, Lookup } from '../../util'
@@ -29,10 +31,6 @@ const messages = defineMessages({
     id: 'BillForm.start',
     defaultMessage: 'Start'
   },
-  frequency: {
-    id: 'BillForm.frequency',
-    defaultMessage: 'Frequency'
-  },
   notes: {
     id: 'BillForm.notes',
     defaultMessage: 'Notes'
@@ -41,22 +39,94 @@ const messages = defineMessages({
     id: 'BillForm.uniqueName',
     defaultMessage: 'This name is already used'
   },
-  everyWeek: {
-    id: 'BillForm.everyWeek',
-    defaultMessage: 'Every Week'
+  frequency: {
+    id: 'BillForm.frequency',
+    defaultMessage: 'Frequency'
   },
-  everyOtherWeek: {
-    id: 'BillForm.everyOtherWeek',
-    defaultMessage: 'Every Other Week'
+  once: {
+    id: 'BillForm.once',
+    defaultMessage: 'Once'
   },
-  everyMonth: {
-    id: 'BillForm.everyMonth',
-    defaultMessage: 'Every Month'
+  every: {
+    id: 'BillForm.every',
+    defaultMessage: 'Every'
   },
-  everyYear: {
-    id: 'BillForm.everyYear',
-    defaultMessage: 'Every Year'
-  }
+  weekly: {
+    id: 'BillForm.weekly',
+    defaultMessage: 'Weekly'
+  },
+  biweekly: {
+    id: 'BillForm.biweekly',
+    defaultMessage: 'Biweekly'
+  },
+  monthly: {
+    id: 'BillForm.monthly',
+    defaultMessage: 'Monthly'
+  },
+  yearly: {
+    id: 'BillForm.yearly',
+    defaultMessage: 'Yearly'
+  },
+  custom: {
+    id: 'BillForm.custom',
+    defaultMessage: 'Custom...'
+  },
+  days: {
+    id: 'BillForm.days',
+    defaultMessage: `{interval, plural,
+      one {day}
+      other {days}
+    }`
+  },
+  interval: {
+    id: 'BillForm.interval',
+    defaultMessage: 'Interval'
+  },
+  weeks: {
+    id: 'BillForm.weeks',
+    defaultMessage: `{interval, plural,
+      one {week}
+      other {weeks}
+    }`
+  },
+  months: {
+    id: 'BillForm.months',
+    defaultMessage: `{interval, plural,
+      one {month}
+      other {months}
+    }`
+  },
+  years: {
+    id: 'BillForm.years',
+    defaultMessage: `{interval, plural,
+      one {year}
+      other {years}
+    }`
+  },
+  end: {
+    id: 'BillForm.end',
+    defaultMessage: 'End'
+  },
+  byweekday: {
+    id: 'BillForm.byweekday',
+    defaultMessage: 'Days of week'
+  },
+  bymonth: {
+    id: 'BillForm.bymonth',
+    defaultMessage: 'Months'
+  },
+  endCount: {
+    id: 'BillForm.endCount',
+    defaultMessage: 'After'
+  },
+  endDate: {
+    id: 'BillForm.endDate',
+    defaultMessage: 'By date'
+  },
+  times: {
+    id: 'BillForm.times',
+    defaultMessage: 'occurrences'
+  },
 })
 
 interface Props {
@@ -67,8 +137,14 @@ interface Props {
 
 interface ConnectedProps {
   lang: string
+  locale: string
   bills: Bill.Cache
-  frequency: Bill.Frequency
+  frequency: Frequency
+  interval: number
+  count: number
+  custom: CustomFrequency
+  end: EndType
+  rrule?: RRule
 }
 
 interface State {
@@ -78,19 +154,32 @@ interface State {
 
 interface EnhancedProps {
   onSubmit: (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => void
+  onCustomFreqChange: SelectCallback
+  onEndTypeChange: SelectCallback
 }
 
 type AllProps = Props & State & EnhancedProps & ConnectedProps & IntlProps & ReduxFormProps<Values>
 
-interface Values {
+type Frequency = 'once' | 'weekly' | 'biweekly' | 'monthly' | 'yearly' | 'custom'
+type CustomFrequency = 'days' | 'weeks' | 'months' | 'years'
+type EndType = 'endDate' | 'endCount'
+
+interface RRuleValues {
+  frequency: Frequency
+  custom: CustomFrequency
   start: string
-  frequency: Bill.Frequency
+  end: EndType
+  until: string
+  count: number
+  interval: number
+  byweekday: string
+  bymonth: string
+}
+
+interface Values extends RRuleValues {
   name: string
   notes: string
   group: string
-  byDay: string
-  byMonthDay: string
-  byMonth: string
 }
 
 const formName = 'BillForm'
@@ -114,36 +203,53 @@ const enhance = compose<AllProps, Props>(
       const otherNames = otherAccounts.map(acct => acct.name)
       v.unique('name', otherNames, formatMessage(messages.uniqueName))
       v.date('start', formatMessage(forms.date))
+      v.date('until', formatMessage(forms.date))
       return v.errors
     },
     initialValues: {
       start: moment().format('L'),
-      frequency: Bill.Frequency.monthly
+      frequency: 'monthly',
+      custom: 'months',
+      interval: 1,
+      end: 'endCount'
     }
   }),
   connect(
-    (state: AppState, props: AllProps): ConnectedProps => ({
+    (state: AppState): ConnectedProps => ({
       lang: state.i18n.lang,
+      locale: state.i18n.locale,
       bills: state.db.current!.cache.bills,
-      frequency: formSelector(state, 'frequency')
+      frequency: formSelector(state, 'frequency'),
+      interval: formSelector(state, 'interval'),
+      count: formSelector(state, 'count'),
+      custom: formSelector(state, 'custom'),
+      end: formSelector(state, 'end'),
+      rrule: rruleSelector(state)
     })
   ),
   withState('groups', 'setGroups', (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)),
-  withProps(({onSubmit, lang, edit}: AllProps): EnhancedProps => ({
+  withProps(({onSubmit, lang, edit}: AllProps): Partial<EnhancedProps> => ({
     onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
       const { intl: { formatMessage } } = props
       const v = new Validator(values)
-      v.required(['group', 'name', 'start'], formatMessage(forms.required))
+      v.required(['group', 'name', 'start', 'frequency'], formatMessage(forms.required))
+
+      const rrule = toRRule(values)
+      if (rrule instanceof ErrorMessage) {
+        v.errors[rrule.field] = formatMessage(rrule.message)
+      }
+
       v.maybeThrowSubmissionError()
 
       const date = moment(values.start, 'L')
       const bill: Bill = {
         ...edit,
         ...values,
+        rruleString: rrule.toString(),
         date: {
           year: date.year(),
           month: date.month(),
-          date: date.date()
+          date: date.date(),
         }
       }
       const doc = Bill.doc(bill, lang)
@@ -153,21 +259,71 @@ const enhance = compose<AllProps, Props>(
   withPropChangeCallback('edit', (props: AllProps) => {
     const { edit, initialize, reset } = props
     if (edit) {
+      const rrule = edit.rrule || RRule.fromString(edit.rruleString)
       const values: Values = {
         ...edit,
-        start: moment(Bill.toDate(edit.date)).format('L')
+        start: moment(rrule.options.dtstart).format('L'),
       } as any
+
+      const opts = rrule.origOptions
+      const simple = !opts.byweekday && !opts.bymonth
+      if (simple && opts.interval === undefined && opts.freq === RRule.MONTHLY && opts.count === 1) {
+        values.frequency = 'once'
+      } else if (simple && opts.interval === 2 && opts.freq === RRule.WEEKLY) {
+        values.frequency = 'biweekly'
+      } else if (simple && opts.interval === undefined && opts.freq === RRule.WEEKLY) {
+        values.frequency = 'weekly'
+      } else if (simple && opts.interval === undefined && opts.freq === RRule.MONTHLY) {
+        values.frequency = 'monthly'
+      } else if (simple && opts.interval === undefined && opts.freq === RRule.YEARLY) {
+        values.frequency = 'yearly'
+      } else {
+        values.frequency = 'custom'
+        if (opts.interval) {
+          values.interval = opts.interval
+        }
+        if (Array.isArray(opts.byweekday)) {
+          values.byweekday = opts.byweekday.join(',')
+        }
+        if (Array.isArray(opts.bymonth)) {
+          values.bymonth = opts.bymonth.join(',')
+        }
+      }
+
+      if (opts.until) {
+        values.until = moment(opts.until).format('L')
+        values.count = 0
+      } else if (typeof opts.count === 'number') {
+        values.count = opts.count
+        values.until = ''
+      }
+
       initialize(values, false)
       reset()
+    }
+  }),
+  withHandlers({
+    onCustomFreqChange: ({change}: AllProps) => (eventKey: CustomFrequency) => {
+      change('custom', eventKey)
+    },
+    onEndTypeChange: ({change}: AllProps) => (eventKey: EndType) => {
+      change('end', eventKey)
     }
   })
 )
 
-const { TextField, DateField, SelectField, SelectCreateableField, ButtonArrayField } = typedFields<Values>()
+const { TextField, DateField, SelectField, SelectCreateableField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
-  const { edit, onSubmit, onCancel, groups, handleSubmit, frequency } = props
+  const { edit, onSubmit, onCancel, groups, locale, handleSubmit, frequency, custom,
+    interval, end, onCustomFreqChange, onEndTypeChange, rrule } = props
   const { formatMessage } = props.intl
+
+  const max = 20
+  const generatedValues = rrule ? rrule.all((date, index) => index < max) : []
+  const rule = rrule ? rrule.toString() : ''
+  const text = rrule ? rrule.toText() : ''
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Col>
@@ -175,7 +331,6 @@ export const BillForm = enhance((props) => {
           name='group'
           options={groups}
           label={formatMessage(messages.group)}
-          // newOptionCreator={({label, labelKey, valueKey}) => ({ [labelKey]: label, [valueKey]: label})}
           promptTextCreator={(label) => 'create group ' + label}
         />
       </Col>
@@ -192,72 +347,143 @@ export const BillForm = enhance((props) => {
           label={formatMessage(messages.notes)}
         />
       </Col>
-      <Col>
-          <DateField
-            name='start'
-            label={formatMessage(messages.start)}
-          />
-      </Col>
-      <Col>
-          <SelectField
-            name='frequency'
-            clearable={false}
-            options={frequencyOptions(formatMessage)}
-            label={formatMessage(messages.frequency)}
-          />
-      </Col>
-
-      {(frequency === Bill.Frequency.daily) &&
-        <div>daily</div>
-      }
-      {(frequency === Bill.Frequency.weekly) &&
-        <div>
-          <div>every [N] week(s)</div>
-          <ButtonArrayField
-            name='byDay'
-            label='week day'
-            maxPerRow={7}
-            strings={daysOfWeekStr}
-            values={daysOfWeekStr}
-          />
-        </div>
-      }
-      {(frequency === Bill.Frequency.monthly) &&
-        <div>
-          <div>every [N] month</div>
-          <div>(*) on days<br/>
-          <ButtonArrayField
-            name='byMonthDay'
-            label='month day'
-            maxPerRow={7}
-            buttonWidth={40}
-            buttonHeight={40}
-            strings={daysOfMonth}
-            values={daysOfMonth}
-          />
-
+      <Row>
+        <Col xs={6}>
+          <div>
+            <DateField
+              name='start'
+              label={formatMessage(messages.start)}
+            />
           </div>
-          <div>(*) on the<br/>
-            [first/second/third/fourth/fifth/last] [SMTWTFS/day/weekday/weekend day]
+          <div>
+            <SelectField
+              name='frequency'
+              clearable={false}
+              options={frequencyOptions(formatMessage)}
+              label={formatMessage(messages.frequency)}
+            />
           </div>
-        </div>
-      }
-      {(frequency === Bill.Frequency.yearly) &&
-        <div>
-          <div>Every [N] year(s)</div>
-          <ButtonArrayField
-            name='byMonth'
-            label='month'
-            maxPerRow={4}
-            strings={monthsStr}
-            values={months}
-          />
-          <div>[X] On the<br/>
-            [first/second/third/fourth/fifth/last] [SMTWTFS/day/weekday/weekend day]
-          </div>
-        </div>
-      }
-      (note when dtstart isn't in set)
+          {frequency === 'custom' &&
+            <div>
+              <div>
+                <TextField
+                  name='interval'
+                  label={formatMessage(messages.interval)}
+                  type='number'
+                  min={0}
+                  addonBefore={
+                    <InputGroup.Addon>
+                      <FormattedMessage {...messages.every}/>
+                    </InputGroup.Addon>
+                  }
+                  addonAfter={
+                    <DropdownButton
+                      componentClass={InputGroup.Button}
+                      id='interval-addon-frequency'
+                      title={formatMessage(messages[custom], {interval})}
+                    >
+                      {['days', 'weeks', 'months', 'years'].map((cf: CustomFrequency) =>
+                        <MenuItem key={cf} eventKey={cf} onSelect={onCustomFreqChange} active={custom === cf}>
+                          <FormattedMessage {...messages[cf]} values={{interval}}/>
+                        </MenuItem>
+                      )}
+                    </DropdownButton>
+                  }
+                />
+              </div>
+              <div>
+                <SelectField
+                  name='byweekday'
+                  label={formatMessage(messages.byweekday)}
+                  multi
+                  joinValues
+                  delimiter=','
+                  simpleValue
+                  options={weekdayOptions(locale)}
+                />
+              </div>
+              <div>
+                <SelectField
+                  name='bymonth'
+                  label={formatMessage(messages.bymonth)}
+                  multi
+                  joinValues
+                  delimiter=','
+                  simpleValue
+                  options={monthOptions(locale)}
+                />
+              </div>
+            </div>
+          }
+          {frequency !== 'once' &&
+            <div>
+              {end === 'endCount' &&
+                <TextField
+                  name='count'
+                  type='number'
+                  min={0}
+                  label={formatMessage(messages.end)}
+                  addonBefore={
+                    <DropdownButton
+                      componentClass={InputGroup.Button}
+                      id='count-addon-end'
+                      title={formatMessage(messages[end])}
+                    >
+                      {['endCount', 'endDate'].map((et: EndType) =>
+                        <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
+                          <FormattedMessage {...messages[et]} values={{interval}}/>
+                        </MenuItem>
+                      )}
+                    </DropdownButton>
+                  }
+                  addonAfter={
+                    <InputGroup.Addon>
+                      <FormattedMessage {...messages.times}/>
+                    </InputGroup.Addon>
+                  }
+                />
+              }
+              {end === 'endDate' &&
+                <DateField
+                  name='until'
+                  label={formatMessage(messages.end)}
+                  addonBefore={
+                    <DropdownButton
+                      componentClass={InputGroup.Button}
+                      id='count-addon-end'
+                      title={formatMessage(messages[end])}
+                    >
+                      {['endCount', 'endDate'].map((et: EndType) =>
+                        <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
+                          <FormattedMessage {...messages[et]} values={{interval}}/>
+                        </MenuItem>
+                      )}
+                    </DropdownButton>
+                  }
+                />
+              }
+            </div>
+            }
+        </Col>
+        <Col xs={6}>
+          <div>rule: {rule}</div>
+          <div>text: {text}</div>
+          <ul>
+            {generatedValues.map((date, idx) =>
+              <li key={idx}>
+                <FormattedDate
+                  value={date}
+                  weekday='short'
+                  year='numeric'
+                  month='short'
+                  day='numeric'
+                />
+              </li>
+            )}
+          </ul>
+          (note when dtstart isn't in set)
+        </Col>
+      </Row>
       <ButtonToolbar className='pull-right'>
         <Button
           type='button'
@@ -280,12 +506,28 @@ export const BillForm = enhance((props) => {
   )
 })
 
-const daysOfWeek = R.range(1, 8)
-const daysOfWeekStr = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']
-const daysOfMonth = R.range(1, 32).map(R.toString)
-const months = R.range(1, 13).map(R.toString)
-const monthsStr = months.map(R.toString)
+const mod7 = (i: number) => i % 7
 
+const weekdayOptions = (locale: string): SelectOption[] => {
+  const localeData = moment.localeData(locale)
+  const names = localeData.weekdaysShort() // Sunday = 0
+  const first = localeData.firstDayOfWeek()
+  const values = R.range(first, first + 7).map(mod7)
+  return values.map(i => ({
+    value: mod7(i + 6).toString(), // Monday = 0
+    label: names[i]
+  }))
+}
+
+const monthOptions = (locale: string): SelectOption[] => {
+  const localeData = moment.localeData(locale)
+  const names = localeData.monthsShort()
+  const values = R.range(0, 12)
+  return values.map(i => ({
+    value: (i + 1).toString(), // Jan = 1
+    label: names[i]
+  }))
+}
 
 const getGroupNames = R.pipe(
   (bills: Bill.Cache) => Array.from(bills.values()),
@@ -295,12 +537,103 @@ const getGroupNames = R.pipe(
   R.map((name: string): SelectOption => ({ label: name, value: name }))
 )
 
-const frequencyOptions = (formatMessage: FormatMessageFcn) =>
-  R.pipe(
-    R.keys,
-    R.map((name: keyof typeof Bill.messages): SelectOption => ({
-        label: formatMessage(Bill.messages[name]),
-        value: name
-      })
-    )
-  )(Bill.Frequency)
+const frequencyOptions = (formatMessage: FormatMessageFcn): SelectOption[] => [
+  { value: 'once', label: formatMessage(messages.once) },
+  { value: 'weekly', label: formatMessage(messages.weekly) },
+  { value: 'biweekly', label: formatMessage(messages.biweekly) },
+  { value: 'monthly', label: formatMessage(messages.monthly) },
+  { value: 'yearly', label: formatMessage(messages.yearly) },
+  { value: 'custom', label: formatMessage(messages.custom) }
+]
+
+const freq = {
+  once: RRule.MONTHLY,
+  weekly: RRule.WEEKLY,
+  biweekly: RRule.WEEKLY,
+  monthly: RRule.MONTHLY,
+  yearly: RRule.YEARLY
+} as { [f: string]: RRule.Frequency }
+
+const customFreq = {
+  days: RRule.DAILY,
+  weeks: RRule.WEEKLY,
+  months: RRule.MONTHLY,
+  years: RRule.YEARLY
+} as { [f: string]: RRule.Frequency }
+
+const rruleSelector = createSelector(
+  (state: AppState) => formSelector(state, 'frequency') as Frequency,
+  (state: AppState) => formSelector(state, 'custom') as CustomFrequency,
+  (state: AppState) => formSelector(state, 'start') as string,
+  (state: AppState) => formSelector(state, 'end') as EndType,
+  (state: AppState) => formSelector(state, 'until') as string,
+  (state: AppState) => formSelector(state, 'count') as number,
+  (state: AppState) => formSelector(state, 'interval') as number,
+  (state: AppState) => formSelector(state, 'byweekday') as string,
+  (state: AppState) => formSelector(state, 'bymonth') as string,
+  (frequency, custom, start, end, until, count, interval, byweekday, bymonth): RRule | undefined => {
+    const rrule = toRRule({frequency, custom, start, end, until, count, interval, byweekday, bymonth})
+    if (rrule instanceof ErrorMessage) {
+      return undefined
+    }
+    return rrule
+  }
+)
+
+class ErrorMessage {
+  field: keyof Values
+  message: FormattedMessage.MessageDescriptor
+
+  constructor(field: keyof Values, formattedMessage: FormattedMessage.MessageDescriptor) {
+    this.field = field
+    this.message = formattedMessage
+  }
+}
+
+const toRRule = ({frequency, custom, start, end, until, count, interval, byweekday, bymonth}: RRuleValues): RRule | ErrorMessage => {
+  const date = moment(start, 'L')
+  if (!date.isValid()) {
+    return new ErrorMessage('start', forms.required)
+  }
+
+  const opts: RRule.Options = {
+    freq: (frequency === 'custom' ? customFreq[custom] : freq[frequency]),
+    dtstart: date.toDate()
+  }
+
+  switch (frequency) {
+    case 'once':
+      opts.count = 1
+      break
+
+    case 'biweekly':
+      opts.interval = 2
+      break
+
+    case 'custom':
+      if (interval) {
+        opts.interval = interval
+      }
+      if (byweekday) {
+        opts.byweekday = byweekday.split(',').map(parseInt)
+      }
+      if (bymonth) {
+        opts.bymonth = bymonth.split(',').map(parseInt)
+      }
+      break
+  }
+
+  if (end === 'endCount') {
+    if (count > 0) {
+      opts.count = +count
+    }
+  } else {
+    const untilDate = moment(until, 'L')
+    if (!untilDate.isValid()) {
+      return new ErrorMessage('until', forms.required)
+    }
+    opts.until = untilDate.toDate()
+  }
+
+  return new RRule(opts)
+}
