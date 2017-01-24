@@ -16,7 +16,6 @@ import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms, SelectOption } from './forms'
 import { IntlProps } from './props'
 import * as DatePicker from 'react-datepicker'
-import 'react-datepicker/dist/react-datepicker.css'
 
 export { SubmitFunction }
 
@@ -97,6 +96,10 @@ const messages = defineMessages({
     id: 'BillForm.endDate',
     defaultMessage: 'By date'
   },
+  endDatePlaceholder: {
+    id: 'BillForm.endDatePlaceholder',
+    defaultMessage: 'End date'
+  },
   times: {
     id: 'BillForm.times',
     defaultMessage: 'times'
@@ -117,6 +120,7 @@ interface ConnectedProps {
   lang: string
   locale: string
   bills: Bill.Cache
+  start: Date
   interval: number
   count: number
   frequency: Frequency
@@ -134,6 +138,7 @@ interface EnhancedProps {
   onFrequencyChange: SelectCallback
   onEndTypeChange: SelectCallback
   onCalendarChange: (date?: any, e?: any) => void
+  filterEndDate: (date: Date) => boolean
 }
 
 type AllProps = Props & State & EnhancedProps & ConnectedProps & IntlProps & ReduxFormProps<Values>
@@ -194,6 +199,7 @@ const enhance = compose<AllProps, Props>(
       lang: state.i18n.lang,
       locale: state.i18n.locale,
       bills: state.db.current!.cache.bills,
+      start: formSelector(state, 'start'),
       interval: formSelector(state, 'interval'),
       count: formSelector(state, 'count'),
       frequency: formSelector(state, 'frequency'),
@@ -281,6 +287,12 @@ const enhance = compose<AllProps, Props>(
     },
     onCalendarChange: ({change}: AllProps) => (date?: any, e?: any) => {
       change('start', moment(date).format('L'))
+    },
+    filterEndDate: ({start}: AllProps) => (date: Date): boolean => {
+      if (start) {
+        return moment(start).isBefore(date)
+      }
+      return false
     }
   })
 )
@@ -289,7 +301,7 @@ const { TextField, DateField, SelectField, SelectCreateableField } = typedFields
 
 export const BillForm = enhance((props) => {
   const { edit, onSubmit, onCancel, groups, locale, handleSubmit, frequency,
-    interval, end, onFrequencyChange, onEndTypeChange, rrule, onCalendarChange } = props
+    interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, onCalendarChange } = props
   const { formatMessage } = props.intl
 
   const endDate = moment().add(2, 'year')
@@ -377,6 +389,8 @@ export const BillForm = enhance((props) => {
                   )}
                 </DropdownButton>
               }
+              placeholderText={formatMessage(messages.endDatePlaceholder)}
+              filterDate={filterEndDate}
             />
           }
         </Col>
@@ -442,9 +456,9 @@ export const BillForm = enhance((props) => {
       <Row>
         <Col xs={12}>
           <em>{text}</em>
-          {__DEVELOPMENT__ &&
+          {/*__DEVELOPMENT__ &&
             <div>{rrule ? rrule.toString() : ''}</div>
-          }
+          */}
           {rrule && generatedValues.length > 0 && !moment(rrule.origOptions.dtstart).isSame(generatedValues[0]) &&
             <Alert bsStyle='danger'>
               <FormattedMessage {...messages.startExcluded}/>

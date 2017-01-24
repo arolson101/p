@@ -1,42 +1,38 @@
 import * as moment from 'moment'
 import * as React from 'react'
 import { FormControl } from 'react-bootstrap'
-import * as DateRangePicker from 'react-bootstrap-daterangepicker'
-import 'react-bootstrap-daterangepicker/css/daterangepicker.css'
-import { connect } from 'react-redux'
-import { createSelector } from 'reselect'
+import * as RDatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 import { compose, withHandlers, withState } from 'recompose'
-import { AppState } from '../../state'
 import { withPropChangeCallback } from '../enhancers'
+import './DatePicker.css'
 
 interface Props {
-  value: string
+  value?: string
   onChange?: (value: string) => void
 }
 
-type AllProps = Props & ConnectedProps & EnhancedProps
+export type DatePickerProps = Partial<ReactDatePickerProps> & Props
 
-interface ConnectedProps {
-  locale: ReactBootstrapDaterangepicker.Locale
-}
+type AllProps = Props & EnhancedProps
 
 interface EnhancedProps {
-  startDate: Date
-  setStartDate: (startDate: Date) => void
-  onApply: (event: any, picker: DatepickerOptions) => void
+  startDate?: moment.Moment
+  setStartDate: (startDate?: moment.Moment) => void
+  onChange: (value?: any) => void
   onInputChange: (event: any) => void
 }
 
 const enhance = compose<AllProps, Props>(
   withState('startDate', 'setStartDate', undefined),
   withPropChangeCallback('value', ({setStartDate, value}: AllProps) => {
-    setStartDate(convertToDate(value) || new Date())
+    setStartDate(value ? convertToDate(value) : undefined)
   }),
   withHandlers<AllProps, AllProps>({
-    onApply: ({onChange}) => (event: any, picker: DatepickerOptions) => {
-      const value: moment.Moment = picker.startDate
+    onChange: ({onChange}: Props) => (value: Date) => {
+      console.log('onChange', value)
       if (onChange) {
-        onChange(value.format('L'))
+        onChange(moment(value).format('L'))
       }
     },
     onInputChange: ({onChange, setStartDate}) => (e: React.FormEvent<any>) => {
@@ -49,43 +45,22 @@ const enhance = compose<AllProps, Props>(
         onChange(strValue)
       }
     }
-  }),
-  connect(
-    (state: AppState): ConnectedProps => ({
-      locale: selectLocale(state)
-    })
-  )
+  })
 )
 
-const convertToDate = (strValue: string): Date | undefined => {
+const convertToDate = (strValue: string): moment.Moment | undefined => {
   const value = moment(strValue, 'L')
   if (value.isValid()) {
-    return value.toDate()
+    return value
   }
 }
 
-export const DatePicker = enhance(({onApply, startDate, value, locale, onInputChange}) => {
-  return <DateRangePicker startDate={startDate} endDate={startDate} singleDatePicker={true} onApply={onApply} locale={locale}>
-    <FormControl type='input' value={value} onChange={onInputChange}/>
-  </DateRangePicker>
+export const DatePicker = enhance((props) => {
+  const {onChange, startDate, onInputChange} = props
+  return <RDatePicker
+    {...props}
+    selected={startDate}
+    onChange={onChange}
+    customInput={<FormControl type='input' onChange={onInputChange}/>}
+  />
 })
-
-const selectLocale = createSelector(
-  (state: AppState) => state.i18n.locale,
-  (locale): ReactBootstrapDaterangepicker.Locale => {
-    const localeData = moment.localeData(locale)
-    return {
-      format: localeData.longDateFormat('L'),
-      separator: ' - ',
-      applyLabel: 'apply',
-      cancelLabel: 'cancel',
-      fromLabel: 'from',
-      toLabel: 'to',
-      customRangeLabel: 'custom',
-      weekLabel: 'w',
-      daysOfWeek: localeData.weekdaysMin(),
-      monthNames: localeData.months(),
-      firstDay: localeData.firstDayOfWeek()
-    }
-  }
-)
