@@ -1,8 +1,8 @@
 import * as moment from 'moment'
 import * as R from 'ramda'
 import * as React from 'react'
-import { Row, Col, DropdownButton, MenuItem, SelectCallback, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
-import { injectIntl, defineMessages, FormattedMessage, FormattedDate } from 'react-intl'
+import { Row, Col, DropdownButton, MenuItem, SelectCallback, InputGroup, ButtonToolbar, Button, Alert } from 'react-bootstrap'
+import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps, withState, withHandlers } from 'recompose'
@@ -127,7 +127,11 @@ const messages = defineMessages({
   },
   times: {
     id: 'BillForm.times',
-    defaultMessage: 'occurrences'
+    defaultMessage: 'times'
+  },
+  startExcluded: {
+    id: 'BillForm.startExcluded',
+    defaultMessage: 'Note: The specified start date does not fit in the specified rules'
   },
 })
 
@@ -285,7 +289,7 @@ const enhance = compose<AllProps, Props>(
           values.interval = opts.interval
         }
         if (Array.isArray(opts.byweekday)) {
-          values.byweekday = (opts.byweekday as string[]).map(str => dayMap[str]).join(',')
+          values.byweekday = opts.byweekday.map((str: RRule.ByWeekdayStr) => dayMap[str]).join(',')
         }
         if (Array.isArray(opts.bymonth)) {
           values.bymonth = opts.bymonth.join(',')
@@ -487,8 +491,11 @@ export const BillForm = enhance((props) => {
       }
       <Row>
         <Col xs={12}>
-          <div>rule: {rule}</div>
-          <div>text: {text}</div>
+          {rrule && generatedValues.length > 0 && !moment(rrule.origOptions.dtstart).isSame(generatedValues[0]) &&
+            <Alert bsStyle='danger'>
+              <FormattedMessage {...messages.startExcluded}/>
+            </Alert>
+          }
           <div>
             <DatePicker
               utcOffset={moment().utcOffset()}
@@ -499,7 +506,10 @@ export const BillForm = enhance((props) => {
               monthsShown={4}
             />
           </div>
-          (note when dtstart isn't in set)
+          <em>{text}</em>
+          {__DEVELOPMENT__ &&
+            <div>{rule}</div>
+          }
         </Col>
       </Row>
 
