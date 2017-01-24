@@ -399,7 +399,7 @@ export interface ReduxFormConfig<TOwnProps, TValues> {
      * with single-record forms. The values should be in the form
      * { field1: 'value1', field2: 'value2' }.
      */
-    initialValues?: { [field: string]: FieldValue };
+    initialValues?: Partial<TValues>;
 
     /**
      * The function to call with the form data when the handleSubmit() is fired
