@@ -221,16 +221,12 @@ const enhance = compose<AllProps, Props>(
 
       v.maybeThrowSubmissionError()
 
-      const date = moment(values.start, 'L')
+      const { frequency, start, end, until, count, interval, byweekday, bymonth, ...rest } = values
+
       const bill: Bill = {
         ...edit,
-        ...values,
-        rruleString: rrule.toString(),
-        date: {
-          year: date.year(),
-          month: date.month(),
-          date: date.date(),
-        }
+        ...rest,
+        rruleString: rrule.toString()
       }
       const doc = Bill.doc(bill, lang)
       return onSubmit(doc, dispatch, props)

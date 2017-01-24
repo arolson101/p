@@ -1,5 +1,4 @@
 import * as docURI from 'docuri'
-import { defineMessages } from 'react-intl'
 import { makeid, Lookup } from '../util'
 import { AppThunk } from '../state'
 import { TCacheSetAction } from './index'
@@ -7,7 +6,6 @@ import * as RRule from 'rrule-alt'
 
 export interface Bill {
   name: string
-  date: Bill.Day
   notes: string
   group: string
   rruleString: string
@@ -15,48 +13,6 @@ export interface Bill {
 }
 
 export namespace Bill {
-  export interface Day {
-    month: number
-    date: number
-    year: number
-  }
-
-  export type Frequency = 'once' | 'daily' | 'weekly' | 'monthly' | 'yearly'
-  export const Frequency = {
-    once: 'once' as Frequency,
-    daily: 'daily' as Frequency,
-    weekly: 'weekly' as Frequency,
-    monthly: 'monthly' as Frequency,
-    yearly: 'yearly' as Frequency
-  }
-
-  export const messages = defineMessages({
-    once: {
-      id: 'Bill.Frequency.once',
-      defaultMessage: 'Once'
-    },
-    daily: {
-      id: 'Bill.Frequency.daily',
-      defaultMessage: 'Daily'
-    },
-    weekly: {
-      id: 'Bill.Frequency.weekly',
-      defaultMessage: 'Weekly'
-    },
-    monthly: {
-      id: 'Bill.Frequency.monthly',
-      defaultMessage: 'Monthly'
-    },
-    yearly: {
-      id: 'Bill.Frequency.yearly',
-      defaultMessage: 'Yearly'
-    }
-  })
-
-  export const toDate = (day: Day): Date => {
-    return new Date(day.year, day.month, day.date)
-  }
-
   export type Id = ':billId' | 'create' | makeid
   export type DocId = 'bill/:billId'
   export type Doc = PouchDB.Core.Document<Bill> & { _id: DocId; _rev?: string }
@@ -118,7 +74,9 @@ export namespace Bill {
 
   export type Cache = Lookup<DocId, Doc>
   export const createCache = (docs: Doc[] = []): Lookup<DocId, Doc> => {
-    return Lookup.create<DocId, Doc>(docs)
+    return Lookup.create<DocId, Doc>(
+      docs.map(doc => ({...doc, rrule: RRule.fromString(doc.rruleString)}))
+    )
   }
 
   export type CACHE_SET = 'bill/cacheSet'
@@ -135,4 +93,15 @@ export namespace Bill {
       const cache = createCache(results.docs)
       dispatch(cacheSetAction(cache))
     }
+
+  export const getDate = (doc: Doc): Date => {
+    if (!doc.rrule) {
+      throw new Error(`bill doesn't have a rrule!`)
+    }
+    if (!doc.rrule.options.dtstart) {
+      throw new Error(`bill doesn't have a start date!`)
+    }
+    const next = doc.rrule.after(new Date(), true)
+    return next
+  }
 }

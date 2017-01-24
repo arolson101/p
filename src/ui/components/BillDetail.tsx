@@ -37,7 +37,7 @@ const enhance = compose<AllProps, Props>(
   ),
   mapProps((props: AllProps) => ({
     ...props,
-    date: Bill.toDate(props.item.date)
+    date: Bill.getDate(props.item)
   })),
   withState('editing', 'setEditing', false),
   withHandlers<AllProps, AllProps>({

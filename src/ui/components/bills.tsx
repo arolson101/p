@@ -83,13 +83,14 @@ export const Bills = enhance((props: AllProps) => {
                 columns={[
                   {
                     label: 'Date',
-                    dataKey: 'date',
+                    dataKey: '',
+                    cellDataGetter: getRowData,
                     cellRenderer: dateCellRenderer,
                     width: 100
                   },
                   {
                     label: 'Name',
-                    dataKey: 'name',
+                    dataKey: '',
                     width: 300,
                     flexGrow: 1,
                     cellDataGetter: getRowData,
@@ -122,6 +123,6 @@ const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Bill.Doc>) => (
   </div>
 )
 
-const dateCellRenderer = ({cellData}: Column.CellRendererArgs<Bill.Day>) => (
-  cellData && <FormattedDate value={Bill.toDate(cellData)} />
+const dateCellRenderer = ({cellData}: Column.CellRendererArgs<Bill.Doc>) => (
+  cellData && <FormattedDate value={Bill.getDate(cellData)} />
 )
