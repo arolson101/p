@@ -15,6 +15,8 @@ import { Validator, Lookup } from '../../util'
 import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms, SelectOption } from './forms'
 import { IntlProps, FormatMessageFcn } from './props'
+import * as DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 
 export { SubmitFunction }
 
@@ -319,42 +321,41 @@ export const BillForm = enhance((props) => {
     interval, end, onCustomFreqChange, onEndTypeChange, rrule } = props
   const { formatMessage } = props.intl
 
-  const max = 20
-  const generatedValues = rrule ? rrule.all((date, index) => index < max) : []
+  const endDate = moment().add(2, 'year')
+  const maxGenerated = 200
+  const generatedValues = rrule ? rrule.all((date, index) => endDate.isAfter(date) && index < maxGenerated) : []
   const rule = rrule ? rrule.toString() : ''
   const text = rrule ? rrule.toText() : ''
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Col>
-        <SelectCreateableField
-          name='group'
-          options={groups}
-          label={formatMessage(messages.group)}
-          promptTextCreator={(label) => 'create group ' + label}
-        />
-      </Col>
-      <Col>
-        <TextField
-          name='name'
-          autoFocus
-          label={formatMessage(messages.name)}
-        />
-      </Col>
-      <Col>
-        <TextField
-          name='notes'
-          label={formatMessage(messages.notes)}
-        />
-      </Col>
       <Row>
         <Col xs={6}>
-          <div>
-            <DateField
-              name='start'
-              label={formatMessage(messages.start)}
-            />
-          </div>
+          <TextField
+            name='name'
+            autoFocus
+            label={formatMessage(messages.name)}
+          />
+        </Col>
+        <Col xs={6}>
+          <SelectCreateableField
+            name='group'
+            options={groups}
+            label={formatMessage(messages.group)}
+            promptTextCreator={(label) => 'create group ' + label}
+          />
+        </Col>
+      </Row>
+      <Row>
+        <Col xs={12}>
+          <TextField
+            name='notes'
+            label={formatMessage(messages.notes)}
+          />
+        </Col>
+      </Row>
+      <Row>
+        <Col xs={6}>
           <div>
             <SelectField
               name='frequency'
@@ -363,127 +364,144 @@ export const BillForm = enhance((props) => {
               label={formatMessage(messages.frequency)}
             />
           </div>
-          {frequency === 'custom' &&
-            <div>
-              <div>
-                <TextField
-                  name='interval'
-                  label={formatMessage(messages.interval)}
-                  type='number'
-                  min={0}
-                  addonBefore={
-                    <InputGroup.Addon>
-                      <FormattedMessage {...messages.every}/>
-                    </InputGroup.Addon>
-                  }
-                  addonAfter={
-                    <DropdownButton
-                      componentClass={InputGroup.Button}
-                      id='interval-addon-frequency'
-                      title={formatMessage(messages[custom], {interval})}
-                    >
-                      {['days', 'weeks', 'months', 'years'].map((cf: CustomFrequency) =>
-                        <MenuItem key={cf} eventKey={cf} onSelect={onCustomFreqChange} active={custom === cf}>
-                          <FormattedMessage {...messages[cf]} values={{interval}}/>
-                        </MenuItem>
-                      )}
-                    </DropdownButton>
-                  }
-                />
-              </div>
-              <div>
-                <SelectField
-                  name='byweekday'
-                  label={formatMessage(messages.byweekday)}
-                  multi
-                  joinValues
-                  delimiter=','
-                  simpleValue
-                  options={weekdayOptions(locale)}
-                />
-              </div>
-              <div>
-                <SelectField
-                  name='bymonth'
-                  label={formatMessage(messages.bymonth)}
-                  multi
-                  joinValues
-                  delimiter=','
-                  simpleValue
-                  options={monthOptions(locale)}
-                />
-              </div>
-            </div>
-          }
-          {frequency !== 'once' &&
-            <div>
-              {end === 'endCount' &&
-                <TextField
-                  name='count'
-                  type='number'
-                  min={0}
-                  label={formatMessage(messages.end)}
-                  addonBefore={
-                    <DropdownButton
-                      componentClass={InputGroup.Button}
-                      id='count-addon-end'
-                      title={formatMessage(messages[end])}
-                    >
-                      {['endCount', 'endDate'].map((et: EndType) =>
-                        <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
-                          <FormattedMessage {...messages[et]} values={{interval}}/>
-                        </MenuItem>
-                      )}
-                    </DropdownButton>
-                  }
-                  addonAfter={
-                    <InputGroup.Addon>
-                      <FormattedMessage {...messages.times}/>
-                    </InputGroup.Addon>
-                  }
-                />
-              }
-              {end === 'endDate' &&
-                <DateField
-                  name='until'
-                  label={formatMessage(messages.end)}
-                  addonBefore={
-                    <DropdownButton
-                      componentClass={InputGroup.Button}
-                      id='count-addon-end'
-                      title={formatMessage(messages[end])}
-                    >
-                      {['endCount', 'endDate'].map((et: EndType) =>
-                        <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
-                          <FormattedMessage {...messages[et]} values={{interval}}/>
-                        </MenuItem>
-                      )}
-                    </DropdownButton>
-                  }
-                />
-              }
-            </div>
-            }
         </Col>
         <Col xs={6}>
+          <div>
+            <DateField
+              name='start'
+              label={formatMessage(messages.start)}
+            />
+          </div>
+        </Col>
+      </Row>
+      {frequency === 'custom' &&
+        <Row>
+          <Col xs={12} key='interval'>
+            <div>
+              <TextField
+                name='interval'
+                label={formatMessage(messages.interval)}
+                type='number'
+                min={0}
+                addonBefore={
+                  <InputGroup.Addon>
+                    <FormattedMessage {...messages.every}/>
+                  </InputGroup.Addon>
+                }
+                addonAfter={
+                  <DropdownButton
+                    componentClass={InputGroup.Button}
+                    id='interval-addon-frequency'
+                    title={formatMessage(messages[custom], {interval})}
+                  >
+                    {['days', 'weeks', 'months', 'years'].map((cf: CustomFrequency) =>
+                      <MenuItem key={cf} eventKey={cf} onSelect={onCustomFreqChange} active={custom === cf}>
+                        <FormattedMessage {...messages[cf]} values={{interval}}/>
+                      </MenuItem>
+                    )}
+                  </DropdownButton>
+                }
+              />
+            </div>
+          </Col>
+
+          <Col xs={6} key='byweekday'>
+            <div>
+              <SelectField
+                name='byweekday'
+                label={formatMessage(messages.byweekday)}
+                multi
+                joinValues
+                delimiter=','
+                simpleValue
+                options={weekdayOptions(locale)}
+              />
+            </div>
+          </Col>
+
+          <Col xs={6} key='bymonth'>
+            <div>
+              <SelectField
+                name='bymonth'
+                label={formatMessage(messages.bymonth)}
+                multi
+                joinValues
+                delimiter=','
+                simpleValue
+                options={monthOptions(locale)}
+              />
+            </div>
+          </Col>
+        </Row>
+      }
+      {frequency !== 'once' &&
+        <Row>
+          <Col xs={12}>
+            {end === 'endCount' &&
+              <TextField
+                name='count'
+                type='number'
+                min={0}
+                label={formatMessage(messages.end)}
+                addonBefore={
+                  <DropdownButton
+                    componentClass={InputGroup.Button}
+                    id='count-addon-end'
+                    title={formatMessage(messages[end])}
+                  >
+                    {['endCount', 'endDate'].map((et: EndType) =>
+                      <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
+                        <FormattedMessage {...messages[et]} values={{interval}}/>
+                      </MenuItem>
+                    )}
+                  </DropdownButton>
+                }
+                addonAfter={
+                  <InputGroup.Addon>
+                    <FormattedMessage {...messages.times}/>
+                  </InputGroup.Addon>
+                }
+              />
+            }
+            {end === 'endDate' &&
+              <DateField
+                name='until'
+                label={formatMessage(messages.end)}
+                addonBefore={
+                  <DropdownButton
+                    componentClass={InputGroup.Button}
+                    id='count-addon-end'
+                    title={formatMessage(messages[end])}
+                  >
+                    {['endCount', 'endDate'].map((et: EndType) =>
+                      <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
+                        <FormattedMessage {...messages[et]} values={{interval}}/>
+                      </MenuItem>
+                    )}
+                  </DropdownButton>
+                }
+              />
+            }
+          </Col>
+        </Row>
+      }
+      <Row>
+        <Col xs={12}>
           <div>rule: {rule}</div>
           <div>text: {text}</div>
-          <ul>
-            {generatedValues.map((date, idx) =>
-              <li key={idx}>
-                <FormattedDate
-                  value={date}
-                  weekday='short'
-                  year='numeric'
-                  month='short'
-                  day='numeric'
-                />
-              </li>
-            )}
-          </ul>
+          <div>
+            <DatePicker
+              utcOffset={moment().utcOffset()}
+              inline
+              onChange={() => {}}
+              highlightDates={generatedValues}
+              monthsShown={4}
+            />
+          </div>
           (note when dtstart isn't in set)
         </Col>
       </Row>
+
       <ButtonToolbar className='pull-right'>
         <Button
           type='button'
