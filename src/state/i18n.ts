@@ -1,3 +1,4 @@
+import * as numeral from 'numeral'
 import { addLocaleData } from 'react-intl'
 import * as en from 'react-intl/locale-data/en'
 
@@ -33,6 +34,7 @@ type Actions = SetLocaleAction | { type: '' }
 const reducer = (state: I18nState = defaultState, action: Actions): I18nState => {
   switch (action.type) {
     case SET_LOCALE:
+      numeral.locale(action.locale)
       return { ...state, locale: action.locale, lang: action.lang }
     default:
       return state

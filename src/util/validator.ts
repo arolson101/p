@@ -1,4 +1,5 @@
 import * as moment from 'moment'
+import * as numeral from 'numeral'
 import { SubmissionError, ErrorsFor } from 'redux-form'
 
 export class Validator<V> {
@@ -45,6 +46,15 @@ export class Validator<V> {
     const strValue = this.values[key] as any
     const value = moment(strValue, 'L')
     if (strValue && !value.isValid() && !this.errors[key]) {
+      this.errors[key] = message
+    }
+  }
+
+  numeral(key: keyof V, message: string) {
+    const strValue = this.values[key] as any
+    const value = numeral(strValue)
+    const x = value.value()
+    if (x === null || isNaN(x)) {
       this.errors[key] = message
     }
   }

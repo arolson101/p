@@ -1,7 +1,9 @@
 import * as moment from 'moment'
+import * as numeral from 'numeral'
 import * as R from 'ramda'
 import * as React from 'react'
 import { Row, Col, DropdownButton, MenuItem, SelectCallback, InputGroup, ButtonToolbar, Button, Alert } from 'react-bootstrap'
+import * as DatePicker from 'react-datepicker'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
@@ -9,13 +11,12 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProp
 import { Dispatch } from 'redux'
 import { reduxForm, ReduxFormProps, SubmitFunction, formValueSelector } from 'redux-form'
 import * as RRule from 'rrule-alt'
-import { Bill } from '../../docs'
+import { Account, Bill } from '../../docs'
 import { AppState } from '../../state'
 import { Validator, Lookup } from '../../util'
 import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms, SelectOption } from './forms'
 import { IntlProps } from './props'
-import * as DatePicker from 'react-datepicker'
 
 export { SubmitFunction }
 
@@ -35,6 +36,18 @@ const messages = defineMessages({
   notes: {
     id: 'BillForm.notes',
     defaultMessage: 'Notes'
+  },
+  web: {
+    id: 'BillForm.web',
+    defaultMessage: 'Website'
+  },
+  amount: {
+    id: 'BillForm.amount',
+    defaultMessage: 'Amount'
+  },
+  account: {
+    id: 'BillForm.account',
+    defaultMessage: 'Account'
   },
   uniqueName: {
     id: 'BillForm.uniqueName',
@@ -118,7 +131,9 @@ interface Props {
 
 interface ConnectedProps {
   lang: string
-  locale: string
+  accountOptions: SelectOption[]
+  monthOptions: SelectOption[]
+  weekdayOptions: SelectOption[]
   bills: Bill.Cache
   start: Date
   interval: number
@@ -159,8 +174,11 @@ interface RRuleValues {
 
 interface Values extends RRuleValues {
   name: string
-  notes: string
   group: string
+  web: string
+  notes: string
+  amount: string
+  account: string
 }
 
 const formName = 'BillForm'
@@ -185,6 +203,7 @@ const enhance = compose<AllProps, Props>(
       v.unique('name', otherNames, formatMessage(messages.uniqueName))
       v.date('start', formatMessage(forms.date))
       v.date('until', formatMessage(forms.date))
+      v.numeral('amount', formatMessage(forms.number))
       return v.errors
     },
     initialValues: {
@@ -197,8 +216,10 @@ const enhance = compose<AllProps, Props>(
   connect(
     (state: AppState): ConnectedProps => ({
       lang: state.i18n.lang,
-      locale: state.i18n.locale,
       bills: state.db.current!.cache.bills,
+      accountOptions: accountOptions(state),
+      monthOptions: monthOptions(state),
+      weekdayOptions: weekdayOptions(state),
       start: formSelector(state, 'start'),
       interval: formSelector(state, 'interval'),
       count: formSelector(state, 'count'),
@@ -221,11 +242,12 @@ const enhance = compose<AllProps, Props>(
 
       v.maybeThrowSubmissionError()
 
-      const { frequency, start, end, until, count, interval, byweekday, bymonth, ...rest } = values
+      const { amount, frequency, start, end, until, count, interval, byweekday, bymonth, ...rest } = values
 
       const bill: Bill = {
         ...edit,
         ...rest,
+        amount: numeral(amount).value(),
         rruleString: rrule.toString()
       }
       const doc = Bill.doc(bill, lang)
@@ -233,13 +255,15 @@ const enhance = compose<AllProps, Props>(
     }
   })),
   withPropChangeCallback('edit', (props: AllProps) => {
-    const { edit, initialize, reset } = props
+    const { edit, initialize, reset, intl: { formatNumber } } = props
     if (edit) {
       const rrule = edit.rrule || RRule.fromString(edit.rruleString)
       const values: Values = {
         ...edit,
         start: moment(rrule.options.dtstart).format('L'),
       } as any
+
+      values.amount = formatNumber(edit.amount, {style: 'currency', currency: 'USD'})
 
       const opts = rrule.origOptions
       if (opts.freq === RRule.MONTHLY) {
@@ -262,9 +286,11 @@ const enhance = compose<AllProps, Props>(
         values.bymonth = opts.bymonth.join(',')
       }
 
+      values.end = 'endCount'
       if (opts.until) {
         values.until = moment(opts.until).format('L')
         values.count = 0
+        values.end = 'endDate'
       } else if (typeof opts.count === 'number') {
         values.count = opts.count
         values.until = ''
@@ -296,7 +322,7 @@ const enhance = compose<AllProps, Props>(
 const { TextField, DateField, SelectField, SelectCreateableField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
-  const { edit, onSubmit, onCancel, groups, locale, handleSubmit, frequency,
+  const { edit, onSubmit, onCancel, groups, accountOptions, monthOptions, weekdayOptions, handleSubmit, frequency,
     interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, onCalendarChange } = props
   const { formatMessage } = props.intl
 
@@ -325,10 +351,31 @@ export const BillForm = enhance((props) => {
         </Col>
       </Row>
       <Row>
-        <Col xs={12}>
+        <Col xs={6}>
           <TextField
             name='notes'
             label={formatMessage(messages.notes)}
+          />
+        </Col>
+        <Col xs={6}>
+          <TextField
+            name='web'
+            label={formatMessage(messages.web)}
+          />
+        </Col>
+      </Row>
+      <Row>
+        <Col xs={6}>
+          <TextField
+            name='amount'
+            label={formatMessage(messages.amount)}
+          />
+        </Col>
+        <Col xs={6}>
+          <SelectField
+            name='account'
+            label={formatMessage(messages.account)}
+            options={accountOptions}
           />
         </Col>
       </Row>
@@ -342,7 +389,7 @@ export const BillForm = enhance((props) => {
           </div>
         </Col>
         <Col xs={12} sm={6}>
-          {end === 'endCount' &&
+          {end !== 'endDate' &&
             <TextField
               name='count'
               type='number'
@@ -430,7 +477,7 @@ export const BillForm = enhance((props) => {
               joinValues
               delimiter=','
               simpleValue
-              options={weekdayOptions(locale)}
+              options={weekdayOptions}
             />
           </div>
         </Col>
@@ -444,7 +491,7 @@ export const BillForm = enhance((props) => {
               joinValues
               delimiter=','
               simpleValue
-              options={monthOptions(locale)}
+              options={monthOptions}
             />
           </div>
         </Col>
@@ -504,27 +551,43 @@ const dayMap = {
   FR: 5,
   SA: 6
 } as { [key: string]: number }
-const rruleDays = [RRule.SU, RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA]
-const weekdayOptions = (locale: string): SelectOption[] => {
-  const localeData = moment.localeData(locale)
-  const names = localeData.weekdaysShort() // Sunday = 0
-  const first = localeData.firstDayOfWeek()
-  const values = R.range(first, first + 7).map((i: number) => i % 7)
-  return values.map(i => ({
-    value: i.toString(),
-    label: names[i]
-  }))
-}
 
-const monthOptions = (locale: string): SelectOption[] => {
-  const localeData = moment.localeData(locale)
-  const names = localeData.monthsShort()
-  const values = R.range(0, 12)
-  return values.map(i => ({
-    value: (i + 1).toString(), // Jan = 1
-    label: names[i]
-  }))
-}
+const accountOptions = createSelector(
+  (state: AppState) => state.db.current!.cache.accounts,
+  (cache: Account.Cache): SelectOption[] => {
+    return Array.from(cache.values()).map(acct => ({
+      value: acct._id,
+      label: acct.name
+    }))
+  }
+)
+
+const weekdayOptions = createSelector(
+  (state: AppState) => state.i18n.locale,
+  (locale: string): SelectOption[] => {
+    const localeData = moment.localeData(locale)
+    const names = localeData.weekdaysShort() // Sunday = 0
+    const first = localeData.firstDayOfWeek()
+    const values = R.range(first, first + 7).map((i: number) => i % 7)
+    return values.map(i => ({
+      value: i.toString(),
+      label: names[i]
+    }))
+  }
+)
+
+const monthOptions = createSelector(
+  (state: AppState) => state.i18n.locale,
+  (locale: string): SelectOption[] => {
+    const localeData = moment.localeData(locale)
+    const names = localeData.monthsShort()
+    const values = R.range(0, 12)
+    return values.map(i => ({
+      value: (i + 1).toString(), // Jan = 1
+      label: names[i]
+    }))
+  }
+)
 
 const getGroupNames = R.pipe(
   (bills: Bill.Cache) => Array.from(bills.values()),
@@ -569,6 +632,8 @@ const toRRuleFreq = {
   years: RRule.YEARLY
 } as { [f: string]: RRule.Frequency }
 
+const rruleDays = [RRule.SU, RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA]
+
 const toRRule = ({frequency, start, end, until, count, interval, byweekday, bymonth}: RRuleValues): RRule | ErrorMessage => {
   const date = moment(start, 'L')
   if (!date.isValid()) {
@@ -590,16 +655,16 @@ const toRRule = ({frequency, start, end, until, count, interval, byweekday, bymo
     opts.bymonth = bymonth.split(',').map(x => +x)
   }
 
-  if (end === 'endCount') {
-    if (count > 0) {
-      opts.count = +count
-    }
-  } else {
+  if (end === 'endDate') {
     const untilDate = moment(until, 'L')
     if (!untilDate.isValid()) {
       return new ErrorMessage('until', forms.required)
     }
     opts.until = untilDate.toDate()
+  } else {
+    if (count > 0) {
+      opts.count = +count
+    }
   }
 
   return new RRule(opts)

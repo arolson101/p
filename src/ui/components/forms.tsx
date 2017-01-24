@@ -45,7 +45,11 @@ export const forms = defineMessages({
   date: {
     id: 'forms.date',
     defaultMessage: 'Invalid date'
-  }
+  },
+  number: {
+    id: 'forms.number',
+    defaultMessage: 'Invalid number'
+  },
 })
 
 interface FieldGroupProps<Name> {
