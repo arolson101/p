@@ -283,7 +283,7 @@ const enhance = compose<AllProps, Props>(
           values.interval = opts.interval
         }
         if (Array.isArray(opts.byweekday)) {
-          values.byweekday = opts.byweekday.join(',')
+          values.byweekday = (opts.byweekday as string[]).map(str => dayMap[str]).join(',')
         }
         if (Array.isArray(opts.bymonth)) {
           values.bymonth = opts.bymonth.join(',')
@@ -508,13 +508,23 @@ export const BillForm = enhance((props) => {
 
 const mod7 = (i: number) => i % 7
 
+const dayMap = {
+  SU: 0,
+  MO: 1,
+  TU: 2,
+  WE: 3,
+  TH: 4,
+  FR: 5,
+  SA: 6
+} as { [key: string]: number }
+const rruleDays = [RRule.SU, RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA]
 const weekdayOptions = (locale: string): SelectOption[] => {
   const localeData = moment.localeData(locale)
   const names = localeData.weekdaysShort() // Sunday = 0
   const first = localeData.firstDayOfWeek()
   const values = R.range(first, first + 7).map(mod7)
   return values.map(i => ({
-    value: mod7(i + 6).toString(), // Monday = 0
+    value: i.toString(),
     label: names[i]
   }))
 }
@@ -612,13 +622,13 @@ const toRRule = ({frequency, custom, start, end, until, count, interval, byweekd
 
     case 'custom':
       if (interval) {
-        opts.interval = interval
+        opts.interval = +interval
       }
       if (byweekday) {
-        opts.byweekday = byweekday.split(',').map(parseInt)
+        opts.byweekday = byweekday.split(',').map(x => rruleDays[+x])
       }
       if (bymonth) {
-        opts.bymonth = bymonth.split(',').map(parseInt)
+        opts.bymonth = bymonth.split(',').map(x => +x)
       }
       break
   }
