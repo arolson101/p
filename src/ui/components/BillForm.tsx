@@ -357,19 +357,19 @@ export const BillForm = enhance((props) => {
       <Row>
         <Col xs={6}>
           <div>
-            <SelectField
-              name='frequency'
-              clearable={false}
-              options={frequencyOptions(formatMessage)}
-              label={formatMessage(messages.frequency)}
+            <DateField
+              name='start'
+              label={formatMessage(messages.start)}
             />
           </div>
         </Col>
         <Col xs={6}>
           <div>
-            <DateField
-              name='start'
-              label={formatMessage(messages.start)}
+            <SelectField
+              name='frequency'
+              clearable={false}
+              options={frequencyOptions(formatMessage)}
+              label={formatMessage(messages.frequency)}
             />
           </div>
         </Col>
@@ -405,7 +405,7 @@ export const BillForm = enhance((props) => {
             </div>
           </Col>
 
-          <Col xs={6} key='byweekday'>
+          <Col sm={6} xs={12} key='byweekday'>
             <div>
               <SelectField
                 name='byweekday'
@@ -419,7 +419,7 @@ export const BillForm = enhance((props) => {
             </div>
           </Col>
 
-          <Col xs={6} key='bymonth'>
+          <Col sm={6} xs={12} key='bymonth'>
             <div>
               <SelectField
                 name='bymonth'
@@ -494,6 +494,7 @@ export const BillForm = enhance((props) => {
               utcOffset={moment().utcOffset()}
               inline
               onChange={() => {}}
+              selected={moment(generatedValues.length > 0 ? generatedValues[0] : new Date())}
               highlightDates={generatedValues}
               monthsShown={4}
             />
