@@ -8,13 +8,13 @@ import { getTransactions, deleteTransactions } from '../../actions'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { withResolveProp } from '../enhancers'
-import { Breadcrumbs } from './breadcrumbs'
+import { Breadcrumbs } from './Breadcrumbs'
 import { Container, Item } from './flex'
 import { ListWithDetails, getRowData, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
 import { RouteProps, DispatchProps } from './props'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
-import { TransactionDetail } from './transactionDetail'
+import { TransactionDetail } from './TransactionDetail'
 
 const messages = defineMessages({
   settings: {

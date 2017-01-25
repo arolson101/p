@@ -6,10 +6,10 @@ import { compose } from 'redux'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { CancelablePromise } from '../../util'
-import { Breadcrumbs } from './breadcrumbs'
+import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps, DispatchProps } from './props'
 import { selectDbInfo, selectBank, selectAccount } from './selectors'
-import { TransactionDetail } from './transactionDetail'
+import { TransactionDetail } from './TransactionDetail'
 
 interface ConnectedProps {
   dbInfo?: DbInfo.Doc

@@ -6,8 +6,8 @@ import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropType
 import { Dispatch } from 'redux'
 import { DbInfo, Bank, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
-import { Breadcrumbs } from './breadcrumbs'
-import { Values, AccountForm, SubmitFunction } from './accountForm'
+import { Breadcrumbs } from './Breadcrumbs'
+import { Values, AccountForm, SubmitFunction } from './AccountForm'
 import { RouteProps } from './props'
 import { selectCurrentDb, selectDbInfo, selectBank, selectBankAccounts } from './selectors'
 

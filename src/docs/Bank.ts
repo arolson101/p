@@ -2,7 +2,7 @@ import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
 import { AppThunk } from '../state'
 import { TCacheSetAction } from './index'
-import { Account } from './account'
+import { Account } from './Account'
 
 export interface Bank {
   fi?: string

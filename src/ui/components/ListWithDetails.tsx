@@ -7,7 +7,7 @@ import { compose, setDisplayName, withHandlers, setPropTypes, onlyUpdateForPropT
 import { AppState, ResponsiveState } from '../../state'
 import { Container, Item } from './flex'
 import { RouteProps } from './props'
-import { withQuerySyncedState } from './queryState'
+import { withQuerySyncedState } from '../enhancers'
 import './ListWithDetails.css'
 
 interface Props<T> {

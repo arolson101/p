@@ -1,6 +1,6 @@
 import * as docURI from 'docuri'
 import { defineMessages } from 'react-intl'
-import { Bank } from './bank'
+import { Bank } from './Bank'
 import { makeid, Lookup } from '../util'
 import { TCacheSetAction } from './index'
 import { AppThunk } from '../state'

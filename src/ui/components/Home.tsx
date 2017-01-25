@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Grid } from 'react-bootstrap'
 import { Link } from 'react-router'
 import { Bank, Bill } from '../../docs'
-import { Breadcrumbs } from './breadcrumbs'
+import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps } from './props'
 
 type AllProps = RouteProps<any>

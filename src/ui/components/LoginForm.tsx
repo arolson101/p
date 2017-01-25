@@ -8,7 +8,7 @@ import { reduxForm, ReduxFormProps, SubmissionError } from 'redux-form'
 import { DbInfo } from '../../docs'
 import { AppState, dbActions } from '../../state'
 import { Validator } from '../../util'
-import { ConfirmDelete } from './confirmDelete'
+import { ConfirmDelete } from './ConfirmDelete'
 import { DispatchProps, IntlProps } from './props'
 import { typedFields, forms } from './forms'
 

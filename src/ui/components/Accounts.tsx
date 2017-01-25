@@ -7,7 +7,7 @@ import { compose } from 'recompose'
 import { DbInfo, Bank, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Lookup } from '../../util'
-import { Breadcrumbs } from './breadcrumbs'
+import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps, IntlProps } from './props'
 import { selectDbInfo, selectCurrentDb } from './selectors'
 

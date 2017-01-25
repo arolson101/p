@@ -6,7 +6,7 @@ import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropType
 import { Dispatch } from 'redux'
 import { DbInfo, Bill } from '../../docs'
 import { AppState, FI, CurrentDb } from '../../state'
-import { Breadcrumbs } from './breadcrumbs'
+import { Breadcrumbs } from './Breadcrumbs'
 import { BillForm, SubmitFunction } from './BillForm'
 import { RouteProps } from './props'
 import { selectDbInfo } from './selectors'

@@ -6,10 +6,10 @@ import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropType
 import { Dispatch } from 'redux'
 import { DbInfo, Bank, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
-import { Breadcrumbs } from './breadcrumbs'
+import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps } from './props'
 import { selectCurrentDb, selectDbInfo, selectBank, selectBankAccounts, selectAccount } from './selectors'
-import { Values, AccountForm, SubmitFunction } from './accountForm'
+import { Values, AccountForm, SubmitFunction } from './AccountForm'
 
 const messages = defineMessages({
   page: {

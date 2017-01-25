@@ -1,16 +1,16 @@
-export * from './account'
-export * from './dbInfo'
-export * from './bank'
-export * from './bill'
-export * from './category'
-export * from './transaction'
+export * from './Account'
+export * from './DbInfo'
+export * from './Bank'
+export * from './Bill'
+export * from './Category'
+export * from './Transaction'
 
-import { Account } from './account'
-import { DbInfo } from './dbInfo'
-import { Bank } from './bank'
-import { Bill } from './bill'
-import { Category } from './category'
-import { Lookup } from '../util'
+import { Account } from './Account'
+import { DbInfo } from './DbInfo'
+import { Bank } from './Bank'
+import { Bill } from './Bill'
+import { Category } from './Category'
+import { Lookup } from '../Util'
 
 export const createIndices = async (db: PouchDB.Database<any>) => {
   type Indexer = (db: PouchDB.Database<any>) => Promise<any>
