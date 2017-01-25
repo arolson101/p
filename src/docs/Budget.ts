@@ -26,9 +26,12 @@
  *  |- + Expenses
  *  |  |- Groceries $100
  *  |  |- Gas $100
- *  \- + Savings Goals
- *     |- New car - $100 / $30000
- *     \- Playstation VR - 0 / $500
+ *  |- + Savings Goals
+ *  |  |- New car - $100 / $30000
+ *  |  \- Playstation VR - 0 / $500
+ *  \- + Birthdays
+ *     |- Mom 1/20 - $25
+ *     \- Someone else 3/15 - $10
  */
 
 export {}
