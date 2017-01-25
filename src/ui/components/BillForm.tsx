@@ -280,7 +280,7 @@ const enhance = compose<AllProps, Props>(
         values.interval = opts.interval
       }
       if (Array.isArray(opts.byweekday)) {
-        values.byweekday = opts.byweekday.map((str: RRule.ByWeekdayStr) => dayMap[str]).join(',')
+        values.byweekday = opts.byweekday.map((str: RRule.WeekdayStr) => dayMap[str]).join(',')
       }
       if (Array.isArray(opts.bymonth)) {
         values.bymonth = opts.bymonth.join(',')
