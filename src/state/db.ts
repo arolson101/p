@@ -2,7 +2,7 @@ import * as CryptoPouch from 'crypto-pouch'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction, Dispatch } from 'redux'
-import { createIndices, DbInfo, docChangeActionTesters, Bank, Account, Category, Bill } from '../docs'
+import { createIndices, DbInfo, docChangeActionTesters, Bank, Account, Category, Bill, Statement } from '../docs'
 import { AppThunk } from './'
 
 PouchDB.plugin(PouchFind)
@@ -24,6 +24,7 @@ export interface CurrentDb {
     accounts: Account.Cache
     categories: Category.Cache
     bills: Bill.Cache
+    statements: Statement.Cache
   }
 }
 
@@ -128,7 +129,10 @@ const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
     results = await db.find({selector: Bill.all})
     const bills = Bill.createCache(results.docs)
 
-    const cache = { banks, accounts, categories, bills }
+    results = await db.find({selector: Statement.all})
+    const statements = Statement.createCache(results.docs)
+
+    const cache = { banks, accounts, categories, bills, statements }
     dispatch(setDb({info, db, changes, cache}))
   }
 
@@ -159,6 +163,7 @@ type Actions =
   Account.CacheSetAction |
   Category.CacheSetAction |
   Bill.CacheSetAction |
+  Statement.CacheSetAction |
   { type: '' }
 
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
@@ -189,6 +194,9 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
 
     case Bill.CACHE_SET:
       return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, bills: action.cache } } }
+
+    case Statement.CACHE_SET:
+      return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, statements: action.cache } } }
 
     default:
       return state

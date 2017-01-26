@@ -98,8 +98,9 @@ const enhance = compose<AllProps, {}>(
       const txs: Transaction.Doc[] = []
       for (let i = 0; i < 1000; i++) {
         const tx: Transaction = {
-          time: new Date(2016, 11, i, Math.trunc(Math.random() * 24), Math.trunc(Math.random() * 60)),
+          time: new Date(2016, 11, i, Math.trunc(Math.random() * 24), Math.trunc(Math.random() * 60)).valueOf(),
           name: 'payee ' + i + ' ' + Math.random() * 100,
+          type: '',
           memo: '',
           amount: (Math.random() - 0.5) * 1000,
           split: {}

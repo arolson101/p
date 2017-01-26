@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto'
 import * as docURI from 'docuri'
 import { Bank } from './Bank'
 import { Account } from './Account'
+import { Statement } from './Statement'
 
 export interface Split {
   [categoryId: string]: number
@@ -9,10 +10,12 @@ export interface Split {
 
 export interface Transaction {
   serverid?: string
-  time: Date
+  time: number
+  type: string
   name: string
   memo: string
   amount: number
+  statement?: Statement.DocId
   split: Split
 }
 
@@ -66,7 +69,7 @@ export namespace Transaction {
   }
 
   export const doc = (account: Account.Doc, transaction: Transaction): Doc => {
-    const txId = timeKey(transaction.time) + randomBytes(4).toString('hex')
+    const txId = transaction.time.toString() + randomBytes(4).toString('hex')
     const _id = docId({ ...accountParts(account), txId })
     return { _id, ...transaction }
   }

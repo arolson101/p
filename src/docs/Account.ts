@@ -12,6 +12,8 @@ export interface Account {
   visible: boolean
   bankid: string
   key: string
+  ledgerBalance?: number
+  ledgerBalanceDate?: number
 }
 
 export namespace Account {

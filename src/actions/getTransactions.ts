@@ -1,6 +1,7 @@
+import * as ofx4js from 'ofx4js'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { AppThunk, CurrentDb } from '../state'
-import { Bank, Account, Transaction } from '../docs'
+import { Bank, Account, Transaction, Statement } from '../docs'
 import { createConnection, getFinancialAccount } from './online'
 
 type FormatMessage = (messageDescriptor: FormattedMessage.MessageDescriptor, values?: Object) => string
@@ -22,12 +23,12 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
     try {
       const service = createConnection(bank, formatMessage)
       const bankAccount = getFinancialAccount(service, bank, account, formatMessage)
-
-      const statement = await bankAccount.readStatement(start, end)
-      const transactionList = statement.getTransactionList()
+      const bankStatement = await bankAccount.readStatement(start, end)
+      const transactionList = bankStatement.getTransactionList()
       if (transactionList) {
         const { db: { current } } = getState()
         if (!current) { throw new Error('no db') }
+        const statements = new Map(current.cache.statements)
         const existingTransactions = await getExistingTransactions(current, account, start, end)
         const newTransactions = transactionList.getTransactions() || []
         const changes: PouchDB.Core.Document<any>[] = []
@@ -37,23 +38,34 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
             // not sure why bank would give us transactions outside of our date range, but it happens!
             continue
           }
-          const transaction = findMatchingTransaction(existingTransactions, newTransaction)
+          let statement = Statement.get(statements, account, time)
+          if (!statement) {
+            statement = Statement.create(account, time)
+            statements.set(statement._id, statement)
+            changes.push(statement)
+          }
+          let transaction = findMatchingTransaction(existingTransactions, newTransaction)
           if (!transaction) {
-            const transaction: Transaction = {
+            transaction = Transaction.doc(account, {
               serverid: newTransaction.getId(),
-              time,
+              time: time.valueOf(),
+              type: ofx4js.domain.data.common.TransactionType[newTransaction.getTransactionType()],
               name: newTransaction.getName(),
               memo: newTransaction.getMemo(),
               amount: newTransaction.getAmount(),
               split: {}
+            })
+            Statement.addTransaction(statement, transaction)
+            changes.push(transaction)
+          } else {
+            if (Statement.addTransaction(statement, transaction)) {
+              changes.push(transaction)
+              changes.push(statement)
             }
-            const doc = Transaction.doc(account, transaction)
-            console.assert(doc.time >= start)
-            console.assert(doc.time < end)
-            changes.push(doc)
           }
         }
-
+        const balance = bankStatement.getLedgerBalance()
+        Statement.updateBalances(statements, account, balance.getAmount(), balance.getAsOfDate(), changes)
         await current.db.bulkDocs(changes)
         return formatMessage(messages.success, {count: changes.length})
       } else {
@@ -64,14 +76,14 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
     }
   }
 
-const getExistingTransactions = async (current: CurrentDb, account: Account.Doc, start: Date, end: Date): Promise<Transaction[]> => {
+const getExistingTransactions = async (current: CurrentDb, account: Account.Doc, start: Date, end: Date): Promise<Transaction.Doc[]> => {
   const startkey = Transaction.startkeyForAccount(account, start)
   const endkey = Transaction.endkeyForAccount(account, end)
   const existingTransactions = await current.db.allDocs({ startkey, endkey, include_docs: true })
   return existingTransactions.rows.map(row => row.doc)
 }
 
-const findMatchingTransaction = (existingTransactions: Transaction[], newTransaction: ofx4js.domain.data.common.Transaction) => {
+const findMatchingTransaction = (existingTransactions: Transaction.Doc[], newTransaction: ofx4js.domain.data.common.Transaction) => {
   const id = newTransaction.getId()
   return existingTransactions.find(existingTransaction => existingTransaction.serverid === id)
 }

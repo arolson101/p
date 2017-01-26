@@ -51,7 +51,7 @@ const enhance = compose<AllProps, {}>(
       router.goBack()
     },
     onSubmit: async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-      const { current, router, lang } = props
+      const { current, lang } = props
       const bank = props.bank!
 
       const account: Account = {

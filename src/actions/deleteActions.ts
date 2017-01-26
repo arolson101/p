@@ -22,6 +22,8 @@ export const deleteBank = (bank: Bank.Doc): AppThunk =>
         })
         const transactions = await getTransactions(current, account)
         deletions.push(...transactions)
+
+        // TODO: delete statements
       }
     }
     deletions.push({
