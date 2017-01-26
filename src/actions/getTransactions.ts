@@ -31,7 +31,7 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
         const statements = new Map(current.cache.statements)
         const existingTransactions = await getExistingTransactions(current, account, start, end)
         const newTransactions = transactionList.getTransactions() || []
-        const changes: PouchDB.Core.Document<any>[] = []
+        const changes: ChangeSet = new Set()
         for (let newTransaction of newTransactions) {
           const time = newTransaction.getDatePosted()
           if (time < start || time >= end) {
@@ -42,7 +42,7 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
           if (!statement) {
             statement = Statement.create(account, time)
             statements.set(statement._id, statement)
-            changes.push(statement)
+            changes.add(statement)
           }
           let transaction = findMatchingTransaction(existingTransactions, newTransaction)
           if (!transaction) {
@@ -55,18 +55,14 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
               amount: newTransaction.getAmount(),
               split: {}
             })
-            Statement.addTransaction(statement, transaction)
-            changes.push(transaction)
+            Statement.addTransaction(statement, transaction, changes)
           } else {
-            if (Statement.addTransaction(statement, transaction)) {
-              changes.push(transaction)
-              changes.push(statement)
-            }
+            Statement.addTransaction(statement, transaction, changes)
           }
         }
         const balance = bankStatement.getLedgerBalance()
         Statement.updateBalances(statements, account, balance.getAmount(), balance.getAsOfDate(), changes)
-        await current.db.bulkDocs(changes)
+        await current.db.bulkDocs(Array.from(changes))
         return formatMessage(messages.success, {count: changes.length})
       } else {
         return formatMessage(messages.empty)

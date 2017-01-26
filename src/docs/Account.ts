@@ -60,7 +60,7 @@ export namespace Account {
 
   export type Id = ':accountId' | 'create' | makeid
   export type DocId = 'account/:bankId/:accountId'
-  export type Doc = PouchDB.Core.Document<Account> & { _id: DocId; _rev?: string }
+  export type Doc = TDocument<Account, DocId>
   export interface Params { bankId: Bank.Id, accountId: Id }
   export const docId = docURI.route<Params, DocId>('account/:bankId/:accountId')
   export const startkey = 'account/'
@@ -83,8 +83,8 @@ export namespace Account {
     export const create = (bank: Bank.Doc) => {
       const iparams = Bank.docId(bank._id)
       if (!iparams) { throw new Error('not a bank docId: ' + bank._id) }
-      const create = docId({ accountId: 'create', bankId: iparams.bankId })
-      return '/' + create
+      const path = docId({ accountId: 'create', bankId: iparams.bankId })
+      return '/' + path
     }
 
     export const view = (account: Doc): string => {

@@ -9,9 +9,9 @@ export const withQuerySyncedState = <T extends {}>(name: string, setter: string,
       constructor(props?: any) {
         super(props)
         const query = this.props.location.query as any
-        const value = (name in query) ? convert(query[name]) : dflt
+        const queryValue = (name in query) ? convert(query[name]) : dflt
         this.state = {
-          [name]: value
+          [name]: queryValue
         }
         this.setValue = debounce(
           (value: T) => {

@@ -104,9 +104,9 @@ const RFCompatibleSelect = (Component: React.ComponentClass<Select.ReactSelectPr
     menuContainerStyle={{ zIndex: 5 }} // https://github.com/JedWatson/react-select/issues/1076
     value={value}
     onChange={(e: any) => {
-      const value = e && (props.valueKey ? e[props.valueKey] : props.multi ? e : e.value)
+      const newValue = e && (props.valueKey ? e[props.valueKey] : props.multi ? e : e.value)
       if (props.onChange) {
-        props.onChange(value)
+        props.onChange(newValue)
       }
     }}
     onBlur={() => props.onBlur && props.onBlur(props.value ? props.value : undefined as any)}

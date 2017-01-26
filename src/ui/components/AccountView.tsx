@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { AutoSizer, Column } from 'react-virtualized'
 import { compose, setDisplayName, withHandlers, withState, renderComponent } from 'recompose'
 import { getTransactions, deleteTransactions } from '../../actions'
-import { DbInfo, Bank, Account, Transaction } from '../../docs'
+import { DbInfo, Bank, Account, Transaction, Statement } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { withResolveProp } from '../enhancers'
 import { Breadcrumbs } from './Breadcrumbs'
@@ -55,11 +55,13 @@ interface Values {
   amount: string
 }
 
+type LedgerTransaction = Transaction.Doc & { balance: number }
+
 interface EnhancedProps {
   transactions: Promise<Transaction.Doc[]>
   items: Transaction.Doc[]
-  loadTransactions(): Promise<Transaction.Doc[]>
-  setTransactions(promise: Promise<Transaction.Doc[]>): void
+  loadTransactions(): Promise<LedgerTransaction[]>
+  setTransactions(promise: Promise<LedgerTransaction[]>): void
   addTransactions(): void
   downloadTransactions(): void
   deleteTransactions(): void
@@ -79,15 +81,31 @@ const enhance = compose<AllProps, {}>(
     })
   ),
   withHandlers<AllProps,AllProps>({
-    loadTransactions: (props) => async() => {
+    loadTransactions: (props) => async(): Promise<LedgerTransaction[]> => {
       if (props.current && props.account) {
-        const startkey = Transaction.startkeyForAccount(props.account)
-        const endkey = Transaction.endkeyForAccount(props.account)
-        // const skip = 4000
-        // const limit = 100
-        const results = await props.current.db.allDocs({startkey, endkey, include_docs: true})
+        const opts = {
+          startkey: Transaction.startkeyForAccount(props.account),
+          endkey: Transaction.endkeyForAccount(props.account),
+          include_docs: true
+        }
+        const results = await props.current.db.allDocs(opts)
         const docs = results.rows.map(row => row.doc as Transaction.Doc)
-        return docs
+        const statements = Statement.statementsForAccount(props.current.cache.statements, props.account)
+        const ledgerTransactions: LedgerTransaction[] = []
+        for (let statement of statements) {
+          const transactions = Statement.transactionsForStatement(statement, docs)
+          let balance = statement.openingBalance
+          for (let transaction of transactions) {
+            ledgerTransactions.push({
+              ...transaction,
+              balance
+            })
+            balance += transaction.amount
+          }
+        }
+        return ledgerTransactions
+      } else {
+        return []
       }
     }
   }),
@@ -95,21 +113,32 @@ const enhance = compose<AllProps, {}>(
   withHandlers<AllProps,AllProps>({
     addTransactions: (props) => async() => {
       const { current, account, setTransactions, loadTransactions } = props
-      const txs: Transaction.Doc[] = []
+      const statements = new Map(current.cache.statements)
+      const changes: ChangeSet = new Set()
+      let balance = 0
       for (let i = 0; i < 1000; i++) {
-        const tx: Transaction = {
-          time: new Date(2016, 11, i, Math.trunc(Math.random() * 24), Math.trunc(Math.random() * 60)).valueOf(),
+        const time = new Date(2016, 11, i, Math.trunc(Math.random() * 24), Math.trunc(Math.random() * 60))
+        let statement = Statement.get(statements, account!, time)
+        if (!statement) {
+          statement = Statement.create(account!, time)
+          statements.set(statement._id, statement)
+          changes.add(statement)
+        }
+        const tx = Transaction.doc(account!, {
+          time: time.valueOf(),
           name: 'payee ' + i + ' ' + Math.random() * 100,
           type: '',
           memo: '',
           amount: (Math.random() - 0.5) * 1000,
           split: {}
-        }
-        const doc = Transaction.doc(account!, tx)
-        txs.push(doc)
+        })
+        changes.add(tx)
+        balance += tx.amount
+        Statement.addTransaction(statement, tx, changes)
       }
 
-      current.db.bulkDocs(txs)
+      Statement.updateBalances(statements, account!, balance, new Date(), changes)
+      current.db.bulkDocs(Array.from(changes))
       setTransactions(loadTransactions())
     },
 
@@ -212,7 +241,15 @@ export const AccountView = enhance((props) => {
                         headerClassName: 'alignRight',
                         style: {textAlign: 'right'},
                         cellRenderer: currencyCellRenderer,
-                        width: 100
+                        width: 120
+                      },
+                      {
+                        label: 'Balance',
+                        dataKey: 'balance',
+                        headerClassName: 'alignRight',
+                        style: {textAlign: 'right'},
+                        cellRenderer: currencyCellRenderer,
+                        width: 120
                       }
                     ]}
                     DetailComponent={TransactionDetail}

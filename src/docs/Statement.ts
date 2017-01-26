@@ -1,5 +1,6 @@
 import * as docURI from 'docuri'
 import * as R from 'ramda'
+import { sprintf } from 'sprintf-js'
 import { makeid, Lookup } from '../util'
 import { AppThunk } from '../state'
 import { TCacheSetAction } from './index'
@@ -11,9 +12,9 @@ export interface Statement {
   year: number
   month: number
 
-  transactionCount: number
+  openingBalance: number
+  transactionsCount: number
   transactionsAmount: number
-  endBalance: number
 }
 
 export namespace Statement {
@@ -44,13 +45,13 @@ export namespace Statement {
     if (!aparams) {
       throw new Error('invalid accountId: ' + account._id)
     }
-    if (!year || !month) {
-      throw new Error('year and month must be set')
+    if (!year) {
+      throw new Error('year must be set')
     }
     const _id = docId({
       bankId: aparams.bankId,
       accountId: aparams.accountId,
-      statementId: `${year}-${month}` as Id
+      statementId: sprintf('%d-%02d', year, month) as Id
     })
     return _id
   }
@@ -89,42 +90,69 @@ export namespace Statement {
     const statement: Statement = {
       year: date.getUTCFullYear(),
       month: date.getUTCMonth(),
-      transactionCount: 0,
+      openingBalance: 0,
+      transactionsCount: 0,
       transactionsAmount: 0,
-      endBalance: 0,
     }
     return doc(account, statement)
   }
 
-  export const addTransaction = (statement: Doc, transaction: Transaction): boolean => {
-    if (transaction.statement) {
-      return false
+  export const addTransaction = (statement: Doc, transaction: Transaction, changes: ChangeSet): void => {
+    if (!transaction.statement) {
+      transaction.statement = statement._id
+      statement.transactionsCount++
+      statement.transactionsAmount += transaction.amount
+      changes.add(transaction)
+      changes.add(statement)
     }
-    transaction.statement = statement._id
-    statement.transactionCount++
-    statement.transactionsAmount += transaction.amount
-    return true
   }
 
-  export const updateBalances = (statements: Cache, account: Account.Doc, amount: number, asOfDate: Date, changes: any[]) => {
-    if (!account.ledgerBalanceDate || (account.ledgerBalance !== amount && asOfDate.valueOf() > account.ledgerBalanceDate)) {
-      account.ledgerBalance = amount
-      account.ledgerBalanceDate = asOfDate.valueOf()
-      if (changes.indexOf(account) === -1) {
-        changes.push(account)
-      }
+  export const baseIdForBank = (bank: Bank.Doc) => {
+    const bparams = Bank.docId(bank._id)
+    if (!bparams) {
+      throw new Error('invalid bank docId ' + bank._id)
     }
+    return docId({
+      bankId: bparams.bankId,
+      accountId: '' as Account.Id,
+      statementId: '' as Id
+    }).replace('//', '/')
+  }
 
-    // update statement balances backwards
+  export const baseIdForAccount = (account: Account.Doc) => {
     const aparams = Account.docId(account._id)
     if (!aparams) {
       throw new Error('invalid account docId ' + account._id)
     }
-    const baseId = docId({
+    return docId({
       bankId: aparams.bankId,
       accountId: aparams.accountId,
       statementId: '' as Id
     })
+  }
+
+  export const statementsForAccount = (statements: Cache, account: Account.Doc) => {
+    const baseId = baseIdForAccount(account)
+    const stmts = R.pipe(
+      R.filter((stmt: Statement.Doc) => stmt._id.startsWith(baseId)),
+      R.sortBy((stmt: Statement.Doc) => stmt._id)
+    )(Array.from(statements.values()))
+    return stmts
+  }
+
+  export const transactionsForStatement = (statement: Doc, transactions: Transaction.Doc[]) => {
+    return transactions.filter(tx => tx.statement === statement._id)
+  }
+
+  export const updateBalances = (statements: Cache, account: Account.Doc, amount: number, asOfDate: Date, changes: ChangeSet) => {
+    if (!account.ledgerBalanceDate || (account.ledgerBalance !== amount && asOfDate.valueOf() > account.ledgerBalanceDate)) {
+      account.ledgerBalance = amount
+      account.ledgerBalanceDate = asOfDate.valueOf()
+      changes.add(account)
+    }
+
+    // update statement balances backwards
+    const baseId = baseIdForAccount(account)
     const stmts = R.pipe(
       R.filter((stmt: Statement.Doc) => stmt._id.startsWith(baseId)),
       R.sortBy((stmt: Statement.Doc) => stmt._id),
@@ -133,14 +161,13 @@ export namespace Statement {
 
     let balance = amount
     for (let stmt of stmts) {
-      if (stmt.endBalance === balance) {
+      const openingBalance = balance - stmt.transactionsAmount
+      if (stmt.openingBalance === openingBalance) {
         break
       }
-      stmt.endBalance = balance
-      balance -= stmt.transactionsAmount
-      if (changes.indexOf(stmt) === -1) {
-        changes.push(stmt)
-      }
+      stmt.openingBalance = openingBalance
+      balance = openingBalance
+      changes.add(stmt)
     }
   }
 }

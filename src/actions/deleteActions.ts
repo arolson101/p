@@ -1,5 +1,5 @@
 import { AppThunk, CurrentDb } from '../state'
-import { Bank, Account, Transaction } from '../docs'
+import { Bank, Account, Transaction, Statement } from '../docs'
 
 interface Deletion {
   _id: string
@@ -22,8 +22,16 @@ export const deleteBank = (bank: Bank.Doc): AppThunk =>
         })
         const transactions = await getTransactions(current, account)
         deletions.push(...transactions)
-
-        // TODO: delete statements
+      }
+    }
+    const baseId = Statement.baseIdForBank(bank)
+    for (let statement of current.cache.statements.values()) {
+      if (statement._id.startsWith(baseId)) {
+        deletions.push({
+          _id: statement._id,
+          _rev: statement._rev,
+          _deleted: true
+        })
       }
     }
     deletions.push({
@@ -54,6 +62,17 @@ export const deleteAccount = (bank: Bank.Doc, account: Account.Doc): AppThunk =>
     const transactions = await getTransactions(current, account)
     deletions.push(...transactions)
 
+    const baseId = Statement.baseIdForAccount(account)
+    for (let statement of current.cache.statements.values()) {
+      if (statement._id.startsWith(baseId)) {
+        deletions.push({
+          _id: statement._id,
+          _rev: statement._rev,
+          _deleted: true
+        })
+      }
+    }
+
     await current.db.bulkDocs([bank, ...deletions])
   }
 
@@ -72,6 +91,20 @@ export const deleteTransactions = (account: Account.Doc): AppThunk =>
     if (!current) { throw new Error('no db') }
 
     let deletions: Deletion[] = await getTransactions(current, account)
+
+    const transactions = await getTransactions(current, account)
+    deletions.push(...transactions)
+
+    const baseId = Statement.baseIdForAccount(account)
+    for (let statement of current.cache.statements.values()) {
+      if (statement._id.startsWith(baseId)) {
+        deletions.push({
+          _id: statement._id,
+          _rev: statement._rev,
+          _deleted: true
+        })
+      }
+    }
 
     await current.db.bulkDocs(deletions)
   }
