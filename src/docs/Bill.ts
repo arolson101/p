@@ -77,7 +77,10 @@ export namespace Bill {
   export type Cache = Lookup<DocId, Doc>
   export const createCache = (docs: Doc[] = []): Lookup<DocId, Doc> => {
     return Lookup.create<DocId, Doc>(
-      docs.map(doc => ({...doc, rrule: RRule.fromString(doc.rruleString)}))
+      docs.map(doc => ({
+        ...doc,
+        rrule: doc.rruleString ? RRule.fromString(doc.rruleString) : undefined
+      }))
     )
   }
 
@@ -96,14 +99,14 @@ export namespace Bill {
       dispatch(cacheSetAction(cache))
     }
 
-  export const getDate = (doc: Doc): Date => {
-    if (!doc.rrule) {
+  export const getDate = (bill: Doc): Date => {
+    if (!bill.rrule) {
       throw new Error(`bill doesn't have a rrule!`)
     }
-    if (!doc.rrule.options.dtstart) {
+    if (!bill.rrule.options.dtstart) {
       throw new Error(`bill doesn't have a start date!`)
     }
-    const next = doc.rrule.after(new Date(), true)
+    const next = bill.rrule.after(new Date(), true)
     return next
   }
 }

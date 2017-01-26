@@ -12,6 +12,7 @@ import { Bank } from './Bank'
 import { Bill } from './Bill'
 import { Category } from './Category'
 import { Statement } from './Statement'
+import { Transaction } from './Transaction'
 import { Lookup } from '../Util'
 
 export const createIndices = async (db: PouchDB.Database<any>) => {
@@ -41,4 +42,10 @@ export const docChangeActionTesters = new Map([
 export interface TCacheSetAction<A, K, T> {
   type: A
   cache: Lookup<K, T>
+}
+
+export interface DocCache {
+  banks: Bank.Cache
+  accounts: Account.Cache
+  transactions: Transaction.Cache
 }

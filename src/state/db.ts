@@ -2,7 +2,7 @@ import * as CryptoPouch from 'crypto-pouch'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction, Dispatch } from 'redux'
-import { createIndices, DbInfo, docChangeActionTesters, Bank, Account, Category, Bill, Statement } from '../docs'
+import { createIndices, DbInfo, docChangeActionTesters, Bank, Account, Category, Bill, Statement, Transaction } from '../docs'
 import { AppThunk } from './'
 
 PouchDB.plugin(PouchFind)
@@ -105,7 +105,7 @@ const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>
 
 const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
   async (dispatch) => {
-    const db = new PouchDB<any>(info._id)
+    const db = new PouchDB<{}>(info._id, {adapter: 'websql'})
     if (password) {
       db.crypto(password)
       await checkPassword(db)
@@ -117,22 +117,20 @@ const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
     })
     .on('change', handleChange(db, dispatch))
 
-    let results = await db.find({selector: Bank.all})
-    const banks = Bank.createCache(results.docs)
-
-    results = await db.find({selector: Account.all})
-    const accounts = Account.createCache(results.docs)
-
-    results = await db.find({selector: Category.all})
-    const categories = Category.createCache(results.docs)
-
-    results = await db.find({selector: Bill.all})
-    const bills = Bill.createCache(results.docs)
-
-    results = await db.find({selector: Statement.all})
-    const statements = Statement.createCache(results.docs)
-
-    const cache = { banks, accounts, categories, bills, statements }
+    const allDocs = await db.allDocs({include_docs: true})
+    const docs = allDocs.rows.map(row => row.doc!)
+    const banks = Bank.createCache(docs.filter(Bank.isDoc) as Bank.Doc[])
+    const accounts = Account.createCache(docs.filter(Account.isDoc) as Account.Doc[])
+    const categories = Category.createCache(docs.filter(Category.isDoc) as Category.Doc[])
+    const bills = Bill.createCache(docs.filter(Bill.isDoc) as Bill.Doc[])
+    const statements = Statement.createCache(docs.filter(Statement.isDoc) as Statement.Doc[])
+    const txs = docs.filter(Transaction.isDoc)
+    const transactions = Transaction.createCache(txs as Transaction.Doc[])
+    const cache = { banks, accounts, categories, bills, statements, transactions }
+    const view = {
+      banks: Array.from(banks.values()).map(bank => Bank.buildView(bank, cache))
+    }
+    console.log(view)
     dispatch(setDb({info, db, changes, cache}))
   }
 

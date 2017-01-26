@@ -1,8 +1,7 @@
 import { randomBytes } from 'crypto'
 import * as docURI from 'docuri'
-import { Bank } from './Bank'
-import { Account } from './Account'
-import { Statement } from './Statement'
+import { Lookup } from '../util'
+import { Bank, Account, Statement } from './'
 
 export interface Split {
   [categoryId: string]: number
@@ -37,6 +36,10 @@ export namespace Transaction {
     })
   }
 
+  export type View = Doc & {
+    balance: number
+  }
+
   export namespace routes {
     export const view = 'transaction/:bankId/:accountId/:txId'
     export const edit = 'transaction/:bankId/:accountId/:txId/edit'
@@ -64,6 +67,10 @@ export namespace Transaction {
     return !!docId(id as DocId)
   }
 
+  export const isDoc = (doc: PouchDB.Core.IdMeta): boolean => {
+    return !!docId(doc._id as DocId)
+  }
+
   const timeKey = (time: Date): string => {
     return time.valueOf().toString()
   }
@@ -73,4 +80,7 @@ export namespace Transaction {
     const _id = docId({ ...accountParts(account), txId })
     return { _id, ...transaction }
   }
+
+  export type Cache = Lookup<DocId, Doc>
+  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 }

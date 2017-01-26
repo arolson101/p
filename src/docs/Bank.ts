@@ -3,6 +3,7 @@ import { makeid, Lookup } from '../util'
 import { AppThunk } from '../state'
 import { TCacheSetAction } from './index'
 import { Account } from './Account'
+import { DocCache } from './'
 
 export interface Bank {
   fi?: string
@@ -39,6 +40,17 @@ export namespace Bank {
       { _id: { $gt: startkey } },
       { _id: { $lt: endkey } }
     ]
+  }
+
+  export type View = Doc & {
+    accountsView: Account.View[]
+  }
+
+  export const buildView = (bank: Doc, cache: DocCache): View => {
+    return ({
+      ...bank,
+      accountsView: bank.accounts.map(accountId => Account.buildView(cache.accounts.get(accountId)!, cache))
+    })
   }
 
   export namespace routes {
@@ -83,8 +95,8 @@ export namespace Bank {
     return !!docId(id as DocId)
   }
 
-  export const isDoc = (doc: Doc): boolean => {
-    return !!docId(doc._id)
+  export const isDoc = (doc: PouchDB.Core.IdMeta): boolean => {
+    return !!docId(doc._id as DocId)
   }
 
   export const doc = (bank: Bank, lang: string): Doc => {

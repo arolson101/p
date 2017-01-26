@@ -1,9 +1,10 @@
 import * as docURI from 'docuri'
 import { defineMessages } from 'react-intl'
-import { Bank } from './Bank'
-import { makeid, Lookup } from '../util'
-import { TCacheSetAction } from './index'
 import { AppThunk } from '../state'
+import { makeid, Lookup } from '../util'
+import { Bank } from './Bank'
+import { Transaction } from './Transaction'
+import { DocCache, TCacheSetAction } from './index'
 
 export interface Account {
   name: string
@@ -70,6 +71,28 @@ export namespace Account {
       { _id: { $gt: startkey } },
       { _id: { $lt: endkey } }
     ]
+  }
+
+  export type View = Doc & {
+    transactions: Transaction.Doc[]
+  }
+
+  export const buildView = (account: Doc, cache: DocCache): View => {
+    const aparts = docId(account._id)
+    if (!aparts) {
+      throw new Error('invalid account id: ' + account._id)
+    }
+    const baseId = Transaction.docId({bankId: aparts.bankId, accountId: aparts.accountId, txId: ''})
+    const transactions: Transaction.Doc[] = []
+    for (let transaction of cache.transactions.values()) {
+      if (transaction._id.startsWith(baseId)) {
+        transactions.push(transaction)
+      }
+    }
+    return ({
+      ...account,
+      transactions
+    })
   }
 
   export namespace routes {
