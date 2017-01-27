@@ -1,15 +1,46 @@
-import * as CryptoPouch from 'crypto-pouch'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import { ThunkAction, Dispatch } from 'redux'
 import { createIndices, DbInfo, docChangeActionTesters, Bank, Account, Category, Bill, Statement, Transaction } from '../docs'
 import { AppThunk } from './'
 
-window.openDatabase = require<any>('websql')
-
 PouchDB.plugin(require<any>('pouchdb-adapter-node-websql'))
 PouchDB.plugin(PouchFind)
-PouchDB.plugin(CryptoPouch)
+
+const customOpenDatabase = require<any>('websql/custom')
+const SQLiteDatabase = require<any>('websql/lib/sqlite/SQLiteDatabase')
+
+const SQLiteDatabaseWithKey = (key?: string) =>
+  class {
+    _db: any
+    _auth: boolean
+    constructor(name: string) {
+      this._db = new SQLiteDatabase(name)
+      this._auth = false
+    }
+
+    exec(queries: any, readOnly: any, callback: any) {
+      if (!this._auth) {
+        if (key) {
+          this._db.exec(
+            [ { sql: `PRAGMA key=${key};` },
+              { sql: `SELECT count(*) from sqlite_master;` }
+            ],
+            false,
+            (err: any, ret: any[]) => {
+              if (!err && !ret[1].error) {
+                this._auth = true
+              }
+            }
+          )
+        }
+      }
+
+      return this._db.exec(queries, readOnly, callback)
+    }
+  }
+
+const adapter = (key?: string) => ({ adapter: 'websql', websql: customOpenDatabase(SQLiteDatabaseWithKey(key)) })
 
 const METADB_NAME = 'meta.db' as DbInfo.Id
 
@@ -108,11 +139,11 @@ const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>
 
 const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
   async (dispatch) => {
-    const db = new PouchDB<{}>(info._id, {adapter: 'websql', key: password} as any)
-    if (password) {
-      db.crypto(password)
-      await checkPassword(db)
-    }
+    const db = new PouchDB<{}>(info._id, adapter(password))
+    // if (password) {
+    //   db.crypto(password)
+    //   await checkPassword(db)
+    // }
     await createIndices(db)
     const changes = db.changes({
       since: 'now',
@@ -150,7 +181,7 @@ const deleteDb = (info: DbInfo.Doc): Thunk =>
     await meta.db.remove(info)
 
     // destroy db
-    const db = new PouchDB<any>(info._id, {adapter: 'websql'})
+    const db = new PouchDB<any>(info._id, adapter())
     await db.destroy()
   }
 
@@ -221,7 +252,7 @@ export const DbSlice = {
 
 export const DbInit = (): AppThunk =>
   async (dispatch) => {
-    const db = new PouchDB<DbInfo.Doc>(METADB_NAME, {adapter: 'websql'})
+    const db = new PouchDB<DbInfo.Doc>(METADB_NAME, adapter())
     db.changes({
       since: 'now',
       live: true

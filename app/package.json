@@ -2,8 +2,5 @@
   "name": "p",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
-  "dependencies": {
-    "sqlite3": "^3.1.8"
-  }
+  "main": "main.js"
 }
