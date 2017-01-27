@@ -5,10 +5,13 @@ import { ThunkAction, Dispatch } from 'redux'
 import { createIndices, DbInfo, docChangeActionTesters, Bank, Account, Category, Bill, Statement, Transaction } from '../docs'
 import { AppThunk } from './'
 
+window.openDatabase = require<any>('websql')
+
+PouchDB.plugin(require<any>('pouchdb-adapter-node-websql'))
 PouchDB.plugin(PouchFind)
 PouchDB.plugin(CryptoPouch)
 
-const METADB_NAME = 'meta' as DbInfo.Id
+const METADB_NAME = 'meta.db' as DbInfo.Id
 
 export interface MetaDb {
   db: PouchDB.Database<DbInfo.Doc>
@@ -105,7 +108,7 @@ const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>
 
 const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
   async (dispatch) => {
-    const db = new PouchDB<{}>(info._id, {adapter: 'websql'})
+    const db = new PouchDB<{}>(info._id, {adapter: 'websql', key: password} as any)
     if (password) {
       db.crypto(password)
       await checkPassword(db)
@@ -147,7 +150,7 @@ const deleteDb = (info: DbInfo.Doc): Thunk =>
     await meta.db.remove(info)
 
     // destroy db
-    const db = new PouchDB<any>(info._id)
+    const db = new PouchDB<any>(info._id, {adapter: 'websql'})
     await db.destroy()
   }
 
@@ -218,7 +221,7 @@ export const DbSlice = {
 
 export const DbInit = (): AppThunk =>
   async (dispatch) => {
-    const db = new PouchDB<DbInfo.Doc>(METADB_NAME)
+    const db = new PouchDB<DbInfo.Doc>(METADB_NAME, {adapter: 'websql'})
     db.changes({
       since: 'now',
       live: true

@@ -13,6 +13,7 @@
       if (typeof module != "undefined") {
         // ensure p.js can find node modules
         const path = require("path");
+        module.paths.push(path.resolve(process.cwd(), 'app', 'node_modules'));
         module.paths.push(path.resolve(process.cwd(), 'node_modules'));
       }
     </script>

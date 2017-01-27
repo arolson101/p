@@ -36,7 +36,7 @@ module.exports = {
   },
 
   //externals: nodeModules,
-  externals: ['ws', 'chacha-native'],
+  externals: ['ws', 'chacha-native', 'sqlite3'],
 
   target: 'electron-renderer',
 
