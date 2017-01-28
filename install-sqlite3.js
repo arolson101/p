@@ -31,7 +31,7 @@ if (process.platform === 'win32') {
 
 } else {
 
-  exec('npm install sqlite3')
+  cd('node_modules/unix-sqlcipher/node_modules/sqlite3')
 
   if (process.platform === 'darwin') {
     // macos
@@ -45,7 +45,6 @@ if (process.platform === 'win32') {
     }
     exec('export LDFLAGS="-L`brew --prefix`/opt/sqlcipher/lib"')
     exec('export CPPFLAGS="-I`brew --prefix`/opt/sqlcipher/include"')
-    cd('node_modules/sqlite3')
 
     exec('npm run prepublish')
 
@@ -62,7 +61,6 @@ if (process.platform === 'win32') {
     exec('export LDFLAGS="-L/usr/local/lib"')
     exec('export CPPFLAGS="-I/usr/local/include -I/usr/local/include/sqlcipher"')
     exec('export CXXFLAGS="$CPPFLAGS"')
-    cd('node_modules/sqlite3')
     exec('npm i --build-from-source --sqlite_libname=sqlcipher --sqlite=/usr/local --verbose' + targetStr)
   }
 }

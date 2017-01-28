@@ -36,7 +36,7 @@ module.exports = {
   },
 
   //externals: nodeModules,
-  externals: ['ws', 'chacha-native', 'sqlite3'],
+  externals: {'ws': true, 'sqlite3': 'commonjs cross-sqlcipher'},
 
   target: 'electron-renderer',
 

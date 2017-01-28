@@ -13,29 +13,25 @@ const SQLiteDatabase = require<any>('websql/lib/sqlite/SQLiteDatabase')
 const SQLiteDatabaseWithKey = (key?: string) =>
   class {
     _db: any
-    _auth: boolean
     constructor(name: string) {
       this._db = new SQLiteDatabase(name)
-      this._auth = false
+      if (key) {
+        this._db.exec(
+          [ { sql: `PRAGMA key=${key};` },
+            { sql: `SELECT count(*) from sqlite_master;` }
+          ],
+          false,
+          (err: any, ret: any[]) => {
+            if (err || ret[1].error) {
+              console.log(ret[1].error)
+              throw ret[1].error
+            }
+          }
+        )
+      }
     }
 
     exec(queries: any, readOnly: any, callback: any) {
-      if (!this._auth) {
-        if (key) {
-          this._db.exec(
-            [ { sql: `PRAGMA key=${key};` },
-              { sql: `SELECT count(*) from sqlite_master;` }
-            ],
-            false,
-            (err: any, ret: any[]) => {
-              if (!err && !ret[1].error) {
-                this._auth = true
-              }
-            }
-          )
-        }
-      }
-
       return this._db.exec(queries, readOnly, callback)
     }
   }
