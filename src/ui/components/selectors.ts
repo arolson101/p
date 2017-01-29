@@ -35,8 +35,3 @@ export const selectTransactions = (state: AppState, props: RouteProps<Account.Pa
   const account = selectAccount(state, props)
   return account.transactions
 }
-
-export const selectBills = createSelector(
-  (state: AppState) => state.db.current!.cache.bills,
-  (bills) => [...bills.values()]
-)

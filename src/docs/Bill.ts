@@ -10,7 +10,6 @@ export interface Bill {
   notes: string
   amount: number
   rruleString: string
-  rrule?: RRule
 }
 
 export namespace Bill {
@@ -19,6 +18,18 @@ export namespace Bill {
   export type Doc = PouchDB.Core.Document<Bill> & { _id: DocId; _rev?: string }
   export interface Params { billId: Id }
   export const docId = docURI.route<Params, DocId>('bill/:billId')
+
+  export type View = {
+    doc: Doc
+    rrule: RRule
+  }
+
+  export const buildView = (doc: Doc): View => {
+    return ({
+      doc,
+      rrule: RRule.fromString(doc.rruleString)
+    })
+  }
 
   export namespace routes {
     export const all = 'bills'
@@ -83,7 +94,7 @@ export namespace Bill {
     cache
   })
 
-  export const getDate = (bill: Doc): Date => {
+  export const getDate = (bill: View): Date => {
     if (!bill.rrule) {
       throw new Error(`bill doesn't have a rrule!`)
     }

@@ -27,6 +27,7 @@ export interface CurrentDb {
   }
   view: {
     banks: Bank.View[]
+    bills: Bill.View[]
   }
 }
 
@@ -124,7 +125,8 @@ const loadDb = (info: DbInfo, password?: string): Thunk =>
     R.forEach(mapper, docs)
 
     const view = {
-      banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache))
+      banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache)),
+      bills: Lookup.map(cache.bills, bill => Bill.buildView(bill))
     }
 
     console.timeEnd('load')

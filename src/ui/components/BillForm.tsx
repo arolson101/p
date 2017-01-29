@@ -124,7 +124,7 @@ const messages = defineMessages({
 })
 
 interface Props {
-  edit?: Bill.Doc
+  edit?: Bill.View
   onSubmit: SubmitFunction<Bill.Doc>
   onCancel: () => void
 }
@@ -198,7 +198,7 @@ const enhance = compose<AllProps, Props>(
     validate: (values: Values, props: AllProps) => {
       const v = new Validator(values)
       const { edit, bills, intl: { formatMessage } } = props
-      const otherAccounts = Lookup.filter(bills, otherBill => !edit || otherBill._id !== edit._id)
+      const otherAccounts = Lookup.filter(bills, otherBill => !edit || otherBill._id !== edit.doc._id)
       const otherNames = otherAccounts.map(acct => acct.name)
       v.unique('name', otherNames, formatMessage(messages.uniqueName))
       v.date('start', formatMessage(forms.date))
@@ -257,13 +257,13 @@ const enhance = compose<AllProps, Props>(
   withPropChangeCallback('edit', (props: AllProps) => {
     const { edit, initialize, reset, intl: { formatNumber } } = props
     if (edit) {
-      const rrule = edit.rrule || RRule.fromString(edit.rruleString)
+      const rrule = edit.rrule
       const values: Values = {
         ...edit,
         start: moment(rrule.options.dtstart).format('L'),
       } as any
 
-      values.amount = formatNumber(edit.amount, {style: 'currency', currency: 'USD'})
+      values.amount = formatNumber(edit.doc.amount, {style: 'currency', currency: 'USD'})
 
       const opts = rrule.origOptions
       if (opts.freq === RRule.MONTHLY) {

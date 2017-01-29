@@ -30,7 +30,7 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  files: DbInfo.Cache
+  files: DbInfo[]
 }
 
 interface EnhancedProps {

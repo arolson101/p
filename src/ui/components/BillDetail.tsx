@@ -9,7 +9,7 @@ import { withPropChangeCallback } from '../enhancers'
 import { BillForm, SubmitFunction } from './BillForm'
 
 interface Props {
-  item: Bill.Doc
+  item: Bill.View
 }
 
 interface ConnectedProps {
@@ -65,8 +65,8 @@ export const BillDetail = enhance(({editing, item, date, startEdit, saveEdit, ca
     return <BillForm edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
   }
   return <div>
-    name: {item.name}<br/>
-    group: {item.group}<br/>
+    name: {item.doc.name}<br/>
+    group: {item.doc.group}<br/>
     date: <FormattedDate value={date}/><br/>
     <Button onClick={startEdit}>edit</Button>
     <Button onClick={deleteMe}>delete</Button>

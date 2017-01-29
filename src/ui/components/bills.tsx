@@ -10,7 +10,6 @@ import { BillDetail } from './BillDetail'
 import { Breadcrumbs } from './Breadcrumbs'
 import { Container, Item } from './flex'
 import { ListWithDetails, getRowData, currencyCellRenderer } from './ListWithDetails'
-import { selectBills } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
 
 const messages = defineMessages({
@@ -30,7 +29,7 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   current: CurrentDb,
-  bills: Bill.Doc[]
+  bills: Bill.View[]
 }
 
 interface EnhancedProps {
@@ -48,7 +47,7 @@ const enhance = compose<AllProps, {}>(
   connect(
     (state: AppState): ConnectedProps => ({
       current: state.db.current!,
-      bills: selectBills(state)
+      bills: state.db.current!.view.bills
     })
   )
 )
@@ -116,13 +115,13 @@ export const Bills = enhance((props: AllProps) => {
   )
 })
 
-const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Bill.Doc>) => (
+const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Bill.View>) => (
   <div>
-    {cellData.name}<br/>
-    <small>{cellData.notes}</small>
+    {cellData.doc.name}<br/>
+    <small>{cellData.doc.notes}</small>
   </div>
 )
 
-const dateCellRenderer = ({cellData}: Column.CellRendererArgs<Bill.Doc>) => (
+const dateCellRenderer = ({cellData}: Column.CellRendererArgs<Bill.View>) => (
   cellData && <FormattedDate value={Bill.getDate(cellData)} />
 )
