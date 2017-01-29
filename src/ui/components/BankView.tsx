@@ -6,11 +6,11 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { compose } from 'redux'
 import { getAccounts } from '../../actions'
-import { DbInfo, Bank, Account } from '../../docs'
+import { Bank, Account } from '../../docs'
 import { AppState } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps, IntlProps, DispatchProps } from './props'
-import { selectDbInfo, selectBank, selectBankAccounts } from './selectors'
+import { selectBank, selectBankAccounts } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
 
 const messages = defineMessages({
@@ -62,7 +62,6 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   bank?: Bank.Doc
-  dbInfo?: DbInfo
   accounts?: Account.Doc[]
 }
 
@@ -235,7 +234,6 @@ export const BankView = compose(
   injectIntl,
   connect(
     (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => ({
-      dbInfo: selectDbInfo(state),
       bank: selectBank(state, props),
       accounts: selectBankAccounts(state, props)
     })

@@ -13,7 +13,6 @@ import { Bill } from './Bill'
 import { Category } from './Category'
 import { Statement } from './Statement'
 import { Transaction } from './Transaction'
-import { Lookup } from '../Util'
 
 export interface DocChangeAction {
   type: string

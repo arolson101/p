@@ -7,13 +7,6 @@ export const selectCurrentDb = (state: AppState) => {
   return state.db.current!
 }
 
-export const selectDbInfo = (state: AppState) => {
-  if (!state.db.current) {
-    throw new Error('not logged in')
-  }
-  return state.db.current.info
-}
-
 export const selectBank = (state: AppState, props: RouteProps<Bank.Params>) => {
   const id = Bank.docId(props.params)
   return state.db.current && state.db.current.cache.banks.get(id)

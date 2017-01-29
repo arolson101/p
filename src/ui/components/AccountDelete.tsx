@@ -10,7 +10,7 @@ import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { forms } from './forms'
 import { DispatchProps, RouteProps } from './props'
-import { selectDbInfo, selectBank, selectAccount } from './selectors'
+import { selectBank, selectAccount } from './selectors'
 
 const messages = defineMessages({
   page: {
@@ -29,7 +29,6 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   current: CurrentDb
-  dbInfo?: DbInfo
   bank?: Bank.Doc
   account?: Account.Doc
 }
@@ -102,7 +101,6 @@ export const AccountDelete = compose(
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       current: state.db.current!,
-      dbInfo: selectDbInfo(state),
       bank: selectBank(state, props),
       account: selectAccount(state, props)
     })

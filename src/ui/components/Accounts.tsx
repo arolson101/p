@@ -4,12 +4,12 @@ import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { compose } from 'recompose'
-import { DbInfo, Bank, Account } from '../../docs'
+import { Bank, Account } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Lookup } from '../../util'
 import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps, IntlProps } from './props'
-import { selectDbInfo, selectCurrentDb } from './selectors'
+import { selectCurrentDb } from './selectors'
 
 const messages = defineMessages({
   page: {
@@ -23,7 +23,6 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  dbInfo: DbInfo
   current: CurrentDb
   banks?: Bank.Cache
   accounts?: Account.Cache
@@ -35,7 +34,6 @@ const enhance = compose<AllProps, {}>(
   injectIntl,
   connect(
     (state: AppState): ConnectedProps => ({
-      dbInfo: selectDbInfo(state),
       current: selectCurrentDb(state),
       banks: state.db.current && state.db.current.cache.banks,
       accounts: state.db.current && state.db.current.cache.accounts

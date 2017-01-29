@@ -6,7 +6,7 @@ import { compose, setDisplayName } from 'recompose'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState } from '../../state'
 import { RouteProps } from './props'
-import { selectDbInfo, selectBank, selectAccount } from './selectors'
+import { selectBank, selectAccount } from './selectors'
 
 const messages = defineMessages({
   home: {
@@ -25,7 +25,6 @@ interface Props {
 }
 
 interface ConnectedProps {
-  dbInfo?: DbInfo
   bank?: Bank.Doc
   account?: Account.Doc
 }
@@ -36,7 +35,6 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('Breadcrumbs'),
   connect(
     (state: AppState, props: AllProps): ConnectedProps => ({
-      dbInfo: selectDbInfo(state),
       bank: selectBank(state, props),
       account: selectAccount(state, props)
   })),

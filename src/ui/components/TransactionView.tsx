@@ -3,16 +3,15 @@ import { Grid, PageHeader } from 'react-bootstrap'
 import { injectIntl } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose } from 'redux'
-import { DbInfo, Bank, Account, Transaction } from '../../docs'
+import { Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { CancelablePromise } from '../../util'
 import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps, DispatchProps } from './props'
-import { selectDbInfo, selectBank, selectAccount } from './selectors'
+import { selectBank, selectAccount } from './selectors'
 import { TransactionDetail } from './TransactionDetail'
 
 interface ConnectedProps {
-  dbInfo?: DbInfo
   bank?: Bank.Doc
   account?: Account.Doc
   current: CurrentDb
@@ -76,7 +75,6 @@ export const TransactionView = compose(
   injectIntl,
   connect(
     (state: AppState, props: RouteProps<Transaction.Params>): ConnectedProps => ({
-      dbInfo: selectDbInfo(state),
       bank: selectBank(state, props),
       account: selectAccount(state, props),
       current: state.db.current!

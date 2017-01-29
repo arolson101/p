@@ -5,14 +5,14 @@ import { connect } from 'react-redux'
 import { AutoSizer, Column } from 'react-virtualized'
 import { compose, setDisplayName, withHandlers, withState, renderComponent } from 'recompose'
 import { getTransactions, deleteTransactions } from '../../actions'
-import { DbInfo, Bank, Account, Transaction, Statement } from '../../docs'
+import { Bank, Account, Transaction, Statement } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { withResolveProp } from '../enhancers'
 import { Breadcrumbs } from './Breadcrumbs'
 import { Container, Item } from './flex'
 import { ListWithDetails, getRowData, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
 import { RouteProps, DispatchProps } from './props'
-import { selectDbInfo, selectBank, selectAccount } from './selectors'
+import { selectBank, selectAccount } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
 import { TransactionDetail } from './TransactionDetail'
 
@@ -36,7 +36,6 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  dbInfo?: DbInfo
   bank?: Bank.Doc
   account?: Account.Doc
   current: CurrentDb
@@ -74,7 +73,6 @@ const enhance = compose<AllProps, {}>(
   setDisplayName('AccountViewComponent'),
   connect(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
-      dbInfo: selectDbInfo(state),
       bank: selectBank(state, props),
       account: selectAccount(state, props),
       current: state.db.current!

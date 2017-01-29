@@ -4,12 +4,11 @@ import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Dispatch } from 'redux'
-import { DbInfo, Bank } from '../../docs'
+import { Bank } from '../../docs'
 import { AppState, FI, CurrentDb } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { Values, BankForm, SubmitFunction } from './BankForm'
 import { RouteProps } from './props'
-import { selectDbInfo } from './selectors'
 
 const messages = defineMessages({
   page: {
@@ -22,7 +21,6 @@ interface ConnectedProps {
   filist: FI[]
   current: CurrentDb
   lang: string
-  dbInfo?: DbInfo
 }
 
 interface EnhancedProps {
@@ -41,7 +39,6 @@ const enhance = compose<AllProps, {}>(
       filist: state.fi.list,
       current: state.db.current!,
       lang: state.i18n.locale,
-      dbInfo: selectDbInfo(state)
     })
   ),
   withProps(({router}: AllProps): EnhancedProps => ({
