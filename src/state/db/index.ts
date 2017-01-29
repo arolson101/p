@@ -1,53 +1,18 @@
 import * as electron from 'electron'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as PouchDB from 'pouchdb-browser'
-import * as PouchFind from 'pouchdb-find'
 import * as R from 'ramda'
 import { ThunkAction, Dispatch } from 'redux'
 import { docChangeActionTesters, Bank, Account, Category, Bill, Statement, Transaction, DocCache } from '../../docs'
 import { Lookup } from '../../util'
 import { AppThunk } from '../'
 import { DbInfo } from './DbInfo'
+import { PouchDB, adapter } from './pouch'
 
 export { DbInfo }
 
 const userData = electron.remote.app.getPath('userData')
 const ext = '.db'
-
-PouchDB.plugin(require<any>('pouchdb-adapter-node-websql'))
-PouchDB.plugin(PouchFind)
-
-const customOpenDatabase = require<any>('websql/custom')
-const SQLiteDatabase = require<any>('websql/lib/sqlite/SQLiteDatabase')
-
-const SQLiteDatabaseWithKey = (key?: string) =>
-  class {
-    _db: any
-    constructor(name: string) {
-      this._db = new SQLiteDatabase(name)
-      if (key) {
-        this._db.exec(
-          [ { sql: `PRAGMA key=${key};` },
-            { sql: `SELECT count(*) from sqlite_master;` }
-          ],
-          false,
-          (err: any, ret: any[]) => {
-            if (err || ret[1].error) {
-              console.log(ret[1].error)
-              throw ret[1].error
-            }
-          }
-        )
-      }
-    }
-
-    exec(queries: any, readOnly: any, callback: any) {
-      return this._db.exec(queries, readOnly, callback)
-    }
-  }
-
-const adapter = (key?: string) => ({ adapter: 'websql', websql: customOpenDatabase(SQLiteDatabaseWithKey(key)) })
 
 export interface MetaDb {
   infos: DbInfo.Cache
