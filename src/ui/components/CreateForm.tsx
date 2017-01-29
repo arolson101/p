@@ -19,7 +19,11 @@ const messages = defineMessages({
   name: {
     id: 'dbCreate.name',
     defaultMessage: 'Database Name'
-  }
+  },
+  uniqueName: {
+    id: 'dbCreate.uniqueName',
+    defaultMessage: 'This name is already used'
+  },
 })
 
 interface Props {
@@ -29,6 +33,7 @@ interface Props {
 
 interface ConnectedProps {
   lang: string
+  infos: DbInfo.Cache
 }
 
 interface EnhancedProps {
@@ -48,7 +53,8 @@ const enhance = compose<AllProps, Props>(
   injectIntl,
   connect(
     (state: AppState): ConnectedProps => ({
-      lang: state.i18n.lang
+      lang: state.i18n.lang,
+      infos: state.db.meta.infos
     })
   ),
   withProps({
@@ -64,9 +70,11 @@ const enhance = compose<AllProps, Props>(
   } as EnhancedProps),
   reduxForm<AllProps, Values>({
     form: 'CreateForm',
-    validate: (values: Values, props: IntlProps) => {
-      const { formatMessage } = props.intl
+    validate: (values: Values, props: AllProps) => {
+      const { infos, intl: { formatMessage } } = props
       const v = new Validator(values)
+      const titles = infos.map(info => info.title)
+      v.unique('name', titles, formatMessage(messages.uniqueName))
       v.equal('confirmPassword', 'password', formatMessage(forms.passwordsMatch))
       return v.errors
     }
