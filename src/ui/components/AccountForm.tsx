@@ -59,7 +59,7 @@ const messages = defineMessages({
 
 interface Props {
   edit?: Account.Doc
-  accounts: Account.Doc[]
+  accounts: Account.View[]
   onSubmit: SubmitFunction<Values>
   onCancel: () => void
 }
@@ -106,9 +106,9 @@ const enhance = compose<AllProps, Props>(
     validate: (values: Values, props: AllProps) => {
       const v = new Validator(values)
       const { edit, accounts, intl: { formatMessage } } = props
-      const otherAccounts = accounts.filter(acct => !edit || edit._id !== acct._id)
-      const otherNames = otherAccounts.map(acct => acct.name)
-      const otherNumbers = otherAccounts.filter(acct => acct.type === v.values.type).map(acct => acct.number)
+      const otherAccounts = accounts.filter(acct => !edit || edit._id !== acct.doc._id)
+      const otherNames = otherAccounts.map(acct => acct.doc.name)
+      const otherNumbers = otherAccounts.filter(acct => acct.doc.type === v.values.type).map(acct => acct.doc.number)
       v.unique('name', otherNames, formatMessage(messages.uniqueName))
       v.unique('number', otherNumbers, formatMessage(messages.uniqueNumber))
       return v.errors

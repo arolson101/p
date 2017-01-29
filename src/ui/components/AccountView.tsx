@@ -3,11 +3,10 @@ import { Grid, PageHeader } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { AutoSizer, Column } from 'react-virtualized'
-import { compose, setDisplayName, withHandlers, withState, renderComponent } from 'recompose'
+import { compose, setDisplayName, withHandlers } from 'recompose'
 import { getTransactions, deleteTransactions } from '../../actions'
 import { Bank, Account, Transaction, Statement } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
-import { withResolveProp } from '../enhancers'
 import { Breadcrumbs } from './Breadcrumbs'
 import { Container, Item } from './flex'
 import { ListWithDetails, getRowData, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
@@ -36,8 +35,8 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  bank?: Bank.Doc
-  account?: Account.Doc
+  bank: Bank.View
+  account: Account.View
   current: CurrentDb
   items: Transaction.View[]
 }
@@ -79,13 +78,13 @@ const enhance = compose<AllProps, {}>(
       let balance = 0
       for (let i = 0; i < 1000; i++) {
         const time = new Date(2016, 11, i, Math.trunc(Math.random() * 24), Math.trunc(Math.random() * 60))
-        let statement = Statement.get(statements, account!, time)
+        let statement = Statement.get(statements, account.doc, time)
         if (!statement) {
-          statement = Statement.create(account!, time)
+          statement = Statement.create(account.doc, time)
           statements.set(statement._id, statement)
           changes.add(statement)
         }
-        const tx = Transaction.doc(account!, {
+        const tx = Transaction.doc(account.doc, {
           time: time.valueOf(),
           name: 'payee ' + i + ' ' + Math.random() * 100,
           type: '',
@@ -98,18 +97,18 @@ const enhance = compose<AllProps, {}>(
         Statement.addTransaction(statement, tx, changes)
       }
 
-      Statement.updateBalances(statements, account!, balance, new Date(), changes)
+      Statement.updateBalances(statements, account.doc, balance, new Date(), changes)
       current.db.bulkDocs(Array.from(changes))
     },
 
     downloadTransactions: (props: AllProps) => async () => {
       const { dispatch, bank, account } = props
-      await dispatch(getTransactions(bank!, account!, new Date(2016, 11, 1), new Date(2016, 11, 31), (str) => str.defaultMessage!))
+      await dispatch(getTransactions(bank.doc, account.doc, new Date(2016, 11, 1), new Date(2016, 11, 31), (str) => str.defaultMessage!))
     },
 
     deleteTransactions: (props: AllProps) => async() => {
       const { dispatch, account } = props
-      await dispatch(deleteTransactions(account!))
+      await dispatch(deleteTransactions(account.doc))
     }
   })
 )
@@ -150,19 +149,19 @@ export const AccountView = enhance((props) => {
               },
               {
                 message: messages.update,
-                to: Account.to.edit(account)
+                to: Account.to.edit(account.doc)
               },
               {
                 message: messages.delete,
-                to: Account.to.del(account)
+                to: Account.to.del(account.doc)
               }
             ]}
           />
 
           <PageHeader>
-            {account.name}
+            {account.doc.name}
             {' '}
-            <small>{account.number}</small>
+            <small>{account.doc.number}</small>
           </PageHeader>
 
           <Container>

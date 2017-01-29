@@ -21,7 +21,7 @@ const messages = defineMessages({
 interface ConnectedProps {
   filist: FI[]
   current: CurrentDb
-  bank?: Bank.Doc
+  bank: Bank.View
 }
 
 interface EnhancedProps {
@@ -50,7 +50,7 @@ const enhance = compose<AllProps, {}>(
       const { bank, current, filist } = props
       const { fi, username, password, ...newValues } = values
       const doc: Bank.Doc = {
-        ...bank,
+        ...bank.doc,
         ...newValues,
 
         fi: fi ? filist[fi - 1].name : undefined,
@@ -73,7 +73,7 @@ export const BankEdit = enhance((props) => {
       {bank &&
         <Grid>
           <Breadcrumbs {...props} page={messages.page}/>
-          <BankForm edit={bank} onSubmit={onSubmit} onCancel={onCancel}/>
+          <BankForm edit={bank.doc} onSubmit={onSubmit} onCancel={onCancel}/>
         </Grid>
       }
     </div>

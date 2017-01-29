@@ -20,8 +20,8 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   current: CurrentDb
-  bank?: Bank.Doc
-  accounts: Account.Doc[]
+  bank: Bank.View
+  accounts: Account.View[]
   lang: string
 }
 
@@ -50,7 +50,7 @@ const enhance = compose<AllProps, {}>(
     },
     onSubmit: async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
       const { current, lang } = props
-      const bank = props.bank!
+      const bank = props.bank.doc
 
       const account: Account = {
         ...values,
@@ -58,8 +58,8 @@ const enhance = compose<AllProps, {}>(
       }
 
       const doc = Account.doc(bank, account, lang)
-      bank.accounts.push(doc._id)
-      await current!.db.bulkDocs([doc, bank])
+      const nextBank = { ...bank, accounts: [...bank.accounts, doc._id] }
+      await current!.db.bulkDocs([doc, nextBank])
 
       router.replace(Account.to.view(doc))
     }

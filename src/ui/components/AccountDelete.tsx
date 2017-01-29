@@ -29,8 +29,8 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   current: CurrentDb
-  bank?: Bank.Doc
-  account?: Account.Doc
+  bank: Bank.View
+  account: Account.View
 }
 
 type AllProps = ConnectedProps & DispatchProps & RouteProps<Account.Params>
@@ -55,7 +55,7 @@ export class AccountDeleteComponent extends React.Component<AllProps, State> {
           <Grid>
             <Breadcrumbs {...this.props} page={messages.page}/>
             <div>
-              <p><FormattedMessage {...messages.text} values={{name: account.name}}/></p>
+              <p><FormattedMessage {...messages.text} values={{name: account.doc.name}}/></p>
               {error &&
                 <Alert bsStyle='danger'>
                   {error}
@@ -89,7 +89,7 @@ export class AccountDeleteComponent extends React.Component<AllProps, State> {
     const { bank, account, dispatch, router } = this.props
     try {
       this.setState({deleting: true, error: undefined})
-      await dispatch(deleteAccount(bank!, account!))
+      await dispatch(deleteAccount(bank.doc, account.doc))
       router.replace(DbInfo.to.home())
     } catch (err) {
       this.setState({deleting: false, error: err.message})

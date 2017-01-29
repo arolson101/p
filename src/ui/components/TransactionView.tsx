@@ -5,67 +5,35 @@ import { connect } from 'react-redux'
 import { compose } from 'redux'
 import { Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
-import { CancelablePromise } from '../../util'
 import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps, DispatchProps } from './props'
 import { selectBank, selectAccount } from './selectors'
 import { TransactionDetail } from './TransactionDetail'
 
 interface ConnectedProps {
-  bank?: Bank.Doc
-  account?: Account.Doc
+  bank: Bank.View
+  account: Account.View
   current: CurrentDb
 }
 
 type AllProps = RouteProps<Transaction.Params> & ConnectedProps & DispatchProps
 
 interface State {
-  transaction?: Transaction.Doc
+  transaction: Transaction.Doc
 }
 
 export class TransactionViewComponent extends React.Component<AllProps, State> {
-  state: State = {
-    transaction: undefined
-  }
-
-  loadTransactionPromise?: CancelablePromise<any> = undefined
-
-  componentDidMount() {
-    this.loadTransaction(this.props)
-  }
-
-  componentWillReceiveProps(nextProps: AllProps) {
-    this.loadTransaction(nextProps)
-  }
-
-  componentWillUnmount() {
-    if (this.loadTransactionPromise) {
-      this.loadTransactionPromise.cancel()
-    }
-  }
-
-  async loadTransaction(props: AllProps) {
-    if (props.current) {
-      const docId = Transaction.docId(props.params)
-      const transaction: Transaction.Doc = await props.current.db.get(docId)
-      this.setState({transaction})
-    }
-  }
-
   render() {
-    const { bank, account } = this.props
     const { transaction } = this.state
     return (
       <div>
-        {account && bank && transaction &&
-          <Grid>
-            <Breadcrumbs {...this.props} {...this.state}/>
-            <PageHeader>
-              {transaction.name}
-            </PageHeader>
-            <TransactionDetail {...this.props} item={transaction}/>
-          </Grid>
-        }
+        <Grid>
+          <Breadcrumbs {...this.props} {...this.state}/>
+          <PageHeader>
+            {transaction.name}
+          </PageHeader>
+          <TransactionDetail {...this.props} item={transaction}/>
+        </Grid>
       </div>
     )
   }

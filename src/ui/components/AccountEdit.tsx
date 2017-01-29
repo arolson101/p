@@ -20,9 +20,9 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   current: CurrentDb
-  bank?: Bank.Doc
-  accounts: Account.Doc[]
-  account?: Account.Doc
+  bank?: Bank.View
+  accounts: Account.View[]
+  account?: Account.View
 }
 
 interface EnhancedProps {
@@ -53,7 +53,7 @@ const enhance = compose<AllProps, {}>(
       const account = props.account!
 
       const doc: Account.Doc = {
-        ...account,
+        ...account.doc,
         ...values
       }
 
@@ -71,7 +71,7 @@ export const AccountEdit = enhance((props: AllProps) => {
       {bank && account &&
         <Grid>
           <Breadcrumbs {...props} page={messages.page}/>
-          <AccountForm {...props} edit={account} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
+          <AccountForm {...props} edit={account.doc} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
         </Grid>
       }
     </div>

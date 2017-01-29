@@ -18,10 +18,6 @@ const messages = defineMessages({
     id: 'getAccounts.accountAdded',
     defaultMessage: '{number} - {name} ({type}) (created)'
   },
-  setBankId: {
-    id: 'getAccounts.setBankId',
-    defaultMessage: '{number} - {name} ({type}) (updated bankid to {bankid})'
-  },
   investmentAccountNotSupported: {
     id: 'getAccounts.investmentAccountNotSupported',
     defaultMessage: 'Investment account not supported: {name}'
@@ -36,12 +32,12 @@ const messages = defineMessages({
   }
 })
 
-export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppThunk =>
+export const getAccounts = (bank: Bank.View, formatMessage: FormatMessage): AppThunk =>
   async (dispatch, getState) => {
     const res = []
     try {
-      let service = createConnection(bank, formatMessage)
-      let { username, password } = checkLogin(bank, formatMessage)
+      let service = createConnection(bank.doc, formatMessage)
+      let { username, password } = checkLogin(bank.doc, formatMessage)
       let accountProfiles = await service.readAccountProfiles(username, password)
 
       res.push(formatMessage(messages.success))
@@ -50,7 +46,8 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
       } else {
         const { db: { current }, i18n: { lang } } = getState()
         if (!current) { throw new Error('no db') }
-        const changes: PouchDB.Core.Document<any>[] = []
+        const changes: AnyDocument[] = []
+        const nextBank: Bank.Doc = { ...bank.doc, accounts: [...bank.doc.accounts] }
 
         for (let accountProfile of accountProfiles) {
           const accountName = accountProfile.getDescription()
@@ -93,23 +90,19 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
             visible: true
           }
 
-          const existingAccount = findExistingAccount(current.cache.accounts, bank, accountNumber, accountType)
+          const existingAccount = findExistingAccount(bank, accountNumber, accountType)
           if (!existingAccount) {
             res.push(formatMessage(messages.accountAdded, account))
-            const doc = Account.doc(bank, account, lang)
-            bank.accounts.push(doc._id)
+            const doc = Account.doc(bank.doc, account, lang)
+            nextBank.accounts.push(doc._id)
             changes.push(doc)
-          } else if (existingAccount.bankid !== bankid) {
-            existingAccount.bankid = bankid
-            changes.push(existingAccount)
-            res.push(formatMessage(messages.setBankId, existingAccount))
           } else {
             res.push(formatMessage(messages.accountExists, account))
           }
         }
 
         if (changes.length > 0) {
-          await current.db.bulkDocs([...changes, bank])
+          await current.db.bulkDocs([...changes, nextBank])
         }
       }
       return res.join('\n')
@@ -120,10 +113,9 @@ export const getAccounts = (bank: Bank.Doc, formatMessage: FormatMessage): AppTh
     }
   }
 
-const findExistingAccount = (cache: Account.Cache, bank: Bank.Doc, num: string, type: Account.Type): undefined | Account.Doc => {
-  for (let account of cache.values()) {
-    if (Account.getBank(account) === bank._id && account.number === num && account.type === type) {
-      console.assert(bank.accounts.indexOf(account._id) !== -1)
+const findExistingAccount = (bank: Bank.View, num: string, type: Account.Type): undefined | Account.View => {
+  for (let account of bank.accounts) {
+    if (account.doc.number === num && account.doc.type === type) {
       return account
     }
   }

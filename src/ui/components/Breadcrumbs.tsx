@@ -25,18 +25,18 @@ interface Props {
 }
 
 interface ConnectedProps {
-  bank?: Bank.Doc
-  account?: Account.Doc
+  bank?: Bank.View
+  account?: Account.View
 }
 
-type AllProps = Props & RouteProps<any> & ConnectedProps
+type AllProps = Props & RouteProps<Account.Params> & ConnectedProps
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('Breadcrumbs'),
   connect(
     (state: AppState, props: AllProps): ConnectedProps => ({
-      bank: selectBank(state, props),
-      account: selectAccount(state, props)
+      bank: props.params.bankId && selectBank(state, props),
+      account: props.params.accountId && selectAccount(state, props)
   })),
   injectIntl
 )
@@ -62,17 +62,17 @@ export const Breadcrumbs = enhance((props) => {
       {bank &&
         <Breadcrumb.Item
           active={!account && !page && !transaction}
-          href={router.createHref(Bank.to.view(bank))}
+          href={router.createHref(Bank.to.view(bank.doc))}
         >
-          {bank.name}
+          {bank.doc.name}
         </Breadcrumb.Item>
       }
       {account &&
         <Breadcrumb.Item
           active={!page && !transaction}
-          href={router.createHref(Account.to.view(account))}
+          href={router.createHref(Account.to.view(account.doc))}
         >
-          {account.name}
+          {account.doc.name}
         </Breadcrumb.Item>
       }
       {transaction &&

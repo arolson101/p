@@ -24,8 +24,6 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   current: CurrentDb
-  banks?: Bank.Cache
-  accounts?: Account.Cache
 }
 
 type AllProps = IntlProps & React.Props<any> & ConnectedProps & RouteProps<any>
@@ -35,13 +33,11 @@ const enhance = compose<AllProps, {}>(
   connect(
     (state: AppState): ConnectedProps => ({
       current: selectCurrentDb(state),
-      banks: state.db.current && state.db.current.cache.banks,
-      accounts: state.db.current && state.db.current.cache.accounts
   }))
 )
 
 export const Accounts = enhance((props) => {
-  const { banks, accounts } = props
+  const banks = props.current.view.banks
 
   return (
     <Grid>
@@ -50,12 +46,14 @@ export const Accounts = enhance((props) => {
         Accounts
       </PageHeader>
       <ul>
-        {banks && accounts && Lookup.map(banks, bank =>
-          <li key={bank._id}>
-            <Link to={Bank.to.view(bank)}>{bank.name}</Link>
+        {banks.map(bank =>
+          <li key={bank.doc._id}>
+            <Link to={Bank.to.view(bank.doc)}>{bank.doc.name}</Link>
             <ul>
-              {bank.accounts.map(id => accounts.get(id)).map(account => account &&
-                <li key={account._id}><Link to={Account.to.view(account)}>{account.name}</Link></li>
+              {bank.accounts.map(account =>
+                <li key={account.doc._id}>
+                  <Link to={Account.to.view(account.doc)}>{account.doc.name}</Link>
+                </li>
               )}
             </ul>
           </li>

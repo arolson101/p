@@ -1,5 +1,3 @@
-import * as R from 'ramda'
-import { TCacheSetAction } from '../../docs'
 
 export interface DbInfo {
   name: string
@@ -16,10 +14,5 @@ export namespace DbInfo {
     export const home = () => {
       return '/' + routes.home
     }
-  }
-
-  export type Cache = DbInfo[]
-  export const createCache = (docs: DbInfo[] = []): Cache => {
-    return R.sortBy(doc => doc.title, docs)
   }
 }

@@ -61,8 +61,8 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  bank?: Bank.Doc
-  accounts?: Account.Doc[]
+  bank: Bank.View
+  accounts: Account.View[]
 }
 
 type AllProps = RouteProps<Bank.Params> & ConnectedProps & IntlProps & DispatchProps
@@ -109,12 +109,12 @@ export class BankViewComponent extends React.Component<AllProps, State> {
                 },
                 {
                   message: messages.addAccount,
-                  to: Account.to.create(bank)
+                  to: Account.to.create(bank.doc)
                 },
                 {
                   message: messages.getAccounts,
                   onClick: this.getAccountList,
-                  disabled: !bank.online
+                  disabled: !bank.doc.online
                 },
                 {
                   divider: true
@@ -125,16 +125,16 @@ export class BankViewComponent extends React.Component<AllProps, State> {
                 },
                 {
                   message: messages.update,
-                  to: Bank.to.edit(bank)
+                  to: Bank.to.edit(bank.doc)
                 },
                 {
                   message: messages.delete,
-                  to: Bank.to.del(bank)
+                  to: Bank.to.del(bank.doc)
                 }
               ]}
             />
 
-            <PageHeader>{bank.name}</PageHeader>
+            <PageHeader>{bank.doc.name}</PageHeader>
 
             {accounts && accounts.length > 0 ? (
               <Table hover striped>
@@ -149,14 +149,14 @@ export class BankViewComponent extends React.Component<AllProps, State> {
                   </tr>
                 </thead>
                 <tbody>
-                  {accounts.filter(account => account.visible || showAll).map(account => account &&
-                    <tr key={account._id} href={router.createHref(Account.to.view(account))}>
+                  {accounts.filter(account => account.doc.visible || showAll).map(account => account &&
+                    <tr key={account.doc._id} href={router.createHref(Account.to.view(account.doc))}>
                       {showAll &&
-                        <td>{account.visible}</td>
+                        <td>{account.doc.visible}</td>
                       }
-                      <td>{account.type && <FormattedMessage {...Account.messages[account.type]}/>}</td>
-                      <td><Link to={Account.to.view(account)}>{account.name}</Link></td>
-                      <td><Link to={Account.to.view(account)}>{account.number}</Link></td>
+                      <td>{account.doc.type && <FormattedMessage {...Account.messages[account.doc.type]}/>}</td>
+                      <td><Link to={Account.to.view(account.doc)}>{account.doc.name}</Link></td>
+                      <td><Link to={Account.to.view(account.doc)}>{account.doc.number}</Link></td>
                     </tr>
                   )}
                 </tbody>
@@ -204,7 +204,7 @@ export class BankViewComponent extends React.Component<AllProps, State> {
     const { dispatch, bank, intl: { formatMessage } } = this.props
     this.setState({ showModal: true, working: true, message: undefined, error: undefined })
     try {
-      const message = await dispatch(getAccounts(bank!, formatMessage))
+      const message = await dispatch(getAccounts(bank, formatMessage))
       this.setState({ working: false, message })
     } catch (ex) {
       this.setState({ working: false, error: ex.message })
