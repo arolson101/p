@@ -5,9 +5,12 @@ import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
 import * as R from 'ramda'
 import { ThunkAction, Dispatch } from 'redux'
-import { DbInfo, docChangeActionTesters, Bank, Account, Category, Bill, Statement, Transaction, DocCache } from '../docs'
-import { Lookup } from '../util'
-import { AppThunk } from './'
+import { docChangeActionTesters, Bank, Account, Category, Bill, Statement, Transaction, DocCache } from '../../docs'
+import { Lookup } from '../../util'
+import { AppThunk } from '../'
+import { DbInfo } from './DbInfo'
+
+export { DbInfo }
 
 const userData = electron.remote.app.getPath('userData')
 const ext = '.db'
@@ -107,6 +110,7 @@ const createDb = (title: string, password: string, lang: string): Thunk =>
     const location = path.join(userData, encodeURIComponent(title.trim()) + '.db')
     const info = { title, location }
     await dispatch(loadDb(info, password))
+    dispatch(DbInit())
     return info
   }
 
@@ -169,10 +173,9 @@ const deleteDb = (info: DbInfo): Thunk =>
       await dispatch(unloadDb())
     }
 
-    // destroy db
-    // const db = new PouchDB<any>(info.title, adapter())
-    // await db.destroy()
-    fs.unlinkSync(info.title)
+    // delete file
+    fs.unlinkSync(info.location)
+    dispatch(DbInit())
   }
 
 const unloadDb = (): SetDbAction => setDb(undefined)

@@ -1,10 +1,11 @@
 export * from './Account'
-export * from './DbInfo'
 export * from './Bank'
 export * from './Bill'
 export * from './Category'
 export * from './Statement'
 export * from './Transaction'
+
+export { DbInfo } from '../state/db/DbInfo'
 
 import { Account } from './Account'
 import { Bank } from './Bank'

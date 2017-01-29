@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { TCacheSetAction } from './index'
+import { TCacheSetAction } from '../../docs'
 
 export interface DbInfo {
   title: string
