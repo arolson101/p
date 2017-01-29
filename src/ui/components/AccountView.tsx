@@ -12,7 +12,7 @@ import { Breadcrumbs } from './Breadcrumbs'
 import { Container, Item } from './flex'
 import { ListWithDetails, getRowData, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
 import { RouteProps, DispatchProps } from './props'
-import { selectBank, selectAccount } from './selectors'
+import { selectBank, selectAccount, selectTransactions } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
 import { TransactionDetail } from './TransactionDetail'
 
@@ -39,6 +39,7 @@ interface ConnectedProps {
   bank?: Bank.Doc
   account?: Account.Doc
   current: CurrentDb
+  items: Transaction.View[]
 }
 
 type AllProps = ConnectedProps & EnhancedProps & DispatchProps
@@ -54,20 +55,11 @@ interface Values {
   amount: string
 }
 
-type LedgerTransaction = Transaction.Doc & { balance: number }
-
 interface EnhancedProps {
-  transactions: Promise<Transaction.Doc[]>
-  items: Transaction.Doc[]
-  loadTransactions(): Promise<LedgerTransaction[]>
-  setTransactions(promise: Promise<LedgerTransaction[]>): void
   addTransactions(): void
   downloadTransactions(): void
   deleteTransactions(): void
 }
-
-const SpinnerRender = () => <div>loading</div>
-const ErrorRender = ({ transactions: error }: { transactions: Error }) => <div>error: {error.message}</div>
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('AccountViewComponent'),
@@ -75,42 +67,13 @@ const enhance = compose<AllProps, {}>(
     (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
       bank: selectBank(state, props),
       account: selectAccount(state, props),
-      current: state.db.current!
+      current: state.db.current!,
+      items: selectTransactions(state, props)
     })
   ),
   withHandlers<AllProps,AllProps>({
-    loadTransactions: (props) => async(): Promise<LedgerTransaction[]> => {
-      if (props.current && props.account) {
-        const opts = {
-          startkey: Transaction.startkeyForAccount(props.account),
-          endkey: Transaction.endkeyForAccount(props.account),
-          include_docs: true
-        }
-        const results = await props.current.db.allDocs(opts)
-        const docs = results.rows.map(row => row.doc as Transaction.Doc)
-        const statements = Statement.statementsForAccount(props.current.cache.statements, props.account)
-        const ledgerTransactions: LedgerTransaction[] = []
-        for (let statement of statements) {
-          const transactions = Statement.transactionsForStatement(statement, docs)
-          let balance = statement.openingBalance
-          for (let transaction of transactions) {
-            ledgerTransactions.push({
-              ...transaction,
-              balance
-            })
-            balance += transaction.amount
-          }
-        }
-        return ledgerTransactions
-      } else {
-        return []
-      }
-    }
-  }),
-  withState('transactions', 'setTransactions', ({loadTransactions}: AllProps) => loadTransactions()),
-  withHandlers<AllProps,AllProps>({
     addTransactions: (props) => async() => {
-      const { current, account, setTransactions, loadTransactions } = props
+      const { current, account } = props
       const statements = new Map(current.cache.statements)
       const changes: ChangeSet = new Set()
       let balance = 0
@@ -137,27 +100,18 @@ const enhance = compose<AllProps, {}>(
 
       Statement.updateBalances(statements, account!, balance, new Date(), changes)
       current.db.bulkDocs(Array.from(changes))
-      setTransactions(loadTransactions())
     },
 
     downloadTransactions: (props: AllProps) => async () => {
-      const { dispatch, bank, account, setTransactions, loadTransactions } = props
+      const { dispatch, bank, account } = props
       await dispatch(getTransactions(bank!, account!, new Date(2016, 11, 1), new Date(2016, 11, 31), (str) => str.defaultMessage!))
-      setTransactions(loadTransactions())
     },
 
     deleteTransactions: (props: AllProps) => async() => {
-      const { dispatch, account, setTransactions, loadTransactions } = props
+      const { dispatch, account } = props
       await dispatch(deleteTransactions(account!))
-      setTransactions(loadTransactions())
     }
-  }),
-  withResolveProp(
-    'transactions',
-    'items',
-    renderComponent(SpinnerRender),
-    renderComponent(ErrorRender)
-  )
+  })
 )
 
 export const AccountView = enhance((props) => {
@@ -263,9 +217,9 @@ export const AccountView = enhance((props) => {
   )
 })
 
-export const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Transaction.Doc>) => (
+export const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Transaction.View>) => (
   <div>
-    {cellData.name}<br/>
-    <small>{cellData.memo}</small>
+    {cellData.doc.name}<br/>
+    <small>{cellData.doc.memo}</small>
   </div>
 )

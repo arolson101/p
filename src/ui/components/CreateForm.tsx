@@ -33,7 +33,7 @@ interface Props {
 
 interface ConnectedProps {
   lang: string
-  infos: DbInfo.Cache
+  files: DbInfo[]
 }
 
 interface EnhancedProps {
@@ -54,7 +54,7 @@ const enhance = compose<AllProps, Props>(
   connect(
     (state: AppState): ConnectedProps => ({
       lang: state.i18n.lang,
-      infos: state.db.meta.infos
+      files: state.db.files
     })
   ),
   withProps({
@@ -71,10 +71,10 @@ const enhance = compose<AllProps, Props>(
   reduxForm<AllProps, Values>({
     form: 'CreateForm',
     validate: (values: Values, props: AllProps) => {
-      const { infos, intl: { formatMessage } } = props
+      const { files, intl: { formatMessage } } = props
       const v = new Validator(values)
-      const titles = infos.map(info => info.title)
-      v.unique('name', titles, formatMessage(messages.uniqueName))
+      const names = files.map(info => info.name)
+      v.unique('name', names, formatMessage(messages.uniqueName))
       v.equal('confirmPassword', 'password', formatMessage(forms.passwordsMatch))
       return v.errors
     }

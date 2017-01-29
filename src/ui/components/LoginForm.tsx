@@ -78,7 +78,7 @@ export const LoginForm = enhance((props) => {
   if (!props.dbDoc) {
     return null as any
   }
-  const dbTitle = props.dbDoc.title
+  const dbTitle = props.dbDoc.name
   const { handleSubmit, onDelete, onCancel, intl: { formatMessage } } = props
   return (
     <form onSubmit={handleSubmit}>

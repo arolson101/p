@@ -20,11 +20,11 @@ export interface DocChangeAction {
 }
 
 export const docChangeActionTesters = new Map([
-  [Account.isDocId, Account.cacheUpdateAction],
-  [Bank.isDocId, Bank.cacheUpdateAction],
-  [Bill.isDocId, Bill.cacheUpdateAction],
-  [Category.isDocId, Category.cacheUpdateAction],
-  [Statement.isDocId, Statement.cacheUpdateAction]
+  // [Account.isDocId, Account.cacheUpdateAction],
+  // [Bank.isDocId, Bank.cacheUpdateAction],
+  // [Bill.isDocId, Bill.cacheUpdateAction],
+  // [Category.isDocId, Category.cacheUpdateAction],
+  // [Statement.isDocId, Statement.cacheUpdateAction]
 ])
 
 export interface TCacheSetAction<T, Cache> {

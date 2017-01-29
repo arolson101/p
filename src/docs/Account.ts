@@ -1,6 +1,5 @@
 import * as docURI from 'docuri'
 import { defineMessages } from 'react-intl'
-import { AppThunk } from '../state'
 import { makeid, Lookup } from '../util'
 import { Bank } from './Bank'
 import { Transaction } from './Transaction'
@@ -64,33 +63,26 @@ export namespace Account {
   export type Doc = TDocument<Account, DocId>
   export interface Params { bankId: Bank.Id, accountId: Id }
   export const docId = docURI.route<Params, DocId>('account/:bankId/:accountId')
-  export const startkey = 'account/'
-  export const endkey = 'account/\uffff'
-  export const all: PouchDB.Selector = {
-    $and: [
-      { _id: { $gt: startkey } },
-      { _id: { $lt: endkey } }
-    ]
+
+  export type View = {
+    doc: Doc
+    transactions: Transaction.View[]
   }
 
-  export type View = Doc & {
-    transactions: Transaction.Doc[]
-  }
+  export const buildView = (doc: Doc, cache: DocCache): View => {
+    const startkey = Transaction.startkeyForAccount(doc)
+    const endkey = Transaction.endkeyForAccount(doc)
+    let currentTotal = 0
+    const transactions = Array.from(cache.transactions.values())
+      .filter(transaction => (startkey < transaction._id && transaction._id < endkey))
+      .map(transaction => {
+        const view = Transaction.buildView(transaction, currentTotal)
+        currentTotal += transaction.amount
+        return view
+      })
 
-  export const buildView = (account: Doc, cache: DocCache): View => {
-    const aparts = docId(account._id)
-    if (!aparts) {
-      throw new Error('invalid account id: ' + account._id)
-    }
-    const baseId = Transaction.docId({bankId: aparts.bankId, accountId: aparts.accountId, txId: ''})
-    const transactions: Transaction.Doc[] = []
-    for (let transaction of cache.transactions.values()) {
-      if (transaction._id.startsWith(baseId)) {
-        transactions.push(transaction)
-      }
-    }
     return ({
-      ...account,
+      doc,
       transactions
     })
   }
@@ -177,11 +169,4 @@ export namespace Account {
     type: CACHE_SET,
     cache
   })
-
-  export const cacheUpdateAction = (handle?: PouchDB.Database<any>): AppThunk =>
-    async (dispatch) => {
-      const results = handle ? await handle.find({selector: all}) : { docs: [] }
-      const cache = createCache(results.docs)
-      dispatch(cacheSetAction(cache))
-    }
 }

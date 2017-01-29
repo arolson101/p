@@ -1,6 +1,5 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
-import { AppThunk } from '../state'
 import { TCacheSetAction } from './index'
 import { Account } from './Account'
 import { DocCache } from './'
@@ -33,23 +32,19 @@ export namespace Bank {
   export type Doc = PouchDB.Core.Document<Bank> & { _id: DocId; _rev?: string }
   export interface Params { bankId: Id }
   export const docId = docURI.route<Params, DocId>('bank/:bankId')
-  export const startkey = 'bank/'
-  export const endkey = 'bank/\uffff'
-  export const all: PouchDB.Selector = {
-    $and: [
-      { _id: { $gt: startkey } },
-      { _id: { $lt: endkey } }
-    ]
+
+  export type View = {
+    doc: Doc
+    accounts: Account.View[]
   }
 
-  export type View = Doc & {
-    accountsView: Account.View[]
-  }
-
-  export const buildView = (bank: Doc, cache: DocCache): View => {
+  export const buildView = (doc: Doc, cache: DocCache): View => {
     return ({
-      ...bank,
-      accountsView: bank.accounts.map(accountId => Account.buildView(cache.accounts.get(accountId)!, cache))
+      doc,
+      accounts: doc.accounts
+        .map(accountId => cache.accounts.get(accountId))
+        .filter((account?: Account.Doc) => account !== undefined)
+        .map((account: Account.Doc) => Account.buildView(account, cache))
     })
   }
 
@@ -116,11 +111,4 @@ export namespace Bank {
     type: CACHE_SET,
     cache
   })
-
-  export const cacheUpdateAction = (handle?: PouchDB.Database<any>): AppThunk =>
-    async (dispatch) => {
-      const results = handle ? await handle.find({selector: all}) : { docs: [] }
-      const cache = createCache(results.docs)
-      dispatch(cacheSetAction(cache))
-    }
 }

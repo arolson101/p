@@ -1,6 +1,5 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
-import { AppThunk } from '../state'
 import { TCacheSetAction } from './index'
 
 export interface Category {
@@ -13,14 +12,6 @@ export namespace Category {
   export type Doc = PouchDB.Core.Document<Category> & { _id: DocId; _rev?: string }
   export interface Params { categoryId: Id }
   export const docId = docURI.route<Params, DocId>('category/:categoryId')
-  export const startkey = 'category/'
-  export const endkey = 'category/\uffff'
-  export const all: PouchDB.Selector = {
-    $and: [
-      { _id: { $gt: startkey } },
-      { _id: { $lt: endkey } }
-    ]
-  }
 
   export namespace routes {
     export const create = 'category/create'
@@ -72,11 +63,4 @@ export namespace Category {
     type: CACHE_SET,
     cache
   })
-
-  export const cacheUpdateAction = (handle?: PouchDB.Database<any>): AppThunk =>
-    async (dispatch) => {
-      const results = handle ? await handle.find({selector: all}) : { docs: [] }
-      const cache = createCache(results.docs)
-      dispatch(cacheSetAction(cache))
-    }
 }

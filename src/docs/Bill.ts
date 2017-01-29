@@ -1,6 +1,5 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
-import { AppThunk } from '../state'
 import { TCacheSetAction } from './index'
 import * as RRule from 'rrule-alt'
 
@@ -20,14 +19,6 @@ export namespace Bill {
   export type Doc = PouchDB.Core.Document<Bill> & { _id: DocId; _rev?: string }
   export interface Params { billId: Id }
   export const docId = docURI.route<Params, DocId>('bill/:billId')
-  export const startkey = 'bill/'
-  export const endkey = 'bill/\uffff'
-  export const all: PouchDB.Selector = {
-    $and: [
-      { _id: { $gt: startkey } },
-      { _id: { $lt: endkey } }
-    ]
-  }
 
   export namespace routes {
     export const all = 'bills'
@@ -91,13 +82,6 @@ export namespace Bill {
     type: CACHE_SET,
     cache
   })
-
-  export const cacheUpdateAction = (handle?: PouchDB.Database<any>): AppThunk =>
-    async (dispatch) => {
-      const results = handle ? await handle.find({selector: all}) : { docs: [] }
-      const cache = createCache(results.docs)
-      dispatch(cacheSetAction(cache))
-    }
 
   export const getDate = (bill: Doc): Date => {
     if (!bill.rrule) {

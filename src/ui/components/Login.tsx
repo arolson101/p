@@ -30,7 +30,7 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  dbInfos: DbInfo.Cache
+  files: DbInfo.Cache
 }
 
 interface EnhancedProps {
@@ -46,7 +46,7 @@ const enhance = compose<AllProps, {}>(
   setDisplayName('Login'),
   connect(
     (state: AppState): ConnectedProps => ({
-      dbInfos: state.db.meta.infos
+      files: state.db.files
     })
   ),
   withState('activeId', 'setActiveId', ''),
@@ -63,47 +63,44 @@ const enhance = compose<AllProps, {}>(
 const activeProps = { bsStyle: 'info' }
 const createId = '_create'
 
-export const Login = enhance(({ dbInfos, router, activeId, setActiveId, deselect, onLogin }) => (
+export const Login = enhance(({ files, router, activeId, setActiveId, deselect, onLogin }) => (
   <Grid>
-    {dbInfos &&
-      <div>
-        <ListGroup>
-          {dbInfos.map(dbInfo => {
-            const active = (activeId === dbInfo.title)
-            const props = active ? activeProps : {onClick: () => setActiveId(dbInfo.title)}
-            return (
-              <ListGroupItem
-                key={dbInfo.title}
-                {...props}
-              >
-                <h4><i {...icons.openDb}/> {dbInfo.title}</h4>
-                {active &&
-                  <LoginForm
-                    dbDoc={dbInfo}
-                    onCancel={deselect}
-                    onLogin={onLogin}
-                  />
-                }
-              </ListGroupItem>
-            )
-          })}
-          {/*Lookup.hasAny(props.dbInfos) &&
-            <Divider/>
-          */}
-          <ListGroupItem
-            {... (activeId === createId) ? activeProps : {onClick: () => setActiveId(createId)}}
-          >
-            <h4><i {...icons.openDb}/> <FormattedMessage {...messages.newDb}/></h4>
-            <p><FormattedMessage {...messages.newDbDescription}/></p>
-            {(activeId === createId) &&
-              <CreateForm
-                onCancel={deselect}
-                onCreate={onLogin}
-              />
-            }
-          </ListGroupItem>
-        </ListGroup>
-      </div>
-    }
+    <div>
+      <ListGroup>
+        {files.map(file => {
+          const active = (activeId === file.name)
+          const props = active ? activeProps : {onClick: () => setActiveId(file.name)}
+          return (
+            <ListGroupItem
+              key={file.name}
+              {...props}
+            >
+              <h4><i {...icons.openDb}/> {file.name}</h4>
+              {active &&
+                <LoginForm
+                  dbDoc={file}
+                  onCancel={deselect}
+                  onLogin={onLogin}
+                />
+              }
+            </ListGroupItem>
+          )
+        })}
+      </ListGroup>
+      <ListGroup>
+        <ListGroupItem
+          {... (activeId === createId) ? activeProps : {onClick: () => setActiveId(createId)}}
+        >
+          <h4><i {...icons.openDb}/> <FormattedMessage {...messages.newDb}/></h4>
+          <p><FormattedMessage {...messages.newDbDescription}/></p>
+          {(activeId === createId) &&
+            <CreateForm
+              onCancel={deselect}
+              onCreate={onLogin}
+            />
+          }
+        </ListGroupItem>
+      </ListGroup>
+    </div>
   </Grid>
 ))

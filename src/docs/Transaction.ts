@@ -27,18 +27,18 @@ export namespace Transaction {
     docId({ ...accountParts(account), txId: time ? timeKey(time) : ''})
   export const endkeyForAccount = (account: Account.Doc, time?: Date) =>
     docId({ ...accountParts(account), txId: time ? timeKey(time) : ''}) + '\uffff'
-  export const allForAccount = (account: Account.Doc, start?: Date, end?: Date): PouchDB.Selector => {
-    return ({
-      $and: [
-        { _id: { $gt: startkeyForAccount(account, start) } },
-        { _id: { $lt: endkeyForAccount(account, end) } }
-      ]
-    })
-  }
 
-  export type View = Doc & {
+  export type View = {
+    doc: Doc
+    time: Date
     balance: number
   }
+
+  export const buildView = (doc: Doc, balance: number) => ({
+    doc,
+    time: new Date(doc.time),
+    balance
+  })
 
   export namespace routes {
     export const view = 'transaction/:bankId/:accountId/:txId'

@@ -14,10 +14,6 @@ export { DbInfo }
 const userData = electron.remote.app.getPath('userData')
 const ext = '.db'
 
-export interface MetaDb {
-  infos: DbInfo.Cache
-}
-
 export interface CurrentDb {
   info: DbInfo
   db: PouchDB.Database<any>
@@ -29,16 +25,19 @@ export interface CurrentDb {
     bills: Bill.Cache
     statements: Statement.Cache
   }
+  view: {
+    banks: Bank.View[]
+  }
 }
 
 export interface DbState {
-  meta: MetaDb
+  files: DbInfo[]
   current?: CurrentDb
 }
 
 const initialState: DbState = {
   current: undefined,
-  meta: undefined as any
+  files: undefined as any
 }
 
 type State = DbSlice
@@ -57,23 +56,23 @@ const setDb = (current?: CurrentDb): SetDbAction => ({
   current
 })
 
-type DB_SET_META = 'db/setMeta'
-const DB_SET_META = 'db/setMeta'
+type DB_SET_FILES = 'db/setFiles'
+const DB_SET_FILES = 'db/setFiles'
 
-interface SetMetaDbAction {
-  type: DB_SET_META
-  meta: MetaDb
+interface DbSetFilesAction {
+  type: DB_SET_FILES
+  files: DbInfo[]
 }
 
-const setMetaDb = (meta: MetaDb): SetMetaDbAction => ({
-  type: DB_SET_META,
-  meta
+const dbSetFiles = (files: DbInfo[]): DbSetFilesAction => ({
+  type: DB_SET_FILES,
+  files
 })
 
-const createDb = (title: string, password: string, lang: string): Thunk =>
+const createDb = (name: string, password: string, lang: string): Thunk =>
   async (dispatch, getState) => {
-    const location = path.join(userData, encodeURIComponent(title.trim()) + '.db')
-    const info = { title, location }
+    const location = path.join(userData, encodeURIComponent(name.trim()) + '.db')
+    const info: DbInfo = { name, location }
     await dispatch(loadDb(info, password))
     dispatch(DbInit())
     return info
@@ -81,12 +80,12 @@ const createDb = (title: string, password: string, lang: string): Thunk =>
 
 const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>) =>
   (change: PouchDB.ChangeInfo<{}>) => {
-    for (let [tester, action] of docChangeActionTesters) {
-      if (tester(change.id)) {
-        dispatch(action(handle))
-        break
-      }
-    }
+    // for (let [tester, action] of docChangeActionTesters) {
+    //   if (tester(change.id)) {
+    //     dispatch(action(handle))
+    //     break
+    //   }
+    // }
   }
 
 const loadDb = (info: DbInfo, password?: string): Thunk =>
@@ -122,11 +121,11 @@ const loadDb = (info: DbInfo, password?: string): Thunk =>
 
     R.forEach(mapper, docs)
 
-    // const view = {
-    //   banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache))
-    // }
-    // console.log(view)
-    dispatch(setDb({info, db, changes, cache: cache as any}))
+    const view = {
+      banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache))
+    }
+    console.log(view)
+    dispatch(setDb({info, db, changes, cache, view}))
   }
 
 const deleteDb = (info: DbInfo): Thunk =>
@@ -134,7 +133,7 @@ const deleteDb = (info: DbInfo): Thunk =>
     const { current } = getState().db
 
     // unload db if it's the current one
-    if (current && current.info.title === info.title) {
+    if (current && current.info.name === info.name) {
       await dispatch(unloadDb())
     }
 
@@ -146,9 +145,8 @@ const deleteDb = (info: DbInfo): Thunk =>
 const unloadDb = (): SetDbAction => setDb(undefined)
 
 type Actions =
-  SetMetaDbAction |
+  DbSetFilesAction |
   SetDbAction |
-  DbInfo.CacheSetAction |
   Bank.CacheSetAction |
   Account.CacheSetAction |
   Category.CacheSetAction |
@@ -158,20 +156,14 @@ type Actions =
 
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
   switch (action.type) {
-    case DB_SET_META:
-      if (state.meta) {
-        throw new Error('meta db is already loaded')
-      }
-      return { ...state, meta: action.meta }
+    case DB_SET_FILES:
+      return { ...state, files: action.files }
 
     case DB_SET_CURRENT:
       if (state.current) {
         state.current.changes.cancel()
       }
       return { ...state, current: action.current }
-
-    case DbInfo.CACHE_SET:
-      return { ...state, meta: { ...state.meta, infos: action.cache } }
 
     case Bank.CACHE_SET:
       return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, banks: action.cache } } }
@@ -209,19 +201,19 @@ export const DbSlice = {
 }
 
 const isDbFilename = R.test(/\.db$/i)
-const buildInfo = (filename: string) => ({
-  title: decodeURIComponent(path.basename(filename, ext)),
+const buildInfo = (filename: string): DbInfo => ({
+  name: decodeURIComponent(path.basename(filename, ext)),
   location: path.join(userData, filename)
 })
 const buildInfoCache = R.pipe(
   R.filter(isDbFilename),
   R.map(buildInfo),
-  DbInfo.createCache
+  R.sortBy(doc => doc.title)
 )
 
 export const DbInit = (): AppThunk =>
   (dispatch) => {
     const files = fs.readdirSync(userData)
     const infos = buildInfoCache(files)
-    dispatch(setMetaDb({infos}))
+    dispatch(dbSetFiles(infos))
   }

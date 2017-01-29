@@ -2,7 +2,6 @@ import * as docURI from 'docuri'
 import * as R from 'ramda'
 import { sprintf } from 'sprintf-js'
 import { makeid, Lookup } from '../util'
-import { AppThunk } from '../state'
 import { TCacheSetAction } from './index'
 import { Bank } from './Bank'
 import { Account } from './Account'
@@ -23,14 +22,6 @@ export namespace Statement {
   export type Doc = PouchDB.Core.Document<Statement> & { _id: DocId; _rev?: string }
   export interface Params { bankId: Bank.Id, accountId: Account.Id, statementId: Id }
   export const docId = docURI.route<Params, DocId>('statement/:bankId/:accountId/:statementId')
-  export const startkey = 'statement/'
-  export const endkey = 'statement/\uffff'
-  export const all: PouchDB.Selector = {
-    $and: [
-      { _id: { $gt: startkey } },
-      { _id: { $lt: endkey } }
-    ]
-  }
 
   export const isDocId = (id: string): boolean => {
     return !!docId(id as DocId)
@@ -73,13 +64,6 @@ export namespace Statement {
     type: CACHE_SET,
     cache
   })
-
-  export const cacheUpdateAction = (handle?: PouchDB.Database<any>): AppThunk =>
-    async (dispatch) => {
-      const results = handle ? await handle.find({selector: all}) : { docs: [] }
-      const cache = createCache(results.docs)
-      dispatch(cacheSetAction(cache))
-    }
 
   export const get = (statements: Cache, account: Account.Doc, date: Date) => {
     const statementId = makeId(account, date.getUTCFullYear(), date.getUTCMonth())

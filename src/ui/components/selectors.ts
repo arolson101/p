@@ -28,6 +28,20 @@ export const selectAccount = (state: AppState, props: RouteProps<Account.Params>
   return state.db.current && state.db.current.cache.accounts.get(id)
 }
 
+export const selectTransactions = (state: AppState, props: RouteProps<Account.Params>) => {
+  const bankId = Bank.docId(props.params)
+  const bank = state.db.current!.view.banks.find(b => b.doc._id === bankId)
+  if (!bank) {
+    throw new Error('bank not found!')
+  }
+  const accountId = Account.docId(props.params)
+  const account = bank.accounts.find(a => a.doc._id === accountId)
+  if (!account) {
+    throw new Error('account not found!')
+  }
+  return account.transactions
+}
+
 export const selectBills = createSelector(
   (state: AppState) => state.db.current!.cache.bills,
   (bills) => [...bills.values()]
