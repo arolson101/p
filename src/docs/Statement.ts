@@ -36,8 +36,8 @@ export namespace Statement {
     return !!docId(id as DocId)
   }
 
-  export const isDoc = (doc: Doc): boolean => {
-    return !!docId(doc._id)
+  export const isDoc = (doc: AnyDocument): doc is Doc => {
+    return !!docId(doc._id as DocId)
   }
 
   export const makeId = (account: Account.Doc, year: number, month: number): DocId => {
@@ -68,7 +68,7 @@ export namespace Statement {
 
   export type CACHE_SET = 'statement/cacheSet'
   export const CACHE_SET = 'statement/cacheSet'
-  export type CacheSetAction = TCacheSetAction<CACHE_SET, DocId, Doc>
+  export type CacheSetAction = TCacheSetAction<CACHE_SET, Cache>
   export const cacheSetAction = (cache: Cache): CacheSetAction => ({
     type: CACHE_SET,
     cache

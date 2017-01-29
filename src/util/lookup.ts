@@ -20,7 +20,7 @@ export namespace Lookup {
 
   export const map = <K, T, V>(lookup: Lookup<K, T>, cb: (item: T) => V): V[] => (
     lookup
-    ? Array.from(lookup, (elt) => cb(elt[1]))
+    ? Array.from(lookup.values()).map(cb)
     : []
   )
 

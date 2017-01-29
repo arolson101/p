@@ -23,7 +23,7 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  dbInfo: DbInfo.Doc
+  dbInfo: DbInfo
   current: CurrentDb
   banks?: Bank.Cache
   accounts?: Account.Cache

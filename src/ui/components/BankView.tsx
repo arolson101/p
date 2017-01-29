@@ -62,7 +62,7 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   bank?: Bank.Doc
-  dbInfo?: DbInfo.Doc
+  dbInfo?: DbInfo
   accounts?: Account.Doc[]
 }
 

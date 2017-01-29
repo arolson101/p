@@ -13,8 +13,8 @@ import { DispatchProps, IntlProps } from './props'
 import { typedFields, forms } from './forms'
 
 interface Props {
-  dbDoc: DbInfo.Doc
-  onLogin: (dbDoc: DbInfo.Doc) => void
+  dbDoc: DbInfo
+  onLogin: (dbDoc: DbInfo) => void
   onCancel: () => void
 }
 

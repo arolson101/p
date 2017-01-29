@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { compose, setDisplayName, withHandlers, withState } from 'recompose'
 import { DbInfo } from '../../docs'
 import { AppState } from '../../state'
-import { Lookup } from '../../util'
 import { LoginForm } from './LoginForm'
 import { CreateForm } from './CreateForm'
 import { RouteProps } from './props'
@@ -38,7 +37,7 @@ interface EnhancedProps {
   activeId: string
   setActiveId: (activeId: string) => void
   deselect: () => void
-  onLogin: (dbInfo: DbInfo.Doc) => void
+  onLogin: (dbInfo: DbInfo) => void
 }
 
 type AllProps = EnhancedProps & RouteProps<any> & ConnectedProps
@@ -55,7 +54,7 @@ const enhance = compose<AllProps, {}>(
     deselect: ({setActiveId}) => () => {
       setActiveId('')
     },
-    onLogin: ({router}) => (dbInfo: DbInfo.Doc) => {
+    onLogin: ({router}) => (dbInfo: DbInfo) => {
       router.push(DbInfo.to.home())
     }
   })
@@ -69,12 +68,12 @@ export const Login = enhance(({ dbInfos, router, activeId, setActiveId, deselect
     {dbInfos &&
       <div>
         <ListGroup>
-          {Lookup.map(dbInfos, dbInfo => {
-            const active = (activeId === dbInfo._id)
-            const props = active ? activeProps : {onClick: () => setActiveId(dbInfo._id)}
+          {dbInfos.map(dbInfo => {
+            const active = (activeId === dbInfo.title)
+            const props = active ? activeProps : {onClick: () => setActiveId(dbInfo.title)}
             return (
               <ListGroupItem
-                key={dbInfo._id}
+                key={dbInfo.title}
                 {...props}
               >
                 <h4><i {...icons.openDb}/> {dbInfo.title}</h4>

@@ -51,8 +51,8 @@ export namespace Category {
     return !!docId(id as DocId)
   }
 
-  export const isDoc = (doc: Doc): boolean => {
-    return !!docId(doc._id)
+  export const isDoc = (doc: AnyDocument): doc is Doc => {
+    return !!docId(doc._id as DocId)
   }
 
   export const doc = (category: Category, lang: string): Doc => {
@@ -67,7 +67,7 @@ export namespace Category {
 
   export type CACHE_SET = 'category/cacheSet'
   export const CACHE_SET = 'category/cacheSet'
-  export type CacheSetAction = TCacheSetAction<CACHE_SET, DocId, Doc>
+  export type CacheSetAction = TCacheSetAction<CACHE_SET, Cache>
   export const cacheSetAction = (cache: Cache): CacheSetAction => ({
     type: CACHE_SET,
     cache

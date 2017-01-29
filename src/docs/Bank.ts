@@ -95,7 +95,7 @@ export namespace Bank {
     return !!docId(id as DocId)
   }
 
-  export const isDoc = (doc: PouchDB.Core.IdMeta): boolean => {
+  export const isDoc = (doc: AnyDocument): doc is Doc => {
     return !!docId(doc._id as DocId)
   }
 
@@ -111,7 +111,7 @@ export namespace Bank {
 
   export type CACHE_SET = 'bank/cacheSet'
   export const CACHE_SET = 'bank/cacheSet'
-  export type CacheSetAction = TCacheSetAction<CACHE_SET, DocId, Doc>
+  export type CacheSetAction = TCacheSetAction<CACHE_SET, Cache>
   export const cacheSetAction = (cache: Cache): CacheSetAction => ({
     type: CACHE_SET,
     cache

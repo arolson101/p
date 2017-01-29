@@ -22,7 +22,7 @@ interface ConnectedProps {
   filist: FI[]
   current: CurrentDb
   lang: string
-  dbInfo?: DbInfo.Doc
+  dbInfo?: DbInfo
 }
 
 interface EnhancedProps {

@@ -23,7 +23,7 @@ const messages = defineMessages({
 })
 
 interface Props {
-  onCreate: (dbInfo: DbInfo.Doc) => void
+  onCreate: (dbInfo: DbInfo) => void
   onCancel: () => void
 }
 

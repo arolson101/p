@@ -25,7 +25,7 @@ interface Props {
 }
 
 interface ConnectedProps {
-  dbInfo?: DbInfo.Doc
+  dbInfo?: DbInfo
   bank?: Bank.Doc
   account?: Account.Doc
 }

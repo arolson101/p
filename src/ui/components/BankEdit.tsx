@@ -21,7 +21,7 @@ const messages = defineMessages({
 interface ConnectedProps {
   filist: FI[]
   current: CurrentDb
-  dbInfo?: DbInfo.Doc
+  dbInfo?: DbInfo
   bank?: Bank.Doc
 }
 

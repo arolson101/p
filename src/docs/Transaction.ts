@@ -67,7 +67,7 @@ export namespace Transaction {
     return !!docId(id as DocId)
   }
 
-  export const isDoc = (doc: PouchDB.Core.IdMeta): boolean => {
+  export const isDoc = (doc: AnyDocument): doc is Doc => {
     return !!docId(doc._id as DocId)
   }
 

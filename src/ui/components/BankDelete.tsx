@@ -29,7 +29,7 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   current: CurrentDb
-  dbInfo?: DbInfo.Doc
+  dbInfo?: DbInfo
   bank?: Bank.Doc
 }
 

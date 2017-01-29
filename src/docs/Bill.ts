@@ -63,8 +63,8 @@ export namespace Bill {
     return !!docId(id as DocId)
   }
 
-  export const isDoc = (doc: Doc): boolean => {
-    return !!docId(doc._id)
+  export const isDoc = (doc: AnyDocument): doc is Doc => {
+    return !!docId(doc._id as DocId)
   }
 
   export const doc = (bank: Bill, lang: string): Doc => {
@@ -86,7 +86,7 @@ export namespace Bill {
 
   export type CACHE_SET = 'bill/cacheSet'
   export const CACHE_SET = 'bill/cacheSet'
-  export type CacheSetAction = TCacheSetAction<CACHE_SET, DocId, Doc>
+  export type CacheSetAction = TCacheSetAction<CACHE_SET, Cache>
   export const cacheSetAction = (cache: Cache): CacheSetAction => ({
     type: CACHE_SET,
     cache

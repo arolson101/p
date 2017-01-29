@@ -1,8 +1,16 @@
+import * as electron from 'electron'
+import * as fs from 'fs'
+import * as path from 'path'
 import * as PouchDB from 'pouchdb-browser'
 import * as PouchFind from 'pouchdb-find'
+import * as R from 'ramda'
 import { ThunkAction, Dispatch } from 'redux'
-import { createIndices, DbInfo, docChangeActionTesters, Bank, Account, Category, Bill, Statement, Transaction } from '../docs'
+import { DbInfo, docChangeActionTesters, Bank, Account, Category, Bill, Statement, Transaction, DocCache } from '../docs'
+import { Lookup } from '../util'
 import { AppThunk } from './'
+
+const userData = electron.remote.app.getPath('userData')
+const ext = '.db'
 
 PouchDB.plugin(require<any>('pouchdb-adapter-node-websql'))
 PouchDB.plugin(PouchFind)
@@ -38,15 +46,12 @@ const SQLiteDatabaseWithKey = (key?: string) =>
 
 const adapter = (key?: string) => ({ adapter: 'websql', websql: customOpenDatabase(SQLiteDatabaseWithKey(key)) })
 
-const METADB_NAME = 'meta.db' as DbInfo.Id
-
 export interface MetaDb {
-  db: PouchDB.Database<DbInfo.Doc>
   infos: DbInfo.Cache
 }
 
 export interface CurrentDb {
-  info: DbInfo.Doc
+  info: DbInfo
   db: PouchDB.Database<any>
   changes: PouchDB.ChangeEmitter
   cache: {
@@ -99,29 +104,11 @@ const setMetaDb = (meta: MetaDb): SetMetaDbAction => ({
 
 const createDb = (title: string, password: string, lang: string): Thunk =>
   async (dispatch, getState) => {
-    const info = DbInfo.doc({ title }, lang)
-    const meta = getState().db.meta!
-    await meta.db.put(info)
+    const location = path.join(userData, encodeURIComponent(title.trim()) + '.db')
+    const info = { title, location }
     await dispatch(loadDb(info, password))
     return info
   }
-
-const passwordCheckDoc = {
-  _id: 'pwcheck',
-  data: 'ok'
-}
-
-const checkPassword = async (handle: PouchDB.Database<any>) => {
-  try {
-    await handle.get(passwordCheckDoc._id)
-  } catch (err) {
-    if (err.status === 404) {
-      await handle.put(passwordCheckDoc)
-    } else {
-      throw err
-    }
-  }
-}
 
 const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>) =>
   (change: PouchDB.ChangeInfo<{}>) => {
@@ -133,14 +120,10 @@ const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>
     }
   }
 
-const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
+const loadDb = (info: DbInfo, password?: string): Thunk =>
   async (dispatch) => {
-    const db = new PouchDB<{}>(info._id, adapter(password))
-    // if (password) {
-    //   db.crypto(password)
-    //   await checkPassword(db)
-    // }
-    await createIndices(db)
+    const db = new PouchDB<{}>(info.location, adapter(password))
+
     const changes = db.changes({
       since: 'now',
       live: true
@@ -148,37 +131,48 @@ const loadDb = (info: DbInfo.Doc, password?: string): Thunk =>
     .on('change', handleChange(db, dispatch))
 
     const allDocs = await db.allDocs({include_docs: true})
-    const docs = allDocs.rows.map(row => row.doc!)
-    const banks = Bank.createCache(docs.filter(Bank.isDoc) as Bank.Doc[])
-    const accounts = Account.createCache(docs.filter(Account.isDoc) as Account.Doc[])
-    const categories = Category.createCache(docs.filter(Category.isDoc) as Category.Doc[])
-    const bills = Bill.createCache(docs.filter(Bill.isDoc) as Bill.Doc[])
-    const statements = Statement.createCache(docs.filter(Statement.isDoc) as Statement.Doc[])
-    const txs = docs.filter(Transaction.isDoc)
-    const transactions = Transaction.createCache(txs as Transaction.Doc[])
-    const cache = { banks, accounts, categories, bills, statements, transactions }
-    const view = {
-      banks: Array.from(banks.values()).map(bank => Bank.buildView(bank, cache))
+    const docs: AnyDocument[] = allDocs.rows.map(row => row.doc!)
+
+    const cache: DocCache = {
+      banks: Bank.createCache(),
+      accounts: Account.createCache(),
+      transactions: Transaction.createCache(),
+      categories: Category.createCache(),
+      bills: Bill.createCache(),
+      statements: Statement.createCache(),
     }
-    console.log(view)
-    dispatch(setDb({info, db, changes, cache}))
+
+    const mapper = R.cond([
+      [Transaction.isDoc, (doc: Transaction.Doc) => cache.transactions.set(doc._id, doc)],
+      [Bank.isDoc, (doc: Bank.Doc) => cache.banks.set(doc._id, doc)],
+      [Account.isDoc, (doc: Account.Doc) => cache.accounts.set(doc._id, doc)],
+      [Category.isDoc, (doc: Category.Doc) => cache.categories.set(doc._id, doc)],
+      [Bill.isDoc, (doc: Bill.Doc) => cache.bills.set(doc._id, doc)],
+      [Statement.isDoc, (doc: Statement.Doc) => cache.statements.set(doc._id, doc)],
+    ]) as (doc: AnyDocument) => void
+
+    R.forEach(mapper, docs)
+
+    // const view = {
+    //   banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache))
+    // }
+    // console.log(view)
+    dispatch(setDb({info, db, changes, cache: cache as any}))
   }
 
-const deleteDb = (info: DbInfo.Doc): Thunk =>
+const deleteDb = (info: DbInfo): Thunk =>
   async (dispatch, getState) => {
-    const { current, meta } = getState().db
+    const { current } = getState().db
 
     // unload db if it's the current one
-    if (current && current.info._id === info._id) {
+    if (current && current.info.title === info.title) {
       await dispatch(unloadDb())
     }
 
-    // remove meta db info
-    await meta.db.remove(info)
-
     // destroy db
-    const db = new PouchDB<any>(info._id, adapter())
-    await db.destroy()
+    // const db = new PouchDB<any>(info.title, adapter())
+    // await db.destroy()
+    fs.unlinkSync(info.title)
   }
 
 const unloadDb = (): SetDbAction => setDb(undefined)
@@ -246,17 +240,20 @@ export const DbSlice = {
   db: reducer
 }
 
+const isDbFilename = R.test(/\.db$/i)
+const buildInfo = (filename: string) => ({
+  title: decodeURIComponent(path.basename(filename, ext)),
+  location: path.join(userData, filename)
+})
+const buildInfoCache = R.pipe(
+  R.filter(isDbFilename),
+  R.map(buildInfo),
+  DbInfo.createCache
+)
+
 export const DbInit = (): AppThunk =>
-  async (dispatch) => {
-    const db = new PouchDB<DbInfo.Doc>(METADB_NAME, adapter())
-    db.changes({
-      since: 'now',
-      live: true
-    })
-    .on('change', handleChange(db, dispatch))
-
-    const results = await db.find({selector: DbInfo.all})
-    const infos = await DbInfo.createCache(results.docs)
-
-    dispatch(setMetaDb({db, infos}))
+  (dispatch) => {
+    const files = fs.readdirSync(userData)
+    const infos = buildInfoCache(files)
+    dispatch(setMetaDb({infos}))
   }

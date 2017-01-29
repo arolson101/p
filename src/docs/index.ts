@@ -7,7 +7,6 @@ export * from './Statement'
 export * from './Transaction'
 
 import { Account } from './Account'
-import { DbInfo } from './DbInfo'
 import { Bank } from './Bank'
 import { Bill } from './Bill'
 import { Category } from './Category'
@@ -15,23 +14,12 @@ import { Statement } from './Statement'
 import { Transaction } from './Transaction'
 import { Lookup } from '../Util'
 
-export const createIndices = async (db: PouchDB.Database<any>) => {
-  type Indexer = (db: PouchDB.Database<any>) => Promise<any>
-  const indexers: Indexer[] = [
-    // Account.createIndices
-  ]
-  for (let index of indexers) {
-    await index(db)
-  }
-}
-
 export interface DocChangeAction {
   type: string
   handle: PouchDB.Database<any>
 }
 
 export const docChangeActionTesters = new Map([
-  [DbInfo.isDocId, DbInfo.cacheUpdateAction],
   [Account.isDocId, Account.cacheUpdateAction],
   [Bank.isDocId, Bank.cacheUpdateAction],
   [Bill.isDocId, Bill.cacheUpdateAction],
@@ -39,13 +27,16 @@ export const docChangeActionTesters = new Map([
   [Statement.isDocId, Statement.cacheUpdateAction]
 ])
 
-export interface TCacheSetAction<A, K, T> {
-  type: A
-  cache: Lookup<K, T>
+export interface TCacheSetAction<T, Cache> {
+  type: T
+  cache: Cache
 }
 
 export interface DocCache {
   banks: Bank.Cache
   accounts: Account.Cache
   transactions: Transaction.Cache
+  categories: Category.Cache
+  bills: Bill.Cache
+  statements: Statement.Cache
 }

@@ -34,4 +34,5 @@ declare const __TEST__: boolean
 type PropTypes<T> = { [K in keyof T]: React.Requireable<any> }
 
 type TDocument<T, ID> = PouchDB.Core.Document<T> & { _id: ID; _rev?: string }
+type AnyDocument = TDocument<{}, string>
 type ChangeSet = TDocument<any, string>
