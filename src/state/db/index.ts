@@ -98,6 +98,8 @@ const loadDb = (info: DbInfo, password?: string): Thunk =>
     })
     .on('change', handleChange(db, dispatch))
 
+    console.time('load')
+
     const allDocs = await db.allDocs({include_docs: true})
     const docs: AnyDocument[] = allDocs.rows.map(row => row.doc!)
 
@@ -124,7 +126,10 @@ const loadDb = (info: DbInfo, password?: string): Thunk =>
     const view = {
       banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache))
     }
-    console.log(view)
+
+    console.timeEnd('load')
+    console.log(`${cache.transactions.size} transactions`)
+
     dispatch(setDb({info, db, changes, cache, view}))
   }
 
