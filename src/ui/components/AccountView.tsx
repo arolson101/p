@@ -4,15 +4,15 @@ import { Grid, PageHeader } from 'react-bootstrap'
 import { defineMessages, injectIntl } from 'react-intl'
 import { connect } from 'react-redux'
 import { AutoSizer, Column } from 'react-virtualized'
-import { compose, setDisplayName, withHandlers } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import { getTransactions, deleteAllTransactions } from '../../actions'
 import { Bank, Account, Transaction } from '../../docs'
-import { AppState, CurrentDb, mapDispatchToProps } from '../../state'
+import { AppState, pushChanges, mapDispatchToProps } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { Container, Item } from './flex'
 import { ListWithDetails, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
 import { RouteProps, IntlProps } from './props'
-import { selectBank, selectAccount, selectTransactions } from './selectors'
+import { selectBank, selectAccount } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
 import { TransactionDetail } from './TransactionDetail'
 
@@ -38,11 +38,10 @@ const messages = defineMessages({
 interface ConnectedProps {
   bank: Bank.View
   account: Account.View
-  current: CurrentDb
-  items: Transaction.View[]
 }
 
 interface DispatchProps {
+  pushChanges: pushChanges.Fcn
   getTransactions: getTransactions.Fcn
   deleteAllTransactions: deleteAllTransactions.Fcn
 }
@@ -68,19 +67,20 @@ interface HandlerProps {
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('AccountViewComponent'),
+  onlyUpdateForPropTypes,
+  setPropTypes({}),
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps & RouteProps<Account.Params>>(
     (state: AppState, props) => ({
       bank: selectBank(state, props!),
       account: selectAccount(state, props!),
-      current: state.db.current!,
-      items: selectTransactions(state, props!)
+      current: state.db.current!
     }),
-    mapDispatchToProps<DispatchProps>({ getTransactions, deleteAllTransactions })
+    mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions })
   ),
   withHandlers<HandlerProps, ConnectedProps & DispatchProps & IntlProps & RouteProps<Account.Params>>({
     addTransactions: (props) => () => {
-      const { current, account } = props
+      const { pushChanges, account } = props
       const changes: ChangeSet = new Set()
       let balance = 0
       for (let i = 0; i < 1000; i++) {
@@ -97,7 +97,7 @@ const enhance = compose<AllProps, {}>(
         balance += tx.amount
       }
 
-      current.db.bulkDocs(Array.from(changes))
+      pushChanges({docs: Array.from(changes)})
     },
 
     downloadTransactions: (props) => async () => {
@@ -115,7 +115,7 @@ const enhance = compose<AllProps, {}>(
 )
 
 export const AccountView = enhance((props) => {
-  const { bank, account, items } = props
+  const { bank, account } = props
   const { downloadTransactions, addTransactions, deleteTransactions } = props
   return (
     <div>
@@ -170,7 +170,7 @@ export const AccountView = enhance((props) => {
               <AutoSizer>
                 {(autoSizerProps: AutoSizer.ChildrenProps) => (
                   <ListWithDetails
-                    items={items}
+                    items={account.transactions}
                     {...autoSizerProps}
                     columns={[
                       {

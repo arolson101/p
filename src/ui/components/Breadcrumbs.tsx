@@ -2,7 +2,8 @@ import * as React from 'react'
 import { Breadcrumb } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName } from 'recompose'
+import { withRouter } from 'react-router'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState } from '../../state'
 import { RouteProps } from './props'
@@ -33,11 +34,16 @@ type AllProps = Props & RouteProps<Transaction.Params> & ConnectedProps
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('Breadcrumbs'),
-  connect(
-    (state: AppState, props: AllProps): ConnectedProps => ({
-      bank: props.params.bankId ? selectBank(state, props) : undefined,
-      account: props.params.accountId ? selectAccount(state, props) : undefined,
-      transaction: props.params.txId ? selectTransaction(state, props) : undefined
+  withRouter,
+  onlyUpdateForPropTypes,
+  setPropTypes({
+    page: React.PropTypes.object
+  } as PropTypes<Props>),
+  connect<ConnectedProps, {}, RouteProps<Transaction.Params> & Props>(
+    (state: AppState, props) => ({
+      bank: props && props.params.bankId ? selectBank(state, props) : undefined,
+      account: props && props.params.accountId ? selectAccount(state, props) : undefined,
+      transaction: props && props.params.txId ? selectTransaction(state, props) : undefined
   })),
   injectIntl
 )

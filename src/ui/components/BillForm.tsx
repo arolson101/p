@@ -153,13 +153,16 @@ interface State {
 
 interface EnhancedProps {
   onSubmit: (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => void
+}
+
+interface Handlers {
   onFrequencyChange: SelectCallback
   onEndTypeChange: SelectCallback
   onCalendarChange: (date?: any, e?: any) => void
   filterEndDate: (date: Date) => boolean
 }
 
-type AllProps = Props & State & EnhancedProps & ConnectedProps & FormProps & IntlProps & ReduxFormProps<Values>
+type AllProps = Handlers & EnhancedProps & State & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props
 
 type Frequency = 'days' | 'weeks' | 'months' | 'years'
 type EndType = 'endDate' | 'endCount'
@@ -196,7 +199,7 @@ const enhance = compose<AllProps, Props>(
     onCancel: React.PropTypes.func.isRequired
   } as PropTypes<Props>),
   injectIntl,
-  connect(
+  connect<ConnectedProps, {}, IntlProps & Props>(
     (state: AppState): ConnectedProps => ({
       lang: state.i18n.lang,
       bills: state.db.current!.view.bills,
@@ -205,7 +208,7 @@ const enhance = compose<AllProps, Props>(
       weekdayOptions: weekdayOptions(state),
     })
   ),
-  reduxForm<AllProps, Values>({
+  reduxForm<ConnectedProps & IntlProps & Props, Values>({
     form: formName,
     validate: (values: Values, props: AllProps) => {
       const v = new Validator(values)
@@ -225,7 +228,7 @@ const enhance = compose<AllProps, Props>(
       end: 'endCount'
     }
   }),
-  connect(
+  connect<FormProps, {}, ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
     (state: AppState): FormProps => ({
       start: formSelector(state, 'start'),
       interval: formSelector(state, 'interval'),
@@ -235,89 +238,96 @@ const enhance = compose<AllProps, Props>(
       rrule: rruleSelector(state)
     })
   ),
-  withState('groups', 'setGroups', (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)),
-  withProps(({onSubmit, lang, edit}: AllProps): Partial<EnhancedProps> => ({
-    onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
-      const { intl: { formatMessage } } = props
-      const v = new Validator(values)
-      v.required(['group', 'name', 'start'], formatMessage(forms.required))
+  withState<State & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
+    'groups', 'setGroups', (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)
+  ),
+  withProps<EnhancedProps, State & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
+    ({onSubmit, lang, edit}) => ({
+      onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
+        const { intl: { formatMessage } } = props
+        const v = new Validator(values)
+        v.required(['group', 'name', 'start'], formatMessage(forms.required))
 
-      const rrule = toRRule(values)
-      if (rrule instanceof ErrorMessage) {
-        v.errors[rrule.field] = formatMessage(rrule.message)
+        const rrule = toRRule(values)
+        if (rrule instanceof ErrorMessage) {
+          v.errors[rrule.field] = formatMessage(rrule.message)
+        }
+
+        v.maybeThrowSubmissionError()
+
+        const { amount, frequency, start, end, until, count, interval, byweekday, bymonth, ...rest } = values
+
+        const bill: Bill = {
+          ...edit,
+          ...rest,
+          amount: numeral(amount).value(),
+          rruleString: rrule.toString()
+        }
+        const doc = Bill.doc(bill, lang)
+        return onSubmit(doc, dispatch, props)
       }
+    })
+  ),
+  withPropChangeCallback<EnhancedProps & State & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
+    'edit',
+    (props) => {
+      const { edit, initialize, reset, intl: { formatNumber } } = props
+      if (edit) {
+        const rrule = edit.rrule
+        const values: Values = {
+          ...edit,
+          start: moment(rrule.options.dtstart).format('L'),
+        } as any
 
-      v.maybeThrowSubmissionError()
+        values.amount = formatNumber(edit.doc.amount, {style: 'currency', currency: 'USD'})
 
-      const { amount, frequency, start, end, until, count, interval, byweekday, bymonth, ...rest } = values
+        const opts = rrule.origOptions
+        if (opts.freq === RRule.MONTHLY) {
+          values.frequency = 'months'
+        } else if (opts.freq === RRule.WEEKLY) {
+          values.frequency = 'weeks'
+        } else if (opts.freq === RRule.MONTHLY) {
+          values.frequency = 'months'
+        } else if (opts.freq === RRule.YEARLY) {
+          values.frequency = 'years'
+        }
 
-      const bill: Bill = {
-        ...edit,
-        ...rest,
-        amount: numeral(amount).value(),
-        rruleString: rrule.toString()
+        if (opts.interval) {
+          values.interval = opts.interval
+        }
+        if (Array.isArray(opts.byweekday)) {
+          values.byweekday = opts.byweekday.map((str: RRule.WeekdayStr) => dayMap[str]).join(',')
+        }
+        if (Array.isArray(opts.bymonth)) {
+          values.bymonth = opts.bymonth.join(',')
+        }
+
+        values.end = 'endCount'
+        if (opts.until) {
+          values.until = moment(opts.until).format('L')
+          values.count = 0
+          values.end = 'endDate'
+        } else if (typeof opts.count === 'number') {
+          values.count = opts.count
+          values.until = ''
+        }
+
+        initialize(values, false)
+        reset()
       }
-      const doc = Bill.doc(bill, lang)
-      return onSubmit(doc, dispatch, props)
     }
-  })),
-  withPropChangeCallback('edit', (props: AllProps) => {
-    const { edit, initialize, reset, intl: { formatNumber } } = props
-    if (edit) {
-      const rrule = edit.rrule
-      const values: Values = {
-        ...edit,
-        start: moment(rrule.options.dtstart).format('L'),
-      } as any
-
-      values.amount = formatNumber(edit.doc.amount, {style: 'currency', currency: 'USD'})
-
-      const opts = rrule.origOptions
-      if (opts.freq === RRule.MONTHLY) {
-        values.frequency = 'months'
-      } else if (opts.freq === RRule.WEEKLY) {
-        values.frequency = 'weeks'
-      } else if (opts.freq === RRule.MONTHLY) {
-        values.frequency = 'months'
-      } else if (opts.freq === RRule.YEARLY) {
-        values.frequency = 'years'
-      }
-
-      if (opts.interval) {
-        values.interval = opts.interval
-      }
-      if (Array.isArray(opts.byweekday)) {
-        values.byweekday = opts.byweekday.map((str: RRule.WeekdayStr) => dayMap[str]).join(',')
-      }
-      if (Array.isArray(opts.bymonth)) {
-        values.bymonth = opts.bymonth.join(',')
-      }
-
-      values.end = 'endCount'
-      if (opts.until) {
-        values.until = moment(opts.until).format('L')
-        values.count = 0
-        values.end = 'endDate'
-      } else if (typeof opts.count === 'number') {
-        values.count = opts.count
-        values.until = ''
-      }
-
-      initialize(values, false)
-      reset()
-    }
-  }),
-  withHandlers({
-    onFrequencyChange: ({change}: AllProps) => (eventKey: Frequency) => {
+  ),
+  withHandlers<Handlers, EnhancedProps & State & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>({
+    onFrequencyChange: ({change}) => (eventKey: Frequency) => {
       change('frequency', eventKey)
     },
-    onEndTypeChange: ({change}: AllProps) => (eventKey: EndType) => {
+    onEndTypeChange: ({change}) => (eventKey: EndType) => {
       change('end', eventKey)
     },
-    onCalendarChange: ({change}: AllProps) => (date?: any, e?: any) => {
+    onCalendarChange: ({change}) => (date?: any, e?: any) => {
       change('start', moment(date).format('L'))
     },
-    filterEndDate: ({start}: AllProps) => (date: Date): boolean => {
+    filterEndDate: ({start}) => (date: Date): boolean => {
       if (start) {
         return moment(start).isBefore(date)
       }

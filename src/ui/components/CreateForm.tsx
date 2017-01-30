@@ -2,7 +2,7 @@ import { Button, ButtonToolbar } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, withProps } from 'recompose'
+import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, ReduxFormProps } from 'redux-form'
 import { DbInfo } from '../../docs'
 import { AppState, createDb, mapDispatchToProps } from '../../state'
@@ -52,6 +52,8 @@ interface Values {
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('CreateForm'),
+  onlyUpdateForPropTypes,
+  setPropTypes({}),
   injectIntl,
   connect<ConnectedProps, DispatchProps, Props & IntlProps>(
     (state: AppState) => ({

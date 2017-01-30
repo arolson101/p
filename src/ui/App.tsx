@@ -22,7 +22,8 @@ const NotFoundRoute = (props: Router.RouteComponentProps<any, any>) => (
 
 const requireAuth = (store: Redux.Store<AppState>) =>
   (nextState: any, replace: any) => {
-    if (!store.getState().db.current) {
+    const { db: { current } } = store.getState()
+    if (!current) {
       replace({
         pathname: '/',
         state: { nextPathname: nextState.location.pathname }

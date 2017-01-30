@@ -64,11 +64,11 @@ interface Props {
   onCancel: () => void
 }
 
-interface ConnectedProps {
+interface FormProps {
   type?: Account.Type
 }
 
-type AllProps = Props & ConnectedProps & IntlProps & ReduxFormProps<Values>
+type AllProps = FormProps & ReduxFormProps<Values> & Props & IntlProps
 
 export interface Values {
   name: string
@@ -92,7 +92,7 @@ const enhance = compose<AllProps, Props>(
     onCancel: React.PropTypes.func.isRequired
   } as PropTypes<Props>),
   injectIntl,
-  withProps(({onSubmit}) => ({
+  withProps<{}, Props & IntlProps>(({onSubmit}) => ({
     onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
       const { intl: { formatMessage } } = props
       const v = new Validator(values)
@@ -101,7 +101,7 @@ const enhance = compose<AllProps, Props>(
       return onSubmit(values, dispatch, props)
     }
   })),
-  reduxForm<AllProps, Values>({
+  reduxForm<Props & IntlProps, Values>({
     form: formName,
     validate: (values: Values, props: AllProps) => {
       const v = new Validator(values)
@@ -114,7 +114,7 @@ const enhance = compose<AllProps, Props>(
       return v.errors
     }
   }),
-  withPropChangeCallback('edit', (props: AllProps) => {
+  withPropChangeCallback<ReduxFormProps<Values> & Props & IntlProps>('edit', (props: AllProps) => {
     const { edit, initialize, reset } = props
     if (edit) {
       const values = edit
@@ -122,8 +122,8 @@ const enhance = compose<AllProps, Props>(
       reset()
     }
   }),
-  connect(
-    (state: AppState): ConnectedProps => ({
+  connect<FormProps, {}, ReduxFormProps<Values> & Props & IntlProps>(
+    (state: AppState): FormProps => ({
       type: formSelector(state, 'type')
     })
   )

@@ -3,12 +3,11 @@ import * as React from 'react'
 import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { Dispatch } from 'redux'
 import { Bank, Account } from '../../docs'
-import { AppState, CurrentDb } from '../../state'
+import { AppState, pushChanges, mapDispatchToProps } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps } from './props'
-import { selectCurrentDb, selectBank, selectBankAccounts, selectAccount } from './selectors'
+import { selectBank, selectAccount } from './selectors'
 import { Values, AccountForm, SubmitFunction } from './AccountForm'
 
 const messages = defineMessages({
@@ -19,10 +18,12 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  current: CurrentDb
-  bank?: Bank.View
-  accounts: Account.View[]
-  account?: Account.View
+  bank: Bank.View
+  account: Account.View
+}
+
+interface DispatchProps {
+  pushChanges: pushChanges.Fcn
 }
 
 interface EnhancedProps {
@@ -30,48 +31,43 @@ interface EnhancedProps {
   onSubmit: SubmitFunction<Values>
 }
 
-type AllProps = EnhancedProps & ConnectedProps & RouteProps<Account.Params>
+type AllProps = EnhancedProps & ConnectedProps & DispatchProps & RouteProps<Account.Params>
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('AccountEdit'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
-  connect(
-    (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
-      current: selectCurrentDb(state),
+  connect<ConnectedProps, DispatchProps, RouteProps<Account.Params>>(
+    (state: AppState, props) => ({
       bank: selectBank(state, props),
-      accounts: selectBankAccounts(state, props),
       account: selectAccount(state, props)
-    })
+    }),
+    mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
-  withProps(({router}: AllProps): EnhancedProps => ({
+  withProps<EnhancedProps, ConnectedProps & DispatchProps & RouteProps<Account.Params>>(({router, pushChanges, account}) => ({
     onCancel: () => {
       router.goBack()
     },
-    onSubmit: async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-      const { current } = props
-      const account = props.account!
-
+    onSubmit: async (values: Values) => {
       const doc: Account.Doc = {
         ...account.doc,
         ...values
       }
-
-      await current!.db.put(doc)
+      await pushChanges({docs: [doc]})
 
       router.replace(Account.to.view(doc))
     }
   }))
 )
 
-export const AccountEdit = enhance((props: AllProps) => {
-  const { bank, account, accounts, onSubmit, onCancel } = props
+export const AccountEdit = enhance(props => {
+  const { bank, account, onSubmit, onCancel } = props
   return (
     <div>
       {bank && account &&
         <Grid>
           <Breadcrumbs {...props} page={messages.page}/>
-          <AccountForm {...props} edit={account.doc} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
+          <AccountForm {...props} edit={account.doc} accounts={bank.accounts} onSubmit={onSubmit} onCancel={onCancel}/>
         </Grid>
       }
     </div>

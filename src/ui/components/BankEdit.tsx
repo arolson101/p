@@ -3,9 +3,8 @@ import { Grid } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { Dispatch } from 'redux'
 import { Bank } from '../../docs'
-import { AppState, FI, CurrentDb } from '../../state'
+import { AppState, FI, pushChanges, mapDispatchToProps } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { Values, BankForm, SubmitFunction } from './BankForm'
 import { RouteProps } from './props'
@@ -20,8 +19,11 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   filist: FI[]
-  current: CurrentDb
   bank: Bank.View
+}
+
+interface DispatchProps {
+  pushChanges: pushChanges.Fcn
 }
 
 interface EnhancedProps {
@@ -35,35 +37,36 @@ const enhance = compose<AllProps, {}>(
   setDisplayName('BankEdit'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
-  connect(
-    (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => ({
+  connect<ConnectedProps, DispatchProps, RouteProps<Bank.Params>>(
+    (state: AppState, props) => ({
       filist: state.fi.list,
-      current: state.db.current!,
       bank: selectBank(state, props)
-    })
+    }),
+    mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
-  withProps(({router}: AllProps): EnhancedProps => ({
-    onCancel: () => {
-      router.goBack()
-    },
-    onSubmit: async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-      const { bank, current, filist } = props
-      const { fi, username, password, ...newValues } = values
-      const doc: Bank.Doc = {
-        ...bank.doc,
-        ...newValues,
+  withProps<EnhancedProps, ConnectedProps & DispatchProps & RouteProps<Bank.Params>>(
+    ({router, bank, pushChanges, filist}) => ({
+      onCancel: () => {
+        router.goBack()
+      },
+      onSubmit: async (values: Values) => {
+        const { fi, username, password, ...newValues } = values
+        const doc: Bank.Doc = {
+          ...bank.doc,
+          ...newValues,
 
-        fi: fi ? filist[fi - 1].name : undefined,
-        login: {
-          username: username,
-          password: password
+          fi: fi ? filist[fi - 1].name : undefined,
+          login: {
+            username: username,
+            password: password
+          }
         }
-      }
-      await current.db.put(doc)
+        await pushChanges({docs: [doc]})
 
-      router.replace(Bank.to.view(doc))
-    }
-  }))
+        router.replace(Bank.to.view(doc))
+      }
+    })
+  )
 )
 
 export const BankEdit = enhance((props) => {

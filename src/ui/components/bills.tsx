@@ -3,32 +3,32 @@ import { Grid, PageHeader } from 'react-bootstrap'
 import { injectIntl, FormattedDate, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { AutoSizer,Column } from 'react-virtualized'
-import { compose, setDisplayName } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bill } from '../../docs'
-import { AppState, CurrentDb } from '../../state'
+import { AppState } from '../../state'
 import { BillDetail } from './BillDetail'
 import { Breadcrumbs } from './Breadcrumbs'
 import { Container, Item } from './flex'
 import { ListWithDetails, getRowData, currencyCellRenderer } from './ListWithDetails'
+import { selectBills } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
 
 const messages = defineMessages({
   page: {
-    id: 'bills.page',
+    id: 'Bills.page',
     defaultMessage: 'Bills'
   },
   settings: {
-    id: 'inRead.settings',
+    id: 'Bills.settings',
     defaultMessage: 'Options'
   },
   addBill: {
-    id: 'bills.addBill',
+    id: 'Bills.addBill',
     defaultMessage: 'Add Bill'
   }
 })
 
 interface ConnectedProps {
-  current: CurrentDb,
   bills: Bill.View[]
 }
 
@@ -43,11 +43,12 @@ type AllProps = EnhancedProps & ConnectedProps
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('Bills'),
+  onlyUpdateForPropTypes,
+  setPropTypes({}),
   injectIntl,
   connect(
     (state: AppState): ConnectedProps => ({
-      current: state.db.current!,
-      bills: state.db.current!.view.bills
+      bills: selectBills(state)
     })
   )
 )

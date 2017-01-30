@@ -95,6 +95,18 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
     await wait(5)
   }
 
+export interface Deletion {
+  _id: string
+  _rev?: string
+  _deleted: true
+}
+
+export const deleteDoc = (doc: AnyDocument): Deletion => ({
+  _id: doc._id,
+  _rev: doc._rev,
+  _deleted: true
+})
+
 const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>) =>
   (change: PouchDB.ChangeInfo<{}>) => {
     console.log('change', change)
@@ -156,7 +168,7 @@ type DeleteDbArgs = { info: DbInfo }
 export namespace deleteDb { export type Fcn = DbFcn<DeleteDbArgs, void> }
 export const deleteDb: DbThunk<DeleteDbArgs, void> = ({info}) =>
   async (dispatch, getState) => {
-    const { current } = getState().db
+    const { db: { current } } = getState()
 
     // unload db if it's the current one
     if (current && current.info.name === info.name) {

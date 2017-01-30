@@ -1,228 +1,271 @@
-import autobind = require('autobind-decorator')
 import * as React from 'react'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { Alert, Grid, PageHeader, ProgressBar, Table, Button, Modal } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { compose } from 'redux'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import { getAccounts } from '../../actions'
 import { Bank, Account } from '../../docs'
+import { withState2 } from '../enhancers'
 import { AppState, mapDispatchToProps } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps, IntlProps } from './props'
-import { selectBank, selectBankAccounts } from './selectors'
+import { selectBank } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
 
 const messages = defineMessages({
   noAccounts: {
-    id: 'inRead.noAccounts',
+    id: 'BankView.noAccounts',
     defaultMessage: 'No Accounts'
   },
   settings: {
-    id: 'inRead.settings',
+    id: 'BankView.settings',
     defaultMessage: 'Options'
   },
   update: {
-    id: 'inRead.update',
+    id: 'BankView.update',
     defaultMessage: 'Edit'
   },
   showAll: {
-    id: 'inRead.showAll',
+    id: 'BankView.showAll',
     defaultMessage: 'Show all accounts'
   },
   addAccount: {
-    id: 'inRead.addAccount',
+    id: 'BankView.addAccount',
     defaultMessage: 'Add account'
   },
   getAccounts: {
-    id: 'inRead.getAccounts',
+    id: 'BankView.getAccounts',
     defaultMessage: 'Get account list from server'
   },
   delete: {
-    id: 'inRead.delete',
+    id: 'BankView.delete',
     defaultMessage: 'Delete'
   },
   visible: {
-    id: 'inRead.visible',
+    id: 'BankView.visible',
     defaultMessage: 'Visible'
   },
   type: {
-    id: 'inRead.type',
+    id: 'BankView.type',
     defaultMessage: 'Type'
   },
   name: {
-    id: 'inRead.name',
+    id: 'BankView.name',
     defaultMessage: 'Name'
   },
   number: {
-    id: 'inRead.number',
+    id: 'BankView.number',
     defaultMessage: 'Number'
   }
 })
 
 interface ConnectedProps {
   bank: Bank.View
-  accounts: Account.View[]
 }
 
 interface DispatchProps {
   getAccounts: getAccounts.Fcn
 }
 
-type AllProps = RouteProps<Bank.Params> & ConnectedProps & IntlProps & DispatchProps
-
 interface State {
-  showAll?: boolean
-  showModal?: boolean
-  working?: boolean
-  message?: string
+  showAll: boolean
+  setShowAll: (showAll: boolean) => void
+
+  showModal: boolean
+  setShowModal: (showModal: boolean) => void
+
+  working: boolean
+  setWorking: (working: boolean) => void
+
   error?: string
+  setError: (error?: string) => void
+
+  message?: string
+  setMessage: (message?: string) => void
 }
 
-export class BankViewComponent extends React.Component<AllProps, State> {
-  state = {
-    showAll: false,
-    showModal: false,
-    working: false,
-    message: undefined,
-    error: undefined
-  }
+interface EnhancedProps {
+  toggleShowAll: () => void
+  getAccountList: () => void
+  hideModal: () => void
+}
 
-  render() {
-    const { bank, accounts, router } = this.props
-    const { working, showModal, message, error, showAll } = this.state
-    return (
-      <div>
-        {bank &&
-          <Grid>
-            <Breadcrumbs {...this.props}/>
+type AllProps = EnhancedProps
+  & State
+  & ConnectedProps
+  & DispatchProps
+  & IntlProps
+  & RouteProps<Bank.Params>
 
-            <SettingsMenu
-              items={[
-                {
-                  message: '_View',
-                  header: true
-                },
-                {
-                  message: messages.showAll,
-                  onClick: this.toggleShowAll
-                },
-                {
-                  message: '_Accounts',
-                  header: true
-                },
-                {
-                  message: messages.addAccount,
-                  to: Account.to.create(bank.doc)
-                },
-                {
-                  message: messages.getAccounts,
-                  onClick: this.getAccountList,
-                  disabled: !bank.doc.online
-                },
-                {
-                  divider: true
-                },
-                {
-                  message: '_Institution',
-                  header: true
-                },
-                {
-                  message: messages.update,
-                  to: Bank.to.edit(bank.doc)
-                },
-                {
-                  message: messages.delete,
-                  to: Bank.to.del(bank.doc)
-                }
-              ]}
-            />
+const enhance = compose<AllProps, {}>(
+  setDisplayName('BankView'),
+  onlyUpdateForPropTypes,
+  setPropTypes({}),
+  injectIntl,
+  connect<ConnectedProps, DispatchProps, IntlProps & RouteProps<Bank.Params>>(
+    (state: AppState, props) => ({
+      bank: selectBank(state, props)
+    }),
+    mapDispatchToProps<DispatchProps>({ getAccounts })
+  ),
+  withState2<State, ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>>(
+    {
+      showAll: false,
+      showModal: false,
+      working: false,
+      message: undefined,
+      error: undefined
+    },
+    {
+      setShowAll: 'showAll',
+      setShowModal: 'showModal',
+      setWorking: 'working',
+      setMessage: 'message',
+      setError: 'error'
+    }
+  ),
+  withProps<EnhancedProps, State & ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>>(
+    props => ({
+      toggleShowAll: () => {
+        const { showAll, setShowAll } = props
+        setShowAll(!showAll)
+      },
 
-            <PageHeader>{bank.doc.name}</PageHeader>
-
-            {accounts && accounts.length > 0 ? (
-              <Table hover striped>
-                <thead>
-                  <tr>
-                    {showAll &&
-                      <th width='10%'><FormattedMessage {...messages.visible}/></th>
-                    }
-                    <th width='20%'><FormattedMessage {...messages.type}/></th>
-                    <th><FormattedMessage {...messages.name}/></th>
-                    <th><FormattedMessage {...messages.number}/></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {accounts.filter(account => account.doc.visible || showAll).map(account => account &&
-                    <tr key={account.doc._id} href={router.createHref(Account.to.view(account.doc))}>
-                      {showAll &&
-                        <td>{account.doc.visible}</td>
-                      }
-                      <td>{account.doc.type && <FormattedMessage {...Account.messages[account.doc.type]}/>}</td>
-                      <td><Link to={Account.to.view(account.doc)}>{account.doc.name}</Link></td>
-                      <td><Link to={Account.to.view(account.doc)}>{account.doc.number}</Link></td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            ) : (
-              <FormattedMessage {...messages.noAccounts}/>
-            )}
-
-            <Modal show={showModal} onHide={this.hideModal}>
-              <Modal.Header>
-                <Modal.Title>Downloading Account List</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                {working &&
-                  <div>
-                    <p>contacting server...</p>
-                    <ProgressBar active now={50}/>
-                  </div>
-                }
-                {message &&
-                  <Alert bsStyle='info'><Nl2br text={message}/></Alert>
-                }
-                {error &&
-                  <Alert bsStyle='danger'><Nl2br text={error}/></Alert>
-                }
-              </Modal.Body>
-              <Modal.Footer>
-                <Button disabled={working} onClick={this.hideModal}>close</Button>
-              </Modal.Footer>
-            </Modal>
-          </Grid>
+      getAccountList: async () => {
+        const { setShowModal, setWorking, setMessage, setError, getAccounts, bank, intl: { formatMessage } } = props
+        setMessage(undefined)
+        setError(undefined)
+        setWorking(true)
+        setShowModal(true)
+        try {
+          const message = await getAccounts({bank, formatMessage})
+          setWorking(false)
+          setMessage(message)
+        } catch (ex) {
+          setWorking(false)
+          setError(ex.message)
         }
-      </div>
-    )
-  }
+      },
 
-  @autobind
-  toggleShowAll() {
-    const { showAll } = this.state
-    this.setState({ showAll: !showAll })
-  }
+      hideModal: () => {
+        const { working, setShowModal } = props
+        if (!working) {
+          setShowModal(false)
+        }
+      }
+    })
+  )
+)
 
-  @autobind
-  async getAccountList() {
-    const { getAccounts, bank, intl: { formatMessage } } = this.props
-    this.setState({ showModal: true, working: true, message: undefined, error: undefined })
-    try {
-      const message = await getAccounts({bank, formatMessage})
-      this.setState({ working: false, message })
-    } catch (ex) {
-      this.setState({ working: false, error: ex.message })
-    }
-  }
+export const BankView = enhance(props => {
+  const { bank, router, toggleShowAll, hideModal, getAccountList } = props
+  const { working, showModal, message, error, showAll } = props
+  return (
+    <div>
+      {bank &&
+        <Grid>
+          <Breadcrumbs/>
 
-  @autobind
-  hideModal() {
-    const { working } = this.state
-    if (!working) {
-      this.setState({ showModal: false })
-    }
-  }
-}
+          <SettingsMenu
+            items={[
+              {
+                message: '_View',
+                header: true
+              },
+              {
+                message: messages.showAll,
+                onClick: toggleShowAll
+              },
+              {
+                message: '_Accounts',
+                header: true
+              },
+              {
+                message: messages.addAccount,
+                to: Account.to.create(bank.doc)
+              },
+              {
+                message: messages.getAccounts,
+                onClick: getAccountList,
+                disabled: !bank.doc.online
+              },
+              {
+                divider: true
+              },
+              {
+                message: '_Institution',
+                header: true
+              },
+              {
+                message: messages.update,
+                to: Bank.to.edit(bank.doc)
+              },
+              {
+                message: messages.delete,
+                to: Bank.to.del(bank.doc)
+              }
+            ]}
+          />
+
+          <PageHeader>{bank.doc.name}</PageHeader>
+
+          {bank.accounts.length > 0 ? (
+            <Table hover striped>
+              <thead>
+                <tr>
+                  {showAll &&
+                    <th width='10%'><FormattedMessage {...messages.visible}/></th>
+                  }
+                  <th width='20%'><FormattedMessage {...messages.type}/></th>
+                  <th><FormattedMessage {...messages.name}/></th>
+                  <th><FormattedMessage {...messages.number}/></th>
+                </tr>
+              </thead>
+              <tbody>
+                {bank.accounts.filter(account => account.doc.visible || showAll).map(account => account &&
+                  <tr key={account.doc._id} href={router.createHref(Account.to.view(account.doc))}>
+                    {showAll &&
+                      <td>{account.doc.visible}</td>
+                    }
+                    <td>{account.doc.type && <FormattedMessage {...Account.messages[account.doc.type]}/>}</td>
+                    <td><Link to={Account.to.view(account.doc)}>{account.doc.name}</Link></td>
+                    <td><Link to={Account.to.view(account.doc)}>{account.doc.number}</Link></td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          ) : (
+            <FormattedMessage {...messages.noAccounts}/>
+          )}
+
+          <Modal show={showModal} onHide={hideModal}>
+            <Modal.Header>
+              <Modal.Title>Downloading Account List</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              {working &&
+                <div>
+                  <p>contacting server...</p>
+                  <ProgressBar active now={50}/>
+                </div>
+              }
+              {message &&
+                <Alert bsStyle='info'><Nl2br text={message}/></Alert>
+              }
+              {error &&
+                <Alert bsStyle='danger'><Nl2br text={error}/></Alert>
+              }
+            </Modal.Body>
+            <Modal.Footer>
+              <Button disabled={working} onClick={hideModal}>close</Button>
+            </Modal.Footer>
+          </Modal>
+        </Grid>
+      }
+    </div>
+  )
+})
 
 const Nl2br = (props: {text: string}) => {
   return (
@@ -233,14 +276,3 @@ const Nl2br = (props: {text: string}) => {
     </span>
   )
 }
-
-export const BankView = compose(
-  injectIntl,
-  connect(
-    (state: AppState, props: RouteProps<Bank.Params>) => ({
-      bank: selectBank(state, props),
-      accounts: selectBankAccounts(state, props)
-    }),
-    mapDispatchToProps<DispatchProps>({ getAccounts })
-  )
-)(BankViewComponent) as React.ComponentClass<{}>

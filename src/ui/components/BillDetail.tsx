@@ -2,8 +2,8 @@ import * as React from 'react'
 import { Button } from 'react-bootstrap'
 import { FormattedDate } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, withState, withHandlers, mapProps } from 'recompose'
-import { AppState, CurrentDb } from '../../state'
+import { compose, setDisplayName, withState, withHandlers, mapProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from '../../state'
 import { Bill } from '../../docs'
 import { withPropChangeCallback } from '../enhancers'
 import { BillForm, SubmitFunction } from './BillForm'
@@ -12,58 +12,69 @@ interface Props {
   item: Bill.View
 }
 
-interface ConnectedProps {
-  current: CurrentDb
+interface DispatchProps {
+  pushChanges: pushChanges.Fcn
+}
+
+interface MappedProps {
+  date: Date
+}
+
+interface State {
+  editing: boolean
+  setEditing: (editing: boolean) => void
 }
 
 interface EnhancedProps {
-  date: Date
-  editing: boolean
-  setEditing: (editing: boolean) => void
   startEdit: () => void
   cancelEdit: () => void
   deleteMe: () => void
   saveEdit: SubmitFunction<Bill.Doc>
 }
 
-type AllProps = Props & ConnectedProps & EnhancedProps
+type AllProps = Props & State & DispatchProps & EnhancedProps
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('BillDetail'),
-  connect(
-    (state: AppState): ConnectedProps => ({
-      current: state.db.current!
-    })
+  onlyUpdateForPropTypes,
+  setPropTypes({}),
+  connect<{}, DispatchProps, Props>(
+    (state: AppState) => ({}),
+    mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
-  mapProps((props: AllProps) => ({
+  mapProps<MappedProps, DispatchProps & Props>(props => ({
     ...props,
     date: Bill.getDate(props.item)
   })),
   withState('editing', 'setEditing', false),
-  withHandlers<AllProps, AllProps>({
+  withHandlers<EnhancedProps, State & MappedProps & DispatchProps & Props>({
     startEdit: ({setEditing}) => () => {
       setEditing(true)
     },
     cancelEdit: ({setEditing}) => () => {
       setEditing(false)
     },
-    saveEdit: ({setEditing, current}) => async (doc: Bill.Doc) => {
-      await current.db.put(doc)
+    saveEdit: ({setEditing, pushChanges}) => async (doc: Bill.Doc) => {
+      await pushChanges({ docs: [doc] })
       setEditing(false)
     },
-    deleteMe: ({item, current}) => () => {
-      current.db.remove(item)
+    deleteMe: ({item, pushChanges}) => () => {
+      pushChanges({docs: [deleteDoc(item.doc)]})
     }
   }),
-  withPropChangeCallback('item', ({setEditing}: AllProps) => {
-    setEditing(false)
-  })
+  withPropChangeCallback<EnhancedProps & State & MappedProps & DispatchProps & Props>(
+    'item',
+    ({setEditing}) => {
+      setEditing(false)
+    }
+  )
 )
 
-export const BillDetail = enhance(({editing, item, date, startEdit, saveEdit, cancelEdit, deleteMe}) => {
+export const BillDetail = enhance(({editing, item, startEdit, saveEdit, cancelEdit, deleteMe}) => {
   if (editing) {
     return <BillForm edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
   }
+  const date = Bill.getDate(item)
   return <div>
     name: {item.doc.name}<br/>
     group: {item.doc.group}<br/>

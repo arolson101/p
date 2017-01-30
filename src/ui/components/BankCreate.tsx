@@ -3,9 +3,8 @@ import { Grid } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { Dispatch } from 'redux'
 import { Bank } from '../../docs'
-import { AppState, FI, CurrentDb } from '../../state'
+import { AppState, FI, mapDispatchToProps, pushChanges } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { Values, BankForm, SubmitFunction } from './BankForm'
 import { RouteProps } from './props'
@@ -19,8 +18,11 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   filist: FI[]
-  current: CurrentDb
   lang: string
+}
+
+interface DispatchProps {
+  pushChanges: pushChanges.Fcn
 }
 
 interface EnhancedProps {
@@ -28,25 +30,24 @@ interface EnhancedProps {
   onSubmit: SubmitFunction<Values>
 }
 
-type AllProps = EnhancedProps & ConnectedProps & RouteProps<Bank.Params>
+type AllProps = EnhancedProps & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('BankCreate'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
-  connect(
+  connect<ConnectedProps, DispatchProps, RouteProps<Bank.Params>>(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
-      current: state.db.current!,
       lang: state.i18n.locale,
-    })
+    }),
+    mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
-  withProps(({router}: AllProps): EnhancedProps => ({
+  withProps<EnhancedProps, ConnectedProps & DispatchProps & RouteProps<Bank.Params>>(({router, pushChanges, filist, lang}) => ({
     onCancel: () => {
       router.goBack()
     },
-    onSubmit: async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-      const { current, filist, lang } = props
+    onSubmit: async (values: Values) => {
       const { fi, username, password, ...newValues } = values
       const bank: Bank = {
         ...newValues,
@@ -59,7 +60,7 @@ const enhance = compose<AllProps, {}>(
         accounts: []
       }
       const doc = Bank.doc(bank, lang)
-      await current.db.put(doc)
+      await pushChanges({docs: [doc]})
 
       router.replace(Bank.to.view(doc))
     }

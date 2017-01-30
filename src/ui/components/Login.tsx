@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Grid, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, withHandlers, withState } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withState } from 'recompose'
 import { DbInfo } from '../../docs'
 import { AppState } from '../../state'
 import { LoginForm } from './LoginForm'
@@ -33,24 +33,29 @@ interface ConnectedProps {
   files: DbInfo[]
 }
 
-interface EnhancedProps {
+interface State {
   activeId: string
   setActiveId: (activeId: string) => void
+}
+
+interface EnhancedProps {
   deselect: () => void
   onLogin: (dbInfo: DbInfo) => void
 }
 
-type AllProps = EnhancedProps & RouteProps<any> & ConnectedProps
+type AllProps = EnhancedProps & State & RouteProps<any> & ConnectedProps
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('Login'),
-  connect(
+  onlyUpdateForPropTypes,
+  setPropTypes({}),
+  connect<ConnectedProps, {}, RouteProps<any>>(
     (state: AppState): ConnectedProps => ({
       files: state.db.files
     })
   ),
   withState('activeId', 'setActiveId', ''),
-  withHandlers<AllProps,AllProps>({
+  withHandlers<EnhancedProps, State & ConnectedProps & RouteProps<any>>({
     deselect: ({setActiveId}) => () => {
       setActiveId('')
     },

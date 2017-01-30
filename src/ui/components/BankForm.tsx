@@ -6,7 +6,7 @@ import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropType
 import { reduxForm, formValueSelector, ReduxFormProps, SubmitFunction } from 'redux-form'
 import { Bank } from '../../docs'
 import { Validator } from '../../util'
-import { AppState, FI, emptyfi, CurrentDb } from '../../state'
+import { AppState, FI, emptyfi } from '../../state'
 import { withPropChangeCallback } from '../enhancers'
 import { formatAddress } from '../../util'
 import { typedFields, forms } from './forms'
@@ -77,7 +77,6 @@ interface Props {
 
 interface ConnectedProps {
   filist: FI[]
-  current: CurrentDb
   lang: string
   online: boolean
 }
@@ -112,7 +111,7 @@ const formName = 'bankForm'
 const formSelector = formValueSelector<Values>(formName)
 
 const enhance = compose<AllProps, Props>(
-  setDisplayName('AccountForm'),
+  setDisplayName('BankForm'),
   onlyUpdateForPropTypes,
   setPropTypes({
     edit: React.PropTypes.object,
@@ -120,30 +119,28 @@ const enhance = compose<AllProps, Props>(
     onCancel: React.PropTypes.func.isRequired
   } as PropTypes<Props>),
   injectIntl,
-  connect(
+  connect<ConnectedProps, {}, Props & IntlProps>(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
-      current: state.db.current!,
       lang: state.i18n.locale,
       online: formSelector(state, 'online')
     })
   ),
-  withProps(({onSubmit}) => ({
-    onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
-      const { intl: { formatMessage } } = props
+  withProps<{}, ConnectedProps & Props & IntlProps>(({onSubmit, intl: { formatMessage }}) => ({
+    onSubmit: async (values: Values, dispatch: any, props: any) => {
       const v = new Validator(values)
       v.required(['name'], formatMessage(forms.required))
       v.maybeThrowSubmissionError()
       return onSubmit(values, dispatch, props)
     }
   })),
-  reduxForm<AllProps, Values>({
+  reduxForm<ConnectedProps & Props & IntlProps, Values>({
     form: formName,
     initialValues: {
       online: true
     }
   }),
-  withPropChangeCallback('edit', (props: AllProps) => {
+  withPropChangeCallback<ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>('edit', props => {
     const { edit, filist, initialize, reset } = props
     if (edit) {
       const fi = filist.findIndex(fi => fi.name === edit.fi) + 1
@@ -152,11 +149,10 @@ const enhance = compose<AllProps, Props>(
       reset()
     }
   }),
-  withProps((props: AllProps) => ({
+  withProps<EnhancedProps, ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>(props => ({
     onChangeFI: (index: number) => {
       const { filist, change } = props
       const value = index ? filist[index - 1] : emptyfi
-
       change('name', value.name)
       change('web', value.profile.siteURL)
       change('address', formatAddress(value))

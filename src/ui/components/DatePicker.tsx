@@ -3,7 +3,7 @@ import * as React from 'react'
 import { FormControl } from 'react-bootstrap'
 import * as RDatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { compose, withHandlers, withState } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withState } from 'recompose'
 import { withPropChangeCallback } from '../enhancers'
 import './DatePicker.css'
 
@@ -14,8 +14,6 @@ interface Props {
 
 export type DatePickerProps = Partial<ReactDatePickerProps> & Props
 
-type AllProps = Props & EnhancedProps
-
 interface EnhancedProps {
   startDate?: moment.Moment
   setStartDate: (startDate?: moment.Moment) => void
@@ -23,7 +21,15 @@ interface EnhancedProps {
   onInputChange: (event: any) => void
 }
 
+type AllProps = Props & EnhancedProps
+
 const enhance = compose<AllProps, Props>(
+  setDisplayName('DatePicker'),
+  onlyUpdateForPropTypes,
+  setPropTypes({
+    value: React.PropTypes.string,
+    onChange: React.PropTypes.func
+  } as PropTypes<Props>),
   withState('startDate', 'setStartDate', undefined),
   withPropChangeCallback('value', ({setStartDate, value}: AllProps) => {
     setStartDate(value ? convertToDate(value) : undefined)

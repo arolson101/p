@@ -24,13 +24,16 @@ interface ConnectedProps {
   sideBySide: boolean
 }
 
-type EnhancedProps = Props<any> & ConnectedProps & RouteProps<any> & {
-  width: number
-  height: number
+interface State {
   scrollTop: number
   setScrollTop: (scrollTop: number) => void
   selectedIndex: number
   setSelectedIndex: (selectedIndex: number) => void
+}
+
+interface EnhancedProps {
+  width: number
+  height: number
   onScroll: Table.OnScroll
   rowGetter: Table.RowGetter
   rowClassName: Table.RowClassName
@@ -38,8 +41,11 @@ type EnhancedProps = Props<any> & ConnectedProps & RouteProps<any> & {
   onRowClick: Table.OnRowClick
 }
 
-const enhance = compose<EnhancedProps, Props<any>>(
+type AllProps = EnhancedProps & State & ConnectedProps & RouteProps<any> & Props<any>
+
+const enhance = compose<AllProps, Props<any>>(
   setDisplayName('ListWithDetails'),
+  withRouter,
   onlyUpdateForPropTypes,
   setPropTypes({
     items: React.PropTypes.array.isRequired,
@@ -49,16 +55,15 @@ const enhance = compose<EnhancedProps, Props<any>>(
     width: React.PropTypes.number.isRequired,
     height: React.PropTypes.number.isRequired
   } as PropTypes<Props<any>>),
-  withRouter,
-  connect(
-    (state: AppState): ConnectedProps => ({
+  connect<ConnectedProps, {}, RouteProps<any> & Props<any>>(
+    (state: AppState) => ({
       browser: state.browser,
       sideBySide: state.browser.greaterThan.small
     })
   ),
   withQuerySyncedState('scrollTop', 'setScrollTop', 0, parseFloat),
   withQuerySyncedState('selectedIndex', 'setSelectedIndex', -1, parseFloat),
-  withHandlers<EnhancedProps,EnhancedProps>({
+  withHandlers<EnhancedProps, State & ConnectedProps & RouteProps<any> & Props<any>>({
     onScroll: ({setScrollTop}) => (e: Table.OnScrollProps) => {
       setScrollTop(e.scrollTop)
     },

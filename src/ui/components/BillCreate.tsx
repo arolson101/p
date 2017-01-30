@@ -3,9 +3,8 @@ import { Grid } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { Dispatch } from 'redux'
 import { Bill } from '../../docs'
-import { AppState, FI, CurrentDb } from '../../state'
+import { pushChanges, mapDispatchToProps } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { BillForm, SubmitFunction } from './BillForm'
 import { RouteProps } from './props'
@@ -17,9 +16,8 @@ const messages = defineMessages({
   }
 })
 
-interface ConnectedProps {
-  filist: FI[]
-  current: CurrentDb
+interface DispatchProps {
+  pushChanges: pushChanges.Fcn
 }
 
 interface EnhancedProps {
@@ -27,27 +25,27 @@ interface EnhancedProps {
   onSubmit: SubmitFunction<Bill.Doc>
 }
 
-type AllProps = EnhancedProps & ConnectedProps & RouteProps<Bill.Params>
+type AllProps = EnhancedProps & RouteProps<Bill.Params>
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('BillCreate'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
-  connect(
-    (state: AppState): ConnectedProps => ({
-      filist: state.fi.list,
-      current: state.db.current!,
-    })
+  connect<{}, DispatchProps, RouteProps<Bill.Params>>(
+    () => ({}),
+    mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
-  withProps(({router, current}: AllProps): EnhancedProps => ({
-    onCancel: () => {
-      router.goBack()
-    },
-    onSubmit: async (doc: Bill.Doc, dispatch: Dispatch<AppState>) => {
-      await current.db.put(doc)
-      router.replace(Bill.to.all())
-    }
-  }))
+  withProps<EnhancedProps, DispatchProps & RouteProps<Bill.Params>>(
+    ({router, pushChanges}) => ({
+      onCancel: () => {
+        router.goBack()
+      },
+      onSubmit: async (doc: Bill.Doc) => {
+        await pushChanges({docs: [doc]})
+        router.replace(Bill.to.all())
+      }
+    })
+  )
 )
 
 export const BillCreate = enhance((props) => {

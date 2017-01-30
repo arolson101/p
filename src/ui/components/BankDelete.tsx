@@ -1,12 +1,12 @@
-import autobind = require('autobind-decorator')
 import * as React from 'react'
 import { Grid, Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose } from 'redux'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import { deleteBank } from '../../actions'
 import { DbInfo, Bank } from '../../docs'
-import { AppState, CurrentDb } from '../../state'
+import { AppState, mapDispatchToProps } from '../../state'
+import { withState2 } from '../enhancers'
 import { Breadcrumbs } from './Breadcrumbs'
 import { forms } from './forms'
 import { RouteProps } from './props'
@@ -28,7 +28,6 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  current: CurrentDb
   bank: Bank.View
 }
 
@@ -36,81 +35,91 @@ interface DispatchProps {
   deleteBank: deleteBank.Fcn
 }
 
-type AllProps = ConnectedProps & DispatchProps & RouteProps<Bank.Params>
-
 interface State {
   error?: string
-  deleting?: boolean
+  setError: (error?: string) => void
+
+  deleting: boolean
+  setDeleting: (deleting: boolean) => void
 }
 
-interface Deletion {
-  _id: string
-  _rev?: string
-  _deleted: true
+interface EnhancedProps {
+  confirmDelete: () => void
 }
 
-export class BankDeleteComponent extends React.Component<AllProps, State> {
-  state: State = {
-    error: undefined,
-    deleting: false
-  }
+type AllProps = EnhancedProps & State & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
 
-  render() {
-    const { router, bank } = this.props
-    const { error, deleting } = this.state
-    return (
-      <div>
-        {bank &&
-          <Grid>
-            <Breadcrumbs {...this.props} page={messages.page}/>
-            <div>
-              <p><FormattedMessage {...messages.text} values={{name: bank.doc.name}}/></p>
-              {error &&
-                <Alert bsStyle='danger'>
-                  {error}
-                </Alert>
-              }
-              <ButtonToolbar className='pull-right'>
-                <Button
-                  type='button'
-                  onClick={() => router.goBack()}
-                  disabled={deleting}
-                >
-                  <FormattedMessage {...forms.cancel}/>
-                </Button>
-                <Button
-                  bsStyle='danger'
-                  onClick={this.inDelete}
-                  disabled={deleting}
-                >
-                  <FormattedMessage {...messages.confirm}/>
-                </Button>
-              </ButtonToolbar>
-            </div>
-          </Grid>
-        }
-      </div>
-    )
-  }
-
-  @autobind
-  async inDelete() {
-    const { bank, deleteBank, router } = this.props
-    try {
-      this.setState({deleting: true, error: undefined})
-      await deleteBank({bank})
-      router.replace(DbInfo.to.home())
-    } catch (err) {
-      this.setState({deleting: false, error: err.message})
-    }
-  }
-}
-
-export const BankDelete = compose(
-  connect(
-    (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => ({
-      current: state.db.current!,
+const enhance = compose<AllProps, RouteProps<Bank.Params>>(
+  setDisplayName('BankDelete'),
+  onlyUpdateForPropTypes,
+  setPropTypes({}),
+  connect<ConnectedProps, DispatchProps, RouteProps<Bank.Params>>(
+    (state: AppState, props) => ({
       bank: selectBank(state, props)
+    }),
+    mapDispatchToProps<DispatchProps>({ deleteBank })
+  ),
+  withState2<State, ConnectedProps & DispatchProps & RouteProps<Bank.Params>>(
+    {
+      error: undefined,
+      deleting: false
+    },
+    {
+      setError: 'error',
+      setDeleting: 'deleting'
+    }
+  ),
+  withProps<EnhancedProps, State & ConnectedProps & DispatchProps & RouteProps<Bank.Params>>(
+    ({setDeleting, setError, bank, deleteBank, router}) => ({
+      confirmDelete: async () => {
+        try {
+          setError(undefined)
+          setDeleting(true)
+          await deleteBank({bank})
+          setDeleting(false)
+          router.replace(DbInfo.to.home())
+        } catch (err) {
+          setDeleting(false)
+          setError(err.message)
+        }
+      }
     })
   )
-)(BankDeleteComponent) as React.ComponentClass<{}>
+)
+
+export const BankDelete = enhance(props => {
+  const { router, bank, error, deleting, confirmDelete } = props
+  return (
+    <div>
+      {bank &&
+        <Grid>
+          <Breadcrumbs page={messages.page}/>
+          <div>
+            <p><FormattedMessage {...messages.text} values={{name: bank.doc.name}}/></p>
+            {error &&
+              <Alert bsStyle='danger'>
+                {error}
+              </Alert>
+            }
+            <ButtonToolbar className='pull-right'>
+              <Button
+                type='button'
+                onClick={() => router.goBack()}
+                disabled={deleting}
+              >
+                <FormattedMessage {...forms.cancel}/>
+              </Button>
+              <Button
+                bsStyle='danger'
+                onClick={confirmDelete}
+                disabled={deleting}
+              >
+                <FormattedMessage {...messages.confirm}/>
+              </Button>
+            </ButtonToolbar>
+          </div>
+        </Grid>
+      }
+    </div>
+  )
+})
