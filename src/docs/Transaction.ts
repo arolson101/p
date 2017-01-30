@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto'
 import * as docURI from 'docuri'
 import { Lookup } from '../util'
-import { Bank, Account, Statement } from './'
+import { Bank, Account } from './'
 
 export interface Split {
   [categoryId: string]: number
@@ -14,14 +14,14 @@ export interface Transaction {
   name: string
   memo: string
   amount: number
-  statement?: Statement.DocId
   split: Split
 }
 
 export namespace Transaction {
+  export type Id = ':txId' | ''
   export type DocId = 'transaction/:bankId/:accountId/:txId'
   export type Doc = PouchDB.Core.Document<Transaction> & { _id: DocId; _rev?: string }
-  export interface Params { bankId: Bank.Id, accountId: Account.Id, txId: string }
+  export interface Params { bankId: Bank.Id, accountId: Account.Id, txId: Id }
   export const docId = docURI.route<Params, DocId>('transaction/:bankId/:accountId/:txId')
   export const startkeyForAccount = (account: Account.Doc, time?: Date) =>
     docId({ ...accountParts(account), txId: time ? timeKey(time) : ''})
@@ -71,12 +71,12 @@ export namespace Transaction {
     return !!docId(doc._id as DocId)
   }
 
-  const timeKey = (time: Date): string => {
-    return time.valueOf().toString()
+  const timeKey = (time: Date): Id => {
+    return time.valueOf().toString() as Id
   }
 
   export const doc = (account: Account.Doc, transaction: Transaction): Doc => {
-    const txId = transaction.time.toString() + randomBytes(4).toString('hex')
+    const txId = transaction.time.toString() + randomBytes(4).toString('hex') as Id
     const _id = docId({ ...accountParts(account), txId })
     return { _id, ...transaction }
   }

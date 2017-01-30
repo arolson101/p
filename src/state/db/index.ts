@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as R from 'ramda'
 import { ThunkAction, Dispatch } from 'redux'
-import { docChangeActionTesters, Bank, Account, Category, Bill, Statement, Transaction, DocCache } from '../../docs'
+import { docChangeActionTesters, Bank, Account, Category, Bill, Transaction, DocCache } from '../../docs'
 import { Lookup } from '../../util'
 import { AppThunk } from '../'
 import { DbInfo } from './DbInfo'
@@ -23,7 +23,6 @@ export interface CurrentDb {
     accounts: Account.Cache
     categories: Category.Cache
     bills: Bill.Cache
-    statements: Statement.Cache
   }
   view: {
     banks: Bank.View[]
@@ -110,7 +109,6 @@ const loadDb = (info: DbInfo, password?: string): Thunk =>
       transactions: Transaction.createCache(),
       categories: Category.createCache(),
       bills: Bill.createCache(),
-      statements: Statement.createCache(),
     }
 
     const mapper = R.cond([
@@ -119,7 +117,6 @@ const loadDb = (info: DbInfo, password?: string): Thunk =>
       [Account.isDoc, (doc: Account.Doc) => cache.accounts.set(doc._id, doc)],
       [Category.isDoc, (doc: Category.Doc) => cache.categories.set(doc._id, doc)],
       [Bill.isDoc, (doc: Bill.Doc) => cache.bills.set(doc._id, doc)],
-      [Statement.isDoc, (doc: Statement.Doc) => cache.statements.set(doc._id, doc)],
     ]) as (doc: AnyDocument) => void
 
     R.forEach(mapper, docs)
@@ -158,7 +155,6 @@ type Actions =
   Account.CacheSetAction |
   Category.CacheSetAction |
   Bill.CacheSetAction |
-  Statement.CacheSetAction |
   { type: '' }
 
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
@@ -183,9 +179,6 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
 
     case Bill.CACHE_SET:
       return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, bills: action.cache } } }
-
-    case Statement.CACHE_SET:
-      return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, statements: action.cache } } }
 
     default:
       return state

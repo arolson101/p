@@ -6,7 +6,7 @@ import { compose, setDisplayName } from 'recompose'
 import { DbInfo, Bank, Account, Transaction } from '../../docs'
 import { AppState } from '../../state'
 import { RouteProps } from './props'
-import { selectBank, selectAccount } from './selectors'
+import { selectBank, selectAccount, selectTransaction } from './selectors'
 
 const messages = defineMessages({
   home: {
@@ -20,23 +20,24 @@ const messages = defineMessages({
 })
 
 interface Props {
-  transaction?: Transaction.Doc
   page?: FormattedMessage.MessageDescriptor
 }
 
 interface ConnectedProps {
   bank?: Bank.View
   account?: Account.View
+  transaction?: Transaction.View
 }
 
-type AllProps = Props & RouteProps<Account.Params> & ConnectedProps
+type AllProps = Props & RouteProps<Transaction.Params> & ConnectedProps
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('Breadcrumbs'),
   connect(
     (state: AppState, props: AllProps): ConnectedProps => ({
-      bank: props.params.bankId && selectBank(state, props),
-      account: props.params.accountId && selectAccount(state, props)
+      bank: props.params.bankId ? selectBank(state, props) : undefined,
+      account: props.params.accountId ? selectAccount(state, props) : undefined,
+      transaction: props.params.txId ? selectTransaction(state, props) : undefined
   })),
   injectIntl
 )
@@ -78,9 +79,9 @@ export const Breadcrumbs = enhance((props) => {
       {transaction &&
         <Breadcrumb.Item
           active={!page}
-          href={router.createHref(Transaction.to.view(transaction))}
+          href={router.createHref(Transaction.to.view(transaction.doc))}
         >
-          {transaction.name}
+          {transaction.doc.name}
         </Breadcrumb.Item>
       }
       {page &&

@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 import { AppState } from '../../state'
-import { Bank, Account } from '../../docs'
+import { Bank, Account, Transaction } from '../../docs'
 import { RouteProps } from './props'
 
 export const selectCurrentDb = (state: AppState) => {
@@ -29,6 +29,15 @@ export const selectAccount = (state: AppState, props: RouteProps<Account.Params>
     throw new Error('account not found!')
   }
   return account
+}
+
+export const selectTransaction = (state: AppState, props: RouteProps<Transaction.Params>) => {
+  const account = selectAccount(state, props)
+  const transaction = account.transactions.find(tx => tx.doc._id === props.params.txId)
+  if (!transaction) {
+    throw new Error('transaction not found!')
+  }
+  return transaction
 }
 
 export const selectTransactions = (state: AppState, props: RouteProps<Account.Params>) => {

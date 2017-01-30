@@ -2,7 +2,6 @@ export * from './Account'
 export * from './Bank'
 export * from './Bill'
 export * from './Category'
-export * from './Statement'
 export * from './Transaction'
 
 export { DbInfo } from '../state/db/DbInfo'
@@ -11,7 +10,6 @@ import { Account } from './Account'
 import { Bank } from './Bank'
 import { Bill } from './Bill'
 import { Category } from './Category'
-import { Statement } from './Statement'
 import { Transaction } from './Transaction'
 
 export interface DocChangeAction {
@@ -24,7 +22,6 @@ export const docChangeActionTesters = new Map([
   // [Bank.isDocId, Bank.cacheUpdateAction],
   // [Bill.isDocId, Bill.cacheUpdateAction],
   // [Category.isDocId, Category.cacheUpdateAction],
-  // [Statement.isDocId, Statement.cacheUpdateAction]
 ])
 
 export interface TCacheSetAction<T, Cache> {
@@ -38,5 +35,4 @@ export interface DocCache {
   transactions: Transaction.Cache
   categories: Category.Cache
   bills: Bill.Cache
-  statements: Statement.Cache
 }

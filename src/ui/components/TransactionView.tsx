@@ -7,30 +7,27 @@ import { Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps, DispatchProps } from './props'
-import { selectBank, selectAccount } from './selectors'
+import { selectBank, selectAccount, selectTransaction } from './selectors'
 import { TransactionDetail } from './TransactionDetail'
 
 interface ConnectedProps {
   bank: Bank.View
   account: Account.View
   current: CurrentDb
+  transaction: Transaction.View
 }
 
 type AllProps = RouteProps<Transaction.Params> & ConnectedProps & DispatchProps
 
-interface State {
-  transaction: Transaction.Doc
-}
-
-export class TransactionViewComponent extends React.Component<AllProps, State> {
+export class TransactionViewComponent extends React.Component<AllProps, any> {
   render() {
-    const { transaction } = this.state
+    const { transaction } = this.props
     return (
       <div>
         <Grid>
-          <Breadcrumbs {...this.props} {...this.state}/>
+          <Breadcrumbs/>
           <PageHeader>
-            {transaction.name}
+            {transaction.doc.name}
           </PageHeader>
           <TransactionDetail {...this.props} item={transaction}/>
         </Grid>
@@ -45,6 +42,7 @@ export const TransactionView = compose(
     (state: AppState, props: RouteProps<Transaction.Params>): ConnectedProps => ({
       bank: selectBank(state, props),
       account: selectAccount(state, props),
+      transaction: selectTransaction(state, props),
       current: state.db.current!
     })
   )

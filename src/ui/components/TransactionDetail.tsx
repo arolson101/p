@@ -4,7 +4,7 @@ import 'react-virtualized/styles.css'
 import { Transaction } from '../../docs'
 
 interface ConnectedProps {
-  item: Transaction.Doc
+  item: Transaction.View
 }
 
 type AllProps = ConnectedProps
@@ -14,11 +14,11 @@ export class TransactionDetail extends React.Component<AllProps, any> {
     const { item } = this.props
     return (
       <div>
-        serverid: {item.serverid}<br/>
-        name: {item.name}<br/>
-        memo: {item.memo}<br/>
-        amount: {item.amount}<br/>
-        <div><Link to={Transaction.to.edit(item)}>edit</Link></div>
+        serverid: {item.doc.serverid}<br/>
+        name: {item.doc.name}<br/>
+        memo: {item.doc.memo}<br/>
+        amount: {item.doc.amount}<br/>
+        <div><Link to={Transaction.to.edit(item.doc)}>edit</Link></div>
       </div>
     )
   }

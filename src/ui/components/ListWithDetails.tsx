@@ -133,10 +133,19 @@ export const getRowData = ({rowData}: Column.CellDataGetterArgs<any>) => {
   return rowData
 }
 
+export const getRowDoc = ({rowData}: Column.CellDataGetterArgs<any>) => {
+  return rowData.doc
+}
+
 export const dateCellRenderer = ({cellData}: Column.CellRendererArgs<Date>) => (
   cellData && <FormattedDate value={cellData} />
 )
 
 export const currencyCellRenderer = ({cellData}: Column.CellRendererArgs<number>) => (
-  cellData && <FormattedNumber value={cellData} style='currency' currency='USD' currencyDisplay='symbol' />
+  cellData && <FormattedNumber
+    value={cellData}
+    style='currency'
+    currency='USD'
+    currencyDisplay='symbol'
+  />
 )

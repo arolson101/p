@@ -1,7 +1,7 @@
 import * as ofx4js from 'ofx4js'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { AppThunk, CurrentDb } from '../state'
-import { Bank, Account, Transaction, Statement } from '../docs'
+import { Bank, Account, Transaction } from '../docs'
 import { createConnection, getFinancialAccount } from './online'
 
 type FormatMessage = (messageDescriptor: FormattedMessage.MessageDescriptor, values?: Object) => string
@@ -28,7 +28,6 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
       if (transactionList) {
         const { db: { current } } = getState()
         if (!current) { throw new Error('no db') }
-        const statements = new Map(current.cache.statements)
         const existingTransactions = await getExistingTransactions(current, account, start, end)
         const newTransactions = transactionList.getTransactions() || []
         const changes: ChangeSet = new Set()
@@ -37,12 +36,6 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
           if (time < start || time >= end) {
             // not sure why bank would give us transactions outside of our date range, but it happens!
             continue
-          }
-          let statement = Statement.get(statements, account, time)
-          if (!statement) {
-            statement = Statement.create(account, time)
-            statements.set(statement._id, statement)
-            changes.add(statement)
           }
           let transaction = findMatchingTransaction(existingTransactions, newTransaction)
           if (!transaction) {
@@ -55,13 +48,9 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
               amount: newTransaction.getAmount(),
               split: {}
             })
-            Statement.addTransaction(statement, transaction, changes)
-          } else {
-            Statement.addTransaction(statement, transaction, changes)
           }
         }
-        const balance = bankStatement.getLedgerBalance()
-        Statement.updateBalances(statements, account, balance.getAmount(), balance.getAsOfDate(), changes)
+        // const balance = bankStatement.getLedgerBalance()
         await current.db.bulkDocs(Array.from(changes))
         return formatMessage(messages.success, {count: changes.length})
       } else {
