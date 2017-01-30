@@ -42,7 +42,7 @@ const main = (element: Element) => {
     })
   }
 
-  store.dispatch(AppInit())
+  store.dispatch(AppInit(undefined))
   .then(() => {
     render(
       (

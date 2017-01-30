@@ -7,9 +7,9 @@ import { Link } from 'react-router'
 import { compose } from 'redux'
 import { getAccounts } from '../../actions'
 import { Bank, Account } from '../../docs'
-import { AppState } from '../../state'
+import { AppState, mapDispatchToProps } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
-import { RouteProps, IntlProps, DispatchProps } from './props'
+import { RouteProps, IntlProps } from './props'
 import { selectBank, selectBankAccounts } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
 
@@ -63,6 +63,10 @@ const messages = defineMessages({
 interface ConnectedProps {
   bank: Bank.View
   accounts: Account.View[]
+}
+
+interface DispatchProps {
+  getAccounts: getAccounts.Fcn
 }
 
 type AllProps = RouteProps<Bank.Params> & ConnectedProps & IntlProps & DispatchProps
@@ -201,10 +205,10 @@ export class BankViewComponent extends React.Component<AllProps, State> {
 
   @autobind
   async getAccountList() {
-    const { dispatch, bank, intl: { formatMessage } } = this.props
+    const { getAccounts, bank, intl: { formatMessage } } = this.props
     this.setState({ showModal: true, working: true, message: undefined, error: undefined })
     try {
-      const message = await dispatch(getAccounts(bank, formatMessage))
+      const message = await getAccounts({bank, formatMessage})
       this.setState({ working: false, message })
     } catch (ex) {
       this.setState({ working: false, error: ex.message })
@@ -233,9 +237,10 @@ const Nl2br = (props: {text: string}) => {
 export const BankView = compose(
   injectIntl,
   connect(
-    (state: AppState, props: RouteProps<Bank.Params>): ConnectedProps => ({
+    (state: AppState, props: RouteProps<Bank.Params>) => ({
       bank: selectBank(state, props),
       accounts: selectBankAccounts(state, props)
-    })
+    }),
+    mapDispatchToProps<DispatchProps>({ getAccounts })
   )
 )(BankViewComponent) as React.ComponentClass<{}>

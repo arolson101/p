@@ -48,12 +48,12 @@ const messages = defineMessages({
   }
 })
 
-export const createConnection = (bank: Bank.Doc, formatMessage: FormatMessage): FinancialInstitutionImpl => {
+export const createConnection = (bank: Bank.View, formatMessage: FormatMessage): FinancialInstitutionImpl => {
   let DefaultApplicationContext = ofx4js.client.context.DefaultApplicationContext
   let OFXApplicationContextHolder = ofx4js.client.context.OFXApplicationContextHolder
   OFXApplicationContextHolder.setCurrentContext(new DefaultApplicationContext('QWIN', '2300'))
 
-  const { fid, org, ofx, name } = bank
+  const { fid, org, ofx, name } = bank.doc
   if (!fid) { throw new Error(formatMessage(messages.nofid)) }
   if (!org) { throw new Error(formatMessage(messages.noorg)) }
   if (!ofx) { throw new Error(formatMessage(messages.noofx)) }
@@ -79,8 +79,8 @@ interface Login {
   password: string
 }
 
-export const checkLogin = (bank: Bank.Doc, formatMessage: FormatMessage): Login => {
-  const { login } = bank
+export const checkLogin = (bank: Bank.View, formatMessage: FormatMessage): Login => {
+  const { login } = bank.doc
   if (!login) { throw new Error(formatMessage(messages.nologin)) }
   const { username, password } = login
   if (!username) { throw new Error(formatMessage(messages.nousername)) }
@@ -106,22 +106,22 @@ export const fromAccountType = (str: Account.Type): ofx4js.domain.data.banking.A
 }
 
 // tslint:disable-next-line:max-line-length
-export const getFinancialAccount = (service: FinancialInstitutionImpl, bank: Bank.Doc, account: Account.Doc, formatMessage: FormatMessage): FinancialInstitutionAccount => {
+export const getFinancialAccount = (service: FinancialInstitutionImpl, bank: Bank.View, account: Account.View, formatMessage: FormatMessage): FinancialInstitutionAccount => {
   const { username, password } = checkLogin(bank, formatMessage)
-  const accountNumber = account.number
+  const accountNumber = account.doc.number
   if (!accountNumber) { throw new Error(formatMessage(messages.noAccountNumber)) }
 
-  switch (account.type) {
+  switch (account.doc.type) {
     case Account.Type.CHECKING:
     case Account.Type.SAVINGS:
     case Account.Type.CREDITLINE:
     {
-      const { bankid } = account
+      const { bankid } = account.doc
       if (!bankid) { throw new Error(formatMessage(messages.nobankid)) }
       const accountDetails = new ofx4js.domain.data.banking.BankAccountDetails()
       accountDetails.setAccountNumber(accountNumber)
       accountDetails.setRoutingNumber(bankid)
-      accountDetails.setAccountType(fromAccountType(account.type))
+      accountDetails.setAccountType(fromAccountType(account.doc.type))
       return service.loadBankAccount(accountDetails, username, password)
     }
 
@@ -129,7 +129,7 @@ export const getFinancialAccount = (service: FinancialInstitutionImpl, bank: Ban
     {
       const accountDetails = new ofx4js.domain.data.creditcard.CreditCardAccountDetails()
       accountDetails.setAccountNumber(accountNumber)
-      accountDetails.setAccountKey(account.key)
+      accountDetails.setAccountKey(account.doc.key)
       return service.loadCreditCardAccount(accountDetails, username, password)
     }
 

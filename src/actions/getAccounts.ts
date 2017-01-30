@@ -1,5 +1,5 @@
 import { defineMessages, FormattedMessage } from 'react-intl'
-import { AppThunk } from '../state'
+import { AppThunk, ThunkFcn } from '../state'
 import { Bank, Account } from '../docs'
 import { createConnection, checkLogin, toAccountType } from './online'
 
@@ -32,12 +32,14 @@ const messages = defineMessages({
   }
 })
 
-export const getAccounts = (bank: Bank.View, formatMessage: FormatMessage): AppThunk =>
+type GetAccountsArgs = { bank: Bank.View, formatMessage: FormatMessage }
+export namespace getAccounts { export type Fcn = ThunkFcn<GetAccountsArgs, string> }
+export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMessage}) =>
   async (dispatch, getState) => {
     const res = []
     try {
-      let service = createConnection(bank.doc, formatMessage)
-      let { username, password } = checkLogin(bank.doc, formatMessage)
+      let service = createConnection(bank, formatMessage)
+      let { username, password } = checkLogin(bank, formatMessage)
       let accountProfiles = await service.readAccountProfiles(username, password)
 
       res.push(formatMessage(messages.success))

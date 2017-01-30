@@ -6,7 +6,7 @@ import { compose } from 'redux'
 import { Bank, Account, Transaction } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
-import { RouteProps, DispatchProps } from './props'
+import { RouteProps } from './props'
 import { selectBank, selectAccount, selectTransaction } from './selectors'
 import { TransactionDetail } from './TransactionDetail'
 
@@ -17,7 +17,7 @@ interface ConnectedProps {
   transaction: Transaction.View
 }
 
-type AllProps = RouteProps<Transaction.Params> & ConnectedProps & DispatchProps
+type AllProps = RouteProps<Transaction.Params> & ConnectedProps
 
 export class TransactionViewComponent extends React.Component<AllProps, any> {
   render() {

@@ -1,4 +1,4 @@
-import { AppThunk, CurrentDb } from '../state'
+import { AppThunk, ThunkFcn, CurrentDb } from '../state'
 import { Bank, Account, Transaction } from '../docs'
 
 interface Deletion {
@@ -7,72 +7,80 @@ interface Deletion {
   _deleted: true
 }
 
-export const deleteBank = (bank: Bank.Doc): AppThunk =>
+type DeleteBankArgs = { bank: Bank.View }
+export namespace deleteBank { export type Fcn = ThunkFcn<DeleteBankArgs, string> }
+export const deleteBank: AppThunk<DeleteBankArgs, void> = ({bank}) =>
   async (dispatch, getState) => {
     const { current } = getState().db
     if (!current) { throw new Error('no db') }
     let deletions: Deletion[] = []
-    for (let accountid of bank.accounts) {
-      const account = current.cache.accounts.get(accountid)
-      if (account) {
+    for (let account of bank.accounts) {
+      deletions.push({
+        _id: account.doc._id,
+        _rev: account.doc._rev,
+        _deleted: true
+      })
+      for (let transaction of account.transactions) {
         deletions.push({
-          _id: account._id,
-          _rev: account._rev,
+          _id: transaction.doc._id,
+          _rev: transaction.doc._rev,
           _deleted: true
         })
-        const transactions = await getTransactions(current, account)
-        deletions.push(...transactions)
       }
     }
     deletions.push({
-      _id: bank._id,
-      _rev: bank._rev,
+      _id: bank.doc._id,
+      _rev: bank.doc._rev,
       _deleted: true
     })
     await current.db.bulkDocs(deletions)
   }
 
-export const deleteAccount = (bank: Bank.Doc, account: Account.Doc): AppThunk =>
+type DeleteAccountArgs = { bank: Bank.View, account: Account.View }
+export namespace deleteAccount { export type Fcn = ThunkFcn<DeleteAccountArgs, string> }
+export const deleteAccount: AppThunk<DeleteAccountArgs, void> = ({bank, account}) =>
   async (dispatch, getState) => {
     const { current } = getState().db
     if (!current) { throw new Error('no db') }
 
-    const idx = bank.accounts.indexOf(account._id)
+    const idx = bank.accounts.indexOf(account)
     if (idx !== -1) {
       bank.accounts.splice(idx, 1)
     }
 
     let deletions: Deletion[] = []
     deletions.push({
-      _id: account._id,
-      _rev: account._rev,
+      _id: account.doc._id,
+      _rev: account.doc._rev,
       _deleted: true
     })
 
-    const transactions = await getTransactions(current, account)
-    deletions.push(...transactions)
+    for (let transaction of account.transactions) {
+      deletions.push({
+        _id: transaction.doc._id,
+        _rev: transaction.doc._rev,
+        _deleted: true
+      })
+    }
 
     await current.db.bulkDocs([bank, ...deletions])
   }
 
-const getTransactions = async (current: CurrentDb, account: Account.Doc): Promise<Deletion[]> => {
-  const results = await current.db.allDocs({
-    startkey: Transaction.startkeyForAccount(account),
-    endkey: Transaction.endkeyForAccount(account),
-    include_docs: false
-  })
-  return results.rows.map(row => ({_id: row.id, _rev: row.value.rev, _deleted: true } as Deletion))
-}
-
-export const deleteTransactions = (account: Account.Doc): AppThunk =>
+type DeleteAllTransactionsArgs = { account: Account.View }
+export namespace deleteAllTransactions { export type Fcn = ThunkFcn<DeleteAllTransactionsArgs, void> }
+export const deleteAllTransactions: AppThunk<DeleteAllTransactionsArgs, void> = ({account}) =>
   async (dispatch, getState) => {
     const { current } = getState().db
     if (!current) { throw new Error('no db') }
 
-    let deletions: Deletion[] = await getTransactions(current, account)
-
-    const transactions = await getTransactions(current, account)
-    deletions.push(...transactions)
+    let deletions: Deletion[] = []
+    for (let transaction of account.transactions) {
+      deletions.push({
+        _id: transaction.doc._id,
+        _rev: transaction.doc._rev,
+        _deleted: true
+      })
+    }
 
     await current.db.bulkDocs(deletions)
   }

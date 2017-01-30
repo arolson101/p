@@ -1,6 +1,6 @@
 import * as ofx4js from 'ofx4js'
 import { defineMessages, FormattedMessage } from 'react-intl'
-import { AppThunk, CurrentDb } from '../state'
+import { AppThunk, ThunkFcn, CurrentDb } from '../state'
 import { Bank, Account, Transaction } from '../docs'
 import { createConnection, getFinancialAccount } from './online'
 
@@ -17,7 +17,9 @@ const messages = defineMessages({
   }
 })
 
-export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Date, end: Date, formatMessage: FormatMessage): AppThunk =>
+type GetTransactionsArgs = { bank: Bank.View, account: Account.View, start: Date, end: Date, formatMessage: FormatMessage }
+export namespace getTransactions { export type Fcn = ThunkFcn<GetTransactionsArgs, string> }
+export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, account, start, end, formatMessage}) =>
   async (dispatch, getState): Promise<string> => {
     const res = []
     try {
@@ -39,7 +41,7 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
           }
           let transaction = findMatchingTransaction(existingTransactions, newTransaction)
           if (!transaction) {
-            transaction = Transaction.doc(account, {
+            transaction = Transaction.doc(account.doc, {
               serverid: newTransaction.getId(),
               time: time.valueOf(),
               type: ofx4js.domain.data.common.TransactionType[newTransaction.getTransactionType()],
@@ -61,9 +63,9 @@ export const getTransactions = (bank: Bank.Doc, account: Account.Doc, start: Dat
     }
   }
 
-const getExistingTransactions = async (current: CurrentDb, account: Account.Doc, start: Date, end: Date): Promise<Transaction.Doc[]> => {
-  const startkey = Transaction.startkeyForAccount(account, start)
-  const endkey = Transaction.endkeyForAccount(account, end)
+const getExistingTransactions = async (current: CurrentDb, account: Account.View, start: Date, end: Date): Promise<Transaction.Doc[]> => {
+  const startkey = Transaction.startkeyForAccount(account.doc, start)
+  const endkey = Transaction.endkeyForAccount(account.doc, end)
   const existingTransactions = await current.db.allDocs({ startkey, endkey, include_docs: true })
   return existingTransactions.rows.map(row => row.doc)
 }

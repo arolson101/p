@@ -1,7 +1,6 @@
 import * as RI from 'react-intl'
 import * as RR from 'react-router'
 import { Location, History } from 'history'
-import { AppDispatch } from '../../state'
 
 export type FormatMessageFcn = (messageDescriptor: RI.FormattedMessage.MessageDescriptor, values?: Object) => string
 
@@ -44,7 +43,3 @@ interface RouteComponentProps<P, R> {
 }
 
 export type RouteProps<Params> = RouteComponentProps<Params, any>
-
-export interface DispatchProps {
-  dispatch: AppDispatch
-}

@@ -1,6 +1,6 @@
 import * as History from 'history'
 import { routerMiddleware } from 'react-router-redux'
-import { createStore, applyMiddleware, combineReducers, Dispatch, ThunkAction } from 'redux'
+import { createStore, applyMiddleware, combineReducers, bindActionCreators, Dispatch, ThunkAction } from 'redux'
 import { responsiveStoreEnhancer } from 'redux-responsive'
 import ReduxThunk from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension'
@@ -40,16 +40,19 @@ export const AppState = combineReducers<AppState>({
   ...UiSlice
 })
 
-export type AppDispatch = Dispatch<AppState>
-export type AppThunk = ThunkAction<any, AppState, any>
+export type AppThunk<Args, Ret> = (args: Args) => ThunkAction<Promise<Ret>, AppState, any>
+export type ThunkFcn<Args, Ret> = (args: Args) => Promise<Ret>
 
-export const AppInit = (): AppThunk => async (dispatch) => {
-  type Initializer = () => AppThunk
+export const mapDispatchToProps = <T>(actions: { [key in keyof T]: Function }) =>
+  (dispatch: Dispatch<AppState>) => bindActionCreators(actions as any, dispatch) as T
+
+export const AppInit: AppThunk<void, void> = () => async (dispatch) => {
+  type Initializer = AppThunk<void, void>
   const initializers: Initializer[] = [
     DbInit,
     FiInit
   ]
-  await Promise.all(initializers.map(init => dispatch(init())))
+  await Promise.all(initializers.map(init => dispatch(init(undefined))))
 }
 
 export const createAppStore = (history: History.History) => {

@@ -78,7 +78,7 @@ export const Login = enhance(({ files, router, activeId, setActiveId, deselect, 
               <h4><i {...icons.openDb}/> {file.name}</h4>
               {active &&
                 <LoginForm
-                  dbDoc={file}
+                  info={file}
                   onCancel={deselect}
                   onLogin={onLogin}
                 />

@@ -9,7 +9,7 @@ import { DbInfo, Bank } from '../../docs'
 import { AppState, CurrentDb } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { forms } from './forms'
-import { RouteProps, DispatchProps } from './props'
+import { RouteProps } from './props'
 import { selectBank } from './selectors'
 
 const messages = defineMessages({
@@ -30,6 +30,10 @@ const messages = defineMessages({
 interface ConnectedProps {
   current: CurrentDb
   bank: Bank.View
+}
+
+interface DispatchProps {
+  deleteBank: deleteBank.Fcn
 }
 
 type AllProps = ConnectedProps & DispatchProps & RouteProps<Bank.Params>
@@ -91,10 +95,10 @@ export class BankDeleteComponent extends React.Component<AllProps, State> {
 
   @autobind
   async inDelete() {
-    const { bank, dispatch, router } = this.props
+    const { bank, deleteBank, router } = this.props
     try {
       this.setState({deleting: true, error: undefined})
-      await dispatch(deleteBank(bank.doc))
+      await deleteBank({bank})
       router.replace(DbInfo.to.home())
     } catch (err) {
       this.setState({deleting: false, error: err.message})

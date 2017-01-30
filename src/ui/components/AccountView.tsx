@@ -1,17 +1,17 @@
 import * as R from 'ramda'
 import * as React from 'react'
 import { Grid, PageHeader } from 'react-bootstrap'
-import { defineMessages } from 'react-intl'
+import { defineMessages, injectIntl } from 'react-intl'
 import { connect } from 'react-redux'
 import { AutoSizer, Column } from 'react-virtualized'
 import { compose, setDisplayName, withHandlers } from 'recompose'
-import { getTransactions, deleteTransactions } from '../../actions'
+import { getTransactions, deleteAllTransactions } from '../../actions'
 import { Bank, Account, Transaction } from '../../docs'
-import { AppState, CurrentDb } from '../../state'
+import { AppState, CurrentDb, mapDispatchToProps } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { Container, Item } from './flex'
 import { ListWithDetails, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
-import { RouteProps, DispatchProps } from './props'
+import { RouteProps, IntlProps } from './props'
 import { selectBank, selectAccount, selectTransactions } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
 import { TransactionDetail } from './TransactionDetail'
@@ -42,7 +42,12 @@ interface ConnectedProps {
   items: Transaction.View[]
 }
 
-type AllProps = ConnectedProps & EnhancedProps & DispatchProps
+interface DispatchProps {
+  getTransactions: getTransactions.Fcn
+  deleteAllTransactions: deleteAllTransactions.Fcn
+}
+
+type AllProps = IntlProps & ConnectedProps & HandlerProps & DispatchProps
 
 interface PageState {
   scroll: number
@@ -55,7 +60,7 @@ interface Values {
   amount: string
 }
 
-interface EnhancedProps {
+interface HandlerProps {
   addTransactions(): void
   downloadTransactions(): void
   deleteTransactions(): void
@@ -63,16 +68,18 @@ interface EnhancedProps {
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('AccountViewComponent'),
-  connect(
-    (state: AppState, props: RouteProps<Account.Params>): ConnectedProps => ({
-      bank: selectBank(state, props),
-      account: selectAccount(state, props),
+  injectIntl,
+  connect<ConnectedProps, DispatchProps, IntlProps & RouteProps<Account.Params>>(
+    (state: AppState, props) => ({
+      bank: selectBank(state, props!),
+      account: selectAccount(state, props!),
       current: state.db.current!,
-      items: selectTransactions(state, props)
-    })
+      items: selectTransactions(state, props!)
+    }),
+    mapDispatchToProps<DispatchProps>({ getTransactions, deleteAllTransactions })
   ),
-  withHandlers<AllProps,AllProps>({
-    addTransactions: (props) => async() => {
+  withHandlers<HandlerProps, ConnectedProps & DispatchProps & IntlProps & RouteProps<Account.Params>>({
+    addTransactions: (props) => () => {
       const { current, account } = props
       const changes: ChangeSet = new Set()
       let balance = 0
@@ -93,14 +100,16 @@ const enhance = compose<AllProps, {}>(
       current.db.bulkDocs(Array.from(changes))
     },
 
-    downloadTransactions: (props: AllProps) => async () => {
-      const { dispatch, bank, account } = props
-      await dispatch(getTransactions(bank.doc, account.doc, new Date(2016, 11, 1), new Date(2016, 11, 31), (str) => str.defaultMessage!))
+    downloadTransactions: (props) => async () => {
+      const { getTransactions, bank, account, intl: { formatMessage } } = props
+      const start = new Date(2016, 11, 1)
+      const end = new Date(2016, 11, 31)
+      await getTransactions({bank, account, start, end, formatMessage})
     },
 
-    deleteTransactions: (props: AllProps) => async() => {
-      const { dispatch, account } = props
-      await dispatch(deleteTransactions(account.doc))
+    deleteTransactions: (props) => async () => {
+      const { deleteAllTransactions, account } = props
+      await deleteAllTransactions({account})
     }
   })
 )

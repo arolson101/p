@@ -37,11 +37,12 @@ export interface DbState {
 
 const initialState: DbState = {
   current: undefined,
-  files: undefined as any
+  files: []
 }
 
 type State = DbSlice
-type Thunk = ThunkAction<any, State, any>
+type DbThunk<Args, Ret> = (args: Args) => ThunkAction<Promise<Ret>, State, any>
+type DbFcn<Args, Ret> = (args: Args) => Promise<Ret>
 
 type DB_SET_CURRENT = 'db/setCurrent'
 const DB_SET_CURRENT = 'db/setCurrent'
@@ -69,17 +70,34 @@ const dbSetFiles = (files: DbInfo[]): DbSetFilesAction => ({
   files
 })
 
-const createDb = (name: string, password: string, lang: string): Thunk =>
+type CreateDbArgs = { name: string, password: string }
+export namespace createDb { export type Fcn = DbFcn<CreateDbArgs, DbInfo> }
+export const createDb: DbThunk<CreateDbArgs, DbInfo> = ({name, password}) =>
   async (dispatch, getState) => {
     const location = path.join(userData, encodeURIComponent(name.trim()) + '.db')
     const info: DbInfo = { name, location }
-    await dispatch(loadDb(info, password))
-    dispatch(DbInit())
+    await dispatch(loadDb({info, password}))
+    dispatch(DbInit(undefined))
     return info
+  }
+
+import { wait } from '../../util'
+
+type PushChangesArgs = { docs: AnyDocument[] }
+export namespace pushChanges { export type Fcn = DbFcn<PushChangesArgs, void> }
+export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
+  async (dispatch, getState) => {
+    const { db: { current } } = getState()
+    if (!current) {
+      throw new Error('no current db')
+    }
+    await current.db.bulkDocs(docs)
+    await wait(5)
   }
 
 const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>) =>
   (change: PouchDB.ChangeInfo<{}>) => {
+    console.log('change', change)
     // for (let [tester, action] of docChangeActionTesters) {
     //   if (tester(change.id)) {
     //     dispatch(action(handle))
@@ -88,7 +106,9 @@ const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>
     // }
   }
 
-const loadDb = (info: DbInfo, password?: string): Thunk =>
+type LoadDbArgs = { info: DbInfo, password?: string }
+export namespace loadDb { export type Fcn = DbFcn<LoadDbArgs, void> }
+export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
   async (dispatch) => {
     const db = new PouchDB<{}>(info.location, adapter(password))
 
@@ -111,15 +131,15 @@ const loadDb = (info: DbInfo, password?: string): Thunk =>
       bills: Bill.createCache(),
     }
 
-    const mapper = R.cond([
+    const mapper = R.forEach(R.cond([
       [Transaction.isDoc, (doc: Transaction.Doc) => cache.transactions.set(doc._id, doc)],
       [Bank.isDoc, (doc: Bank.Doc) => cache.banks.set(doc._id, doc)],
       [Account.isDoc, (doc: Account.Doc) => cache.accounts.set(doc._id, doc)],
       [Category.isDoc, (doc: Category.Doc) => cache.categories.set(doc._id, doc)],
       [Bill.isDoc, (doc: Bill.Doc) => cache.bills.set(doc._id, doc)],
-    ]) as (doc: AnyDocument) => void
+    ]) as (doc: AnyDocument) => void)
 
-    R.forEach(mapper, docs)
+    mapper(docs)
 
     const view = {
       banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache)),
@@ -132,7 +152,9 @@ const loadDb = (info: DbInfo, password?: string): Thunk =>
     dispatch(setDb({info, db, changes, cache, view}))
   }
 
-const deleteDb = (info: DbInfo): Thunk =>
+type DeleteDbArgs = { info: DbInfo }
+export namespace deleteDb { export type Fcn = DbFcn<DeleteDbArgs, void> }
+export const deleteDb: DbThunk<DeleteDbArgs, void> = ({info}) =>
   async (dispatch, getState) => {
     const { current } = getState().db
 
@@ -143,10 +165,11 @@ const deleteDb = (info: DbInfo): Thunk =>
 
     // delete file
     fs.unlinkSync(info.location)
-    dispatch(DbInit())
+    dispatch(DbInit(undefined))
   }
 
-const unloadDb = (): SetDbAction => setDb(undefined)
+export namespace unloadDb { export type Fcn = () => void }
+export const unloadDb = (): SetDbAction => setDb(undefined)
 
 type Actions =
   DbSetFilesAction |
@@ -185,13 +208,6 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
   }
 }
 
-export const dbActions = ({
-  createDb,
-  loadDb,
-  unloadDb,
-  deleteDb
-})
-
 export interface DbSlice {
   db: DbState
 }
@@ -211,8 +227,8 @@ const buildInfoCache = R.pipe(
   R.sortBy(doc => doc.title)
 )
 
-export const DbInit = (): AppThunk =>
-  (dispatch) => {
+export const DbInit: AppThunk<void, void> = () =>
+  async (dispatch) => {
     const files = fs.readdirSync(userData)
     const infos = buildInfoCache(files)
     dispatch(dbSetFiles(infos))

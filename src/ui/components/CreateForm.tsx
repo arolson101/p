@@ -3,10 +3,9 @@ import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps } from 'recompose'
-import { Dispatch } from 'redux'
 import { reduxForm, ReduxFormProps } from 'redux-form'
 import { DbInfo } from '../../docs'
-import { AppState, dbActions } from '../../state'
+import { AppState, createDb, mapDispatchToProps } from '../../state'
 import { Validator } from '../../util'
 import { forms, typedFields } from './forms'
 import { IntlProps } from './props'
@@ -32,15 +31,18 @@ interface Props {
 }
 
 interface ConnectedProps {
-  lang: string
   files: DbInfo[]
 }
 
-interface EnhancedProps {
-  onSubmit: (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => Promise<any>
+interface DispatchProps {
+  createDb: createDb.Fcn
 }
 
-type AllProps = IntlProps & Props & EnhancedProps & ConnectedProps & ReduxFormProps<Values>
+interface EnhancedProps {
+  onSubmit: (values: Values, dispatch: any, props: AllProps) => Promise<any>
+}
+
+type AllProps = IntlProps & Props & EnhancedProps & ConnectedProps & DispatchProps & ReduxFormProps<Values>
 
 interface Values {
   name: string
@@ -51,24 +53,25 @@ interface Values {
 const enhance = compose<AllProps, Props>(
   setDisplayName('CreateForm'),
   injectIntl,
-  connect(
-    (state: AppState): ConnectedProps => ({
-      lang: state.i18n.lang,
+  connect<ConnectedProps, DispatchProps, Props & IntlProps>(
+    (state: AppState) => ({
       files: state.db.files
-    })
+    }),
+    mapDispatchToProps<DispatchProps>({ createDb })
   ),
-  withProps({
-    onSubmit: async (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => {
-      const { onCreate, intl: { formatMessage } } = props
+  withProps<EnhancedProps, ConnectedProps & DispatchProps & Props & IntlProps>({
+    onSubmit: async (values, dispatch, props) => {
+      const { createDb, onCreate, intl: { formatMessage } } = props
       const v = new Validator(values)
       v.required(['name', 'password', 'confirmPassword'], formatMessage(forms.required))
       v.maybeThrowSubmissionError()
 
-      const dbInfo = await dispatch(dbActions.createDb(values.name, values.password, props.lang))
+      const { name, password } = values
+      const dbInfo = await createDb({name, password})
       onCreate(dbInfo)
     }
-  } as EnhancedProps),
-  reduxForm<AllProps, Values>({
+  }),
+  reduxForm<EnhancedProps & ConnectedProps & DispatchProps & Props & IntlProps, Values>({
     form: 'CreateForm',
     validate: (values: Values, props: AllProps) => {
       const { files, intl: { formatMessage } } = props

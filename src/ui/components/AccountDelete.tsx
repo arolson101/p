@@ -6,10 +6,10 @@ import { connect } from 'react-redux'
 import { compose } from 'redux'
 import { deleteAccount } from '../../actions'
 import { DbInfo, Bank, Account } from '../../docs'
-import { AppState, CurrentDb } from '../../state'
+import { AppState, CurrentDb, mapDispatchToProps } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { forms } from './forms'
-import { DispatchProps, RouteProps } from './props'
+import { RouteProps } from './props'
 import { selectBank, selectAccount } from './selectors'
 
 const messages = defineMessages({
@@ -31,6 +31,10 @@ interface ConnectedProps {
   current: CurrentDb
   bank: Bank.View
   account: Account.View
+}
+
+interface DispatchProps {
+  deleteAccount: deleteAccount.Fcn
 }
 
 type AllProps = ConnectedProps & DispatchProps & RouteProps<Account.Params>
@@ -86,10 +90,10 @@ export class AccountDeleteComponent extends React.Component<AllProps, State> {
 
   @autobind
   async acDelete() {
-    const { bank, account, dispatch, router } = this.props
+    const { bank, account, deleteAccount, router } = this.props
     try {
       this.setState({deleting: true, error: undefined})
-      await dispatch(deleteAccount(bank.doc, account.doc))
+      await deleteAccount({bank, account})
       router.replace(DbInfo.to.home())
     } catch (err) {
       this.setState({deleting: false, error: err.message})
@@ -103,6 +107,7 @@ export const AccountDelete = compose(
       current: state.db.current!,
       bank: selectBank(state, props),
       account: selectAccount(state, props)
-    })
+    }),
+    mapDispatchToProps<DispatchProps>({ deleteAccount })
   )
 )(AccountDeleteComponent) as React.ComponentClass<{}>
