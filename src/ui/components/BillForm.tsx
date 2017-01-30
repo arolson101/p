@@ -11,9 +11,9 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProp
 import { Dispatch } from 'redux'
 import { reduxForm, ReduxFormProps, SubmitFunction, formValueSelector } from 'redux-form'
 import * as RRule from 'rrule-alt'
-import { Account, Bill } from '../../docs'
+import { Bank, Bill } from '../../docs'
 import { AppState } from '../../state'
-import { Validator, Lookup } from '../../util'
+import { Validator } from '../../util'
 import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms, SelectOption } from './forms'
 import { IntlProps } from './props'
@@ -134,7 +134,10 @@ interface ConnectedProps {
   accountOptions: SelectOption[]
   monthOptions: SelectOption[]
   weekdayOptions: SelectOption[]
-  bills: Bill.Cache
+  bills: Bill.View[]
+}
+
+interface FormProps {
   start: Date
   interval: number
   count: number
@@ -156,7 +159,7 @@ interface EnhancedProps {
   filterEndDate: (date: Date) => boolean
 }
 
-type AllProps = Props & State & EnhancedProps & ConnectedProps & IntlProps & ReduxFormProps<Values>
+type AllProps = Props & State & EnhancedProps & ConnectedProps & FormProps & IntlProps & ReduxFormProps<Values>
 
 type Frequency = 'days' | 'weeks' | 'months' | 'years'
 type EndType = 'endDate' | 'endCount'
@@ -193,13 +196,22 @@ const enhance = compose<AllProps, Props>(
     onCancel: React.PropTypes.func.isRequired
   } as PropTypes<Props>),
   injectIntl,
+  connect(
+    (state: AppState): ConnectedProps => ({
+      lang: state.i18n.lang,
+      bills: state.db.current!.view.bills,
+      accountOptions: accountOptions(state),
+      monthOptions: monthOptions(state),
+      weekdayOptions: weekdayOptions(state),
+    })
+  ),
   reduxForm<AllProps, Values>({
     form: formName,
     validate: (values: Values, props: AllProps) => {
       const v = new Validator(values)
       const { edit, bills, intl: { formatMessage } } = props
-      const otherAccounts = Lookup.filter(bills, otherBill => !edit || otherBill._id !== edit.doc._id)
-      const otherNames = otherAccounts.map(acct => acct.name)
+      const otherAccounts = bills.filter(otherBill => !edit || otherBill.doc._id !== edit.doc._id)
+      const otherNames = otherAccounts.map(acct => acct.doc.name)
       v.unique('name', otherNames, formatMessage(messages.uniqueName))
       v.date('start', formatMessage(forms.date))
       v.date('until', formatMessage(forms.date))
@@ -214,12 +226,7 @@ const enhance = compose<AllProps, Props>(
     }
   }),
   connect(
-    (state: AppState): ConnectedProps => ({
-      lang: state.i18n.lang,
-      bills: state.db.current!.cache.bills,
-      accountOptions: accountOptions(state),
-      monthOptions: monthOptions(state),
-      weekdayOptions: weekdayOptions(state),
+    (state: AppState): FormProps => ({
       start: formSelector(state, 'start'),
       interval: formSelector(state, 'interval'),
       count: formSelector(state, 'count'),
@@ -553,11 +560,12 @@ const dayMap = {
 } as { [key: string]: number }
 
 const accountOptions = createSelector(
-  (state: AppState) => state.db.current!.cache.accounts,
-  (cache: Account.Cache): SelectOption[] => {
-    return Array.from(cache.values()).map(acct => ({
-      value: acct._id,
-      label: acct.name
+  (state: AppState) => state.db.current!.view.banks,
+  (banks: Bank.View[]): SelectOption[] => {
+    const accounts = R.flatten(banks.map(bank => bank.accounts))
+    return accounts.map(acct => ({
+      value: acct.doc._id,
+      label: acct.doc.name
     }))
   }
 )
@@ -590,8 +598,7 @@ const monthOptions = createSelector(
 )
 
 const getGroupNames = R.pipe(
-  (bills: Bill.Cache) => Array.from(bills.values()),
-  R.map((bill: Bill.Doc): string => bill.group),
+  R.map((bill: Bill.View): string => bill.doc.group),
   R.sortBy(R.toLower),
   R.uniq,
   R.map((name: string): SelectOption => ({ label: name, value: name }))
