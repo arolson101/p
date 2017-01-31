@@ -14,14 +14,15 @@ const SQLiteDatabaseWithKey = (key?: string) =>
       this._db = new SQLiteDatabase(name)
       if (key) {
         this._db.exec(
-          [ { sql: `PRAGMA key=${key};` },
+          [ { sql: `PRAGMA page_size=4096;` },
+            { sql: `PRAGMA key=${key};` },
             { sql: `SELECT count(*) from sqlite_master;` }
           ],
           false,
           (err: any, ret: any[]) => {
-            if (err || ret[1].error) {
-              console.log(ret[1].error)
-              throw ret[1].error
+            if (err || ret[2].error) {
+              console.log(ret[2].error)
+              throw ret[2].error
             }
           }
         )
