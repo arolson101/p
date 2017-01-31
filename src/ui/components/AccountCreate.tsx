@@ -4,11 +4,11 @@ import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from '../../docs'
-import { AppState, CurrentDb, pushChanges, mapDispatchToProps } from '../../state'
+import { AppState, pushChanges, mapDispatchToProps } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { Values, AccountForm, SubmitFunction } from './AccountForm'
 import { RouteProps } from './props'
-import { selectCurrentDb, selectBank } from './selectors'
+import { selectBank } from './selectors'
 
 const messages = defineMessages({
   page: {
@@ -18,7 +18,6 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  current: CurrentDb
   bank: Bank.View
   accounts: Account.View[]
   lang: string
@@ -41,7 +40,6 @@ const enhance = compose<AllProps, {}>(
   setPropTypes({}),
   connect<ConnectedProps, DispatchProps, RouteProps<Account.Params>>(
     (state: AppState, props) => ({
-      current: selectCurrentDb(state),
       lang: state.i18n.lang,
       bank: selectBank(state, props),
       accounts: selectBank(state, props).accounts

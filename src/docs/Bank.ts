@@ -1,6 +1,5 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
-import { TCacheSetAction } from './index'
 import { Account } from './Account'
 import { DocCache } from './'
 
@@ -32,6 +31,8 @@ export namespace Bank {
   export type Doc = PouchDB.Core.Document<Bank> & { _id: DocId; _rev?: string }
   export interface Params { bankId: Id }
   export const docId = docURI.route<Params, DocId>('bank/:bankId')
+  export type Cache = Lookup<DocId, Doc>
+  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
   export type View = {
     doc: Doc
@@ -86,7 +87,7 @@ export namespace Bank {
     }
   }
 
-  export const isDocId = (id: string): boolean => {
+  export const isDocId = (id: string): id is DocId => {
     return !!docId(id as DocId)
   }
 
@@ -98,17 +99,4 @@ export namespace Bank {
     const _id = docId({ bankId: makeid(bank.name, lang) })
     return { _id, ...bank }
   }
-
-  export const CHANGE_ACTION = 'bank/change'
-
-  export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
-
-  export type CACHE_SET = 'bank/cacheSet'
-  export const CACHE_SET = 'bank/cacheSet'
-  export type CacheSetAction = TCacheSetAction<CACHE_SET, Cache>
-  export const cacheSetAction = (cache: Cache): CacheSetAction => ({
-    type: CACHE_SET,
-    cache
-  })
 }

@@ -1,9 +1,10 @@
 import * as electron from 'electron'
 import * as fs from 'fs'
+import debounce = require('lodash.debounce')
 import * as path from 'path'
 import * as R from 'ramda'
-import { ThunkAction, Dispatch } from 'redux'
-import { docChangeActionTesters, Bank, Account, Category, Bill, Transaction, DocCache } from '../../docs'
+import { ThunkAction } from 'redux'
+import { Bank, Account, Category, Bill, Transaction, DocCache, DbView } from '../../docs'
 import { Lookup } from '../../util'
 import { AppThunk } from '../'
 import { DbInfo } from './DbInfo'
@@ -18,16 +19,9 @@ export interface CurrentDb {
   info: DbInfo
   db: PouchDB.Database<any>
   changes: PouchDB.ChangeEmitter
-  cache: {
-    banks: Bank.Cache
-    accounts: Account.Cache
-    categories: Category.Cache
-    bills: Bill.Cache
-  }
-  view: {
-    banks: Bank.View[]
-    bills: Bill.View[]
-  }
+  processChanges: (() => void) & _.Cancelable
+  view: DbView
+  cache: DocCache
 }
 
 export interface DbState {
@@ -70,6 +64,20 @@ const dbSetFiles = (files: DbInfo[]): DbSetFilesAction => ({
   files
 })
 
+type DB_CHANGES = 'db/changes'
+const DB_CHANGES = 'db/changes'
+interface DbChangesAction {
+  type: DB_CHANGES
+  view: DbView
+  cache: DocCache
+}
+
+const dbChanges = (view: DbView, cache: DocCache): DbChangesAction => ({
+  type: DB_CHANGES,
+  view,
+  cache
+})
+
 type CreateDbArgs = { name: string, password: string }
 export namespace createDb { export type Fcn = DbFcn<CreateDbArgs, DbInfo> }
 export const createDb: DbThunk<CreateDbArgs, DbInfo> = ({name, password}) =>
@@ -107,28 +115,84 @@ export const deleteDoc = (doc: AnyDocument): Deletion => ({
   _deleted: true
 })
 
-const handleChange = (handle: PouchDB.Database<any>, dispatch: Dispatch<DbSlice>) =>
-  (change: PouchDB.ChangeInfo<{}>) => {
-    console.log('change', change)
-    // for (let [tester, action] of docChangeActionTesters) {
-    //   if (tester(change.id)) {
-    //     dispatch(action(handle))
-    //     break
-    //   }
-    // }
+const buildView = (cache: DocCache): DbView => ({
+  banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache)),
+  bills: Lookup.map(cache.bills, bill => Bill.buildView(bill))
+})
+
+const updateCache = (cache: DocCache, changes: PouchDB.ChangeInfo<AnyDocument>[]) => {
+  const selectCache = R.cond([
+    [Transaction.isDocId, R.always(cache.transactions)],
+    [Bank.isDocId, R.always(cache.banks)],
+    [Account.isDocId, R.always(cache.accounts)],
+    [Category.isDocId, R.always(cache.categories)],
+    [Bill.isDocId, R.always(cache.bills)],
+  ]) as (docId: string) => Map<string, AnyDocument> | undefined
+
+  const isDeletion = (change: PouchDB.ChangeInfo<AnyDocument>): boolean => !!change.deleted
+  const deleteItem = (change: PouchDB.ChangeInfo<AnyDocument>): void => {
+    const map = selectCache(change.id)
+    if (map) {
+      map.delete(change.id)
+    }
   }
+
+  const upsertItem = (change: PouchDB.ChangeInfo<AnyDocument>): void => {
+    const map = selectCache(change.id)
+    if (map) {
+      console.assert(change.doc)
+      map.set(change.id, change.doc)
+    }
+  }
+
+  R.forEach(
+    R.cond([
+      [isDeletion, deleteItem],
+      [R.T, upsertItem]
+    ]) as (change: PouchDB.ChangeInfo<AnyDocument>) => void,
+    changes
+  )
+}
 
 type LoadDbArgs = { info: DbInfo, password?: string }
 export namespace loadDb { export type Fcn = DbFcn<LoadDbArgs, void> }
 export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
-  async (dispatch) => {
-    const db = new PouchDB<{}>(info.location, adapter(password))
+  async (dispatch, getState) => {
+    const db = new PouchDB<AnyDocument>(info.location, adapter(password))
+
+    const changeQueue: PouchDB.ChangeInfo<AnyDocument>[] = []
+    const processChanges = debounce(
+      () => {
+        const changes = changeQueue.splice(0)
+        const { db: { current } } = getState()
+        if (current) {
+          let nextCache: DocCache = {
+            banks: new Map(current.cache.banks),
+            accounts: new Map(current.cache.accounts),
+            transactions: new Map(current.cache.transactions),
+            categories: new Map(current.cache.categories),
+            bills: new Map(current.cache.bills)
+          }
+          updateCache(nextCache, changes)
+          const nextView = buildView(nextCache)
+          dispatch(dbChanges(nextView, nextCache))
+        }
+      },
+      1
+    )
 
     const changes = db.changes({
       since: 'now',
-      live: true
+      live: true,
+      include_docs: true
     })
-    .on('change', handleChange(db, dispatch))
+    .on(
+      'change',
+      (change: PouchDB.ChangeInfo<{}>) => {
+        changeQueue.push(change)
+        processChanges()
+      }
+    )
 
     console.time('load')
 
@@ -143,25 +207,22 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       bills: Bill.createCache(),
     }
 
-    const mapper = R.forEach(R.cond([
-      [Transaction.isDoc, (doc: Transaction.Doc) => cache.transactions.set(doc._id, doc)],
-      [Bank.isDoc, (doc: Bank.Doc) => cache.banks.set(doc._id, doc)],
-      [Account.isDoc, (doc: Account.Doc) => cache.accounts.set(doc._id, doc)],
-      [Category.isDoc, (doc: Category.Doc) => cache.categories.set(doc._id, doc)],
-      [Bill.isDoc, (doc: Bill.Doc) => cache.bills.set(doc._id, doc)],
-    ]) as (doc: AnyDocument) => void)
+    docs.forEach(
+      R.cond([
+        [Transaction.isDoc, (doc: Transaction.Doc) => cache.transactions.set(doc._id, doc)],
+        [Bank.isDoc, (doc: Bank.Doc) => cache.banks.set(doc._id, doc)],
+        [Account.isDoc, (doc: Account.Doc) => cache.accounts.set(doc._id, doc)],
+        [Category.isDoc, (doc: Category.Doc) => cache.categories.set(doc._id, doc)],
+        [Bill.isDoc, (doc: Bill.Doc) => cache.bills.set(doc._id, doc)],
+      ]) as (doc: AnyDocument) => void
+    )
 
-    mapper(docs)
-
-    const view = {
-      banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache)),
-      bills: Lookup.map(cache.bills, bill => Bill.buildView(bill))
-    }
+    const view = buildView(cache)
 
     console.timeEnd('load')
     console.log(`${cache.transactions.size} transactions`)
 
-    dispatch(setDb({info, db, changes, cache, view}))
+    dispatch(setDb({info, db, changes, processChanges, view, cache}))
   }
 
 type DeleteDbArgs = { info: DbInfo }
@@ -186,10 +247,7 @@ export const unloadDb = (): SetDbAction => setDb(undefined)
 type Actions =
   DbSetFilesAction |
   SetDbAction |
-  Bank.CacheSetAction |
-  Account.CacheSetAction |
-  Category.CacheSetAction |
-  Bill.CacheSetAction |
+  DbChangesAction |
   { type: '' }
 
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
@@ -200,20 +258,12 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
     case DB_SET_CURRENT:
       if (state.current) {
         state.current.changes.cancel()
+        state.current.processChanges.cancel()
       }
       return { ...state, current: action.current }
 
-    case Bank.CACHE_SET:
-      return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, banks: action.cache } } }
-
-    case Account.CACHE_SET:
-      return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, accounts: action.cache } } }
-
-    case Category.CACHE_SET:
-      return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, categories: action.cache } } }
-
-    case Bill.CACHE_SET:
-      return { ...state, current: { ...state.current!, cache: { ...state.current!.cache, bills: action.cache } } }
+    case DB_CHANGES:
+      return { ...state, current: { ...state.current, view: action.view, cache: action.cache } }
 
     default:
       return state
@@ -236,7 +286,7 @@ const buildInfo = (filename: string): DbInfo => ({
 const buildInfoCache = R.pipe(
   R.filter(isDbFilename),
   R.map(buildInfo),
-  R.sortBy(doc => doc.title)
+  R.sortBy((doc: DbInfo) => doc.name)
 )
 
 export const DbInit: AppThunk<void, void> = () =>

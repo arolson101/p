@@ -1,6 +1,6 @@
 import * as ofx4js from 'ofx4js'
 import { defineMessages, FormattedMessage } from 'react-intl'
-import { AppThunk, ThunkFcn, CurrentDb } from '../state'
+import { AppThunk, ThunkFcn } from '../state'
 import { Bank, Account, Transaction } from '../docs'
 import { createConnection, getFinancialAccount } from './online'
 
@@ -30,7 +30,6 @@ export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, ac
       if (transactionList) {
         const { db: { current } } = getState()
         if (!current) { throw new Error('no db') }
-        const existingTransactions = await getExistingTransactions(current, account, start, end)
         const newTransactions = transactionList.getTransactions() || []
         const changes: ChangeSet = new Set()
         for (let newTransaction of newTransactions) {
@@ -39,9 +38,9 @@ export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, ac
             // not sure why bank would give us transactions outside of our date range, but it happens!
             continue
           }
-          let transaction = findMatchingTransaction(existingTransactions, newTransaction)
-          if (!transaction) {
-            transaction = Transaction.doc(account.doc, {
+          const existingTransaction = findMatchingTransaction(account.transactions, newTransaction)
+          if (!existingTransaction) {
+            const transaction = Transaction.doc(account.doc, {
               serverid: newTransaction.getId(),
               time: time.valueOf(),
               type: ofx4js.domain.data.common.TransactionType[newTransaction.getTransactionType()],
@@ -50,11 +49,12 @@ export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, ac
               amount: newTransaction.getAmount(),
               split: {}
             })
+            changes.add(transaction)
           }
         }
         // const balance = bankStatement.getLedgerBalance()
         await current.db.bulkDocs(Array.from(changes))
-        return formatMessage(messages.success, {count: changes.length})
+        return formatMessage(messages.success, {count: changes.size})
       } else {
         return formatMessage(messages.empty)
       }
@@ -63,14 +63,7 @@ export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, ac
     }
   }
 
-const getExistingTransactions = async (current: CurrentDb, account: Account.View, start: Date, end: Date): Promise<Transaction.Doc[]> => {
-  const startkey = Transaction.startkeyForAccount(account.doc, start)
-  const endkey = Transaction.endkeyForAccount(account.doc, end)
-  const existingTransactions = await current.db.allDocs({ startkey, endkey, include_docs: true })
-  return existingTransactions.rows.map(row => row.doc)
-}
-
-const findMatchingTransaction = (existingTransactions: Transaction.Doc[], newTransaction: ofx4js.domain.data.common.Transaction) => {
+const findMatchingTransaction = (existingTransactions: Transaction.View[], newTransaction: ofx4js.domain.data.common.Transaction) => {
   const id = newTransaction.getId()
-  return existingTransactions.find(existingTransaction => existingTransaction.serverid === id)
+  return existingTransactions.find(existingTransaction => existingTransaction.doc.serverid === id)
 }

@@ -1,6 +1,5 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
-import { TCacheSetAction } from './index'
 
 export interface Category {
   name: string
@@ -12,6 +11,8 @@ export namespace Category {
   export type Doc = PouchDB.Core.Document<Category> & { _id: DocId; _rev?: string }
   export interface Params { categoryId: Id }
   export const docId = docURI.route<Params, DocId>('category/:categoryId')
+  export type Cache = Lookup<DocId, Doc>
+  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
   export namespace routes {
     export const create = 'category/create'
@@ -50,17 +51,4 @@ export namespace Category {
     const _id = docId({ categoryId: makeid(category.name, lang) })
     return { _id, ...category }
   }
-
-  export const CHANGE_ACTION = 'category/change'
-
-  export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
-
-  export type CACHE_SET = 'category/cacheSet'
-  export const CACHE_SET = 'category/cacheSet'
-  export type CacheSetAction = TCacheSetAction<CACHE_SET, Cache>
-  export const cacheSetAction = (cache: Cache): CacheSetAction => ({
-    type: CACHE_SET,
-    cache
-  })
 }

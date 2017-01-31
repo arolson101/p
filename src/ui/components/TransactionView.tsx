@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose } from 'redux'
 import { Bank, Account, Transaction } from '../../docs'
-import { AppState, CurrentDb } from '../../state'
+import { AppState } from '../../state'
 import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps } from './props'
 import { selectBank, selectAccount, selectTransaction } from './selectors'
@@ -13,7 +13,6 @@ import { TransactionDetail } from './TransactionDetail'
 interface ConnectedProps {
   bank: Bank.View
   account: Account.View
-  current: CurrentDb
   transaction: Transaction.View
 }
 
@@ -43,7 +42,6 @@ export const TransactionView = compose(
       bank: selectBank(state, props),
       account: selectAccount(state, props),
       transaction: selectTransaction(state, props),
-      current: state.db.current!
     })
   )
 )(TransactionViewComponent) as React.ComponentClass<{}>

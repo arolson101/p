@@ -23,6 +23,9 @@ export namespace Transaction {
   export type Doc = PouchDB.Core.Document<Transaction> & { _id: DocId; _rev?: string }
   export interface Params { bankId: Bank.Id, accountId: Account.Id, txId: Id }
   export const docId = docURI.route<Params, DocId>('transaction/:bankId/:accountId/:txId')
+  export type Cache = Lookup<DocId, Doc>
+  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
+
   export const startkeyForAccount = (account: Account.Doc, time?: Date) =>
     docId({ ...accountParts(account), txId: time ? timeKey(time) : ''})
   export const endkeyForAccount = (account: Account.Doc, time?: Date) =>
@@ -80,7 +83,4 @@ export namespace Transaction {
     const _id = docId({ ...accountParts(account), txId })
     return { _id, ...transaction }
   }
-
-  export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 }

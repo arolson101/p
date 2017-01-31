@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl'
 import { makeid, Lookup } from '../util'
 import { Bank } from './Bank'
 import { Transaction } from './Transaction'
-import { DocCache, TCacheSetAction } from './index'
+import { DocCache } from './index'
 
 export interface Account {
   name: string
@@ -63,6 +63,8 @@ export namespace Account {
   export type Doc = TDocument<Account, DocId>
   export interface Params { bankId: Bank.Id, accountId: Id }
   export const docId = docURI.route<Params, DocId>('account/:bankId/:accountId')
+  export type Cache = Lookup<DocId, Doc>
+  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
   export type View = {
     doc: Doc
@@ -115,7 +117,7 @@ export namespace Account {
     }
   }
 
-  export const isDocId = (id: string): boolean => {
+  export const isDocId = (id: string): id is DocId => {
     return !!docId(id as DocId)
   }
 
@@ -150,23 +152,4 @@ export namespace Account {
     }
     return Bank.docId(aparams)
   }
-
-  export const createIndices = (db: PouchDB.Database<any>) => {
-    // return db.createIndex({
-    //   index: {
-    //     fields: ['bank']
-    //   }
-    // })
-  }
-
-  export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
-
-  export type CACHE_SET = 'account/cacheSet'
-  export const CACHE_SET = 'account/cacheSet'
-  export type CacheSetAction = TCacheSetAction<CACHE_SET, Cache>
-  export const cacheSetAction = (cache: Cache): CacheSetAction => ({
-    type: CACHE_SET,
-    cache
-  })
 }

@@ -3,10 +3,6 @@ import { AppState } from '../../state'
 import { Bank, Account, Transaction } from '../../docs'
 import { RouteProps } from './props'
 
-export const selectCurrentDb = (state: AppState) => {
-  return state.db.current!
-}
-
 export const selectBanks = (state: AppState) => {
   if (!state.db.current) {
     throw new Error('no open db!')

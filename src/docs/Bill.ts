@@ -1,6 +1,5 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
-import { TCacheSetAction } from './index'
 import * as RRule from 'rrule-alt'
 
 export interface Bill {
@@ -18,6 +17,8 @@ export namespace Bill {
   export type Doc = PouchDB.Core.Document<Bill> & { _id: DocId; _rev?: string }
   export interface Params { billId: Id }
   export const docId = docURI.route<Params, DocId>('bill/:billId')
+  export type Cache = Lookup<DocId, Doc>
+  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
   export type View = {
     doc: Doc
@@ -73,26 +74,6 @@ export namespace Bill {
     const _id = docId({ billId: makeid(bank.name, lang) })
     return { _id, ...bank }
   }
-
-  export const CHANGE_ACTION = 'bill/change'
-
-  export type Cache = Lookup<DocId, Doc>
-  export const createCache = (docs: Doc[] = []): Lookup<DocId, Doc> => {
-    return Lookup.create<DocId, Doc>(
-      docs.map(doc => ({
-        ...doc,
-        rrule: doc.rruleString ? RRule.fromString(doc.rruleString) : undefined
-      }))
-    )
-  }
-
-  export type CACHE_SET = 'bill/cacheSet'
-  export const CACHE_SET = 'bill/cacheSet'
-  export type CacheSetAction = TCacheSetAction<CACHE_SET, Cache>
-  export const cacheSetAction = (cache: Cache): CacheSetAction => ({
-    type: CACHE_SET,
-    cache
-  })
 
   export const getDate = (bill: View): Date => {
     if (!bill.rrule) {
