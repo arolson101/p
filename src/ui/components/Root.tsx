@@ -1,9 +1,18 @@
 import * as React from 'react'
 import { Link } from 'react-router'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { RouteProps } from './props'
 import { Container, Item } from './flex'
 
-export const Root = (props: RouteProps<any>) => (
+const enhance = compose<RouteProps<any>, RouteProps<any>>(
+  setDisplayName('Root'),
+  onlyUpdateForPropTypes,
+  setPropTypes({
+    location: React.PropTypes.object
+  })
+)
+
+export const Root = enhance(props =>
   <Container column>
     <Item>
       <a href='#' onClick={(event) => {

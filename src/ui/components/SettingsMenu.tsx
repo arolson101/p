@@ -2,7 +2,7 @@ import * as React from 'react'
 import { ButtonGroup, DropdownButton, MenuItem, MenuItemProps } from 'react-bootstrap'
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl'
 import { withRouter } from 'react-router'
-import { compose, setDisplayName } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { RouteProps, IntlProps } from './props'
 
 const messages = defineMessages({
@@ -24,9 +24,11 @@ interface Props {
 type AllProps = Props & RouteProps<any> & IntlProps
 
 const enhance = compose<AllProps, Props>(
-  setDisplayName('AccountViewComponent'),
-  injectIntl,
-  withRouter
+  setDisplayName('SettingsMenu'),
+  withRouter,
+  onlyUpdateForPropTypes,
+  setPropTypes({}),
+  injectIntl
 )
 
 export const SettingsMenu = enhance((props) => {
