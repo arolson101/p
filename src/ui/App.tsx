@@ -41,7 +41,7 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
           <Router history={history}>
             <Route path='/' component={Components.AppWindow}>
               <IndexRoute component={Components.Login}/>
-              <Route onEnter={requireAuth(store)}>
+              <Route onEnter={requireAuth(store)} component={Components.AppContent}>
                 <Route path={DbInfo.routes.home} component={Components.Home} />
                 <Route path={Bank.routes.all} component={Components.Accounts} />
                 <Route path={Bank.routes.create} component={Components.BankCreate}/>

@@ -9,10 +9,10 @@ type AllProps = RouteProps<any>
 
 export const Home = (props: AllProps) => {
   return (
-    <Grid>
+    <div>
       <Breadcrumbs {...props}/>
       <div><Link to={Bank.to.all()}>accounts</Link></div>
       <div><Link to={Bill.to.all()}>bills</Link></div>
-    </Grid>
+    </div>
   )
 }

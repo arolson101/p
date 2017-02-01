@@ -6,14 +6,37 @@ import * as Mac from '../macOS'
 import * as Win from '../windows'
 import { RouteProps } from './props'
 
-export interface AppWindowProps {
+export interface NavItem {
+  icon: string
+  path: string
   title: string
-  onBack: Function
-  onForward: Function
 }
 
+export interface NavProps {
+  items: NavItem[]
+  selectedIndex: number
+}
+
+const navItems: NavItem[] = [
+  {
+    icon: 'fa fa-home',
+    path: '/home',
+    title: 'home'
+  },
+  {
+    icon: 'fa fa-home',
+    path: '/accounts',
+    title: 'accounts'
+  },
+  {
+    icon: 'fa fa-home',
+    path: '/bills',
+    title: 'bills'
+  }
+]
+
 interface ConnectedProps {
-  ThemeWindow: any
+  ThemeNav: any
 }
 
 interface EnhancedProps {
@@ -24,14 +47,14 @@ interface EnhancedProps {
 type AllProps = EnhancedProps & ConnectedProps & RouteProps<any>
 
 const enhance = compose<AllProps, RouteProps<any>>(
-  setDisplayName('AppWindow'),
+  setDisplayName('AppContent'),
   onlyUpdateForPropTypes,
   setPropTypes({
     location: React.PropTypes.object
   }),
   connect<ConnectedProps, {}, RouteProps<any>>(
     (state: AppState) => ({
-      ThemeWindow: state.sys.theme === 'macOS' ? Mac.AppWindow : Win.AppWindow
+      ThemeNav: state.sys.theme === 'macOS' ? Mac.AppNav : Win.AppNav
     })
   ),
   withProps<EnhancedProps, ConnectedProps & RouteProps<any>>(
@@ -47,11 +70,10 @@ const enhance = compose<AllProps, RouteProps<any>>(
   )
 )
 
-export const AppWindow = enhance(props => {
-  const { ThemeWindow, onBack, onForward, children } = props
-  const title = 'p: ' + props.location.pathname + props.location.search
+export const AppContent = enhance(props => {
+  const { ThemeNav, children } = props
 
-  return <ThemeWindow title={title} onBack={onBack} onForward={onForward}>
+  return <ThemeNav items={navItems} selectedIndex={0}>
     {children}
-  </ThemeWindow>
+  </ThemeNav>
 })

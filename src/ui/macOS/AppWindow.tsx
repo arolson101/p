@@ -39,7 +39,7 @@ const toggleMaximize = () => {
 export const AppWindow = ({children, title, onBack, onForward}: React.Props<any> & AppWindowProps) =>
   <Window
     chrome
-    padding='10px'
+    padding='0px'
   >
     <TitleBar
       inset
