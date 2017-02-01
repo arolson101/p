@@ -39,7 +39,7 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
       <Provider store={store}>
         <IntlProvider locale={locale}>
           <Router history={history}>
-            <Route path='/' component={Components.Root}>
+            <Route path='/' component={Components.AppWindow}>
               <IndexRoute component={Components.Login}/>
               <Route onEnter={requireAuth(store)}>
                 <Route path={DbInfo.routes.home} component={Components.Home} />

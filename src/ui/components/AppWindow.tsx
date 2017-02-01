@@ -13,7 +13,7 @@ export interface AppWindowProps {
 }
 
 interface ConnectedProps {
-  AppWindow: any
+  ThemeWindow: any
 }
 
 interface EnhancedProps {
@@ -31,7 +31,7 @@ const enhance = compose<AllProps, RouteProps<any>>(
   }),
   connect<ConnectedProps, {}, RouteProps<any>>(
     (state: AppState) => ({
-      AppWindow: state.sys.theme === 'macOS' ? Mac.AppWindow : Win.AppWindow
+      ThemeWindow: state.sys.theme === 'macOS' ? Mac.AppWindow : Win.AppWindow
     })
   ),
   withProps<EnhancedProps, ConnectedProps & RouteProps<any>>(
@@ -47,11 +47,11 @@ const enhance = compose<AllProps, RouteProps<any>>(
   )
 )
 
-export const Root = enhance(props => {
-  const { AppWindow, onBack, onForward, children } = props
+export const AppWindow = enhance(props => {
+  const { ThemeWindow, onBack, onForward, children } = props
   const title = 'p: ' + props.location.pathname + props.location.search
 
-  return <AppWindow title={title} onBack={onBack} onForward={onForward}>
+  return <ThemeWindow title={title} onBack={onBack} onForward={onForward}>
     {children}
-  </AppWindow>
+  </ThemeWindow>
 })
