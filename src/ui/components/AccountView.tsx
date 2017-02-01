@@ -29,6 +29,14 @@ const messages = defineMessages({
     id: 'accountView.delete',
     defaultMessage: 'Delete'
   },
+  actions: {
+    id: 'accountView.actions',
+    defaultMessage: 'Actions'
+  },
+  account: {
+    id: 'accountView.account',
+    defaultMessage: 'Account'
+  },
   downloadTransactions: {
     id: 'accountView.downloadTransactions',
     defaultMessage: 'Download Transactions'
@@ -126,7 +134,7 @@ export const AccountView = enhance((props) => {
           <SettingsMenu
             items={[
               {
-                message: '_Actions',
+                message: messages.actions,
                 header: true
               },
               {
@@ -134,18 +142,18 @@ export const AccountView = enhance((props) => {
                 onClick: downloadTransactions
               },
               __DEVELOPMENT__ && {
-                message: 'create transactions',
+                message: '★ create transactions',
                 onClick: addTransactions
               },
               __DEVELOPMENT__ && {
-                message: 'delete transactions',
+                message: '★ delete transactions',
                 onClick: deleteTransactions
               },
               {
                 divider: true
               },
               {
-                message: '_Account',
+                message: messages.account,
                 header: true
               },
               {
