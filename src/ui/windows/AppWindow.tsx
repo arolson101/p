@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Window, TitleBar } from 'react-desktop/windows'
-import { AppWindowProps } from '../components/Root'
+import { AppWindowProps } from '../components/AppWindow'
 import * as electron from 'electron'
 
 // const buttonStyle: React.CSSProperties = {
