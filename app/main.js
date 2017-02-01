@@ -55,6 +55,7 @@ function createWindow () {
 
   var config = readConfig(configPath);
   config.webPreferences = {webSecurity: false};
+  config.frame = false;
 
   // Create the browser window.
   mainWindow = new BrowserWindow(config)
