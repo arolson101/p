@@ -1,8 +1,10 @@
 import * as React from 'react'
+import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
-import { RouteProps } from './props'
+import { AppState } from '../../state'
 import * as Mac from '../macOS'
 import * as Win from '../windows'
+import { RouteProps } from './props'
 
 export interface AppWindowProps {
   title: string
@@ -10,13 +12,16 @@ export interface AppWindowProps {
   onForward: Function
 }
 
-interface EnhancedProps {
+interface ConnectedProps {
   AppWindow: any
+}
+
+interface EnhancedProps {
   onBack: () => void
   onForward: () => void
 }
 
-type AllProps = EnhancedProps & RouteProps<any>
+type AllProps = EnhancedProps & ConnectedProps & RouteProps<any>
 
 const enhance = compose<AllProps, RouteProps<any>>(
   setDisplayName('Root'),
@@ -24,10 +29,13 @@ const enhance = compose<AllProps, RouteProps<any>>(
   setPropTypes({
     location: React.PropTypes.object
   }),
-  withProps<EnhancedProps, RouteProps<any>>(
+  connect<ConnectedProps, {}, RouteProps<any>>(
+    (state: AppState) => ({
+      AppWindow: state.sys.theme === 'macOS' ? Mac.AppWindow : Win.AppWindow
+    })
+  ),
+  withProps<EnhancedProps, ConnectedProps & RouteProps<any>>(
     ({router}) => ({
-      AppWindow: Win.AppWindow,
-
       onBack: () => {
         router.goBack()
       },

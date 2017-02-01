@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Window, TitleBar } from 'react-desktop/windows'
 import { AppWindowProps } from '../components/Root'
+import * as electron from 'electron'
 
 // const buttonStyle: React.CSSProperties = {
 //   WebkitUserSelect: 'none',
@@ -14,6 +15,17 @@ import { AppWindowProps } from '../components/Root'
 //   alignItems: 'center',
 // }
 
+const onCloseClick = () => electron.remote.BrowserWindow.getFocusedWindow().close()
+// const onMaximizeClick = () => electron.remote.BrowserWindow.getFocusedWindow().maximize()
+const onMinimizeClick = () => electron.remote.BrowserWindow.getFocusedWindow().minimize()
+const toggleMaximize = () => {
+  if (electron.remote.BrowserWindow.getFocusedWindow().isMaximized()) {
+    electron.remote.BrowserWindow.getFocusedWindow().unmaximize()
+  } else {
+    electron.remote.BrowserWindow.getFocusedWindow().maximize()
+  }
+}
+
 export const AppWindow = ({title, onBack, children}: AppWindowProps & React.Props<any>) =>
   <Window
     chrome
@@ -23,7 +35,16 @@ export const AppWindow = ({title, onBack, children}: AppWindowProps & React.Prop
         <a style={buttonStyle}>
           <i className='fa fa-angle-left fa-lg' style={{color: 'black'}}/>
         </a>*/}
-        <TitleBar title={title} controls theme='dark' background='#0078D7'/>
+        <TitleBar
+          title={title}
+          controls
+          onCloseClick={onCloseClick}
+          onMinimizeClick={onMinimizeClick}
+          onMaximizeClick={toggleMaximize}
+          onRestoreDownClick={toggleMaximize}
+          theme='dark'
+          background='#0078D7'
+        />
       {/*</div>*/}
       {children}
     {/*</div>*/}

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Window, TitleBar, Toolbar, SearchField, Button, Label } from 'react-desktop/macOs'
 import { AppWindowProps } from '../components/Root'
+import * as electron from 'electron'
 
 const icons = {
   backButton: {
@@ -24,12 +25,30 @@ const styles = {
   },
 }
 
+const onCloseClick = () => electron.remote.BrowserWindow.getFocusedWindow().close()
+// const onMaximizeClick = () => electron.remote.BrowserWindow.getFocusedWindow().maximize()
+const onMinimizeClick = () => electron.remote.BrowserWindow.getFocusedWindow().minimize()
+const toggleMaximize = () => {
+  if (electron.remote.BrowserWindow.getFocusedWindow().isMaximized()) {
+    electron.remote.BrowserWindow.getFocusedWindow().unmaximize()
+  } else {
+    electron.remote.BrowserWindow.getFocusedWindow().maximize()
+  }
+}
+
 export const AppWindow = ({children, title, onBack, onForward}: React.Props<any> & AppWindowProps) =>
   <Window
     chrome
     padding='10px'
   >
-    <TitleBar inset controls >
+    <TitleBar
+      inset
+      controls
+      onCloseClick={onCloseClick}
+      onMinimizeClick={onMinimizeClick}
+      onMaximizeClick={toggleMaximize}
+      onResizeClick={toggleMaximize}
+    >
       <Toolbar height='36' horizontalAlignment='left'>
         <Button style={styles.navButton} marginLeft={10} onClick={onBack}>
           <i {...icons.backButton} style={styles.navButtonIcon}/>
