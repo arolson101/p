@@ -11,6 +11,7 @@ export interface NavItem {
   icon: string
   path: string
   title: string
+  balance?: number
 }
 
 export interface NavProps {
@@ -83,11 +84,15 @@ export const AppContent = enhance(props => {
       items.push({
         icon: Account.icons[account.doc.type],
         path: Account.to.view(account.doc),
-        title: account.doc.name
+        title: account.doc.name,
+        balance: 12345.67
       })
     })
   })
-  const selectedIndex = items.findIndex(item => pathname.startsWith(item.path))
+  let selectedIndex = items.findIndex(item => pathname.startsWith(item.path))
+  if (selectedIndex === -1) {
+    selectedIndex = 0
+  }
 
   return <ThemeNav items={items} selectedIndex={selectedIndex} onClick={item => router.push(item.path)}>
     {children}

@@ -1,4 +1,16 @@
 
+/* turn off underline on nav items (created by bootstrap, I think) */
 div.navpane a {
   text-decoration: none !important;
+}
+
+/* nav button looks like it should set margin instead of padding */
+div.navpane > div > div > svg {
+  margin: 8px 10px !important;
+  padding: 0px 0px !important;
+}
+
+/* expand nav item so that balance can align-right */
+div.navpane > div > div > a span {
+  flex: 1;
 }
