@@ -2,7 +2,7 @@ import * as React from 'react'
 import { ListView, ListViewRow, Text } from 'react-desktop/macOs'
 import { NavProps } from '../components/AppContent'
 
-export const AppNav = ({items, selectedIndex, children}: NavProps & React.Props<any>) =>
+export const AppNav = ({items, selectedIndex, onClick, children}: NavProps & React.Props<any>) =>
   <div style={{display: 'flex', flexDirection: 'row', flex: 1}}>
     <ListView
       disableRubberBand
@@ -12,7 +12,11 @@ export const AppNav = ({items, selectedIndex, children}: NavProps & React.Props<
       className='appnav'
     >
       {items.map((item, index) =>
-        <ListViewRow key={item.title} background={selectedIndex === index ? 'rgba(162,162,162,0.5)' : null}>
+        <ListViewRow
+          key={item.title}
+          background={selectedIndex === index ? 'rgba(162,162,162,0.5)' : null}
+          onClick={() => onClick(item)}
+        >
           <Text color='#414141'><i className={item.icon + ' fa-lg'}/> {item.title}</Text>
         </ListViewRow>
       )}

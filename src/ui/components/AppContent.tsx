@@ -15,6 +15,7 @@ export interface NavItem {
 export interface NavProps {
   items: NavItem[]
   selectedIndex: number
+  onClick: (item: NavItem) => void
 }
 
 const navItems: NavItem[] = [
@@ -25,7 +26,7 @@ const navItems: NavItem[] = [
   },
   {
     icon: 'fa fa-home',
-    path: '/accounts',
+    path: '/banks',
     title: 'accounts'
   },
   {
@@ -36,7 +37,7 @@ const navItems: NavItem[] = [
 ]
 
 interface ConnectedProps {
-  ThemeNav: any
+  ThemeNav: React.StatelessComponent<NavProps>
 }
 
 interface EnhancedProps {
@@ -71,9 +72,10 @@ const enhance = compose<AllProps, RouteProps<any>>(
 )
 
 export const AppContent = enhance(props => {
-  const { ThemeNav, children } = props
+  const { ThemeNav, children, location: { pathname }, router } = props
+  const selectedIndex = navItems.findIndex(item => pathname.startsWith(item.path))
 
-  return <ThemeNav items={navItems} selectedIndex={0}>
+  return <ThemeNav items={navItems} selectedIndex={selectedIndex} onClick={item => router.push(item.path)}>
     {children}
   </ThemeNav>
 })

@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Grid } from 'react-bootstrap'
 import { Link } from 'react-router'
 import { Bank, Bill } from '../../docs'
 import { Breadcrumbs } from './Breadcrumbs'
