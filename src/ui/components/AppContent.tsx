@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import { Bank, Account } from '../../docs'
 import { AppState } from '../../state'
 import * as Mac from '../macOS'
 import * as Win from '../windows'
@@ -38,6 +39,7 @@ const navItems: NavItem[] = [
 
 interface ConnectedProps {
   ThemeNav: React.StatelessComponent<NavProps>
+  banks: Bank.View[]
 }
 
 interface EnhancedProps {
@@ -54,8 +56,9 @@ const enhance = compose<AllProps, RouteProps<any>>(
     location: React.PropTypes.object
   }),
   connect<ConnectedProps, {}, RouteProps<any>>(
-    (state: AppState) => ({
-      ThemeNav: state.sys.theme === 'macOS' ? Mac.AppNav : Win.AppNav
+    (state: AppState): ConnectedProps => ({
+      ThemeNav: state.sys.theme === 'macOS' ? Mac.AppNav : Win.AppNav,
+      banks: state.db.current!.view.banks
     })
   ),
   withProps<EnhancedProps, ConnectedProps & RouteProps<any>>(
@@ -72,10 +75,21 @@ const enhance = compose<AllProps, RouteProps<any>>(
 )
 
 export const AppContent = enhance(props => {
-  const { ThemeNav, children, location: { pathname }, router } = props
-  const selectedIndex = navItems.findIndex(item => pathname.startsWith(item.path))
+  const { banks, ThemeNav, children, location: { pathname }, router } = props
 
-  return <ThemeNav items={navItems} selectedIndex={selectedIndex} onClick={item => router.push(item.path)}>
+  const items = [...navItems]
+  banks.forEach(bank => {
+    bank.accounts.forEach(account => {
+      items.push({
+        icon: Account.icons[account.doc.type],
+        path: Account.to.view(account.doc),
+        title: account.doc.name
+      })
+    })
+  })
+  const selectedIndex = items.findIndex(item => pathname.startsWith(item.path))
+
+  return <ThemeNav items={items} selectedIndex={selectedIndex} onClick={item => router.push(item.path)}>
     {children}
   </ThemeNav>
 })

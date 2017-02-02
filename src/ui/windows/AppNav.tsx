@@ -1,8 +1,10 @@
 import * as React from 'react'
 import { NavPane, NavPaneItem } from 'react-desktop/windows'
 import { NavProps } from '../components/AppContent'
+import './AppNav.css'
 
 export const AppNav = ({items, selectedIndex, onClick, children}: NavProps & React.Props<any>) =>
+  <div className='navpane'>
   <NavPane push>
     {items.map((item, index) =>
       <NavPaneItem
@@ -14,8 +16,11 @@ export const AppNav = ({items, selectedIndex, onClick, children}: NavProps & Rea
         onSelect={() => onClick(item)}
       >
         {index === selectedIndex &&
-          children
+          <div style={{backgroundColor: 'white'}}>
+            {children}
+          </div>
         }
       </NavPaneItem>
     )}
   </NavPane>
+</div>

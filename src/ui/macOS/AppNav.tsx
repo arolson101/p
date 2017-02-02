@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { ListView, ListViewRow, Text } from 'react-desktop/macOs'
 import { NavProps } from '../components/AppContent'
+import './AppNav.css'
 
 export const AppNav = ({items, selectedIndex, onClick, children}: NavProps & React.Props<any>) =>
   <div style={{display: 'flex', flexDirection: 'row', flex: 1}}>

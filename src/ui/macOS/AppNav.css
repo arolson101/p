@@ -1,0 +1,8 @@
+
+body, #root > div {
+  background-color: transparent !important;
+}
+
+section.appnav > div {
+  overflow: auto !important;
+}
