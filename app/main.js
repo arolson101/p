@@ -56,6 +56,7 @@ function createWindow () {
   var config = readConfig(configPath);
   config.webPreferences = {webSecurity: false};
   config.frame = false;
+  config.vibrancy = 'medium-light';
 
   // Create the browser window.
   mainWindow = new BrowserWindow(config)

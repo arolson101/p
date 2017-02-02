@@ -70,7 +70,7 @@ const createId = '_create'
 
 export const Login = enhance(({ files, router, activeId, setActiveId, deselect, onLogin }) => (
   <Grid>
-    <div>
+    <div style={{padding: 50}}>
       <ListGroup>
         {files.map(file => {
           const active = (activeId === file.name)
