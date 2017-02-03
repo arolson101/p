@@ -75,7 +75,9 @@ interface HandlerProps {
 const enhance = compose<AllProps, {}>(
   setDisplayName('AccountViewComponent'),
   onlyUpdateForPropTypes,
-  setPropTypes({}),
+  setPropTypes({
+    params: React.PropTypes.object.isRequired
+  }),
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps & RouteProps<Account.Params>>(
     (state: AppState, props) => ({
