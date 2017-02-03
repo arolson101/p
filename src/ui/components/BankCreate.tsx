@@ -5,13 +5,12 @@ import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank } from '../../docs'
 import { AppState, FI, mapDispatchToProps, pushChanges } from '../../state'
-import { Breadcrumbs } from './Breadcrumbs'
 import { Values, BankForm, SubmitFunction } from './BankForm'
 import { RouteProps } from './props'
 
 const messages = defineMessages({
   page: {
-    id: 'inCreate.page',
+    id: 'BankCreate.page',
     defaultMessage: 'Add Institution'
   }
 })
@@ -71,7 +70,6 @@ export const BankCreate = enhance((props) => {
   const { onSubmit, onCancel } = props
   return (
     <Grid>
-      <Breadcrumbs {...props} page={messages.page}/>
       <BankForm onSubmit={onSubmit} onCancel={onCancel} />
     </Grid>
   )

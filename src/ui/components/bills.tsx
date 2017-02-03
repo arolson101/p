@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Grid, PageHeader } from 'react-bootstrap'
+import { PageHeader } from 'react-bootstrap'
 import { injectIntl, FormattedDate, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { AutoSizer,Column } from 'react-virtualized'
@@ -7,7 +7,6 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'r
 import { Bill } from '../../docs'
 import { AppState } from '../../state'
 import { BillDetail } from './BillDetail'
-import { Breadcrumbs } from './Breadcrumbs'
 import { Container, Item } from './flex'
 import { ListWithDetails, getRowData, currencyCellRenderer } from './ListWithDetails'
 import { selectBills } from './selectors'
@@ -57,9 +56,7 @@ export const Bills = enhance((props: AllProps) => {
   const { bills } = props
 
   return (
-    <Grid>
-      <Breadcrumbs {...props} page={messages.page}/>
-
+    <div>
       <SettingsMenu
         items={[
           {
@@ -112,7 +109,7 @@ export const Bills = enhance((props: AllProps) => {
           </AutoSizer>
         </Item>
       </Container>
-    </Grid>
+    </div>
   )
 })
 

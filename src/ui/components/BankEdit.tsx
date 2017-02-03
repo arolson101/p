@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank } from '../../docs'
 import { AppState, FI, pushChanges, mapDispatchToProps } from '../../state'
-import { Breadcrumbs } from './Breadcrumbs'
 import { Values, BankForm, SubmitFunction } from './BankForm'
 import { RouteProps } from './props'
 import { selectBank } from './selectors'
@@ -72,13 +71,8 @@ const enhance = compose<AllProps, {}>(
 export const BankEdit = enhance((props) => {
   const { onSubmit, onCancel, bank } = props
   return (
-    <div>
-      {bank &&
-        <Grid>
-          <Breadcrumbs {...props} page={messages.page}/>
-          <BankForm edit={bank.doc} onSubmit={onSubmit} onCancel={onCancel}/>
-        </Grid>
-      }
-    </div>
+    <Grid>
+      <BankForm edit={bank.doc} onSubmit={onSubmit} onCancel={onCancel}/>
+    </Grid>
   )
 })

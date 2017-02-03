@@ -1,11 +1,10 @@
-import { Grid } from 'react-bootstrap'
 import * as React from 'react'
-import { defineMessages } from 'react-intl'
+import { PageHeader } from 'react-bootstrap'
+import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from '../../docs'
 import { AppState, pushChanges, mapDispatchToProps } from '../../state'
-import { Breadcrumbs } from './Breadcrumbs'
 import { Values, AccountForm, SubmitFunction } from './AccountForm'
 import { RouteProps } from './props'
 import { selectBank } from './selectors'
@@ -72,10 +71,12 @@ export const AccountCreate = enhance((props) => {
   return (
     <div>
       {bank &&
-        <Grid>
-          <Breadcrumbs {...props} page={messages.page}/>
+        <div>
+          <PageHeader>
+            <FormattedMessage {...messages.page}/>
+          </PageHeader>
           <AccountForm {...props} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
-        </Grid>
+        </div>
       }
     </div>
   )

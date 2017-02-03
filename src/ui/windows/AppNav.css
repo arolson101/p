@@ -14,3 +14,9 @@ div.navpane > div > div > svg {
 div.navpane > div > div > a span {
   flex: 1;
 }
+
+/* hide content pane header */
+div.navpane > div > div > div > div:first-child {
+  visibility: collapse;
+  height: 0;
+}

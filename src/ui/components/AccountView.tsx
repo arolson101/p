@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import { Grid, PageHeader } from 'react-bootstrap'
+import { PageHeader } from 'react-bootstrap'
 import { defineMessages, injectIntl } from 'react-intl'
 import { connect } from 'react-redux'
 import { AutoSizer, Column } from 'react-virtualized'
@@ -8,7 +8,6 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHand
 import { getTransactions, deleteAllTransactions } from '../../actions'
 import { Bank, Account, Transaction } from '../../docs'
 import { AppState, pushChanges, mapDispatchToProps } from '../../state'
-import { Breadcrumbs } from './Breadcrumbs'
 import { Container, Item } from './flex'
 import { ListWithDetails, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
 import { RouteProps, IntlProps } from './props'
@@ -123,105 +122,99 @@ const enhance = compose<AllProps, {}>(
 )
 
 export const AccountView = enhance((props) => {
-  const { bank, account } = props
+  const { account } = props
   const { downloadTransactions, addTransactions, deleteTransactions } = props
   return (
     <div>
-      {account && bank &&
-        <Grid>
-          <Breadcrumbs {...props}/>
+      <SettingsMenu
+        items={[
+          {
+            message: messages.actions,
+            header: true
+          },
+          {
+            message: messages.downloadTransactions,
+            onClick: downloadTransactions
+          },
+          __DEVELOPMENT__ && {
+            message: '★ create transactions',
+            onClick: addTransactions
+          },
+          __DEVELOPMENT__ && {
+            message: '★ delete transactions',
+            onClick: deleteTransactions
+          },
+          {
+            divider: true
+          },
+          {
+            message: messages.account,
+            header: true
+          },
+          {
+            message: messages.update,
+            to: Account.to.edit(account.doc)
+          },
+          {
+            message: messages.delete,
+            to: Account.to.del(account.doc)
+          }
+        ]}
+      />
 
-          <SettingsMenu
-            items={[
-              {
-                message: messages.actions,
-                header: true
-              },
-              {
-                message: messages.downloadTransactions,
-                onClick: downloadTransactions
-              },
-              __DEVELOPMENT__ && {
-                message: '★ create transactions',
-                onClick: addTransactions
-              },
-              __DEVELOPMENT__ && {
-                message: '★ delete transactions',
-                onClick: deleteTransactions
-              },
-              {
-                divider: true
-              },
-              {
-                message: messages.account,
-                header: true
-              },
-              {
-                message: messages.update,
-                to: Account.to.edit(account.doc)
-              },
-              {
-                message: messages.delete,
-                to: Account.to.del(account.doc)
-              }
-            ]}
-          />
+      <PageHeader>
+        {account.doc.name}
+        {' '}
+        <small>{account.doc.number}</small>
+      </PageHeader>
 
-          <PageHeader>
-            {account.doc.name}
-            {' '}
-            <small>{account.doc.number}</small>
-          </PageHeader>
-
-          <Container>
-            <Item flex={1} style={{height: 500}}>
-              <AutoSizer>
-                {(autoSizerProps: AutoSizer.ChildrenProps) => (
-                  <ListWithDetails
-                    items={account.transactions}
-                    {...autoSizerProps}
-                    columns={[
-                      {
-                        label: 'Date',
-                        dataKey: 'time',
-                        cellRenderer: dateCellRenderer,
-                        width: 100
-                      },
-                      {
-                        label: 'Name',
-                        dataKey: 'name',
-                        width: 300,
-                        flexGrow: 1,
-                        cellDataGetter: R.path(['rowData']),
-                        cellRenderer: nameCellRenderer
-                      },
-                      {
-                        label: 'Amount',
-                        dataKey: 'amount',
-                        headerClassName: 'alignRight',
-                        style: {textAlign: 'right'},
-                        cellDataGetter: R.path(['rowData', 'doc', 'amount']),
-                        cellRenderer: currencyCellRenderer,
-                        width: 120
-                      },
-                      {
-                        label: 'Balance',
-                        dataKey: 'balance',
-                        headerClassName: 'alignRight',
-                        style: {textAlign: 'right'},
-                        cellRenderer: currencyCellRenderer,
-                        width: 120
-                      }
-                    ]}
-                    DetailComponent={TransactionDetail}
-                    toView={Transaction.to.view}
-                  />
-                )}
-              </AutoSizer>
-            </Item>
-          </Container>
-        </Grid>
-      }
+      <Container>
+        <Item flex={1} style={{height: 500}}>
+          <AutoSizer>
+            {(autoSizerProps: AutoSizer.ChildrenProps) => (
+              <ListWithDetails
+                items={account.transactions}
+                {...autoSizerProps}
+                columns={[
+                  {
+                    label: 'Date',
+                    dataKey: 'time',
+                    cellRenderer: dateCellRenderer,
+                    width: 100
+                  },
+                  {
+                    label: 'Name',
+                    dataKey: 'name',
+                    width: 300,
+                    flexGrow: 1,
+                    cellDataGetter: R.path(['rowData']),
+                    cellRenderer: nameCellRenderer
+                  },
+                  {
+                    label: 'Amount',
+                    dataKey: 'amount',
+                    headerClassName: 'alignRight',
+                    style: {textAlign: 'right'},
+                    cellDataGetter: R.path(['rowData', 'doc', 'amount']),
+                    cellRenderer: currencyCellRenderer,
+                    width: 120
+                  },
+                  {
+                    label: 'Balance',
+                    dataKey: 'balance',
+                    headerClassName: 'alignRight',
+                    style: {textAlign: 'right'},
+                    cellRenderer: currencyCellRenderer,
+                    width: 120
+                  }
+                ]}
+                DetailComponent={TransactionDetail}
+                toView={Transaction.to.view}
+              />
+            )}
+          </AutoSizer>
+        </Item>
+      </Container>
     </div>
   )
 })

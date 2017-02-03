@@ -1,13 +1,12 @@
 import * as React from 'react'
-import { Grid, PageHeader } from 'react-bootstrap'
-import { injectIntl, defineMessages } from 'react-intl'
+import { PageHeader } from 'react-bootstrap'
+import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from '../../docs'
 import { AppState } from '../../state'
-import { Breadcrumbs } from './Breadcrumbs'
-import { RouteProps, IntlProps } from './props'
+import { RouteProps } from './props'
 import { selectBanks } from './selectors'
 
 const messages = defineMessages({
@@ -25,14 +24,13 @@ interface ConnectedProps {
   banks: Bank.View[]
 }
 
-type AllProps = IntlProps & React.Props<any> & ConnectedProps & RouteProps<any>
+type AllProps = React.Props<any> & ConnectedProps & RouteProps<any>
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('Accounts'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
-  injectIntl,
-  connect<ConnectedProps, {}, IntlProps>(
+  connect<ConnectedProps, {}, {}>(
     (state: AppState): ConnectedProps => ({
       banks: selectBanks(state)
   }))
@@ -42,10 +40,9 @@ export const Accounts = enhance(props => {
   const { banks } = props
 
   return (
-    <Grid>
-      <Breadcrumbs page={messages.page}/>
+    <div>
       <PageHeader>
-        Accounts
+        <FormattedMessage {...messages.page}/>
       </PageHeader>
       <ul>
         {banks.map(bank =>
@@ -62,6 +59,6 @@ export const Accounts = enhance(props => {
         )}
       </ul>
       <Link to={Bank.to.create()}>add institution</Link><br/>
-    </Grid>
+    </div>
   )
 })

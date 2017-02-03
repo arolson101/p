@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Grid, Alert, Button, ButtonToolbar } from 'react-bootstrap'
+import { Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
@@ -7,7 +7,6 @@ import { deleteBank } from '../../actions'
 import { DbInfo, Bank } from '../../docs'
 import { AppState, mapDispatchToProps } from '../../state'
 import { withState2 } from '../enhancers'
-import { Breadcrumbs } from './Breadcrumbs'
 import { forms } from './forms'
 import { RouteProps } from './props'
 import { selectBank } from './selectors'
@@ -91,35 +90,28 @@ export const BankDelete = enhance(props => {
   const { router, bank, error, deleting, confirmDelete } = props
   return (
     <div>
-      {bank &&
-        <Grid>
-          <Breadcrumbs page={messages.page}/>
-          <div>
-            <p><FormattedMessage {...messages.text} values={{name: bank.doc.name}}/></p>
-            {error &&
-              <Alert bsStyle='danger'>
-                {error}
-              </Alert>
-            }
-            <ButtonToolbar className='pull-right'>
-              <Button
-                type='button'
-                onClick={() => router.goBack()}
-                disabled={deleting}
-              >
-                <FormattedMessage {...forms.cancel}/>
-              </Button>
-              <Button
-                bsStyle='danger'
-                onClick={confirmDelete}
-                disabled={deleting}
-              >
-                <FormattedMessage {...messages.confirm}/>
-              </Button>
-            </ButtonToolbar>
-          </div>
-        </Grid>
+      <p><FormattedMessage {...messages.text} values={{name: bank.doc.name}}/></p>
+      {error &&
+        <Alert bsStyle='danger'>
+          {error}
+        </Alert>
       }
+      <ButtonToolbar className='pull-right'>
+        <Button
+          type='button'
+          onClick={() => router.goBack()}
+          disabled={deleting}
+        >
+          <FormattedMessage {...forms.cancel}/>
+        </Button>
+        <Button
+          bsStyle='danger'
+          onClick={confirmDelete}
+          disabled={deleting}
+        >
+          <FormattedMessage {...messages.confirm}/>
+        </Button>
+      </ButtonToolbar>
     </div>
   )
 })

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
-import { Alert, Grid, PageHeader, ProgressBar, Table, Button, Modal } from 'react-bootstrap'
+import { Alert, PageHeader, ProgressBar, Table, Button, Modal } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
@@ -8,7 +8,6 @@ import { getAccounts } from '../../actions'
 import { Bank, Account } from '../../docs'
 import { withState2 } from '../enhancers'
 import { AppState, mapDispatchToProps } from '../../state'
-import { Breadcrumbs } from './Breadcrumbs'
 import { RouteProps, IntlProps } from './props'
 import { selectBank } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
@@ -163,106 +162,100 @@ export const BankView = enhance(props => {
   const { working, showModal, message, error, showAll } = props
   return (
     <div>
-      {bank &&
-        <Grid>
-          <Breadcrumbs/>
+      <SettingsMenu
+        items={[
+          {
+            message: '_View',
+            header: true
+          },
+          {
+            message: messages.showAll,
+            onClick: toggleShowAll
+          },
+          {
+            message: '_Accounts',
+            header: true
+          },
+          {
+            message: messages.addAccount,
+            to: Account.to.create(bank.doc)
+          },
+          {
+            message: messages.getAccounts,
+            onClick: getAccountList,
+            disabled: !bank.doc.online
+          },
+          {
+            divider: true
+          },
+          {
+            message: '_Institution',
+            header: true
+          },
+          {
+            message: messages.update,
+            to: Bank.to.edit(bank.doc)
+          },
+          {
+            message: messages.delete,
+            to: Bank.to.del(bank.doc)
+          }
+        ]}
+      />
 
-          <SettingsMenu
-            items={[
-              {
-                message: '_View',
-                header: true
-              },
-              {
-                message: messages.showAll,
-                onClick: toggleShowAll
-              },
-              {
-                message: '_Accounts',
-                header: true
-              },
-              {
-                message: messages.addAccount,
-                to: Account.to.create(bank.doc)
-              },
-              {
-                message: messages.getAccounts,
-                onClick: getAccountList,
-                disabled: !bank.doc.online
-              },
-              {
-                divider: true
-              },
-              {
-                message: '_Institution',
-                header: true
-              },
-              {
-                message: messages.update,
-                to: Bank.to.edit(bank.doc)
-              },
-              {
-                message: messages.delete,
-                to: Bank.to.del(bank.doc)
-              }
-            ]}
-          />
+      <PageHeader>{bank.doc.name}</PageHeader>
 
-          <PageHeader>{bank.doc.name}</PageHeader>
+      {bank.accounts.length > 0 ? (
+        <Table hover striped>
+          <thead>
+            <tr>
+              {showAll &&
+                <th width='10%'><FormattedMessage {...messages.visible}/></th>
+              }
+              <th width='20%'><FormattedMessage {...messages.type}/></th>
+              <th><FormattedMessage {...messages.name}/></th>
+              <th><FormattedMessage {...messages.number}/></th>
+            </tr>
+          </thead>
+          <tbody>
+            {bank.accounts.filter(account => account.doc.visible || showAll).map(account => account &&
+              <tr key={account.doc._id} href={router.createHref(Account.to.view(account.doc))}>
+                {showAll &&
+                  <td>{account.doc.visible}</td>
+                }
+                <td>{account.doc.type && <FormattedMessage {...Account.messages[account.doc.type]}/>}</td>
+                <td><Link to={Account.to.view(account.doc)}>{account.doc.name}</Link></td>
+                <td><Link to={Account.to.view(account.doc)}>{account.doc.number}</Link></td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      ) : (
+        <FormattedMessage {...messages.noAccounts}/>
+      )}
 
-          {bank.accounts.length > 0 ? (
-            <Table hover striped>
-              <thead>
-                <tr>
-                  {showAll &&
-                    <th width='10%'><FormattedMessage {...messages.visible}/></th>
-                  }
-                  <th width='20%'><FormattedMessage {...messages.type}/></th>
-                  <th><FormattedMessage {...messages.name}/></th>
-                  <th><FormattedMessage {...messages.number}/></th>
-                </tr>
-              </thead>
-              <tbody>
-                {bank.accounts.filter(account => account.doc.visible || showAll).map(account => account &&
-                  <tr key={account.doc._id} href={router.createHref(Account.to.view(account.doc))}>
-                    {showAll &&
-                      <td>{account.doc.visible}</td>
-                    }
-                    <td>{account.doc.type && <FormattedMessage {...Account.messages[account.doc.type]}/>}</td>
-                    <td><Link to={Account.to.view(account.doc)}>{account.doc.name}</Link></td>
-                    <td><Link to={Account.to.view(account.doc)}>{account.doc.number}</Link></td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
-          ) : (
-            <FormattedMessage {...messages.noAccounts}/>
-          )}
-
-          <Modal show={showModal} onHide={hideModal}>
-            <Modal.Header>
-              <Modal.Title>Downloading Account List</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              {working &&
-                <div>
-                  <p>contacting server...</p>
-                  <ProgressBar active now={50}/>
-                </div>
-              }
-              {message &&
-                <Alert bsStyle='info'><Nl2br text={message}/></Alert>
-              }
-              {error &&
-                <Alert bsStyle='danger'><Nl2br text={error}/></Alert>
-              }
-            </Modal.Body>
-            <Modal.Footer>
-              <Button disabled={working} onClick={hideModal}>close</Button>
-            </Modal.Footer>
-          </Modal>
-        </Grid>
-      }
+      <Modal show={showModal} onHide={hideModal}>
+        <Modal.Header>
+          <Modal.Title>Downloading Account List</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {working &&
+            <div>
+              <p>contacting server...</p>
+              <ProgressBar active now={50}/>
+            </div>
+          }
+          {message &&
+            <Alert bsStyle='info'><Nl2br text={message}/></Alert>
+          }
+          {error &&
+            <Alert bsStyle='danger'><Nl2br text={error}/></Alert>
+          }
+        </Modal.Body>
+        <Modal.Footer>
+          <Button disabled={working} onClick={hideModal}>close</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   )
 })

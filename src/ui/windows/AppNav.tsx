@@ -22,7 +22,7 @@ export const AppNav = ({items, selectedIndex, onClick, children}: NavProps & Rea
         onSelect={() => onClick(item)}
       >
         {index === selectedIndex &&
-          <div style={{backgroundColor: 'white'}}>
+          <div style={{backgroundColor: 'white', padding: 10}}>
             {children}
           </div>
         }

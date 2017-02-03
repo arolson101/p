@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bill } from '../../docs'
 import { pushChanges, mapDispatchToProps } from '../../state'
-import { Breadcrumbs } from './Breadcrumbs'
 import { BillForm, SubmitFunction } from './BillForm'
 import { RouteProps } from './props'
 
@@ -52,7 +51,6 @@ export const BillCreate = enhance((props) => {
   const { onSubmit, onCancel } = props
   return (
     <Grid>
-      <Breadcrumbs {...props} page={messages.page}/>
       <BillForm onSubmit={onSubmit} onCancel={onCancel} />
     </Grid>
   )
