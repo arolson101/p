@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Navbar, Nav, NavItem, FormGroup, FormControl, Button } from 'react-bootstrap'
 import { Window, TitleBar } from 'react-desktop/windows'
 import * as Helmet from 'react-helmet'
 import { AppWindowProps } from '../components/AppWindow'
@@ -16,19 +15,16 @@ const toggleMaximize = () => {
   }
 }
 
-export const AppWindow = ({title, onBack, children}: AppWindowProps & React.Props<any>) =>
+export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps & React.Props<any>) =>
   <Window
     chrome
-  >
+    >
     <Helmet
       link={[
-        {rel: 'stylesheet', type: 'text/css', href: 'lib/winstrap/css/winstrap.css'},
-        {/*{rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro.css'},
-        {rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro-responsive.css'},
-        {rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro-schemes.css'},
-        {rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro-icons.css'}*/}
+        { rel: 'stylesheet', type: 'text/css', href: 'lib/winstrap/css/winstrap.css' },
+        { rel: 'stylesheet', type: 'text/css', href: 'p.css' },
       ]}
-    />
+      />
 
     <TitleBar
       title={title}
@@ -39,31 +35,29 @@ export const AppWindow = ({title, onBack, children}: AppWindowProps & React.Prop
       onRestoreDownClick={toggleMaximize}
       theme='dark'
       background='#0078D7'
-    />
+      />
 
-    <div style={{display: 'flex', flex: '1', flexDirection: 'column'}}>
+    <div style={{ display: 'flex', flex: '1', flexDirection: 'column' }}>
 
-    <nav className='navbar navbar-default app-bar'>
-        <div className='navbar-local color-accent theme-dark'>
-            <div className='container-fluid'>
-                <div className='navbar-header'>
-                    <a className='navbar-brand' href='#'>Brand</a>
+      <nav className='navbar navbar-default color-accent theme-dark app-bar'>
+        <div className='navbar-global color-accent theme-dark'>
+          <div className='container-fluid' style={{ padding: 0 }}>
+            <ul className='nav navbar-nav'>
+              <li><a onClick={onBack as any}><span className='glyph glyph-arrow-left' aria-hidden='true' /></a></li>
+              <li><a onClick={onForward as any}><span className='glyph glyph-arrow-right' aria-hidden='true' /></a></li>
+            </ul>
+
+            <div className='nav navbar-nav navbar-right'>
+              <form className='navbar-form navbar-left'>
+                <div className='form-group'>
+                  <input type='text' className='form-control' placeholder='Search' />
                 </div>
-
-                <div className='collapse navbar-collapse' id='bs-example-navbar-collapse-2'>
-                    <ul className='nav navbar-nav'>
-                        <li className='active'><a href='#'>Link <span className='sr-only'>(current)</span></a></li>
-                        <li><a href='#'>Link</a></li>
-                    </ul>
-
-                    <ul className='nav navbar-nav navbar-right'>
-                        <li><a href='#'>Link</a></li>
-                    </ul>
-                </div>
+                <button type='submit' className='btn btn-default'></button>
+              </form>
             </div>
+          </div>
         </div>
-    </nav>
-
+      </nav>
 
       {children}
     </div>

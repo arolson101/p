@@ -4,23 +4,20 @@ import './AppNav.css'
 
 export const AppNav = ({items, selectedIndex, onClick, children}: NavProps & React.Props<any>) =>
   <div style={{ flex: 1, display: 'flex' }}>
-    <div className='entity-list'>
-      {items.map((item, index) =>
-        <div
-          key={item.title}
-          className={(index === selectedIndex ? 'active' : undefined) + ' entity-list-item'}
-          onClick={() => onClick(item)}
-        >
-          <div className='item-icon'>
-            <i className={item.icon + ' fa-2x'} />
-          </div>
-          {item.balance &&
-            <div className='item-content-secondary'><em style={{ color: 'gray' }} className='pull-right'>$1,234.56</em></div>
-          }
-          <div className='item-content-primary'>{item.title}</div>
-        </div>
-      )}
-    </div>
+    <nav role='navigation' id='sidenav' className='nav side-navigation side-navigation-large theme-default' style={{padding: 10}}>
+        <ul>
+          {items.map((item, index) =>
+            <li key={item.title}>
+              <a style={{cursor: 'pointer'}} onClick={() => onClick(item)} className={(index === selectedIndex ? 'active' : undefined)}>
+                <span className={item.icon + ' fa-fw fa-lg'} />
+                {' '}
+                {item.title}
+                <em><small className='pull-right'>{item.balance}</small></em>
+              </a>
+            </li>
+          )}
+      </ul>
+    </nav>
 
     <div style={{ backgroundColor: 'white', flex: 1 }}>
       {children}
