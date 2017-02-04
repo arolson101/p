@@ -13,8 +13,8 @@ if (__DEVELOPMENT__) {
   global.Perf = require<PerfAPI>('react-addons-perf')
 }
 
-require('bootstrap/dist/css/bootstrap.css')
-require('font-awesome/css/font-awesome.css')
+// require('bootstrap/dist/css/bootstrap.css')
+// require('font-awesome/css/font-awesome.css')
 require('react-select/dist/react-select.css')
 
 setObservableConfig(rxjsconfig)

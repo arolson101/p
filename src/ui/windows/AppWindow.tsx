@@ -1,19 +1,9 @@
 import * as React from 'react'
+import { Navbar, Nav, NavItem, FormGroup, FormControl, Button } from 'react-bootstrap'
 import { Window, TitleBar } from 'react-desktop/windows'
+import * as Helmet from 'react-helmet'
 import { AppWindowProps } from '../components/AppWindow'
 import * as electron from 'electron'
-
-// const buttonStyle: React.CSSProperties = {
-//   WebkitUserSelect: 'none',
-//   '-webkit-app-region': 'no-drag',
-//   cursor: 'default',
-//   width: '46px',
-//   height: '100%',
-//   lineHeight: 0,
-//   display: 'flex',
-//   justifyContent: 'center',
-//   alignItems: 'center',
-// }
 
 const onCloseClick = () => electron.remote.BrowserWindow.getFocusedWindow().close()
 // const onMaximizeClick = () => electron.remote.BrowserWindow.getFocusedWindow().maximize()
@@ -30,22 +20,51 @@ export const AppWindow = ({title, onBack, children}: AppWindowProps & React.Prop
   <Window
     chrome
   >
-    {/*<div style={{display: 'flex', flex: '1', flexDirection: 'column'}}>
-      <div style={{display: 'flex', flexDirection: 'row', alignItems: 'center', backgroundColor:'#0078D7'}}>
-        <a style={buttonStyle}>
-          <i className='fa fa-angle-left fa-lg' style={{color: 'black'}}/>
-        </a>*/}
-        <TitleBar
-          title={title}
-          controls
-          onCloseClick={onCloseClick}
-          onMinimizeClick={onMinimizeClick}
-          onMaximizeClick={toggleMaximize}
-          onRestoreDownClick={toggleMaximize}
-          theme='dark'
-          background='#0078D7'
-        />
-      {/*</div>*/}
+    <Helmet
+      link={[
+        {rel: 'stylesheet', type: 'text/css', href: 'lib/winstrap/css/winstrap.css'},
+        {/*{rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro.css'},
+        {rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro-responsive.css'},
+        {rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro-schemes.css'},
+        {rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro-icons.css'}*/}
+      ]}
+    />
+
+    <TitleBar
+      title={title}
+      controls
+      onCloseClick={onCloseClick}
+      onMinimizeClick={onMinimizeClick}
+      onMaximizeClick={toggleMaximize}
+      onRestoreDownClick={toggleMaximize}
+      theme='dark'
+      background='#0078D7'
+    />
+
+    <div style={{display: 'flex', flex: '1', flexDirection: 'column'}}>
+
+    <nav className='navbar navbar-default app-bar'>
+        <div className='navbar-local color-accent theme-dark'>
+            <div className='container-fluid'>
+                <div className='navbar-header'>
+                    <a className='navbar-brand' href='#'>Brand</a>
+                </div>
+
+                <div className='collapse navbar-collapse' id='bs-example-navbar-collapse-2'>
+                    <ul className='nav navbar-nav'>
+                        <li className='active'><a href='#'>Link <span className='sr-only'>(current)</span></a></li>
+                        <li><a href='#'>Link</a></li>
+                    </ul>
+
+                    <ul className='nav navbar-nav navbar-right'>
+                        <li><a href='#'>Link</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
       {children}
-    {/*</div>*/}
+    </div>
   </Window>

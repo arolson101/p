@@ -3,6 +3,7 @@ var fs = require("fs");
 var path = require("path");
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'development'
@@ -73,6 +74,14 @@ module.exports = {
 
   plugins: [
     new CheckerPlugin(),
+
+    new CopyWebpackPlugin([
+      { from: '../node_modules/bootstrap/dist', to: 'lib/bootstrap' },
+      { from: '../node_modules/winstrap/dist', to: 'lib/winstrap' },
+      // { from: '../node_modules/metro-ui/build', to: 'lib/metro-ui' },
+      { from: '../node_modules/font-awesome/css', to: 'lib/font-awesome/css' },
+      { from: '../node_modules/font-awesome/fonts', to: 'lib/font-awesome/fonts' },
+    ]),
 
     // globals
     new webpack.ProvidePlugin({

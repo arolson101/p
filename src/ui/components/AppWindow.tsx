@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as Helmet from 'react-helmet'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import { AppState } from '../../state'
@@ -51,7 +52,14 @@ export const AppWindow = enhance(props => {
   const { ThemeWindow, onBack, onForward, children } = props
   const title = 'p: ' + props.location.pathname + props.location.search
 
-  return <ThemeWindow title={title} onBack={onBack} onForward={onForward}>
-    {children}
-  </ThemeWindow>
+  return <div>
+    <Helmet
+      link={[
+        {rel: 'stylesheet', type: 'text/css', href: 'lib/font-awesome/css/font-awesome.css'},
+      ]}
+    />
+    <ThemeWindow title={title} onBack={onBack} onForward={onForward}>
+      {children}
+    </ThemeWindow>
+  </div>
 })

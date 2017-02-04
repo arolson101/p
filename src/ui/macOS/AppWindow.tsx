@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Window, TitleBar, Toolbar, SearchField, Button, Label } from 'react-desktop/macOs'
+import * as Helmet from 'react-helmet'
 import { AppWindowProps } from '../components/AppWindow'
 import * as electron from 'electron'
 
@@ -41,6 +42,12 @@ export const AppWindow = ({children, title, onBack, onForward}: React.Props<any>
     chrome
     padding='0px'
   >
+    <Helmet
+      link={[
+        {rel: 'stylesheet', type: 'text/css', href: 'lib/bootstrap/css/bootstrap.css'},
+      ]}
+    />
+
     <TitleBar
       inset
       controls
