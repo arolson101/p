@@ -1,11 +1,14 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
+import * as SplitPane from 'react-split-pane'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import { Bank, Account } from '../../docs'
 import { AppState } from '../../state'
 import * as Mac from '../macOS'
 import * as Win from '../windows'
 import { RouteProps } from './props'
+
+import './AppContent.css'
 
 export interface NavItem {
   icon: string
@@ -94,7 +97,12 @@ export const AppContent = enhance(props => {
     selectedIndex = 0
   }
 
-  return <ThemeNav items={items} selectedIndex={selectedIndex} onClick={item => router.push(item.path)}>
-    {children}
-  </ThemeNav>
+  return (
+    <SplitPane split='vertical' minSize={100} defaultSize={200}>
+      <ThemeNav items={items} selectedIndex={selectedIndex} onClick={item => router.push(item.path)} />
+      <div style={{flex: 1, backgroundColor: 'white'}}>
+        {children}
+      </div>
+   </SplitPane>
+  )
 })

@@ -18,6 +18,7 @@ const toggleMaximize = () => {
 export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps & React.Props<any>) =>
   <Window
     chrome
+    style={{overflow: 'hidden'}}
     >
     <Helmet
       link={[
@@ -58,7 +59,8 @@ export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps &
           </div>
         </div>
       </nav>
-
-      {children}
+      <div>
+        {children}
+      </div>
     </div>
   </Window>
