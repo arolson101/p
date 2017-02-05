@@ -11,35 +11,47 @@ import { RouteProps } from './props'
 import './AppContent.css'
 
 export interface NavItem {
+  id: string
   icon: string
   path: string
   title: string
-  balance?: number
+  account?: Account.View
+}
+
+export interface NavGroup {
+  title: string
+  items: NavItem[]
 }
 
 export interface NavProps {
-  items: NavItem[]
-  selectedIndex: number
+  groups: NavGroup[]
+  selectedId: string
   onClick: (item: NavItem) => void
 }
 
-const navItems: NavItem[] = [
-  {
-    icon: 'fa fa-home',
-    path: '/home',
-    title: 'home'
-  },
-  {
-    icon: 'fa fa-home',
-    path: '/banks',
-    title: 'accounts'
-  },
-  {
-    icon: 'fa fa-home',
-    path: '/bills',
-    title: 'bills'
-  }
-]
+const appGroup: NavGroup = {
+  title: 'root',
+  items: [
+    {
+      id: '_home',
+      icon: 'fa fa-home',
+      path: '/home',
+      title: 'home'
+    },
+    {
+      id: '_accounts',
+      icon: 'fa fa-home',
+      path: '/banks',
+      title: 'accounts'
+    },
+    {
+      id: '_bills',
+      icon: 'fa fa-home',
+      path: '/bills',
+      title: 'bills'
+    }
+  ]
+}
 
 interface ConnectedProps {
   ThemeNav: React.StatelessComponent<NavProps>
@@ -81,25 +93,31 @@ const enhance = compose<AllProps, RouteProps<any>>(
 export const AppContent = enhance(props => {
   const { banks, ThemeNav, children, location: { pathname }, router } = props
 
-  const items = [...navItems]
+  const accountGroup: NavGroup = { title: 'accounts', items: [] }
   banks.forEach(bank => {
     bank.accounts.forEach(account => {
-      items.push({
+      accountGroup.items.push({
+        id: account.doc._id,
         icon: Account.icons[account.doc.type],
         path: Account.to.view(account.doc),
         title: account.doc.name,
-        balance: 12345.67
+        account
       })
     })
   })
-  let selectedIndex = items.findIndex(item => pathname.startsWith(item.path))
-  if (selectedIndex === -1) {
-    selectedIndex = 0
-  }
+  const groups = [appGroup, accountGroup]
+  let selectedId = appGroup.items[0].id
+  groups.forEach(group => {
+    group.items.forEach(item => {
+      if (pathname.startsWith(item.path)) {
+        selectedId = item.id
+      }
+    })
+  })
 
   return (
     <SplitPane split='vertical' minSize={100} defaultSize={200}>
-      <ThemeNav items={items} selectedIndex={selectedIndex} onClick={item => router.push(item.path)} />
+      <ThemeNav groups={groups} selectedId={selectedId} onClick={item => router.push(item.path)} />
       <div style={{flex: 1, backgroundColor: 'white'}}>
         {children}
       </div>

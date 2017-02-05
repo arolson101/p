@@ -12,8 +12,6 @@ export interface Account {
   visible: boolean
   bankid: string
   key: string
-  ledgerBalance?: number
-  ledgerBalanceDate?: number
 }
 
 export namespace Account {
@@ -69,23 +67,25 @@ export namespace Account {
   export type View = {
     doc: Doc
     transactions: Transaction.View[]
+    balance: number
   }
 
   export const buildView = (doc: Doc, cache: DocCache): View => {
     const startkey = Transaction.startkeyForAccount(doc)
     const endkey = Transaction.endkeyForAccount(doc)
-    let currentTotal = 0
+    let balance = 0
     const transactions = Array.from(cache.transactions.values())
       .filter(transaction => (startkey < transaction._id && transaction._id < endkey))
       .map(transaction => {
-        const view = Transaction.buildView(transaction, currentTotal)
-        currentTotal += transaction.amount
+        const view = Transaction.buildView(transaction, balance)
+        balance += transaction.amount
         return view
       })
 
     return ({
       doc,
-      transactions
+      transactions,
+      balance
     })
   }
 

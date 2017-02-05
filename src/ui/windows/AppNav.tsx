@@ -1,26 +1,38 @@
 import * as React from 'react'
+import { FormattedNumber } from 'react-intl'
 import { NavProps } from '../components/AppContent'
 import './AppNav.css'
 
-export const AppNav = ({items, selectedIndex, onClick}: NavProps) =>
+export const AppNav = ({groups, selectedId, onClick}: NavProps) =>
   <nav
     role='navigation'
     className='nav side-navigation side-navigation-large theme-default'
     style={{padding: 10, maxWidth: '100%'}}
   >
     <ul>
-      {items.map((item, index) =>
-        <li key={item.title}>
-          <a
-            style={{cursor: 'pointer'}}
-            onClick={() => onClick(item)}
-            className={(index === selectedIndex ? 'active' : undefined)}
-          >
-            <span className={item.icon + ' fa-fw fa-lg'} />
-            {' '}
-            {item.title}
-            <em><small className='pull-right'>{item.balance}</small></em>
-          </a>
+      {groups.map(group =>
+        <li key={group.title}>
+          <em><small>{group.title}</small></em>
+          <ul>
+            {group.items.map(item =>
+              <li key={item.title}>
+                <a
+                  style={{cursor: 'pointer'}}
+                  onClick={() => onClick(item)}
+                  className={(item.id === selectedId ? 'active' : undefined)}
+                >
+                  <span className={item.icon + ' fa-fw fa-lg'} />
+                    {' '}
+                    {item.title}
+                    {item.account &&
+                      <em><small className='pull-right'>
+                        <FormattedNumber value={item.account.balance} style='currency' currency='USD'/>
+                      </small></em>
+                    }
+                </a>
+              </li>
+            )}
+          </ul>
         </li>
       )}
     </ul>
