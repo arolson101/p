@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { FormattedDate, FormattedNumber } from 'react-intl'
-import { Table, Column } from 'react-virtualized'
+import * as SplitPane from 'react-split-pane'
+import { AutoSizer, Table, Column } from 'react-virtualized'
 import { withRouter } from 'react-router'
 import { compose, setDisplayName, withHandlers, setPropTypes, onlyUpdateForPropTypes } from 'recompose'
-import { AppState, ResponsiveState } from '../../state'
-import { Container, Item } from './flex'
+import { AppState } from '../../state'
 import { RouteProps } from './props'
 import { withQuerySyncedState } from '../enhancers'
 import './ListWithDetails.css'
@@ -15,8 +15,6 @@ interface Props<T> {
   toView: (item: T) => string
   columns: Column.Props[]
   DetailComponent: React.ComponentClass<{item: T}> | React.StatelessComponent<{item: T}>
-  width: number
-  height: number
 }
 
 interface ConnectedProps {
@@ -30,11 +28,8 @@ interface State {
 }
 
 interface EnhancedProps {
-  width: number
-  height: number
   onScroll: Table.OnScroll
   rowGetter: Table.RowGetter
-  rowClassName: Table.RowClassName
   rowClassNameWithSelection: Table.RowClassName
   onRowClick: Table.OnRowClick
 }
@@ -50,8 +45,6 @@ const enhance = compose<AllProps, Props<any>>(
     toView: React.PropTypes.func.isRequired,
     columns: React.PropTypes.array.isRequired,
     DetailComponent: React.PropTypes.func.isRequired,
-    width: React.PropTypes.number.isRequired,
-    height: React.PropTypes.number.isRequired
   } as PropTypes<Props<any>>),
   connect<ConnectedProps, {}, RouteProps<any> & Props<any>>(
     (state: AppState) => ({
@@ -77,14 +70,7 @@ const enhance = compose<AllProps, Props<any>>(
         return index % 2 === 0 ? 'evenRow' : 'oddRow'
       }
     },
-    rowClassName: () => ({index}: Table.RowClassNameProps) => {
-      if (index < 0) {
-        return 'headerRow'
-      } else {
-        return index % 2 === 0 ? 'evenRow' : 'oddRow'
-      }
-    },
-    onRowClick: ({router, toView, items, setSelectedIndex}) => ({index}: Table.OnRowClickProps) => {
+    onRowClick: ({/*router, toView, items,*/ setSelectedIndex}) => ({index}: Table.OnRowClickProps) => {
       // if (index !== -1) {
       //   router.push(toView(items[index]))
       // } else {
@@ -95,39 +81,45 @@ const enhance = compose<AllProps, Props<any>>(
 )
 
 export const ListWithDetails = enhance((props) => {
-  const { rowGetter, onRowClick, rowClassName, rowClassNameWithSelection, onScroll, columns, width, height } = props
+  const { rowGetter, onRowClick, rowClassNameWithSelection, onScroll, columns } = props
   const { scrollTop, selectedIndex, DetailComponent, items } = props
   const selectedItem = selectedIndex !== -1 ? items[selectedIndex] : undefined
   return (
-    <Container style={{width}}>
-      <Item flex={1}>
-        <Table
-          tabIndex={null}
-          onScroll={onScroll}
-          scrollTop={scrollTop}
-          style={{flex: 1}}
-          headerHeight={20}
-          rowCount={items.length}
-          rowHeight={50}
-          rowGetter={rowGetter}
-          rowClassName={rowClassNameWithSelection}
-          onRowClick={onRowClick}
-          height={height}
-          width={width}
-        >
-          {columns.map(col =>
-            <Column key={col.label} {...col}/>
+    <SplitPane
+      split='vertical'
+      minSize={100}
+      defaultSize={200}
+      primary='second'
+    >
+      <div style={{height: '100%'}}>
+        <AutoSizer>
+          {(autoSizerProps: AutoSizer.ChildrenProps) => (
+            <Table
+              tabIndex={null}
+              onScroll={onScroll}
+              scrollTop={scrollTop}
+              style={{flex: 1}}
+              headerHeight={20}
+              rowCount={items.length}
+              rowHeight={50}
+              rowGetter={rowGetter}
+              rowClassName={rowClassNameWithSelection}
+              onRowClick={onRowClick}
+              {...autoSizerProps}
+            >
+              {columns.map(col =>
+                <Column key={col.label} {...col}/>
+              )}
+            </Table>
           )}
-        </Table>
-      </Item>
-      {/*{sideBySide &&
-        <Item flex={1}>
-          {selectedItem &&
-            <DetailComponent {...props} item={selectedItem}/>
-          }
-        </Item>
-      }*/}
-    </Container>
+        </AutoSizer>
+      </div>
+      <div>
+        {selectedItem &&
+          <DetailComponent {...props} item={selectedItem}/>
+        }
+      </div>
+   </SplitPane>
   )
 })
 

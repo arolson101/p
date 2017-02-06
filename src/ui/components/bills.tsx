@@ -2,12 +2,11 @@ import * as React from 'react'
 import { PageHeader } from 'react-bootstrap'
 import { injectIntl, FormattedDate, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { AutoSizer,Column } from 'react-virtualized'
+import { Column } from 'react-virtualized'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bill } from '../../docs'
 import { AppState } from '../../state'
 import { BillDetail } from './BillDetail'
-import { Container, Item } from './flex'
 import { ListWithDetails, getRowData, currencyCellRenderer } from './ListWithDetails'
 import { selectBills } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
@@ -56,7 +55,7 @@ export const Bills = enhance((props: AllProps) => {
   const { bills } = props
 
   return (
-    <div>
+    <div style={{height: '100%'}}>
       <SettingsMenu
         items={[
           {
@@ -70,45 +69,36 @@ export const Bills = enhance((props: AllProps) => {
         <FormattedMessage {...messages.page}/>
       </PageHeader>
 
-      <Container>
-        <Item flex={1} style={{height: 500}}>
-          <AutoSizer>
-            {(autoSizerProps: AutoSizer.ChildrenProps) => (
-              <ListWithDetails
-                items={bills}
-                {...autoSizerProps}
-                columns={[
-                  {
-                    label: 'Date',
-                    dataKey: '',
-                    cellDataGetter: getRowData,
-                    cellRenderer: dateCellRenderer,
-                    width: 100
-                  },
-                  {
-                    label: 'Name',
-                    dataKey: '',
-                    width: 300,
-                    flexGrow: 1,
-                    cellDataGetter: getRowData,
-                    cellRenderer: nameCellRenderer
-                  },
-                  {
-                    label: 'Amount',
-                    dataKey: 'amount',
-                    headerClassName: 'alignRight',
-                    style: {textAlign: 'right'},
-                    cellRenderer: currencyCellRenderer,
-                    width: 100
-                  }
-                ]}
-                DetailComponent={BillDetail}
-                toView={Bill.to.view}
-              />
-            )}
-          </AutoSizer>
-        </Item>
-      </Container>
+      <ListWithDetails
+        items={bills}
+        columns={[
+          {
+            label: 'Date',
+            dataKey: '',
+            cellDataGetter: getRowData,
+            cellRenderer: dateCellRenderer,
+            width: 100
+          },
+          {
+            label: 'Name',
+            dataKey: '',
+            width: 300,
+            flexGrow: 1,
+            cellDataGetter: getRowData,
+            cellRenderer: nameCellRenderer
+          },
+          {
+            label: 'Amount',
+            dataKey: 'amount',
+            headerClassName: 'alignRight',
+            style: {textAlign: 'right'},
+            cellRenderer: currencyCellRenderer,
+            width: 100
+          }
+        ]}
+        DetailComponent={BillDetail}
+        toView={Bill.to.view}
+      />
     </div>
   )
 })
