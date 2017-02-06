@@ -130,7 +130,7 @@ export const AppContent = enhance(props => {
       onChange={onSizeChange}
     >
       <ThemeNav groups={groups} selectedId={selectedId} onClick={item => router.push(item.path)} />
-      <div style={{backgroundColor: 'white'}}>
+      <div style={{backgroundColor: 'white', display: 'flex', flexDirection: 'column', height: '100%'}}>
         {children}
       </div>
    </SplitPane>

@@ -127,96 +127,93 @@ export const AccountView = enhance((props) => {
   const { account } = props
   const { downloadTransactions, addTransactions, deleteTransactions } = props
   return (
-    <div>
-      <SettingsMenu
-        items={[
-          {
-            message: messages.actions,
-            header: true
-          },
-          {
-            message: messages.downloadTransactions,
-            onClick: downloadTransactions
-          },
-          __DEVELOPMENT__ && {
-            message: '★ create transactions',
-            onClick: addTransactions
-          },
-          __DEVELOPMENT__ && {
-            message: '★ delete transactions',
-            onClick: deleteTransactions
-          },
-          {
-            divider: true
-          },
-          {
-            message: messages.account,
-            header: true
-          },
-          {
-            message: messages.update,
-            to: Account.to.edit(account.doc)
-          },
-          {
-            message: messages.delete,
-            to: Account.to.del(account.doc)
-          }
-        ]}
-      />
-
+    <div style={{display: 'flex', flexDirection: 'column', height: '100%', flex: 1, padding: 20}}>
       <PageHeader>
+        <SettingsMenu
+          items={[
+            {
+              message: messages.actions,
+              header: true
+            },
+            {
+              message: messages.downloadTransactions,
+              onClick: downloadTransactions
+            },
+            __DEVELOPMENT__ && {
+              message: '★ create transactions',
+              onClick: addTransactions
+            },
+            __DEVELOPMENT__ && {
+              message: '★ delete transactions',
+              onClick: deleteTransactions
+            },
+            {
+              divider: true
+            },
+            {
+              message: messages.account,
+              header: true
+            },
+            {
+              message: messages.update,
+              to: Account.to.edit(account.doc)
+            },
+            {
+              message: messages.delete,
+              to: Account.to.del(account.doc)
+            }
+          ]}
+        />
         {account.doc.name}
         {' '}
         <small>{account.doc.number}</small>
       </PageHeader>
 
-      <Container>
-        <Item flex={1} style={{height: 500}}>
-          <AutoSizer>
-            {(autoSizerProps: AutoSizer.ChildrenProps) => (
-              <ListWithDetails
-                items={account.transactions}
-                {...autoSizerProps}
-                columns={[
-                  {
-                    label: 'Date',
-                    dataKey: 'time',
-                    cellRenderer: dateCellRenderer,
-                    width: 100
-                  },
-                  {
-                    label: 'Name',
-                    dataKey: 'name',
-                    width: 300,
-                    flexGrow: 1,
-                    cellDataGetter: R.path(['rowData']),
-                    cellRenderer: nameCellRenderer
-                  },
-                  {
-                    label: 'Amount',
-                    dataKey: 'amount',
-                    headerClassName: 'alignRight',
-                    style: {textAlign: 'right'},
-                    cellDataGetter: R.path(['rowData', 'doc', 'amount']),
-                    cellRenderer: currencyCellRenderer,
-                    width: 120
-                  },
-                  {
-                    label: 'Balance',
-                    dataKey: 'balance',
-                    headerClassName: 'alignRight',
-                    style: {textAlign: 'right'},
-                    cellRenderer: currencyCellRenderer,
-                    width: 120
-                  }
-                ]}
-                DetailComponent={TransactionDetail}
-                toView={Transaction.to.view}
-              />
-            )}
-          </AutoSizer>
-        </Item>
-      </Container>
+      <div style={{flex: 1, height: '100%'}}>
+        <AutoSizer>
+          {(autoSizerProps: AutoSizer.ChildrenProps) => (
+            <ListWithDetails
+              items={account.transactions}
+              {...autoSizerProps}
+              columns={[
+                {
+                  label: 'Date',
+                  dataKey: 'time',
+                  cellRenderer: dateCellRenderer,
+                  width: 100
+                },
+                {
+                  label: 'Name',
+                  dataKey: 'name',
+                  width: 300,
+                  flexGrow: 1,
+                  cellDataGetter: R.path(['rowData']),
+                  cellRenderer: nameCellRenderer
+                },
+                {
+                  label: 'Amount',
+                  dataKey: 'amount',
+                  headerClassName: 'alignRight',
+                  style: {textAlign: 'right'},
+                  cellDataGetter: R.path(['rowData', 'doc', 'amount']),
+                  cellRenderer: currencyCellRenderer,
+                  width: 120
+                },
+                {
+                  label: 'Balance',
+                  dataKey: 'balance',
+                  headerClassName: 'alignRight',
+                  style: {textAlign: 'right'},
+                  cellRenderer: currencyCellRenderer,
+                  width: 120
+                }
+              ]}
+              DetailComponent={TransactionDetail}
+              toView={Transaction.to.view}
+            />
+          )}
+        </AutoSizer>
+      </div>
     </div>
   )
 })

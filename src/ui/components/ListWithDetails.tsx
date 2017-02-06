@@ -20,8 +20,6 @@ interface Props<T> {
 }
 
 interface ConnectedProps {
-  browser: ResponsiveState
-  sideBySide: boolean
 }
 
 interface State {
@@ -86,50 +84,49 @@ const enhance = compose<AllProps, Props<any>>(
         return index % 2 === 0 ? 'evenRow' : 'oddRow'
       }
     },
-    onRowClick: ({sideBySide, router, toView, items, setSelectedIndex}) => ({index}: Table.OnRowClickProps) => {
-      if (!sideBySide && index !== -1) {
-        router.push(toView(items[index]))
-      } else {
+    onRowClick: ({router, toView, items, setSelectedIndex}) => ({index}: Table.OnRowClickProps) => {
+      // if (index !== -1) {
+      //   router.push(toView(items[index]))
+      // } else {
         setSelectedIndex(index)
-      }
+      // }
     }
   })
 )
 
 export const ListWithDetails = enhance((props) => {
   const { rowGetter, onRowClick, rowClassName, rowClassNameWithSelection, onScroll, columns, width, height } = props
-  const { sideBySide, browser, scrollTop, selectedIndex, DetailComponent, items } = props
-  const listMaxWidth = sideBySide ? (browser.breakpoints.small / 2) : Infinity
+  const { scrollTop, selectedIndex, DetailComponent, items } = props
   const selectedItem = selectedIndex !== -1 ? items[selectedIndex] : undefined
   return (
     <Container style={{width}}>
-      <Item flex={1} style={{maxWidth: listMaxWidth}}>
+      <Item flex={1}>
         <Table
           tabIndex={null}
           onScroll={onScroll}
           scrollTop={scrollTop}
-          style={{flex: 1, maxWidth: listMaxWidth}}
+          style={{flex: 1}}
           headerHeight={20}
           rowCount={items.length}
           rowHeight={50}
           rowGetter={rowGetter}
-          rowClassName={sideBySide ? rowClassNameWithSelection : rowClassName}
+          rowClassName={rowClassNameWithSelection}
           onRowClick={onRowClick}
           height={height}
-          width={Math.min(width, listMaxWidth)}
+          width={width}
         >
           {columns.map(col =>
             <Column key={col.label} {...col}/>
           )}
         </Table>
       </Item>
-      {sideBySide &&
+      {/*{sideBySide &&
         <Item flex={1}>
           {selectedItem &&
             <DetailComponent {...props} item={selectedItem}/>
           }
         </Item>
-      }
+      }*/}
     </Container>
   )
 })
