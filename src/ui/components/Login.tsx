@@ -2,7 +2,8 @@ import * as React from 'react'
 import { Grid, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withState } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
+import ui, { ReduxUIProps } from 'redux-ui'
 import { DbInfo } from '../../docs'
 import { AppState } from '../../state'
 import { LoginForm } from './LoginForm'
@@ -33,9 +34,8 @@ interface ConnectedProps {
   files: DbInfo[]
 }
 
-interface State {
+interface UiState {
   activeId: string
-  setActiveId: (activeId: string) => void
 }
 
 interface EnhancedProps {
@@ -43,7 +43,7 @@ interface EnhancedProps {
   onLogin: (dbInfo: DbInfo) => void
 }
 
-type AllProps = EnhancedProps & State & RouteProps<any> & ConnectedProps
+type AllProps = EnhancedProps & ReduxUIProps<UiState> & RouteProps<any> & ConnectedProps
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('Login'),
@@ -54,10 +54,16 @@ const enhance = compose<AllProps, {}>(
       files: state.db.files
     })
   ),
-  withState('activeId', 'setActiveId', ''),
-  withHandlers<EnhancedProps, State & ConnectedProps & RouteProps<any>>({
-    deselect: ({setActiveId}) => () => {
-      setActiveId('')
+  ui<UiState, ConnectedProps & RouteProps<any>, {}>({
+    key: 'Login',
+    persist: true,
+    state: {
+      activeId: ''
+    } as UiState
+  }),
+  withHandlers<EnhancedProps, ReduxUIProps<UiState> & ConnectedProps & RouteProps<any>>({
+    deselect: ({ updateUI }) => () => {
+      updateUI({activeId: ''} as UiState)
     },
     onLogin: ({router}) => (dbInfo: DbInfo) => {
       router.push(DbInfo.to.home())
@@ -68,13 +74,13 @@ const enhance = compose<AllProps, {}>(
 const activeProps = { bsStyle: 'info' }
 const createId = '_create'
 
-export const Login = enhance(({ files, router, activeId, setActiveId, deselect, onLogin }) => (
+export const Login = enhance(({ files, router, ui: { activeId }, updateUI, deselect, onLogin }) => (
   <Grid>
     <div style={{padding: 50}}>
       <ListGroup>
         {files.map(file => {
           const active = (activeId === file.name)
-          const props = active ? activeProps : {onClick: () => setActiveId(file.name)}
+          const props = active ? activeProps : {onClick: () => updateUI({activeId: file.name})}
           return (
             <ListGroupItem
               key={file.name}
@@ -94,7 +100,7 @@ export const Login = enhance(({ files, router, activeId, setActiveId, deselect, 
       </ListGroup>
       <ListGroup>
         <ListGroupItem
-          {... (activeId === createId) ? activeProps : {onClick: () => setActiveId(createId)}}
+          {... (activeId === createId) ? activeProps : {onClick: () => updateUI({activeId: createId})}}
         >
           <h4><i {...icons.openDb}/> <FormattedMessage {...messages.newDb}/></h4>
           <p><FormattedMessage {...messages.newDbDescription}/></p>

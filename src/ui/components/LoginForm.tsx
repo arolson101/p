@@ -88,18 +88,20 @@ export const LoginForm = enhance((props) => {
     return null as any
   }
   const dbTitle = props.info.name
-  const { handleSubmit, onDelete, onCancel, intl: { formatMessage } } = props
+  const { handleSubmit, onDelete, onCancel, intl: { formatMessage }, submitting } = props
   return (
     <form onSubmit={handleSubmit}>
       <PasswordField
         autoFocus
         name='password'
         label={formatMessage(forms.password)}
+        disabled={submitting}
       />
       <ButtonToolbar>
         <Button
           type='button'
           onClick={onCancel}
+          disabled={submitting}
         >
           <FormattedMessage {...forms.cancel}/>
         </Button>
@@ -108,6 +110,7 @@ export const LoginForm = enhance((props) => {
           bsStyle='primary'
           id='open-dropdown'
           title={formatMessage(forms.login)}
+          disabled={submitting}
           pullRight
         >
           <ConfirmDelete
