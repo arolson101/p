@@ -1,4 +1,9 @@
 
+/* not sure why but this causes content to be too big and scrollbars to appear */
+.SplitPane {
+  position: static !important;
+}
+
 /* https://github.com/tomkp/react-split-pane example styling */
 
 .Resizer {

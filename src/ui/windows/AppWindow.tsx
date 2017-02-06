@@ -16,10 +16,7 @@ const toggleMaximize = () => {
 }
 
 export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps & React.Props<any>) =>
-  <Window
-    chrome
-    style={{overflow: 'hidden'}}
-    >
+  <Window chrome>
     <Helmet
       link={[
         { rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro.css' },
@@ -74,8 +71,6 @@ export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps &
           </ul>
       </div>
 
-      <div>
-        {children}
-      </div>
+      {children}
     </div>
   </Window>
