@@ -20,7 +20,9 @@ export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps &
     <Helmet
       link={[
         { rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro.css' },
-        { rel: 'stylesheet', type: 'text/css', href: 'lib/winstrap/css/winstrap.css' },
+        { rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro-icons.css' },
+        // { rel: 'stylesheet', type: 'text/css', href: 'lib/winstrap/css/winstrap.css' },
+        { rel: 'stylesheet', type: 'text/css', href: 'lib/bootstrap/css/bootstrap.css' },
         { rel: 'stylesheet', type: 'text/css', href: 'p.css' },
       ]}
     />
@@ -59,16 +61,37 @@ export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps &
       </nav>*/}
 
       <div className='app-bar'>
-          <a className='app-bar-element' onClick={onBack as any}><span className='glyph glyph-arrow-left' aria-hidden='true' /></a>
-          <a className='app-bar-element' onClick={onForward as any}><span className='glyph glyph-arrow-right' aria-hidden='true' /></a>
-          <ul className='app-bar-menu place-right' style={{paddingRight: 5}}>
-            <li style={{background: 'transparent'}}>
-              <div className='input-control text' data-role='input'>
-                  <input type='text'/>
-                  <button className='button'><span className='glyph glyph-magnifier' aria-hidden='true' /></button>
-              </div>
-            </li>
-          </ul>
+          <a className='app-bar-element' onClick={onBack as any}><span className='mif mif-arrow-left' aria-hidden='true' /></a>
+          <a className='app-bar-element' onClick={onForward as any}><span className='mif mif-arrow-right' aria-hidden='true' /></a>
+
+          {/*<ul className='app-bar-menu' style={{paddingLeft: 20}}>
+              <li>
+                  <a href='' className='dropdown-toggle'>Products</a>
+                  <ul className='d-menu active' data-role='dropdown'>
+                      <li><a href=''>Windows 10</a></li>
+                      <li><a href=''>Spartan</a></li>
+                      <li><a href=''>Outlook</a></li>
+                      <li><a href=''>Office 2015</a></li>
+                      <li className='divider'></li>
+                      <li><a href='' className='dropdown-toggle'>Other Products</a>
+                          <ul className='d-menu' data-role='dropdown'>
+                              <li><a href=''>Internet Explorer 10</a></li>
+                              <li><a href=''>Skype</a></li>
+                              <li><a href=''>Surface</a></li>
+                          </ul>
+                      </li>
+                  </ul>
+              </li>
+              <li><a href=''>Support</a></li>
+              <li><a href=''>Help</a></li>
+          </ul>*/}
+
+          <div className='app-bar-element place-right' style={{paddingRight: 5, background: 'transparent'}}>
+            <div className='input-control text' data-role='input'>
+                <input type='text'/>
+                <button className='button'><span className='mif mif-search' aria-hidden='true' /></button>
+            </div>
+          </div>
       </div>
 
       {children}
