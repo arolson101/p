@@ -2,7 +2,8 @@ import * as React from 'react'
 import { Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withProps } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteAccount } from '../../actions'
 import { DbInfo, Bank, Account } from '../../docs'
 import { AppState, mapDispatchToProps } from '../../state'
@@ -34,21 +35,16 @@ interface DispatchProps {
   deleteAccount: deleteAccount.Fcn
 }
 
-interface ErrorState {
+interface UIState {
   error?: string
-  setError: (error?: string) => void
-}
-
-interface DeletingState {
-  deleting: boolean
-  setDeleting: (deleting: boolean) => void
+  deleting?: boolean
 }
 
 interface EnhancedProps {
   confirmDelete: () => void
 }
 
-type AllProps = EnhancedProps & DeletingState & ErrorState & ConnectedProps & DispatchProps & RouteProps<Account.Params>
+type AllProps = EnhancedProps & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Account.Params>
 
 const enhance = compose<AllProps, RouteProps<Account.Params>>(
   setDisplayName('AccountDelete'),
@@ -61,24 +57,24 @@ const enhance = compose<AllProps, RouteProps<Account.Params>>(
     }),
     mapDispatchToProps<DispatchProps>({ deleteAccount })
   ),
-  withState<ErrorState & ConnectedProps & DispatchProps & RouteProps<Account.Params>>(
-    'error', 'setError', undefined
-  ),
-  withState<DeletingState & ErrorState & ConnectedProps & DispatchProps & RouteProps<Account.Params>>(
-    'deleting', 'setDeleting', false
-  ),
-  withProps<EnhancedProps, DeletingState & ErrorState & ConnectedProps & DispatchProps & RouteProps<Account.Params>>(
-  ({setDeleting, setError, bank, account, deleteAccount, router}) => ({
+  ui<UIState, ConnectedProps & DispatchProps & RouteProps<Account.Params>, {}>({
+    key: 'AccountDelete',
+    persist: true,
+    state: {
+      error: undefined,
+      deleting: false
+    } as UIState
+  }),
+  withProps<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Account.Params>>(
+  ({updateUI, bank, account, deleteAccount, router}) => ({
       confirmDelete: async () => {
         try {
-          setError(undefined)
-          setDeleting(true)
+          updateUI({error: undefined, deleting: true})
           await deleteAccount({bank, account})
-          setDeleting(false)
+          updateUI({deleting: false})
           router.replace(DbInfo.to.home())
         } catch (err) {
-          setDeleting(false)
-          setError(err.message)
+          updateUI({error: err.message, deleting: false})
         }
       }
     })
@@ -86,7 +82,7 @@ const enhance = compose<AllProps, RouteProps<Account.Params>>(
 )
 
 export const AccountDelete = enhance(props => {
-  const { router, account, error, deleting, confirmDelete } = props
+  const { router, account, ui: { error, deleting }, confirmDelete } = props
   return (
     <div>
       <p><FormattedMessage {...messages.text} values={{name: account.doc.name}}/></p>

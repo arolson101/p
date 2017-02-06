@@ -63,11 +63,11 @@ interface EnhancedProps {
   onSizeChange: (size: number) => void
 }
 
-interface UiState {
+interface UIState {
   sidebarWidth: number
 }
 
-type AllProps = EnhancedProps & ConnectedProps & RouteProps<any> & ReduxUIProps<UiState>
+type AllProps = EnhancedProps & ConnectedProps & RouteProps<any> & ReduxUIProps<UIState>
 
 const enhance = compose<AllProps, RouteProps<any>>(
   setDisplayName('AppContent'),
@@ -81,17 +81,17 @@ const enhance = compose<AllProps, RouteProps<any>>(
       banks: state.db.current!.view.banks
     })
   ),
-  ui<UiState, ConnectedProps & RouteProps<any>, {}>({
+  ui<UIState, ConnectedProps & RouteProps<any>, {}>({
     key: 'AppContent',
     persist: true,
     state: {
       sidebarWidth: 200
-    } as UiState
+    } as UIState
   }),
-  withProps<EnhancedProps, ReduxUIProps<UiState> & ConnectedProps & RouteProps<any>>(
+  withProps<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & RouteProps<any>>(
     ({ updateUI }) => ({
       onSizeChange: (sidebarWidth: number) => {
-        updateUI({sidebarWidth} as UiState)
+        updateUI({sidebarWidth} as UIState)
       }
     })
   )

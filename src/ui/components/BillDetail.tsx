@@ -2,7 +2,8 @@ import * as React from 'react'
 import { Button } from 'react-bootstrap'
 import { FormattedDate } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, withState, withHandlers, mapProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { compose, setDisplayName, withHandlers, mapProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import ui, { ReduxUIProps } from 'redux-ui'
 import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from '../../state'
 import { Bill } from '../../docs'
 import { withPropChangeCallback } from '../enhancers'
@@ -20,9 +21,8 @@ interface MappedProps {
   date: Date
 }
 
-interface State {
+interface UIState {
   editing: boolean
-  setEditing: (editing: boolean) => void
 }
 
 interface EnhancedProps {
@@ -32,7 +32,7 @@ interface EnhancedProps {
   saveEdit: SubmitFunction<Bill.Doc>
 }
 
-type AllProps = Props & State & DispatchProps & EnhancedProps
+type AllProps = Props & ReduxUIProps<UIState> & DispatchProps & EnhancedProps
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('BillDetail'),
@@ -46,31 +46,35 @@ const enhance = compose<AllProps, Props>(
     ...props,
     date: Bill.getDate(props.item)
   })),
-  withState('editing', 'setEditing', false),
-  withHandlers<EnhancedProps, State & MappedProps & DispatchProps & Props>({
-    startEdit: ({setEditing}) => () => {
-      setEditing(true)
+  ui<UIState, Props, {}>({
+    state: {
+      editing: false
+    } as UIState
+  }),
+  withHandlers<EnhancedProps, ReduxUIProps<UIState> & MappedProps & DispatchProps & Props>({
+    startEdit: ({updateUI}) => () => {
+      updateUI({editing: true})
     },
-    cancelEdit: ({setEditing}) => () => {
-      setEditing(false)
+    cancelEdit: ({updateUI}) => () => {
+      updateUI({editing: false})
     },
-    saveEdit: ({setEditing, pushChanges}) => async (doc: Bill.Doc) => {
+    saveEdit: ({updateUI, pushChanges}) => async (doc: Bill.Doc) => {
       await pushChanges({ docs: [doc] })
-      setEditing(false)
+      updateUI({editing: false})
     },
     deleteMe: ({item, pushChanges}) => () => {
       pushChanges({docs: [deleteDoc(item.doc)]})
     }
   }),
-  withPropChangeCallback<EnhancedProps & State & MappedProps & DispatchProps & Props>(
+  withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & MappedProps & DispatchProps & Props>(
     'item',
-    ({setEditing}) => {
-      setEditing(false)
+    ({updateUI}) => {
+      updateUI({editing: false})
     }
   )
 )
 
-export const BillDetail = enhance(({editing, item, startEdit, saveEdit, cancelEdit, deleteMe}) => {
+export const BillDetail = enhance(({ui: { editing }, item, startEdit, saveEdit, cancelEdit, deleteMe}) => {
   if (editing) {
     return <BillForm edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
   }

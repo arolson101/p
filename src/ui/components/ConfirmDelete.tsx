@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Button, Modal } from 'react-bootstrap'
-import { compose, setDisplayName, withState, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import ui, { ReduxUIProps } from 'redux-ui'
 import { FormattedMessage } from 'react-intl'
 import { forms } from './forms'
 
@@ -13,9 +14,8 @@ interface Props {
   onConfirmed: React.EventHandler<any>
 }
 
-interface State {
+interface UIState {
   show: boolean
-  setShow: (show: boolean) => void
 }
 
 interface Handlers {
@@ -24,7 +24,7 @@ interface Handlers {
   onConfirm: (e: React.SyntheticEvent<any>) => void
 }
 
-type AllProps = Handlers & State & Props
+type AllProps = Handlers & ReduxUIProps<UIState> & Props
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('ConfirmDelete'),
@@ -37,23 +37,27 @@ const enhance = compose<AllProps, Props>(
     confirm: React.PropTypes.string.isRequired,
     onConfirmed: React.PropTypes.func.isRequired,
   } as PropTypes<Props>),
-  withState('show', 'setShow', false),
-  withHandlers<Handlers, State & Props>({
-    onOpen: ({setShow}) => () => {
-      setShow(true)
+  ui<UIState, Props, {}>({
+    state: {
+      show: false
+    } as UIState
+  }),
+  withHandlers<Handlers, ReduxUIProps<UIState> & Props>({
+    onOpen: ({updateUI}) => () => {
+      updateUI({show: true})
     },
-    onClose: ({setShow}) => () => {
-      setShow(false)
+    onClose: ({updateUI}) => () => {
+      updateUI({show: false})
     },
-    onConfirm: ({setShow, onConfirmed}) => (e: React.SyntheticEvent<any>) => {
-      setShow(false)
+    onConfirm: ({updateUI, onConfirmed}) => (e: React.SyntheticEvent<any>) => {
+      updateUI({show: false})
       onConfirmed(e)
     }
   })
 )
 
 export const ConfirmDelete = enhance(props => {
-  const { component: Component, onOpen, onClose, onConfirm, show, event, title, body, confirm } = props
+  const { component: Component, onOpen, onClose, onConfirm, ui: { show }, event, title, body, confirm } = props
   const eventProp = { [event]: onOpen }
   return (
     <Component {...eventProp}>
