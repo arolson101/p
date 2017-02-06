@@ -2,6 +2,7 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 import * as SplitPane from 'react-split-pane'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import ui, { ReduxUIProps } from 'redux-ui'
 import { Bank, Account } from '../../docs'
 import { AppState } from '../../state'
 import * as Mac from '../macOS'
@@ -59,11 +60,14 @@ interface ConnectedProps {
 }
 
 interface EnhancedProps {
-  onBack: () => void
-  onForward: () => void
+  onSizeChange: (size: number) => void
 }
 
-type AllProps = EnhancedProps & ConnectedProps & RouteProps<any>
+interface UiState {
+  sidebarWidth: number
+}
+
+type AllProps = EnhancedProps & ConnectedProps & RouteProps<any> & ReduxUIProps<UiState>
 
 const enhance = compose<AllProps, RouteProps<any>>(
   setDisplayName('AppContent'),
@@ -77,21 +81,24 @@ const enhance = compose<AllProps, RouteProps<any>>(
       banks: state.db.current!.view.banks
     })
   ),
-  withProps<EnhancedProps, ConnectedProps & RouteProps<any>>(
-    ({router}) => ({
-      onBack: () => {
-        router.goBack()
-      },
-
-      onForward: () => {
-        router.goForward()
+  ui<UiState, ConnectedProps & RouteProps<any>, {}>({
+    key: 'AppContent',
+    persist: true,
+    state: {
+      sidebarWidth: 200
+    } as UiState
+  }),
+  withProps<EnhancedProps, ReduxUIProps<UiState> & ConnectedProps & RouteProps<any>>(
+    ({ updateUI }) => ({
+      onSizeChange: (sidebarWidth: number) => {
+        updateUI({sidebarWidth} as UiState)
       }
     })
   )
 )
 
 export const AppContent = enhance(props => {
-  const { banks, ThemeNav, children, location: { pathname }, router } = props
+  const { banks, ThemeNav, children, location: { pathname }, router, onSizeChange, ui: { sidebarWidth } } = props
 
   const accountGroup: NavGroup = { title: 'accounts', items: [] }
   banks.forEach(bank => {
@@ -116,7 +123,12 @@ export const AppContent = enhance(props => {
   })
 
   return (
-    <SplitPane split='vertical' minSize={100} defaultSize={200}>
+    <SplitPane
+      split='vertical'
+      minSize={100}
+      defaultSize={sidebarWidth}
+      onChange={onSizeChange}
+    >
       <ThemeNav groups={groups} selectedId={selectedId} onClick={item => router.push(item.path)} />
       <div style={{flex: 1, backgroundColor: 'white'}}>
         {children}
