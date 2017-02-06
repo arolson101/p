@@ -77,9 +77,8 @@ export namespace Account {
     const transactions = Array.from(cache.transactions.values())
       .filter(transaction => (startkey < transaction._id && transaction._id < endkey))
       .map(transaction => {
-        const view = Transaction.buildView(transaction, balance)
         balance += transaction.amount
-        return view
+        return Transaction.buildView(transaction, balance)
       })
 
     return ({
