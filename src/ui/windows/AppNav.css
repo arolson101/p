@@ -1,13 +1,27 @@
 
-
+/* enable dragging */
 .app-bar {
   -webkit-app-region: drag;
 }
 
-.app-bar-element {
+.app-bar-element, .app-bar-menu {
   -webkit-app-region: no-drag;
 }
 
+/* fix conflict with bootstrap, I guess? */
+.app-bar li {
+  margin: 0 !important;
+}
+
+/* disable underline effect re-enabled by bootstrap */
+.app-bar a {
+  text-decoration: none !important;
+}
+
+/* input text is white for some reason */
+.app-bar input {
+  color: black !important;
+}
 
 /* fix metro.css adding margin around h1 elements */
 h1, h2, h3, h4, h5, h6 {
@@ -15,7 +29,7 @@ h1, h2, h3, h4, h5, h6 {
   padding-left: 0.625rem !important;
 }
 
-/* fix split buttons being separated */
+/* fix winstrap split buttons being separated */
 .dropdown-toggle {
   min-width: initial !important;
   margin-left: -7px !important;

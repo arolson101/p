@@ -22,10 +22,11 @@ export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps &
     >
     <Helmet
       link={[
+        { rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro.css' },
         { rel: 'stylesheet', type: 'text/css', href: 'lib/winstrap/css/winstrap.css' },
         { rel: 'stylesheet', type: 'text/css', href: 'p.css' },
       ]}
-      />
+    />
 
     <TitleBar
       title={title}
@@ -35,12 +36,12 @@ export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps &
       onMaximizeClick={toggleMaximize}
       onRestoreDownClick={toggleMaximize}
       theme='dark'
-      background='#0078D7'
+      background='rgb(0, 114, 198)'
       />
 
     <div style={{ display: 'flex', flex: '1', flexDirection: 'column' }}>
 
-      <nav className='navbar navbar-default color-accent theme-dark app-bar'>
+      {/*<nav className='navbar navbar-default color-accent theme-dark app-bar'>
         <div className='navbar-global color-accent theme-dark'>
           <div className='container-fluid' style={{ padding: 0 }}>
             <ul className='nav navbar-nav'>
@@ -58,7 +59,21 @@ export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps &
             </div>
           </div>
         </div>
-      </nav>
+      </nav>*/}
+
+      <div className='app-bar'>
+          <a className='app-bar-element' onClick={onBack as any}><span className='glyph glyph-arrow-left' aria-hidden='true' /></a>
+          <a className='app-bar-element' onClick={onForward as any}><span className='glyph glyph-arrow-right' aria-hidden='true' /></a>
+          <ul className='app-bar-menu place-right' style={{paddingRight: 5}}>
+            <li style={{background: 'transparent'}}>
+              <div className='input-control text' data-role='input'>
+                  <input type='text'/>
+                  <button className='button'><span className='glyph glyph-magnifier' aria-hidden='true' /></button>
+              </div>
+            </li>
+          </ul>
+      </div>
+
       <div>
         {children}
       </div>
