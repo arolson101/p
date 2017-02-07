@@ -1,11 +1,13 @@
 import * as React from 'react'
-import { PageHeader } from 'react-bootstrap'
+import { PageHeader, Modal } from 'react-bootstrap'
 import { injectIntl, FormattedDate, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { Column } from 'react-virtualized'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import ui, { ReduxUIProps } from 'redux-ui'
 import { Bill } from '../../docs'
 import { AppState } from '../../state'
+import { BillCreate } from './BillCreate'
 import { BillDetail } from './BillDetail'
 import { ListWithDetails, getRowData, currencyCellRenderer } from './ListWithDetails'
 import { selectBills } from './selectors'
@@ -30,6 +32,10 @@ interface ConnectedProps {
   bills: Bill.View[]
 }
 
+interface UIState {
+  showCreate: boolean
+}
+
 interface EnhancedProps {
   scrollTop: number
   setScrollTop: (scrollTop: number) => void
@@ -37,7 +43,7 @@ interface EnhancedProps {
   setSelectedIndex: (selectedIndex: number) => void
 }
 
-type AllProps = EnhancedProps & ConnectedProps
+type AllProps = ReduxUIProps<UIState> & EnhancedProps & ConnectedProps
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('Bills'),
@@ -48,11 +54,17 @@ const enhance = compose<AllProps, {}>(
     (state: AppState): ConnectedProps => ({
       bills: selectBills(state)
     })
-  )
+  ),
+  ui({
+    key: 'Bills',
+    state: {
+      showCreate: false
+    } as UIState
+  })
 )
 
 export const Bills = enhance((props: AllProps) => {
-  const { bills } = props
+  const { bills, updateUI, ui: { showCreate } } = props
 
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -62,7 +74,7 @@ export const Bills = enhance((props: AllProps) => {
           items={[
             {
               message: messages.addBill,
-              to: Bill.to.create()
+              onClick: () => { updateUI({showCreate: true}) }
             }
           ]}
         />
@@ -99,6 +111,12 @@ export const Bills = enhance((props: AllProps) => {
         ]}
         DetailComponent={BillDetail}
         toView={Bill.to.view}
+      />
+
+      <BillCreate
+        show={showCreate}
+        onHide={() => updateUI({showCreate: false})}
+        bsSize='large'
       />
     </div>
   )

@@ -43,3 +43,12 @@ Resizer.disabled {
 Resizer.disabled:hover {
   border-color: transparent;
 }
+
+/* http://stackoverflow.com/questions/7508576/how-to-enable-scrolling-content-inside-a-bootstrap-modal */
+.modal-dialog{
+    overflow-y: initial !important
+}
+.modal-body{
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}

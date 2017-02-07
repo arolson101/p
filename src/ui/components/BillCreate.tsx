@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Grid } from 'react-bootstrap'
-import { defineMessages } from 'react-intl'
+import { Grid, Modal, ModalProps } from 'react-bootstrap'
+import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bill } from '../../docs'
@@ -15,6 +15,8 @@ const messages = defineMessages({
   }
 })
 
+type Props = ModalProps
+
 interface DispatchProps {
   pushChanges: pushChanges.Fcn
 }
@@ -24,9 +26,9 @@ interface EnhancedProps {
   onSubmit: SubmitFunction<Bill.Doc>
 }
 
-type AllProps = EnhancedProps & RouteProps<Bill.Params>
+type AllProps = EnhancedProps & RouteProps<Bill.Params> & Props
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<AllProps, Props>(
   setDisplayName('BillCreate'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
@@ -48,10 +50,16 @@ const enhance = compose<AllProps, {}>(
 )
 
 export const BillCreate = enhance((props) => {
-  const { onSubmit, onCancel } = props
+  const { show, onHide, onSubmit, onCancel } = props
+  console.log('show:', show)
   return (
-    <Grid>
-      <BillForm onSubmit={onSubmit} onCancel={onCancel} />
-    </Grid>
+    <Modal show={show} onHide={onHide} bsSize='large'>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          <FormattedMessage {...messages.page}/>
+        </Modal.Title>
+      </Modal.Header>
+      <BillForm onSubmit={onSubmit} onCancel={onHide as () => void} />
+    </Modal>
   )
 })
