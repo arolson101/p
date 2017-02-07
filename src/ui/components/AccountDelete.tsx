@@ -58,8 +58,6 @@ const enhance = compose<AllProps, RouteProps<Account.Params>>(
     mapDispatchToProps<DispatchProps>({ deleteAccount })
   ),
   ui<UIState, ConnectedProps & DispatchProps & RouteProps<Account.Params>, {}>({
-    key: 'AccountDelete',
-    persist: true,
     state: {
       error: undefined,
       deleting: false

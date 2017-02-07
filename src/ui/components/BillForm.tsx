@@ -7,9 +7,10 @@ import * as DatePicker from 'react-datepicker'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps, withState, withHandlers } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps, withHandlers } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, ReduxFormProps, SubmitFunction, formValueSelector } from 'redux-form'
+import ui, { ReduxUIProps } from 'redux-ui'
 import * as RRule from 'rrule-alt'
 import { Bank, Bill } from '../../docs'
 import { AppState } from '../../state'
@@ -146,9 +147,8 @@ interface FormProps {
   rrule?: RRule
 }
 
-interface State {
+interface UIState {
   groups: SelectOption[]
-  setGroups: (groups: SelectOption[]) => void
 }
 
 interface EnhancedProps {
@@ -162,7 +162,7 @@ interface Handlers {
   filterEndDate: (date: Date) => boolean
 }
 
-type AllProps = Handlers & EnhancedProps & State & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props
+type AllProps = Handlers & EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props
 
 type Frequency = 'days' | 'weeks' | 'months' | 'years'
 type EndType = 'endDate' | 'endCount'
@@ -229,7 +229,7 @@ const enhance = compose<AllProps, Props>(
     }
   }),
   connect<FormProps, {}, ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
-    (state: AppState): FormProps => ({
+    (state: AppState, props): FormProps => ({
       start: formSelector(state, 'start'),
       interval: formSelector(state, 'interval'),
       count: formSelector(state, 'count'),
@@ -238,10 +238,12 @@ const enhance = compose<AllProps, Props>(
       rrule: rruleSelector(state)
     })
   ),
-  withState<State & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
-    'groups', 'setGroups', (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)
-  ),
-  withProps<EnhancedProps, State & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
+  ui<UIState, FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props, {}>({
+    state: {
+      groups: (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)
+    }
+  }),
+  withProps<EnhancedProps, ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
     ({onSubmit, lang, edit}) => ({
       onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
         const { intl: { formatMessage } } = props
@@ -268,7 +270,7 @@ const enhance = compose<AllProps, Props>(
       }
     })
   ),
-  withPropChangeCallback<EnhancedProps & State & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
+  withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
     'edit',
     (props) => {
       const { edit, initialize, reset, intl: { formatNumber } } = props
@@ -317,7 +319,7 @@ const enhance = compose<AllProps, Props>(
       }
     }
   ),
-  withHandlers<Handlers, EnhancedProps & State & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>({
+  withHandlers<Handlers, EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>({
     onFrequencyChange: ({change}) => (eventKey: Frequency) => {
       change('frequency', eventKey)
     },
@@ -339,7 +341,7 @@ const enhance = compose<AllProps, Props>(
 const { TextField, DateField, SelectField, SelectCreateableField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
-  const { edit, onSubmit, onCancel, groups, accountOptions, monthOptions, weekdayOptions, handleSubmit, frequency,
+  const { edit, onSubmit, onCancel, ui: { groups }, accountOptions, monthOptions, weekdayOptions, handleSubmit, frequency,
     interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, onCalendarChange } = props
   const { formatMessage } = props.intl
 

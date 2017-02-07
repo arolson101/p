@@ -3,10 +3,10 @@ import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { Alert, PageHeader, ProgressBar, Table, Button, Modal } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link } from 'react-router'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
+import ui, { ReduxUIProps } from 'redux-ui'
 import { getAccounts } from '../../actions'
 import { Bank, Account } from '../../docs'
-import { withState2 } from '../enhancers'
 import { AppState, mapDispatchToProps } from '../../state'
 import { RouteProps, IntlProps } from './props'
 import { selectBank } from './selectors'
@@ -67,21 +67,12 @@ interface DispatchProps {
   getAccounts: getAccounts.Fcn
 }
 
-interface State {
-  showAll: boolean
-  setShowAll: (showAll: boolean) => void
-
-  showModal: boolean
-  setShowModal: (showModal: boolean) => void
-
-  working: boolean
-  setWorking: (working: boolean) => void
-
+interface UIState {
+  showAll?: boolean
+  showModal?: boolean
+  working?: boolean
   error?: string
-  setError: (error?: string) => void
-
   message?: string
-  setMessage: (message?: string) => void
 }
 
 interface EnhancedProps {
@@ -91,7 +82,7 @@ interface EnhancedProps {
 }
 
 type AllProps = EnhancedProps
-  & State
+  & ReduxUIProps<UIState>
   & ConnectedProps
   & DispatchProps
   & IntlProps
@@ -108,58 +99,46 @@ const enhance = compose<AllProps, {}>(
     }),
     mapDispatchToProps<DispatchProps>({ getAccounts })
   ),
-  withState2<State, ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>>(
-    {
+  ui<UIState, ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>, {}>({
+    state: {
       showAll: false,
       showModal: false,
       working: false,
       message: undefined,
       error: undefined
+    } as UIState
+  }),
+  withHandlers<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>>({
+    toggleShowAll: ({ ui: { showAll }, updateUI }) => () => {
+      updateUI({showAll: !showAll})
     },
-    {
-      setShowAll: 'showAll',
-      setShowModal: 'showModal',
-      setWorking: 'working',
-      setMessage: 'message',
-      setError: 'error'
-    }
-  ),
-  withProps<EnhancedProps, State & ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>>(
-    props => ({
-      toggleShowAll: () => {
-        const { showAll, setShowAll } = props
-        setShowAll(!showAll)
-      },
 
-      getAccountList: async () => {
-        const { setShowModal, setWorking, setMessage, setError, getAccounts, bank, intl: { formatMessage } } = props
-        setMessage(undefined)
-        setError(undefined)
-        setWorking(true)
-        setShowModal(true)
-        try {
-          const message = await getAccounts({bank, formatMessage})
-          setWorking(false)
-          setMessage(message)
-        } catch (ex) {
-          setWorking(false)
-          setError(ex.message)
-        }
-      },
-
-      hideModal: () => {
-        const { working, setShowModal } = props
-        if (!working) {
-          setShowModal(false)
-        }
+    getAccountList: ({ updateUI, getAccounts, bank, intl: { formatMessage } }) => async () => {
+      updateUI({
+        message: undefined,
+        error: undefined,
+        working: true,
+        showModal: true
+      })
+      try {
+        const message = await getAccounts({bank, formatMessage})
+        updateUI({ working: false, message })
+      } catch (ex) {
+        updateUI({ working: false, error: ex.message })
       }
-    })
-  )
+    },
+
+    hideModal: ({ ui: { working }, updateUI }) => () => {
+      if (!working) {
+        updateUI({showModal: false})
+      }
+    }
+  })
 )
 
 export const BankView = enhance(props => {
   const { bank, router, toggleShowAll, hideModal, getAccountList } = props
-  const { working, showModal, message, error, showAll } = props
+  const { ui: { working, showModal, message, error, showAll } } = props
   return (
     <div>
       <SettingsMenu

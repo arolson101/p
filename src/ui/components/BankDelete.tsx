@@ -3,10 +3,10 @@ import { Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteBank } from '../../actions'
 import { DbInfo, Bank } from '../../docs'
 import { AppState, mapDispatchToProps } from '../../state'
-import { withState2 } from '../enhancers'
 import { forms } from './forms'
 import { RouteProps } from './props'
 import { selectBank } from './selectors'
@@ -34,19 +34,16 @@ interface DispatchProps {
   deleteBank: deleteBank.Fcn
 }
 
-interface State {
+interface UIState {
   error?: string
-  setError: (error?: string) => void
-
-  deleting: boolean
-  setDeleting: (deleting: boolean) => void
+  deleting?: boolean
 }
 
 interface EnhancedProps {
   confirmDelete: () => void
 }
 
-type AllProps = EnhancedProps & State & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
+type AllProps = EnhancedProps & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
 
 const enhance = compose<AllProps, RouteProps<Bank.Params>>(
   setDisplayName('BankDelete'),
@@ -58,28 +55,22 @@ const enhance = compose<AllProps, RouteProps<Bank.Params>>(
     }),
     mapDispatchToProps<DispatchProps>({ deleteBank })
   ),
-  withState2<State, ConnectedProps & DispatchProps & RouteProps<Bank.Params>>(
-    {
+  ui<UIState, ConnectedProps & RouteProps<any>, {}>({
+    state: {
       error: undefined,
       deleting: false
-    },
-    {
-      setError: 'error',
-      setDeleting: 'deleting'
-    }
-  ),
-  withProps<EnhancedProps, State & ConnectedProps & DispatchProps & RouteProps<Bank.Params>>(
-    ({setDeleting, setError, bank, deleteBank, router}) => ({
+    } as UIState
+  }),
+  withProps<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Bank.Params>>(
+    ({updateUI, bank, deleteBank, router}) => ({
       confirmDelete: async () => {
         try {
-          setError(undefined)
-          setDeleting(true)
+          updateUI({error: undefined, deleting: true})
           await deleteBank({bank})
-          setDeleting(false)
+          updateUI({deleting: false})
           router.replace(DbInfo.to.home())
         } catch (err) {
-          setDeleting(false)
-          setError(err.message)
+          updateUI({error: err.message, deleting: false})
         }
       }
     })
@@ -87,7 +78,7 @@ const enhance = compose<AllProps, RouteProps<Bank.Params>>(
 )
 
 export const BankDelete = enhance(props => {
-  const { router, bank, error, deleting, confirmDelete } = props
+  const { router, bank, ui: { error, deleting }, confirmDelete } = props
   return (
     <div>
       <p><FormattedMessage {...messages.text} values={{name: bank.doc.name}}/></p>
