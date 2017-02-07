@@ -22,6 +22,7 @@ export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps &
         { rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro.css' },
         { rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro-icons.css' },
         // { rel: 'stylesheet', type: 'text/css', href: 'lib/winstrap/css/winstrap.css' },
+        // { rel: 'stylesheet', type: 'text/css', href: 'lib/winstrap/css/winstrap-optional.css' },
         { rel: 'stylesheet', type: 'text/css', href: 'lib/bootstrap/css/bootstrap.css' },
         { rel: 'stylesheet', type: 'text/css', href: 'p.css' },
       ]}
