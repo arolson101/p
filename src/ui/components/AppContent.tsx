@@ -85,7 +85,7 @@ const enhance = compose<AllProps, RouteProps<any>>(
     key: 'AppContent',
     persist: true,
     state: {
-      sidebarWidth: 200
+      sidebarWidth: 250
     } as UIState
   }),
   withProps<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & RouteProps<any>>(

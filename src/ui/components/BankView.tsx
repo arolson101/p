@@ -140,49 +140,52 @@ export const BankView = enhance(props => {
   const { bank, router, toggleShowAll, hideModal, getAccountList } = props
   const { ui: { working, showModal, message, error, showAll } } = props
   return (
-    <div>
-      <SettingsMenu
-        items={[
-          {
-            message: '_View',
-            header: true
-          },
-          {
-            message: messages.showAll,
-            onClick: toggleShowAll
-          },
-          {
-            message: '_Accounts',
-            header: true
-          },
-          {
-            message: messages.addAccount,
-            to: Account.to.create(bank.doc)
-          },
-          {
-            message: messages.getAccounts,
-            onClick: getAccountList,
-            disabled: !bank.doc.online
-          },
-          {
-            divider: true
-          },
-          {
-            message: '_Institution',
-            header: true
-          },
-          {
-            message: messages.update,
-            to: Bank.to.edit(bank.doc)
-          },
-          {
-            message: messages.delete,
-            to: Bank.to.del(bank.doc)
-          }
-        ]}
-      />
+    <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
 
-      <PageHeader>{bank.doc.name}</PageHeader>
+      <PageHeader>
+        <SettingsMenu
+          items={[
+            {
+              message: '_View',
+              header: true
+            },
+            {
+              message: messages.showAll,
+              onClick: toggleShowAll
+            },
+            {
+              message: '_Accounts',
+              header: true
+            },
+            {
+              message: messages.addAccount,
+              to: Account.to.create(bank.doc)
+            },
+            {
+              message: messages.getAccounts,
+              onClick: getAccountList,
+              disabled: !bank.doc.online
+            },
+            {
+              divider: true
+            },
+            {
+              message: '_Institution',
+              header: true
+            },
+            {
+              message: messages.update,
+              to: Bank.to.edit(bank.doc)
+            },
+            {
+              message: messages.delete,
+              to: Bank.to.del(bank.doc)
+            }
+          ]}
+        />
+
+        {bank.doc.name}
+      </PageHeader>
 
       {bank.accounts.length > 0 ? (
         <Table hover striped>

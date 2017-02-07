@@ -55,17 +55,18 @@ export const Bills = enhance((props: AllProps) => {
   const { bills } = props
 
   return (
-    <div style={{height: '100%'}}>
-      <SettingsMenu
-        items={[
-          {
-            message: messages.addBill,
-            to: Bill.to.create()
-          }
-        ]}
-      />
+    <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
 
       <PageHeader>
+        <SettingsMenu
+          items={[
+            {
+              message: messages.addBill,
+              to: Bill.to.create()
+            }
+          ]}
+        />
+
         <FormattedMessage {...messages.page}/>
       </PageHeader>
 

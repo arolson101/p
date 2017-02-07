@@ -88,7 +88,7 @@ export const ListWithDetails = enhance((props) => {
     <SplitPane
       split='vertical'
       minSize={100}
-      defaultSize={200}
+      defaultSize={300}
       primary='second'
     >
       <div style={{height: '100%'}}>

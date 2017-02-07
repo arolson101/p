@@ -126,50 +126,50 @@ export const AccountView = enhance((props) => {
   const { account } = props
   const { downloadTransactions, addTransactions, deleteTransactions } = props
   return (
-    <div style={{height: '100%'}}>
-      <SettingsMenu
-        items={[
-          {
-            message: messages.actions,
-            header: true
-          },
-          {
-            message: messages.downloadTransactions,
-            onClick: downloadTransactions
-          },
-          __DEVELOPMENT__ && {
-            message: '★ create transactions',
-            onClick: addTransactions
-          },
-          __DEVELOPMENT__ && {
-            message: '★ delete transactions',
-            onClick: deleteTransactions
-          },
-          {
-            divider: true
-          },
-          {
-            message: messages.account,
-            header: true
-          },
-          {
-            message: messages.update,
-            to: Account.to.edit(account.doc)
-          },
-          {
-            message: messages.delete,
-            to: Account.to.del(account.doc)
-          }
-        ]}
-      />
-
+    <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
       <PageHeader>
+        <SettingsMenu
+          items={[
+            {
+              message: messages.actions,
+              header: true
+            },
+            {
+              message: messages.downloadTransactions,
+              onClick: downloadTransactions
+            },
+            __DEVELOPMENT__ && {
+              message: '★ create transactions',
+              onClick: addTransactions
+            },
+            __DEVELOPMENT__ && {
+              message: '★ delete transactions',
+              onClick: deleteTransactions
+            },
+            {
+              divider: true
+            },
+            {
+              message: messages.account,
+              header: true
+            },
+            {
+              message: messages.update,
+              to: Account.to.edit(account.doc)
+            },
+            {
+              message: messages.delete,
+              to: Account.to.del(account.doc)
+            }
+          ]}
+        />
+
         {account.doc.name}
         {' '}
         <small>{account.doc.number}</small>
       </PageHeader>
 
-      <div style={{flex: 1, height: '100%'}}>
+      <div style={{flex: 1}}>
         <ListWithDetails
           items={account.transactions}
           columns={[
