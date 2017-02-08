@@ -113,11 +113,13 @@ const enhance = compose<AllProps, {}>(
       const start = new Date(2016, 11, 1)
       const end = new Date(2016, 11, 31)
       await getTransactions({bank, account, start, end, formatMessage})
+      // TODO: try/catch
     },
 
     deleteTransactions: (props) => async () => {
       const { deleteAllTransactions, account } = props
       await deleteAllTransactions({account})
+      // TODO: try/catch
     }
   })
 )

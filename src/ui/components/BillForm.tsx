@@ -250,7 +250,7 @@ const enhance = compose<AllProps, Props>(
       onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
         const { intl: { formatMessage } } = props
         const v = new Validator(values)
-        v.required(['group', 'name', 'start'], formatMessage(forms.required))
+        v.required(['group', 'name', 'amount', 'start'], formatMessage(forms.required))
 
         const rrule = toRRule(values)
         if (rrule instanceof ErrorMessage) {
@@ -262,7 +262,7 @@ const enhance = compose<AllProps, Props>(
         const { amount, frequency, start, end, until, count, interval, byweekday, bymonth, ...rest } = values
 
         const bill: Bill = {
-          ...edit,
+          ...edit!.doc,
           ...rest,
           amount: numeral(amount).value(),
           rruleString: rrule.toString()

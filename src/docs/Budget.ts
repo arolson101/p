@@ -1,37 +1,71 @@
-/**
- * time period: week/month/quarter/paycheck
- * upcoming bills in future time periods
- * extra money in budget goes into next month's budget
- * distribution rules?  auto-transfer for each bill, leave the rest for user
- * how to handle debt?
- * how to budget credit card payment?
- * everything is an envelope?  paycheck goes into income, transfer to rest
- *
- *
- * Budget (January 2017)
- *  |- Unallocated (keep at 0)
- *  |- + Bills
- *  |  |- Mortgage (due 1/12) $1000
- *  |  |- Netflix (due 1/15) $10
- *  |  |- Vehicle registration (due 4/16) will be $100, need to add ($100-current)/time this month
- *  |  \- Taxes (due 4/1) will be $6000, saved $5000, add $500
- *  |- + Shared Expenses
- *  |  |- Groceries $600
- *  |  \- College savings $200
- *  \- + Savings goals
- *     |- Disney Trip $100 / $2000
- *
- * My Budget (January 2017)
- *  |- Unallocated (keep at 0)
- *  |- + Expenses
- *  |  |- Groceries $100
- *  |  |- Gas $100
- *  |- + Savings Goals
- *  |  |- New car - $100 / $30000
- *  |  \- Playstation VR - 0 / $500
- *  \- + Birthdays
- *     |- Mom 1/20 - $25
- *     \- Someone else 3/15 - $10
- */
+import * as docURI from 'docuri'
+import { makeid, Lookup } from '../util'
+import { DocCache } from './index'
 
-export {}
+export interface Budget {
+  name: string
+  group: string
+}
+
+export namespace Budget {
+  export type Id = ':budgetId' | 'create' | makeid
+  export type DocId = 'budget/:budgetId'
+  export type Doc = TDocument<Budget, DocId>
+  export interface Params { budgetId: Id }
+  export const docId = docURI.route<Params, DocId>('budget/:budgetId')
+  export type Cache = Lookup<DocId, Doc>
+  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
+
+  export type View = {
+    doc: Doc
+  }
+
+  export const buildView = (doc: Doc, cache: DocCache): View => {
+    return ({
+      doc
+    })
+  }
+
+  export namespace routes {
+    export const all = 'budgets'
+    export const create = 'budget/create'
+    export const view = 'budget/:budgetId'
+  }
+
+  export namespace to {
+    export const all = () => {
+      return '/' + routes.all
+    }
+
+    export const create = () => {
+      return '/' + routes.create
+    }
+
+    export const view = (budget: Doc): string => {
+      return '/' + budget._id
+    }
+  }
+
+  export const isDocId = (id: string): id is DocId => {
+    return !!docId(id as DocId)
+  }
+
+  export const isDoc = (doc: AnyDocument): doc is Doc => {
+    return !!docId(doc._id as DocId)
+  }
+
+  export const idFromDocId = (budget: DocId): Id => {
+    const bparts = docId(budget)
+    if (!bparts) {
+      throw new Error('not a budget id: ' + budget)
+    }
+    return bparts.budgetId
+  }
+
+  export const doc = (budget: Budget, lang: string): Doc => {
+    const _id = docId({
+      budgetId: makeid(budget.name, lang)
+    })
+    return { _id, ...budget }
+  }
+}

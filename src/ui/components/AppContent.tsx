@@ -50,6 +50,12 @@ const appGroup: NavGroup = {
       icon: 'fa fa-home',
       path: '/bills',
       title: 'bills'
+    },
+    {
+      id: '_budgets',
+      icon: 'fa fa-home',
+      path: '/budgets',
+      title: 'budgets'
     }
   ]
 }

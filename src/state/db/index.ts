@@ -4,7 +4,7 @@ import debounce = require('lodash.debounce')
 import * as path from 'path'
 import * as R from 'ramda'
 import { ThunkAction } from 'redux'
-import { Bank, Account, Category, Bill, Transaction, DocCache, DbView } from '../../docs'
+import { Bank, Account, Category, Bill, Budget, Transaction, DocCache, DbView } from '../../docs'
 import { Lookup } from '../../util'
 import { AppThunk } from '../'
 import { DbInfo } from './DbInfo'
@@ -117,7 +117,8 @@ export const deleteDoc = (doc: AnyDocument): Deletion => ({
 
 const buildView = (cache: DocCache): DbView => ({
   banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache)),
-  bills: Lookup.map(cache.bills, bill => Bill.buildView(bill))
+  bills: Lookup.map(cache.bills, bill => Bill.buildView(bill)),
+  budgets: Lookup.map(cache.budgets, budget => Budget.buildView(budget, cache))
 })
 
 const updateCache = (cache: DocCache, changes: PouchDB.ChangeInfo<AnyDocument>[]) => {
@@ -171,7 +172,8 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
             accounts: new Map(current.cache.accounts),
             transactions: new Map(current.cache.transactions),
             categories: new Map(current.cache.categories),
-            bills: new Map(current.cache.bills)
+            bills: new Map(current.cache.bills),
+            budgets: new Map(current.cache.budgets),
           }
           updateCache(nextCache, changes)
           const nextView = buildView(nextCache)
@@ -205,6 +207,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       transactions: Transaction.createCache(),
       categories: Category.createCache(),
       bills: Bill.createCache(),
+      budgets: Budget.createCache()
     }
 
     docs.forEach(
