@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button } from 'react-bootstrap'
+import { Button, Modal } from 'react-bootstrap'
 import { FormattedDate } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withHandlers, mapProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
@@ -37,7 +37,9 @@ type AllProps = Props & ReduxUIProps<UIState> & DispatchProps & EnhancedProps
 const enhance = compose<AllProps, Props>(
   setDisplayName('BillDetail'),
   onlyUpdateForPropTypes,
-  setPropTypes({}),
+  setPropTypes({
+    item: React.PropTypes.object.isRequired
+  }),
   connect<{}, DispatchProps, Props>(
     (state: AppState) => ({}),
     mapDispatchToProps<DispatchProps>({ pushChanges })
@@ -47,6 +49,8 @@ const enhance = compose<AllProps, Props>(
     date: Bill.getDate(props.item)
   })),
   ui<UIState, Props, {}>({
+    key: 'BillDetail',
+    persist: true,
     state: {
       editing: false
     } as UIState
@@ -75,15 +79,22 @@ const enhance = compose<AllProps, Props>(
 )
 
 export const BillDetail = enhance(({ui: { editing }, item, startEdit, saveEdit, cancelEdit, deleteMe}) => {
-  if (editing) {
-    return <BillForm edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
-  }
   const date = Bill.getDate(item)
+
   return <div>
     name: {item.doc.name}<br/>
     group: {item.doc.group}<br/>
     date: <FormattedDate value={date}/><br/>
     <Button onClick={startEdit}>edit</Button>
     <Button onClick={deleteMe}>delete</Button>
+
+    <Modal show={editing} onHide={cancelEdit} bsSize='large'>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          edit bill
+        </Modal.Title>
+      </Modal.Header>
+      <BillForm edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
+    </Modal>
   </div>
 })

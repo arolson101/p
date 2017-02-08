@@ -1,9 +1,9 @@
 import * as React from 'react'
-import { PageHeader, Modal } from 'react-bootstrap'
+import { PageHeader } from 'react-bootstrap'
 import { injectIntl, FormattedDate, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { Column } from 'react-virtualized'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { Bill } from '../../docs'
 import { AppState } from '../../state'
@@ -37,34 +37,41 @@ interface UIState {
 }
 
 interface EnhancedProps {
-  scrollTop: number
-  setScrollTop: (scrollTop: number) => void
-  selectedIndex: number
-  setSelectedIndex: (selectedIndex: number) => void
+  showCreateDialog: () => void
+  hideCreateDialog: () => void
 }
 
-type AllProps = ReduxUIProps<UIState> & EnhancedProps & ConnectedProps
+type AllProps = EnhancedProps & ReduxUIProps<UIState> & ConnectedProps
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('Bills'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
   injectIntl,
-  connect(
+  connect<ConnectedProps, {}, {}>(
     (state: AppState): ConnectedProps => ({
       bills: selectBills(state)
     })
   ),
-  ui({
+  ui<UIState, ConnectedProps, {}>({
     key: 'Bills',
+    persist: true,
     state: {
       showCreate: false
     } as UIState
+  }),
+  withHandlers<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps>({
+    showCreateDialog: ({updateUI}) => () => {
+      updateUI({showCreate: true})
+    },
+    hideCreateDialog: ({updateUI}) => () => {
+      updateUI({showCreate: false})
+    }
   })
 )
 
 export const Bills = enhance((props: AllProps) => {
-  const { bills, updateUI, ui: { showCreate } } = props
+  const { bills, showCreateDialog, hideCreateDialog, ui: { showCreate } } = props
 
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -74,7 +81,7 @@ export const Bills = enhance((props: AllProps) => {
           items={[
             {
               message: messages.addBill,
-              onClick: () => { updateUI({showCreate: true}) }
+              onClick: showCreateDialog
             }
           ]}
         />
@@ -115,8 +122,7 @@ export const Bills = enhance((props: AllProps) => {
 
       <BillCreate
         show={showCreate}
-        onHide={() => updateUI({showCreate: false})}
-        bsSize='large'
+        onHide={hideCreateDialog}
       />
     </div>
   )

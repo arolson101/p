@@ -277,7 +277,7 @@ const enhance = compose<AllProps, Props>(
       if (edit) {
         const rrule = edit.rrule
         const values: Values = {
-          ...edit,
+          ...edit.doc,
           start: moment(rrule.options.dtstart).format('L'),
         } as any
 
@@ -315,7 +315,7 @@ const enhance = compose<AllProps, Props>(
         }
 
         initialize(values, false)
-        reset()
+        // reset()
       }
     }
   ),
@@ -341,8 +341,9 @@ const enhance = compose<AllProps, Props>(
 const { TextField, DateField, SelectField, SelectCreateableField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
-  const { edit, onSubmit, onCancel, ui: { groups }, accountOptions, monthOptions, weekdayOptions, handleSubmit, frequency,
-    interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, onCalendarChange } = props
+  const { edit, onSubmit, onCancel, onCalendarChange,
+    ui: { groups }, accountOptions, monthOptions, weekdayOptions, handleSubmit, frequency,
+    interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule } = props
   const { formatMessage } = props.intl
 
   const endDate = moment().add(2, 'year')
@@ -406,6 +407,7 @@ export const BillForm = enhance((props) => {
                 <DateField
                   name='start'
                   label={formatMessage(messages.start)}
+                  highlightDates={generatedValues}
                 />
               </div>
             </Col>
@@ -459,6 +461,7 @@ export const BillForm = enhance((props) => {
               }
             </Col>
           </Row>
+
           <Row>
             <Col xs={12} key='interval'>
               <div>
@@ -535,7 +538,7 @@ export const BillForm = enhance((props) => {
                   onChange={onCalendarChange}
                   selected={moment(generatedValues.length > 0 ? generatedValues[0] : new Date())}
                   highlightDates={generatedValues}
-                  monthsShown={4}
+                  monthsShown={3}
                 />
               </div>
             </Col>
