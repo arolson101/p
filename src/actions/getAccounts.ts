@@ -1,3 +1,4 @@
+import randomColor = require('randomcolor')
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { AppThunk, ThunkFcn } from '../state'
 import { Bank, Account } from '../docs'
@@ -85,6 +86,7 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
 
           const account: Account = {
             name: accountName,
+            color: Account.generateColor(accountType),
             type: accountType,
             number: accountNumber,
             bankid,

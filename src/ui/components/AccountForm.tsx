@@ -1,4 +1,4 @@
-import { Col, ButtonToolbar, Button } from 'react-bootstrap'
+import { Col, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
@@ -7,6 +7,7 @@ import { reduxForm, formValueSelector, ReduxFormProps, SubmitFunction } from 're
 import { Account } from '../../docs'
 import { Validator } from '../../util'
 import { AppState } from '../../state'
+import { ColorPicker } from './ColorPicker'
 import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms } from './forms'
 import { IntlProps } from './props'
@@ -66,11 +67,13 @@ interface Props {
 
 interface FormProps {
   type?: Account.Type
+  color?: string
 }
 
 type AllProps = FormProps & ReduxFormProps<Values> & Props & IntlProps
 
 export interface Values {
+  color: string
   name: string
   number: string
   type: Account.Type
@@ -115,27 +118,37 @@ const enhance = compose<AllProps, Props>(
     }
   }),
   withPropChangeCallback<ReduxFormProps<Values> & Props & IntlProps>('edit', (props: AllProps) => {
-    const { edit, initialize, reset } = props
+    const { edit, initialize } = props
     if (edit) {
       const values = edit
       initialize(values, false)
-      reset()
+    } else {
+      const values = {
+        color: Account.generateColor()
+      }
+      initialize(values, false)
     }
   }),
   connect<FormProps, {}, ReduxFormProps<Values> & Props & IntlProps>(
     (state: AppState): FormProps => ({
-      type: formSelector(state, 'type')
+      type: formSelector(state, 'type'),
+      color: formSelector(state, 'color')
     })
   )
 )
 
 export const AccountForm = enhance((props) => {
-  const { edit, type, onSubmit, onCancel, handleSubmit } = props
+  const { edit, type, onSubmit, onCancel, handleSubmit, change, color } = props
   const { formatMessage } = props.intl
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Col>
         <TextField
+          addonBefore={
+            <InputGroup.Addon>
+              <ColorPicker value={color} onChange={(c) => change('color', c)}/>
+            </InputGroup.Addon>
+          }
           name='name'
           autoFocus
           label={formatMessage(messages.name)}

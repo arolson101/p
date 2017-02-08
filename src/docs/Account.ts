@@ -1,3 +1,4 @@
+import randomColor = require('randomcolor')
 import * as docURI from 'docuri'
 import { defineMessages } from 'react-intl'
 import { makeid, Lookup } from '../util'
@@ -7,6 +8,7 @@ import { DocCache } from './index'
 
 export interface Account {
   name: string
+  color: string
   type: Account.Type
   number: string
   visible: boolean
@@ -54,6 +56,24 @@ export namespace Account {
     [Account.Type.MONEYMRKT]: 'fa fa-money',
     [Account.Type.CREDITLINE]: 'fa fa-credit-card-alt',
     [Account.Type.CREDITCARD]: 'fa fa-credit-card'
+  }
+
+  export const generateColor = (type?: Account.Type): string => {
+    switch (type) {
+      case Account.Type.CHECKING:
+        return randomColor({hue: 'red', luminosity: 'bright'})
+      case Account.Type.SAVINGS:
+        return randomColor({hue: 'green', luminosity: 'bright'})
+      case Account.Type.MONEYMRKT:
+        return randomColor({hue: 'purple', luminosity: 'bright'})
+      case Account.Type.CREDITLINE:
+        return randomColor({hue: 'blue', luminosity: 'bright'})
+      case Account.Type.CREDITCARD:
+        return randomColor({hue: 'orange', luminosity: 'bright'})
+
+      default:
+        return randomColor({luminosity: 'bright'})
+    }
   }
 
   export type Id = ':accountId' | 'create' | makeid

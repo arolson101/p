@@ -27,7 +27,9 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('SettingsMenu'),
   withRouter,
   onlyUpdateForPropTypes,
-  setPropTypes({}),
+  setPropTypes({
+    items: React.PropTypes.array.isRequired
+  } as PropTypes<Props>),
   injectIntl
 )
 

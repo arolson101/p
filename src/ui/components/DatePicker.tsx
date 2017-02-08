@@ -36,7 +36,6 @@ const enhance = compose<AllProps, Props>(
   }),
   withHandlers<AllProps, AllProps>({
     onChange: ({onChange}: Props) => (value: Date) => {
-      console.log('onChange', value)
       if (onChange) {
         onChange(moment(value).format('L'))
       }

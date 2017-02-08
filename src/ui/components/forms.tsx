@@ -3,6 +3,7 @@ import { Field, FieldProps, FieldComponent, InjectedFieldProps } from 'redux-for
 import * as RB from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import * as Select from 'react-select'
+import { ColorPicker, ColorPickerProps } from './ColorPicker'
 import { DatePicker, DatePickerProps } from './DatePicker'
 
 export const forms = defineMessages({
@@ -137,6 +138,7 @@ export const PasswordControl = WrappedControl(RB.FormControl, {type: 'password'}
 export const SelectControl = WrappedControl<string, Select.ReactSelectProps>(RFCompatibleSelect(Select))
 export const SelectCreateableControl = WrappedControl<string, Select.ReactCreatableSelectProps>(RFCompatibleSelect(Select.Creatable))
 export const DateControl = WrappedControl<string, DatePickerProps>(DatePicker)
+export const ColorControl = WrappedControl<string, ColorPickerProps>(ColorPicker)
 
 export const typedFields = function<Values> () {
   return ({
@@ -146,6 +148,7 @@ export const typedFields = function<Values> () {
     SelectField: FieldTemplate<Values, Select.ReactSelectProps>(SelectControl),
     SelectCreateableField: FieldTemplate<Values, Select.ReactCreatableSelectProps>(SelectCreateableControl),
     CheckboxField: FieldTemplate<Values, RB.CheckboxProps>(RBCheckbox),
-    DateField: FieldTemplate<Values, DatePickerProps>(DateControl)
+    DateField: FieldTemplate<Values, DatePickerProps>(DateControl),
+    ColorField: FieldTemplate<Values, ColorPickerProps>(ColorControl)
   })
 }
