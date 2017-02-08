@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Grid, Modal, ModalProps } from 'react-bootstrap'
+import { Modal } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'

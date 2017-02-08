@@ -273,7 +273,7 @@ const enhance = compose<AllProps, Props>(
   withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
     'edit',
     (props) => {
-      const { edit, initialize, reset, intl: { formatNumber } } = props
+      const { edit, initialize, intl: { formatNumber } } = props
       if (edit) {
         const rrule = edit.rrule
         const values: Values = {
@@ -315,7 +315,6 @@ const enhance = compose<AllProps, Props>(
         }
 
         initialize(values, false)
-        // reset()
       }
     }
   ),
