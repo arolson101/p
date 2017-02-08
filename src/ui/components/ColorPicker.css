@@ -1,0 +1,10 @@
+
+/* turn off react-color's popup shadow */
+.popover-content > .sketch-picker {
+  box-shadow: none !important;
+}
+
+/* fix conflict with metro.css adding a pointing triangle on the left */
+#popover-trigger-focus:before {
+  width: 0 !important;
+}
