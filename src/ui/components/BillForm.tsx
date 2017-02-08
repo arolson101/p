@@ -125,6 +125,7 @@ const messages = defineMessages({
 })
 
 interface Props {
+  title: FormattedMessage.MessageDescriptor
   edit?: Bill.View
   onSubmit: SubmitFunction<Bill.Doc>
   onCancel: () => void
@@ -194,6 +195,7 @@ const enhance = compose<AllProps, Props>(
   setDisplayName(formName),
   onlyUpdateForPropTypes,
   setPropTypes({
+    title: React.PropTypes.object.isRequired,
     edit: React.PropTypes.object,
     onSubmit: React.PropTypes.func.isRequired,
     onCancel: React.PropTypes.func.isRequired
@@ -340,7 +342,7 @@ const enhance = compose<AllProps, Props>(
 const { TextField, DateField, SelectField, SelectCreateableField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
-  const { edit, onSubmit, onCancel, onCalendarChange,
+  const { edit, title, onSubmit, onCancel, onCalendarChange,
     ui: { groups }, accountOptions, monthOptions, weekdayOptions, handleSubmit, frequency,
     interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule } = props
   const { formatMessage } = props.intl
@@ -352,6 +354,12 @@ export const BillForm = enhance((props) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      <Modal.Header closeButton>
+        <Modal.Title>
+          <FormattedMessage {...title}/>
+        </Modal.Title>
+      </Modal.Header>
+
       <Modal.Body>
         <Grid fluid>
           <Row>

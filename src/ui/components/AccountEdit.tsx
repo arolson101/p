@@ -61,8 +61,6 @@ const enhance = compose<AllProps, {}>(
 export const AccountEdit = enhance(props => {
   const { bank, account, onSubmit, onCancel } = props
   return (
-    <div>
-      <AccountForm {...props} edit={account.doc} accounts={bank.accounts} onSubmit={onSubmit} onCancel={onCancel}/>
-    </div>
+    <AccountForm title={messages.page} {...props} edit={account.doc} accounts={bank.accounts} onSubmit={onSubmit} onCancel={onCancel}/>
   )
 })

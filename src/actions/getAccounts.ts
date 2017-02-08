@@ -1,4 +1,3 @@
-import randomColor = require('randomcolor')
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { AppThunk, ThunkFcn } from '../state'
 import { Bank, Account } from '../docs'

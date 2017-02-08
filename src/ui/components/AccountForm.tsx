@@ -1,4 +1,4 @@
-import { Col, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
+import { Modal, Col, InputGroup, Button } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
@@ -59,6 +59,7 @@ const messages = defineMessages({
 })
 
 interface Props {
+  title: FormattedMessage.MessageDescriptor
   edit?: Account.Doc
   accounts: Account.View[]
   onSubmit: SubmitFunction<Values>
@@ -89,6 +90,7 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
   onlyUpdateForPropTypes,
   setPropTypes({
+    title: React.PropTypes.object.isRequired,
     edit: React.PropTypes.object,
     accounts: React.PropTypes.array.isRequired,
     onSubmit: React.PropTypes.func.isRequired,
@@ -138,73 +140,84 @@ const enhance = compose<AllProps, Props>(
 )
 
 export const AccountForm = enhance((props) => {
-  const { edit, type, onSubmit, onCancel, handleSubmit, change, color } = props
+  const { title, edit, type, onSubmit, onCancel, handleSubmit, change, color } = props
   const { formatMessage } = props.intl
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Col>
-        <TextField
-          addonBefore={
-            <InputGroup.Addon>
-              <ColorPicker value={color} onChange={(c) => change('color', c)}/>
-            </InputGroup.Addon>
+    <Modal show={true} onHide={onCancel} bsSize='large'>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FormattedMessage {...title}/>
+          </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <Col>
+            <TextField
+              addonBefore={
+                <InputGroup.Button>
+                  <ColorPicker value={color} onChange={(c) => change('color', c)}/>
+                </InputGroup.Button>
+              }
+              name='name'
+              autoFocus
+              label={formatMessage(messages.name)}
+            />
+          </Col>
+          <Col>
+            <SelectField
+              name='type'
+              options={typeOptions}
+              clearable={false}
+              optionRenderer={accountTypeRenderer}
+              valueRenderer={accountTypeRenderer}
+              label={formatMessage(messages.type)}
+            />
+          </Col>
+          <Col>
+            <TextField
+              name='number'
+              label={formatMessage(messages.number)}
+            />
+          </Col>
+          {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
+            <Col>
+              <TextField
+                name='bankid'
+                label={formatMessage(messages.bankid)}
+              />
+            </Col>
           }
-          name='name'
-          autoFocus
-          label={formatMessage(messages.name)}
-        />
-      </Col>
-      <Col>
-        <SelectField
-          name='type'
-          options={typeOptions}
-          clearable={false}
-          optionRenderer={accountTypeRenderer}
-          valueRenderer={accountTypeRenderer}
-          label={formatMessage(messages.type)}
-        />
-      </Col>
-      <Col>
-        <TextField
-          name='number'
-          label={formatMessage(messages.number)}
-        />
-      </Col>
-      {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
-        <Col>
-          <TextField
-            name='bankid'
-            label={formatMessage(messages.bankid)}
-          />
-        </Col>
-      }
-      {(type === Account.Type.CREDITCARD) &&
-        <Col>
-          <TextField
-            name='key'
-            label={formatMessage(messages.key)}
-          />
-        </Col>
-      }
-      <ButtonToolbar className='pull-right'>
-        <Button
-          type='button'
-          onClick={onCancel}
-        >
-          <FormattedMessage {...forms.cancel}/>
-        </Button>
-        <Button
-          type='submit'
-          bsStyle='primary'
-        >
-          {edit ? (
-            <FormattedMessage {...forms.save}/>
-          ) : (
-            <FormattedMessage {...forms.create}/>
-          )}
-        </Button>
-      </ButtonToolbar>
-    </form>
+          {(type === Account.Type.CREDITCARD) &&
+            <Col>
+              <TextField
+                name='key'
+                label={formatMessage(messages.key)}
+              />
+            </Col>
+          }
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button
+            type='button'
+            onClick={onCancel}
+          >
+            <FormattedMessage {...forms.cancel}/>
+          </Button>
+          <Button
+            type='submit'
+            bsStyle='primary'
+          >
+            {edit ? (
+              <FormattedMessage {...forms.save}/>
+            ) : (
+              <FormattedMessage {...forms.create}/>
+            )}
+          </Button>
+        </Modal.Footer>
+      </form>
+    </Modal>
   )
 })
 

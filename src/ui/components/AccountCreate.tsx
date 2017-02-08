@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { PageHeader } from 'react-bootstrap'
-import { defineMessages, FormattedMessage } from 'react-intl'
+import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from '../../docs'
@@ -67,17 +66,8 @@ const enhance = compose<AllProps, {}>(
 )
 
 export const AccountCreate = enhance((props) => {
-  const { bank, accounts, onSubmit, onCancel } = props
+  const { accounts, onSubmit, onCancel } = props
   return (
-    <div>
-      {bank &&
-        <div>
-          <PageHeader>
-            <FormattedMessage {...messages.page}/>
-          </PageHeader>
-          <AccountForm {...props} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
-        </div>
-      }
-    </div>
+    <AccountForm title={messages.page} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
   )
 })

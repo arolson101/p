@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Grid } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
@@ -69,8 +68,6 @@ const enhance = compose<AllProps, {}>(
 export const BankCreate = enhance((props) => {
   const { onSubmit, onCancel } = props
   return (
-    <Grid>
-      <BankForm onSubmit={onSubmit} onCancel={onCancel} />
-    </Grid>
+    <BankForm show={true} title={messages.page} onSubmit={onSubmit} onCancel={onCancel} />
   )
 })

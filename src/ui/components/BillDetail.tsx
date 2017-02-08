@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Button, Modal } from 'react-bootstrap'
-import { FormattedDate } from 'react-intl'
+import { defineMessages, FormattedDate } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withHandlers, mapProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
@@ -8,6 +8,13 @@ import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from '../../stat
 import { Bill } from '../../docs'
 import { withPropChangeCallback } from '../enhancers'
 import { BillForm, SubmitFunction } from './BillForm'
+
+const messages = defineMessages({
+  page: {
+    id: 'BillDetail.page',
+    defaultMessage: 'Edit Bill'
+  }
+})
 
 interface Props {
   item: Bill.View
@@ -89,12 +96,7 @@ export const BillDetail = enhance(({ui: { editing }, item, startEdit, saveEdit, 
     <Button onClick={deleteMe}>delete</Button>
 
     <Modal show={editing} onHide={cancelEdit} bsSize='large'>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          edit bill
-        </Modal.Title>
-      </Modal.Header>
-      <BillForm edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
+      <BillForm title={messages.page} edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
     </Modal>
   </div>
 })

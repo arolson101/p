@@ -3,11 +3,9 @@ import { PageHeader } from 'react-bootstrap'
 import { injectIntl, FormattedDate, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { Column } from 'react-virtualized'
-import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import ui, { ReduxUIProps } from 'redux-ui'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bill } from '../../docs'
 import { AppState } from '../../state'
-import { BillCreate } from './BillCreate'
 import { BillDetail } from './BillDetail'
 import { ListWithDetails, getRowData, currencyCellRenderer } from './ListWithDetails'
 import { selectBills } from './selectors'
@@ -32,16 +30,7 @@ interface ConnectedProps {
   bills: Bill.View[]
 }
 
-interface UIState {
-  showCreate: boolean
-}
-
-interface EnhancedProps {
-  showCreateDialog: () => void
-  hideCreateDialog: () => void
-}
-
-type AllProps = EnhancedProps & ReduxUIProps<UIState> & ConnectedProps
+type AllProps = ConnectedProps
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('Bills'),
@@ -52,26 +41,11 @@ const enhance = compose<AllProps, {}>(
     (state: AppState): ConnectedProps => ({
       bills: selectBills(state)
     })
-  ),
-  ui<UIState, ConnectedProps, {}>({
-    key: 'Bills',
-    persist: true,
-    state: {
-      showCreate: false
-    } as UIState
-  }),
-  withHandlers<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps>({
-    showCreateDialog: ({updateUI}) => () => {
-      updateUI({showCreate: true})
-    },
-    hideCreateDialog: ({updateUI}) => () => {
-      updateUI({showCreate: false})
-    }
-  })
+  )
 )
 
 export const Bills = enhance((props: AllProps) => {
-  const { bills, showCreateDialog, hideCreateDialog, ui: { showCreate } } = props
+  const { bills } = props
 
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -81,7 +55,7 @@ export const Bills = enhance((props: AllProps) => {
           items={[
             {
               message: messages.addBill,
-              onClick: showCreateDialog
+              to: Bill.to.create()
             }
           ]}
         />
@@ -118,11 +92,6 @@ export const Bills = enhance((props: AllProps) => {
         ]}
         DetailComponent={BillDetail}
         toView={Bill.to.view}
-      />
-
-      <BillCreate
-        show={showCreate}
-        onHide={hideCreateDialog}
       />
     </div>
   )
