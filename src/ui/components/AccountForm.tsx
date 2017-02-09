@@ -143,7 +143,7 @@ export const AccountForm = enhance((props) => {
   const { title, edit, type, onSubmit, onCancel, handleSubmit, change, color } = props
   const { formatMessage } = props.intl
   return (
-    <Modal show={true} onHide={onCancel} bsSize='large'>
+    <Modal show={true} onHide={onCancel} bsSize='large' backdrop='static'>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Modal.Header closeButton>
           <Modal.Title>

@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Modal } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
@@ -48,8 +47,6 @@ const enhance = compose<AllProps, RouteProps<Bill.Params>>(
 export const BillCreate = enhance((props) => {
   const { onSubmit, onCancel } = props
   return (
-    <Modal show={true} onHide={onCancel} bsSize='large'>
-      <BillForm title={messages.page} onSubmit={onSubmit} onCancel={onCancel} />
-    </Modal>
+    <BillForm show={true} title={messages.page} onSubmit={onSubmit} onCancel={onCancel} />
   )
 })

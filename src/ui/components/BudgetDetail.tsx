@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, Modal } from 'react-bootstrap'
+import { Button } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
@@ -7,7 +7,7 @@ import ui, { ReduxUIProps } from 'redux-ui'
 import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from '../../state'
 import { Budget } from '../../docs'
 import { withPropChangeCallback } from '../enhancers'
-// import { BudgetForm, SubmitFunction } from './BudgetForm'
+import { BudgetForm, SubmitFunction } from './BudgetForm'
 
 const messages = defineMessages({
   page: {
@@ -36,7 +36,7 @@ interface EnhancedProps {
   startEdit: () => void
   cancelEdit: () => void
   deleteMe: () => void
-  // saveEdit: SubmitFunction<Budget.Doc>
+  saveEdit: SubmitFunction<Budget.Doc>
 }
 
 type AllProps = Props & ReduxUIProps<UIState> & DispatchProps & EnhancedProps
@@ -81,7 +81,7 @@ const enhance = compose<AllProps, Props>(
   )
 )
 
-export const BudgetDetail = enhance(({ui: { editing }, item, startEdit, /*saveEdit,*/ cancelEdit, deleteMe}) => {
+export const BudgetDetail = enhance(({ui: { editing }, item, startEdit, saveEdit, cancelEdit, deleteMe}) => {
 
   return <div>
     name: {item.doc.name}<br/>
@@ -89,8 +89,6 @@ export const BudgetDetail = enhance(({ui: { editing }, item, startEdit, /*saveEd
     <Button onClick={startEdit}>edit</Button>
     <Button onClick={deleteMe}>delete</Button>
 
-    <Modal show={editing} onHide={cancelEdit} bsSize='large'>
-      {/*<BudgetForm title={messages.page} edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />*/}
-    </Modal>
+    <BudgetForm show={editing} title={messages.page} edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
   </div>
 })

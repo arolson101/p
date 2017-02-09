@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, Modal } from 'react-bootstrap'
+import { Button } from 'react-bootstrap'
 import { defineMessages, FormattedDate } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withHandlers, mapProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
@@ -95,8 +95,6 @@ export const BillDetail = enhance(({ui: { editing }, item, startEdit, saveEdit, 
     <Button onClick={startEdit}>edit</Button>
     <Button onClick={deleteMe}>delete</Button>
 
-    <Modal show={editing} onHide={cancelEdit} bsSize='large'>
-      <BillForm title={messages.page} edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
-    </Modal>
+    <BillForm show={editing} title={messages.page} edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
   </div>
 })

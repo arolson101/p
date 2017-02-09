@@ -25,101 +25,14 @@ const messages = defineMessages({
     id: 'BudgetForm.name',
     defaultMessage: 'Name'
   },
-  start: {
-    id: 'BudgetForm.start',
-    defaultMessage: 'Start'
-  },
-  notes: {
-    id: 'BudgetForm.notes',
-    defaultMessage: 'Notes'
-  },
-  web: {
-    id: 'BudgetForm.web',
-    defaultMessage: 'Website'
-  },
-  amount: {
-    id: 'BudgetForm.amount',
-    defaultMessage: 'Amount'
-  },
-  account: {
-    id: 'BudgetForm.account',
-    defaultMessage: 'Account'
-  },
   uniqueName: {
     id: 'BudgetForm.uniqueName',
     defaultMessage: 'This name is already used'
   },
-  every: {
-    id: 'BudgetForm.every',
-    defaultMessage: 'Every'
-  },
-  days: {
-    id: 'BudgetForm.days',
-    defaultMessage: `{interval, plural,
-      one {day}
-      other {days}
-    }`
-  },
-  interval: {
-    id: 'BudgetForm.interval',
-    defaultMessage: 'Interval'
-  },
-  weeks: {
-    id: 'BudgetForm.weeks',
-    defaultMessage: `{interval, plural,
-      one {week}
-      other {weeks}
-    }`
-  },
-  months: {
-    id: 'BudgetForm.months',
-    defaultMessage: `{interval, plural,
-      one {month}
-      other {months}
-    }`
-  },
-  years: {
-    id: 'BudgetForm.years',
-    defaultMessage: `{interval, plural,
-      one {year}
-      other {years}
-    }`
-  },
-  end: {
-    id: 'BudgetForm.end',
-    defaultMessage: 'End'
-  },
-  byweekday: {
-    id: 'BudgetForm.byweekday',
-    defaultMessage: 'Days of week'
-  },
-  bymonth: {
-    id: 'BudgetForm.bymonth',
-    defaultMessage: 'Months'
-  },
-  endCount: {
-    id: 'BudgetForm.endCount',
-    defaultMessage: 'After'
-  },
-  endDate: {
-    id: 'BudgetForm.endDate',
-    defaultMessage: 'By date'
-  },
-  endDatePlaceholder: {
-    id: 'BudgetForm.endDatePlaceholder',
-    defaultMessage: 'End date'
-  },
-  times: {
-    id: 'BudgetForm.times',
-    defaultMessage: 'times'
-  },
-  startExcluded: {
-    id: 'BudgetForm.startExcluded',
-    defaultMessage: 'Note: The specified start date does not fit in the specified rules'
-  },
 })
 
 interface Props {
+  show: boolean
   title: FormattedMessage.MessageDescriptor
   edit?: Budget.View
   onSubmit: SubmitFunction<Budget.Doc>
@@ -152,6 +65,7 @@ const enhance = compose<AllProps, Props>(
   setDisplayName(formName),
   onlyUpdateForPropTypes,
   setPropTypes({
+    show: React.PropTypes.bool.isRequired,
     title: React.PropTypes.object.isRequired,
     edit: React.PropTypes.object,
     onSubmit: React.PropTypes.func.isRequired,
@@ -212,58 +126,60 @@ const enhance = compose<AllProps, Props>(
 const { TextField, SelectCreateableField } = typedFields<Values>()
 
 export const BudgetForm = enhance((props) => {
-  const { edit, title, onSubmit, onCancel, ui: { groups }, handleSubmit } = props
+  const { show, edit, title, onSubmit, onCancel, ui: { groups }, handleSubmit } = props
   const { formatMessage } = props.intl
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          <FormattedMessage {...title}/>
-        </Modal.Title>
-      </Modal.Header>
+    <Modal show={show} onHide={onCancel} bsSize='large'>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FormattedMessage {...title}/>
+          </Modal.Title>
+        </Modal.Header>
 
-      <Modal.Body>
-        <Grid fluid>
-          <Row>
-            <Col xs={6}>
-              <TextField
-                name='name'
-                autoFocus
-                label={formatMessage(messages.name)}
-              />
-            </Col>
-            <Col xs={6}>
-              <SelectCreateableField
-                name='group'
-                options={groups}
-                label={formatMessage(messages.group)}
-                promptTextCreator={(label) => 'create group ' + label}
-              />
-            </Col>
-          </Row>
-        </Grid>
-      </Modal.Body>
+        <Modal.Body>
+          <Grid fluid>
+            <Row>
+              <Col xs={6}>
+                <TextField
+                  name='name'
+                  autoFocus
+                  label={formatMessage(messages.name)}
+                />
+              </Col>
+              <Col xs={6}>
+                <SelectCreateableField
+                  name='group'
+                  options={groups}
+                  label={formatMessage(messages.group)}
+                  promptTextCreator={(label) => 'create group ' + label}
+                />
+              </Col>
+            </Row>
+          </Grid>
+        </Modal.Body>
 
-      <Modal.Footer>
-        <Button
-          type='button'
-          onClick={onCancel}
-        >
-          <FormattedMessage {...forms.cancel}/>
-        </Button>
-        <Button
-          type='submit'
-          bsStyle='primary'
-        >
-          {edit ? (
-            <FormattedMessage {...forms.save}/>
-          ) : (
-            <FormattedMessage {...forms.create}/>
-          )}
-        </Button>
-      </Modal.Footer>
-    </form>
+        <Modal.Footer>
+          <Button
+            type='button'
+            onClick={onCancel}
+          >
+            <FormattedMessage {...forms.cancel}/>
+          </Button>
+          <Button
+            type='submit'
+            bsStyle='primary'
+          >
+            {edit ? (
+              <FormattedMessage {...forms.save}/>
+            ) : (
+              <FormattedMessage {...forms.create}/>
+            )}
+          </Button>
+        </Modal.Footer>
+      </form>
+    </Modal>
   )
 })
 

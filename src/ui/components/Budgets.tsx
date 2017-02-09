@@ -84,6 +84,6 @@ export const Budgets = enhance((props: AllProps) => {
 const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Budget.View>) => (
   <div>
     {cellData.doc.name}<br/>
-    <small>{cellData.doc.name}</small>
+    <small>group: {cellData.doc.group}</small>
   </div>
 )

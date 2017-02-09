@@ -169,7 +169,7 @@ const enhance = compose<AllProps, Props>(
 export const BankForm = enhance((props) => {
 const { handleSubmit, show, title, edit, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist, online } = props
   return (
-    <Modal show={show} onHide={onCancel}>
+    <Modal show={show} onHide={onCancel} backdrop='static'>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Modal.Header closeButton>
           <Modal.Title>

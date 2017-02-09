@@ -216,7 +216,7 @@ export const BankView = enhance(props => {
         <FormattedMessage {...messages.noAccounts}/>
       )}
 
-      <Modal show={showModal} onHide={hideModal}>
+      <Modal show={showModal} onHide={hideModal} backdrop='static'>
         <Modal.Header>
           <Modal.Title>Downloading Account List</Modal.Title>
         </Modal.Header>
