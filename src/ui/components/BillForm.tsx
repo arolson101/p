@@ -484,6 +484,7 @@ export const BillForm = enhance((props) => {
                   }
                   addonAfter={
                     <DropdownButton
+                      pullRight
                       componentClass={InputGroup.Button}
                       id='interval-addon-frequency'
                       title={formatMessage(messages[frequency], {interval})}
