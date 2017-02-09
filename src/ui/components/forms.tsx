@@ -83,12 +83,14 @@ const WrappedControl = <Name extends string, Props>(Component: any, componentPro
     }
     return (
       <RB.FormGroup controlId={name} {...{validationState: error ? 'error' : warning ? 'warning' : undefined}}>
-        <RB.ControlLabel>{label}</RB.ControlLabel>
+        <RB.ControlLabel className={'col-xs-2'}>{label}</RB.ControlLabel>
         {' '}
-        <RB.FormControl.Feedback />
-        {component}
+        <div className={'col-xs-10'}>
+          <RB.FormControl.Feedback />
+          {component}
+        </div>
         {(error || warning || help) &&
-          <RB.HelpBlock>{error || warning || help}</RB.HelpBlock>
+          <RB.HelpBlock className={'col-xs-10 col-xs-offset-2'}>{error || warning || help}</RB.HelpBlock>
         }
       </RB.FormGroup>
     )

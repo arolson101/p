@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import { Grid, Row, Col, Modal, Button } from 'react-bootstrap'
+import { Modal, Button } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
@@ -130,7 +130,7 @@ export const BudgetForm = enhance((props) => {
   const { formatMessage } = props.intl
 
   return (
-    <Modal show={show} onHide={onCancel} bsSize='large'>
+    <Modal show={show} onHide={onCancel}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Modal.Header closeButton>
           <Modal.Title>
@@ -138,26 +138,18 @@ export const BudgetForm = enhance((props) => {
           </Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
-          <Grid fluid>
-            <Row>
-              <Col xs={6}>
-                <TextField
-                  name='name'
-                  autoFocus
-                  label={formatMessage(messages.name)}
-                />
-              </Col>
-              <Col xs={6}>
-                <SelectCreateableField
-                  name='group'
-                  options={groups}
-                  label={formatMessage(messages.group)}
-                  promptTextCreator={(label) => 'create group ' + label}
-                />
-              </Col>
-            </Row>
-          </Grid>
+        <Modal.Body className={'form-horizontal'}>
+          <TextField
+            name='name'
+            autoFocus
+            label={formatMessage(messages.name)}
+          />
+          <SelectCreateableField
+            name='group'
+            options={groups}
+            label={formatMessage(messages.group)}
+            promptTextCreator={(label) => 'create group ' + label}
+          />
         </Modal.Body>
 
         <Modal.Footer>

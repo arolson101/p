@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Grid, Row, Col, Collapse, Modal, Button } from 'react-bootstrap'
+import { Collapse, Modal, Button } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
@@ -177,101 +177,65 @@ const { handleSubmit, show, title, edit, onSubmit, onCancel, onChangeFI, intl: {
           </Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
-          <Grid fluid>
-            <Row>
-              <Col sm={12}>
-                <SelectField
-                  autofocus
-                  name='fi'
-                  label={formatMessage(messages.fi)}
-                  options={filist}
-                  labelKey='name'
-                  valueKey='id'
-                  onChange={onChangeFI}
-                  help={formatMessage(messages.fiHelp)}
-                  placeholder={formatMessage(messages.fiPlaceholder)}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col sm={6}>
-                <TextField
-                  name='name'
-                  label={formatMessage(messages.name)}
-                />
-              </Col>
-              <Col sm={6}>
-                <TextField
-                  name='web'
-                  label={formatMessage(messages.web)}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col sm={6}>
-                <MultilineTextField
-                  name='address'
-                  rows={4}
-                  label={formatMessage(messages.address)}
-                />
-              </Col>
-              <Col sm={6}>
-                <MultilineTextField
-                  name='notes'
-                  rows={4}
-                  label={formatMessage(messages.notes)}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col sm={12}>
-                <CheckboxField
-                  name='online'
-                  label={formatMessage(messages.online)}
-                />
-              </Col>
-            </Row>
-            <Collapse in={online}>
-              <div>
-                <Row>
-                  <Col sm={6} xs={6}>
-                    <TextField
-                      name='username'
-                      label={formatMessage(messages.username)}
-                    />
-                  </Col>
-                  <Col sm={6} xs={6}>
-                    <TextField
-                      name='password'
-                      type='password'
-                      label={formatMessage(messages.password)}
-                    />
-                  </Col>
-                </Row>
-                <Row>
-                  <Col sm={3} xs={6}>
-                    <TextField
-                      name='fid'
-                      label={formatMessage(messages.fid)}
-                    />
-                  </Col>
-                  <Col sm={3} xs={6}>
-                    <TextField
-                      name='org'
-                      label={formatMessage(messages.org)}
-                    />
-                  </Col>
-                  <Col sm={6} xs={12}>
-                    <TextField
-                      name='ofx'
-                      label={formatMessage(messages.ofx)}
-                    />
-                  </Col>
-                </Row>
-              </div>
-            </Collapse>
-          </Grid>
+        <Modal.Body className={'form-horizontal'}>
+          <SelectField
+            autofocus
+            name='fi'
+            label={formatMessage(messages.fi)}
+            options={filist}
+            labelKey='name'
+            valueKey='id'
+            onChange={onChangeFI}
+            help={formatMessage(messages.fiHelp)}
+            placeholder={formatMessage(messages.fiPlaceholder)}
+          />
+          <TextField
+            name='name'
+            label={formatMessage(messages.name)}
+          />
+          <TextField
+            name='web'
+            label={formatMessage(messages.web)}
+          />
+          <MultilineTextField
+            name='address'
+            rows={4}
+            label={formatMessage(messages.address)}
+          />
+          <MultilineTextField
+            name='notes'
+            rows={4}
+            label={formatMessage(messages.notes)}
+          />
+          <CheckboxField
+            name='online'
+            label={formatMessage(messages.online)}
+          />
+          <Collapse in={online}>
+            <div>
+              <TextField
+                name='username'
+                label={formatMessage(messages.username)}
+              />
+              <TextField
+                name='password'
+                type='password'
+                label={formatMessage(messages.password)}
+              />
+              <TextField
+                name='fid'
+                label={formatMessage(messages.fid)}
+              />
+              <TextField
+                name='org'
+                label={formatMessage(messages.org)}
+              />
+              <TextField
+                name='ofx'
+                label={formatMessage(messages.ofx)}
+              />
+            </div>
+          </Collapse>
         </Modal.Body>
 
         <Modal.Footer>

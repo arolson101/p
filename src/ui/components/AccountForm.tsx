@@ -1,4 +1,4 @@
-import { Modal, Col, InputGroup, Button } from 'react-bootstrap'
+import { Modal, InputGroup, Button } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
@@ -143,7 +143,7 @@ export const AccountForm = enhance((props) => {
   const { title, edit, type, onSubmit, onCancel, handleSubmit, change, color } = props
   const { formatMessage } = props.intl
   return (
-    <Modal show={true} onHide={onCancel} bsSize='large' backdrop='static'>
+    <Modal show={true} onHide={onCancel} backdrop='static'>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Modal.Header closeButton>
           <Modal.Title>
@@ -151,50 +151,40 @@ export const AccountForm = enhance((props) => {
           </Modal.Title>
         </Modal.Header>
 
-        <Modal.Body>
-          <Col>
-            <TextField
-              addonBefore={
-                <InputGroup.Button>
-                  <ColorPicker value={color} onChange={(c) => change('color', c)}/>
-                </InputGroup.Button>
-              }
-              name='name'
-              autoFocus
-              label={formatMessage(messages.name)}
-            />
-          </Col>
-          <Col>
-            <SelectField
-              name='type'
-              options={typeOptions}
-              clearable={false}
-              optionRenderer={accountTypeRenderer}
-              valueRenderer={accountTypeRenderer}
-              label={formatMessage(messages.type)}
-            />
-          </Col>
-          <Col>
-            <TextField
-              name='number'
-              label={formatMessage(messages.number)}
-            />
-          </Col>
+        <Modal.Body className={'form-horizontal'}>
+          <TextField
+            addonBefore={
+              <InputGroup.Button>
+                <ColorPicker value={color} onChange={(c) => change('color', c)}/>
+              </InputGroup.Button>
+            }
+            name='name'
+            autoFocus
+            label={formatMessage(messages.name)}
+          />
+          <SelectField
+            name='type'
+            options={typeOptions}
+            clearable={false}
+            optionRenderer={accountTypeRenderer}
+            valueRenderer={accountTypeRenderer}
+            label={formatMessage(messages.type)}
+          />
+          <TextField
+            name='number'
+            label={formatMessage(messages.number)}
+          />
           {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
-            <Col>
-              <TextField
-                name='bankid'
-                label={formatMessage(messages.bankid)}
-              />
-            </Col>
+            <TextField
+              name='bankid'
+              label={formatMessage(messages.bankid)}
+            />
           }
           {(type === Account.Type.CREDITCARD) &&
-            <Col>
-              <TextField
-                name='key'
-                label={formatMessage(messages.key)}
-              />
-            </Col>
+            <TextField
+              name='key'
+              label={formatMessage(messages.key)}
+            />
           }
         </Modal.Body>
 
