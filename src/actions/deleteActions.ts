@@ -1,5 +1,5 @@
 import { AppThunk, ThunkFcn, deleteDoc, Deletion } from '../state'
-import { Bank, Account } from '../docs'
+import { Bank, Account, Budget } from '../docs'
 
 type DeleteBankArgs = { bank: Bank.View }
 export namespace deleteBank { export type Fcn = ThunkFcn<DeleteBankArgs, string> }
@@ -51,6 +51,22 @@ export const deleteAllTransactions: AppThunk<DeleteAllTransactionsArgs, void> = 
     for (let transaction of account.transactions) {
       deletions.push(deleteDoc(transaction.doc))
     }
+
+    await current.db.bulkDocs(deletions)
+  }
+
+type DeleteBudgetArgs = { budget: Budget.View }
+export namespace deleteBudget { export type Fcn = ThunkFcn<DeleteBudgetArgs, void> }
+export const deleteBudget: AppThunk<DeleteBudgetArgs, void> = ({budget}) =>
+  async (dispatch, getState) => {
+    const { db: { current } } = getState()
+    if (!current) { throw new Error('no db') }
+
+    let deletions: Deletion[] = []
+    for (let category of budget.categories) {
+      deletions.push(deleteDoc(category.doc))
+    }
+    deletions.push(deleteDoc(budget.doc))
 
     await current.db.bulkDocs(deletions)
   }

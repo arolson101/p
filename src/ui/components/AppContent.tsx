@@ -119,7 +119,7 @@ export const AppContent = enhance(props => {
     })
   })
   const groups = [appGroup, accountGroup]
-  let selectedId = appGroup.items[0].id
+  let selectedId = ''
   groups.forEach(group => {
     group.items.forEach(item => {
       if (pathname.startsWith(item.path)) {

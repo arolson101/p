@@ -23,6 +23,11 @@
   color: black !important;
 }
 
+/* caused by metro.css */
+ul, ol {
+  margin-left: 0 !important;
+}
+
 /* fix metro.css adding margin around h1 elements */
 /*h1, h2, h3, h4, h5, h6 {
   margin: 0px !important;

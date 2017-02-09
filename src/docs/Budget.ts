@@ -1,10 +1,11 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
 import { DocCache } from './index'
+import { Category } from './Category'
 
 export interface Budget {
   name: string
-  group: string
+  categories: Category.DocId[]
 }
 
 export namespace Budget {
@@ -18,27 +19,28 @@ export namespace Budget {
 
   export type View = {
     doc: Doc
+    categories: Category.View[]
   }
 
   export const buildView = (doc: Doc, cache: DocCache): View => {
+    const categories = (doc.categories || [])
+      .map(category => cache.categories.get(category)!)
+      .filter(category => category !== undefined)
+      .map(category => Category.buildView(category, cache))
     return ({
-      doc
+      doc,
+      categories
     })
   }
 
   export namespace routes {
     export const all = 'budgets'
-    export const create = 'budget/create'
     export const view = 'budget/:budgetId'
   }
 
   export namespace to {
     export const all = () => {
       return '/' + routes.all
-    }
-
-    export const create = () => {
-      return '/' + routes.create
     }
 
     export const view = (budget: Doc): string => {
