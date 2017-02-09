@@ -189,7 +189,8 @@ const enhance = compose<AllProps, Props>(
         v.maybeThrowSubmissionError()
 
         const budget: Budget = {
-          ...edit!.doc
+          ...(edit ? edit!.doc : {}),
+          ...values
         }
         const doc = Budget.doc(budget, lang)
         return onSubmit(doc, dispatch, props)

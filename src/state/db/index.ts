@@ -128,6 +128,7 @@ const updateCache = (cache: DocCache, changes: PouchDB.ChangeInfo<AnyDocument>[]
     [Account.isDocId, R.always(cache.accounts)],
     [Category.isDocId, R.always(cache.categories)],
     [Bill.isDocId, R.always(cache.bills)],
+    [Budget.isDocId, R.always(cache.budgets)],
   ]) as (docId: string) => Map<string, AnyDocument> | undefined
 
   const isDeletion = (change: PouchDB.ChangeInfo<AnyDocument>): boolean => !!change.deleted
@@ -217,6 +218,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
         [Account.isDoc, (doc: Account.Doc) => cache.accounts.set(doc._id, doc)],
         [Category.isDoc, (doc: Category.Doc) => cache.categories.set(doc._id, doc)],
         [Bill.isDoc, (doc: Bill.Doc) => cache.bills.set(doc._id, doc)],
+        [Budget.isDoc, (doc: Budget.Doc) => cache.budgets.set(doc._id, doc)],
       ]) as (doc: AnyDocument) => void
     )
 

@@ -262,7 +262,7 @@ const enhance = compose<AllProps, Props>(
         const { amount, frequency, start, end, until, count, interval, byweekday, bymonth, ...rest } = values
 
         const bill: Bill = {
-          ...edit!.doc,
+          ...(edit ? edit!.doc : {}),
           ...rest,
           amount: numeral(amount).value(),
           rruleString: rrule.toString()
