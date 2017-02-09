@@ -65,7 +65,7 @@ export const AppWindow = ({children, title, onBack, onForward}: React.Props<any>
         </Button>
       </Toolbar>
 
-      <Label horizontalAlignment='center'>{title}</Label>
+      <Label horizontalAlignment='center' style={{whiteSpace: 'nowrap'}}>{title}</Label>
 
       <Toolbar horizontalAlignment='right'>
         <SearchField
