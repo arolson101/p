@@ -1,4 +1,4 @@
-import { Modal, InputGroup, Button } from 'react-bootstrap'
+import { PageHeader, InputGroup, Button, ButtonToolbar } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
@@ -15,28 +15,36 @@ import { IntlProps } from './props'
 export { SubmitFunction }
 
 const messages = defineMessages({
+  createTitle: {
+    id: 'AccountForm.createTitle',
+    defaultMessage: 'Add Account'
+  },
+  editTitle: {
+    id: 'AccountForm.editTitle',
+    defaultMessage: 'Edit Account'
+  },
   name: {
-    id: 'acForm.name',
+    id: 'AccountForm.name',
     defaultMessage: 'Name'
   },
   number: {
-    id: 'acForm.number',
+    id: 'AccountForm.number',
     defaultMessage: 'Number'
   },
   type: {
-    id: 'acForm.type',
+    id: 'AccountForm.type',
     defaultMessage: 'Type'
   },
   uniqueName: {
-    id: 'acForm.uniqueName',
+    id: 'AccountForm.uniqueName',
     defaultMessage: 'This account name is already used'
   },
   uniqueNumber: {
-    id: 'acForm.uniqueNumber',
+    id: 'AccountForm.uniqueNumber',
     defaultMessage: 'This account number is already used'
   },
   bankid: {
-    id: 'acForm.bankid',
+    id: 'AccountForm.bankid',
     defaultMessage: 'Routing Number',
     description: `Bank identifier, A-9
       Use of this field by country:
@@ -53,13 +61,12 @@ const messages = defineMessages({
       USA         Routing and transit number`
   },
   key: {
-    id: 'acForm.key',
+    id: 'AccountForm.key',
     defaultMessage: 'Account Key (for international accounts)'
   }
 })
 
 interface Props {
-  title: FormattedMessage.MessageDescriptor
   edit?: Account.Doc
   accounts: Account.View[]
   onSubmit: SubmitFunction<Values>
@@ -90,7 +97,6 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
   onlyUpdateForPropTypes,
   setPropTypes({
-    title: React.PropTypes.object.isRequired,
     edit: React.PropTypes.object,
     accounts: React.PropTypes.array.isRequired,
     onSubmit: React.PropTypes.func.isRequired,
@@ -140,55 +146,52 @@ const enhance = compose<AllProps, Props>(
 )
 
 export const AccountForm = enhance((props) => {
-  const { title, edit, type, onSubmit, onCancel, handleSubmit, change, color } = props
+  const { edit, type, onSubmit, onCancel, handleSubmit, change, color } = props
   const { formatMessage } = props.intl
+  const title = edit ? messages.editTitle : messages.createTitle
   return (
-    <Modal show={true} onHide={onCancel} backdrop='static'>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <FormattedMessage {...title}/>
-          </Modal.Title>
-        </Modal.Header>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <PageHeader>
+        <FormattedMessage {...title}/>
+      </PageHeader>
 
-        <Modal.Body className={'form-horizontal'}>
-          <TextField
-            addonBefore={
-              <InputGroup.Button>
-                <ColorPicker value={color} onChange={(c) => change('color', c)}/>
-              </InputGroup.Button>
-            }
-            name='name'
-            autoFocus
-            label={formatMessage(messages.name)}
-          />
-          <SelectField
-            name='type'
-            options={typeOptions}
-            clearable={false}
-            optionRenderer={accountTypeRenderer}
-            valueRenderer={accountTypeRenderer}
-            label={formatMessage(messages.type)}
-          />
-          <TextField
-            name='number'
-            label={formatMessage(messages.number)}
-          />
-          {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
-            <TextField
-              name='bankid'
-              label={formatMessage(messages.bankid)}
-            />
+      <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+        <TextField
+          addonBefore={
+            <InputGroup.Button>
+              <ColorPicker value={color} onChange={(c) => change('color', c)}/>
+            </InputGroup.Button>
           }
-          {(type === Account.Type.CREDITCARD) &&
-            <TextField
-              name='key'
-              label={formatMessage(messages.key)}
-            />
-          }
-        </Modal.Body>
+          name='name'
+          autoFocus
+          label={formatMessage(messages.name)}
+        />
+        <SelectField
+          name='type'
+          options={typeOptions}
+          clearable={false}
+          optionRenderer={accountTypeRenderer}
+          valueRenderer={accountTypeRenderer}
+          label={formatMessage(messages.type)}
+        />
+        <TextField
+          name='number'
+          label={formatMessage(messages.number)}
+        />
+        {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
+          <TextField
+            name='bankid'
+            label={formatMessage(messages.bankid)}
+          />
+        }
+        {(type === Account.Type.CREDITCARD) &&
+          <TextField
+            name='key'
+            label={formatMessage(messages.key)}
+          />
+        }
 
-        <Modal.Footer>
+        <ButtonToolbar className='pull-right'>
           <Button
             type='button'
             onClick={onCancel}
@@ -205,9 +208,9 @@ export const AccountForm = enhance((props) => {
               <FormattedMessage {...forms.create}/>
             )}
           </Button>
-        </Modal.Footer>
-      </form>
-    </Modal>
+        </ButtonToolbar>
+      </div>
+    </form>
   )
 })
 

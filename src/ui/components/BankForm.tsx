@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Collapse, Modal, Button } from 'react-bootstrap'
+import { Collapse, PageHeader, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
@@ -15,63 +15,69 @@ import { IntlProps } from './props'
 export { SubmitFunction }
 
 const messages = defineMessages({
+  createTitle: {
+    id: 'BankForm.createTitle',
+    defaultMessage: 'Add Institution'
+  },
+  editTitle: {
+    id: 'BankForm.editTitle',
+    defaultMessage: 'Edit Institution'
+  },
   fi: {
-    id: 'bankForm.fi',
+    id: 'BankForm.fi',
     defaultMessage: 'Institution'
   },
   fiHelp: {
-    id: 'bankForm.fiHelp',
+    id: 'BankForm.fiHelp',
     defaultMessage: 'Choose a financial institution from the list or fill in the details below'
   },
   fiPlaceholder: {
-    id: 'bankForm.fiPlaceholder',
+    id: 'BankForm.fiPlaceholder',
     defaultMessage: 'Select financial institution...'
   },
   name: {
-    id: 'bankForm.name',
+    id: 'BankForm.name',
     defaultMessage: 'Name'
   },
   web: {
-    id: 'bankForm.web',
+    id: 'BankForm.web',
     defaultMessage: 'Website'
   },
   address: {
-    id: 'bankForm.address',
+    id: 'BankForm.address',
     defaultMessage: 'Address'
   },
   notes: {
-    id: 'bankForm.notes',
+    id: 'BankForm.notes',
     defaultMessage: 'Notes'
   },
   online: {
-    id: 'bankForm.online',
+    id: 'BankForm.online',
     defaultMessage: 'Online'
   },
   fid: {
-    id: 'bankForm.fid',
+    id: 'BankForm.fid',
     defaultMessage: 'Fid'
   },
   org: {
-    id: 'bankForm.org',
+    id: 'BankForm.org',
     defaultMessage: 'Org'
   },
   ofx: {
-    id: 'bankForm.ofx',
+    id: 'BankForm.ofx',
     defaultMessage: 'OFX Server'
   },
   username: {
-    id: 'bankForm.username',
+    id: 'BankForm.username',
     defaultMessage: 'Username'
   },
   password: {
-    id: 'bankForm.password',
+    id: 'BankForm.password',
     defaultMessage: 'Password'
   }
 })
 
 interface Props {
-  show: boolean
-  title: FormattedMessage.MessageDescriptor
   edit?: Bank.Doc
   onSubmit: SubmitFunction<Values>
   onCancel: () => void
@@ -116,8 +122,6 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('BankForm'),
   onlyUpdateForPropTypes,
   setPropTypes({
-    show: React.PropTypes.bool.isRequired,
-    title: React.PropTypes.object.isRequired,
     edit: React.PropTypes.object,
     onSubmit: React.PropTypes.func.isRequired,
     onCancel: React.PropTypes.func.isRequired
@@ -167,78 +171,75 @@ const enhance = compose<AllProps, Props>(
 )
 
 export const BankForm = enhance((props) => {
-const { handleSubmit, show, title, edit, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist, online } = props
+const { handleSubmit, edit, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist, online } = props
+  const title = edit ? messages.editTitle : messages.createTitle
   return (
-    <Modal show={show} onHide={onCancel} backdrop='static'>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <FormattedMessage {...title}/>
-          </Modal.Title>
-        </Modal.Header>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <PageHeader>
+        <FormattedMessage {...title}/>
+      </PageHeader>
 
-        <Modal.Body className={'form-horizontal'}>
-          <SelectField
-            autofocus
-            name='fi'
-            label={formatMessage(messages.fi)}
-            options={filist}
-            labelKey='name'
-            valueKey='id'
-            onChange={onChangeFI}
-            help={formatMessage(messages.fiHelp)}
-            placeholder={formatMessage(messages.fiPlaceholder)}
-          />
-          <TextField
-            name='name'
-            label={formatMessage(messages.name)}
-          />
-          <TextField
-            name='web'
-            label={formatMessage(messages.web)}
-          />
-          <MultilineTextField
-            name='address'
-            rows={4}
-            label={formatMessage(messages.address)}
-          />
-          <MultilineTextField
-            name='notes'
-            rows={4}
-            label={formatMessage(messages.notes)}
-          />
-          <CheckboxField
-            name='online'
-            label={formatMessage(messages.online)}
-          />
-          <Collapse in={online}>
-            <div>
-              <TextField
-                name='username'
-                label={formatMessage(messages.username)}
-              />
-              <TextField
-                name='password'
-                type='password'
-                label={formatMessage(messages.password)}
-              />
-              <TextField
-                name='fid'
-                label={formatMessage(messages.fid)}
-              />
-              <TextField
-                name='org'
-                label={formatMessage(messages.org)}
-              />
-              <TextField
-                name='ofx'
-                label={formatMessage(messages.ofx)}
-              />
-            </div>
-          </Collapse>
-        </Modal.Body>
+      <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+        <SelectField
+          autofocus
+          name='fi'
+          label={formatMessage(messages.fi)}
+          options={filist}
+          labelKey='name'
+          valueKey='id'
+          onChange={onChangeFI}
+          help={formatMessage(messages.fiHelp)}
+          placeholder={formatMessage(messages.fiPlaceholder)}
+        />
+        <TextField
+          name='name'
+          label={formatMessage(messages.name)}
+        />
+        <TextField
+          name='web'
+          label={formatMessage(messages.web)}
+        />
+        <MultilineTextField
+          name='address'
+          rows={4}
+          label={formatMessage(messages.address)}
+        />
+        <MultilineTextField
+          name='notes'
+          rows={4}
+          label={formatMessage(messages.notes)}
+        />
+        <CheckboxField
+          name='online'
+          label={formatMessage(messages.online)}
+        />
+        <Collapse in={online}>
+          <div>
+            <TextField
+              name='username'
+              label={formatMessage(messages.username)}
+            />
+            <TextField
+              name='password'
+              type='password'
+              label={formatMessage(messages.password)}
+            />
+            <TextField
+              name='fid'
+              label={formatMessage(messages.fid)}
+            />
+            <TextField
+              name='org'
+              label={formatMessage(messages.org)}
+            />
+            <TextField
+              name='ofx'
+              label={formatMessage(messages.ofx)}
+            />
+          </div>
+        </Collapse>
 
-        <Modal.Footer>
+        <ButtonToolbar className='pull-right'>
           <Button
             type='button'
             onClick={onCancel}
@@ -256,8 +257,8 @@ const { handleSubmit, show, title, edit, onSubmit, onCancel, onChangeFI, intl: {
               <FormattedMessage {...forms.create}/>
             )}
           </Button>
-        </Modal.Footer>
-      </form>
-    </Modal>
+        </ButtonToolbar>
+      </div>
+    </form>
   )
 })

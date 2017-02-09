@@ -1,13 +1,10 @@
 import * as React from 'react'
-import { PageHeader } from 'react-bootstrap'
+import { PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { Column } from 'react-virtualized'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Budget } from '../../docs'
 import { AppState } from '../../state'
-import { BudgetDetail } from './BudgetDetail'
-import { ListWithDetails, getRowData } from './ListWithDetails'
 import { SettingsMenu } from './SettingsMenu'
 
 const messages = defineMessages({
@@ -62,28 +59,13 @@ export const Budgets = enhance((props: AllProps) => {
         <FormattedMessage {...messages.page}/>
       </PageHeader>
 
-      <ListWithDetails
-        items={budgets}
-        columns={[
-          {
-            label: 'Name',
-            dataKey: '',
-            width: 300,
-            flexGrow: 1,
-            cellDataGetter: getRowData,
-            cellRenderer: nameCellRenderer
-          }
-        ]}
-        DetailComponent={BudgetDetail}
-        toView={Budget.to.view}
-      />
+      <ListGroup>
+        {budgets.map(budget =>
+          <ListGroupItem key={budget.doc._id}>
+            {budget.doc.name}
+          </ListGroupItem>
+        )}
+      </ListGroup>
     </div>
   )
 })
-
-const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Budget.View>) => (
-  <div>
-    {cellData.doc.name}<br/>
-    <small>group: {cellData.doc.group}</small>
-  </div>
-)

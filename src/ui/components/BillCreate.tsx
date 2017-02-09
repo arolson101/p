@@ -47,6 +47,6 @@ const enhance = compose<AllProps, RouteProps<Bill.Params>>(
 export const BillCreate = enhance((props) => {
   const { onSubmit, onCancel } = props
   return (
-    <BillForm show={true} title={messages.page} onSubmit={onSubmit} onCancel={onCancel} />
+    <BillForm title={messages.page} onSubmit={onSubmit} onCancel={onCancel} />
   )
 })

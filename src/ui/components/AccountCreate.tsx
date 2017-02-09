@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from '../../docs'
@@ -7,13 +6,6 @@ import { AppState, pushChanges, mapDispatchToProps } from '../../state'
 import { Values, AccountForm, SubmitFunction } from './AccountForm'
 import { RouteProps } from './props'
 import { selectBank } from './selectors'
-
-const messages = defineMessages({
-  page: {
-    id: 'AccountCreate.page',
-    defaultMessage: 'Create Account'
-  }
-})
 
 interface ConnectedProps {
   bank: Bank.View
@@ -68,6 +60,6 @@ const enhance = compose<AllProps, {}>(
 export const AccountCreate = enhance((props) => {
   const { accounts, onSubmit, onCancel } = props
   return (
-    <AccountForm title={messages.page} accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
+    <AccountForm accounts={accounts} onSubmit={onSubmit} onCancel={onCancel}/>
   )
 })

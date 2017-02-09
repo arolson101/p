@@ -1,18 +1,10 @@
 import * as React from 'react'
-import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Budget } from '../../docs'
 import { pushChanges, mapDispatchToProps } from '../../state'
 import { BudgetForm, SubmitFunction } from './BudgetForm'
 import { RouteProps } from './props'
-
-const messages = defineMessages({
-  page: {
-    id: 'BudgetCreate.page',
-    defaultMessage: 'Add Budget'
-  }
-})
 
 interface DispatchProps {
   pushChanges: pushChanges.Fcn
@@ -47,6 +39,6 @@ const enhance = compose<AllProps, RouteProps<Budget.Params>>(
 export const BudgetCreate = enhance((props) => {
   const { onSubmit, onCancel } = props
   return (
-    <BudgetForm show={true} title={messages.page} onSubmit={onSubmit} onCancel={onCancel} />
+    <BudgetForm onSubmit={onSubmit} onCancel={onCancel} />
   )
 })

@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import { Modal, Button } from 'react-bootstrap'
+import { PageHeader, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
@@ -17,6 +17,14 @@ import { IntlProps } from './props'
 export { SubmitFunction }
 
 const messages = defineMessages({
+  createTitle: {
+    id: 'BudgetForm.createTitle',
+    defaultMessage: 'Add Budget'
+  },
+  editTitle: {
+    id: 'BudgetForm.editTitle',
+    defaultMessage: 'Edit Budget'
+  },
   group: {
     id: 'BudgetForm.group',
     defaultMessage: 'Group'
@@ -32,8 +40,6 @@ const messages = defineMessages({
 })
 
 interface Props {
-  show: boolean
-  title: FormattedMessage.MessageDescriptor
   edit?: Budget.View
   onSubmit: SubmitFunction<Budget.Doc>
   onCancel: () => void
@@ -65,8 +71,6 @@ const enhance = compose<AllProps, Props>(
   setDisplayName(formName),
   onlyUpdateForPropTypes,
   setPropTypes({
-    show: React.PropTypes.bool.isRequired,
-    title: React.PropTypes.object.isRequired,
     edit: React.PropTypes.object,
     onSubmit: React.PropTypes.func.isRequired,
     onCancel: React.PropTypes.func.isRequired
@@ -126,33 +130,30 @@ const enhance = compose<AllProps, Props>(
 const { TextField, SelectCreateableField } = typedFields<Values>()
 
 export const BudgetForm = enhance((props) => {
-  const { show, edit, title, onSubmit, onCancel, ui: { groups }, handleSubmit } = props
+  const { edit, onSubmit, onCancel, ui: { groups }, handleSubmit } = props
   const { formatMessage } = props.intl
+  const title = edit ? messages.editTitle : messages.createTitle
 
   return (
-    <Modal show={show} onHide={onCancel}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <FormattedMessage {...title}/>
-          </Modal.Title>
-        </Modal.Header>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <PageHeader>
+        <FormattedMessage {...title}/>
+      </PageHeader>
 
-        <Modal.Body className={'form-horizontal'}>
-          <TextField
-            name='name'
-            autoFocus
-            label={formatMessage(messages.name)}
-          />
-          <SelectCreateableField
-            name='group'
-            options={groups}
-            label={formatMessage(messages.group)}
-            promptTextCreator={(label) => 'create group ' + label}
-          />
-        </Modal.Body>
+      <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+        <TextField
+          name='name'
+          autoFocus
+          label={formatMessage(messages.name)}
+        />
+        <SelectCreateableField
+          name='group'
+          options={groups}
+          label={formatMessage(messages.group)}
+          promptTextCreator={(label) => 'create group ' + label}
+        />
 
-        <Modal.Footer>
+        <ButtonToolbar className='pull-right'>
           <Button
             type='button'
             onClick={onCancel}
@@ -169,9 +170,9 @@ export const BudgetForm = enhance((props) => {
               <FormattedMessage {...forms.create}/>
             )}
           </Button>
-        </Modal.Footer>
-      </form>
-    </Modal>
+        </ButtonToolbar>
+      </div>
+    </form>
   )
 })
 

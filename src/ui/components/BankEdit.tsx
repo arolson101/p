@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank } from '../../docs'
@@ -7,13 +6,6 @@ import { AppState, FI, pushChanges, mapDispatchToProps } from '../../state'
 import { Values, BankForm, SubmitFunction } from './BankForm'
 import { RouteProps } from './props'
 import { selectBank } from './selectors'
-
-const messages = defineMessages({
-  page: {
-    id: 'BankEdit.page',
-    defaultMessage: 'Edit Institution'
-  }
-})
 
 interface ConnectedProps {
   filist: FI[]
@@ -70,6 +62,6 @@ const enhance = compose<AllProps, {}>(
 export const BankEdit = enhance((props) => {
   const { onSubmit, onCancel, bank } = props
   return (
-    <BankForm show={true} title={messages.page} edit={bank.doc} onSubmit={onSubmit} onCancel={onCancel}/>
+    <BankForm edit={bank.doc} onSubmit={onSubmit} onCancel={onCancel}/>
   )
 })

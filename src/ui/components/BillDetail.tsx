@@ -88,13 +88,15 @@ const enhance = compose<AllProps, Props>(
 export const BillDetail = enhance(({ui: { editing }, item, startEdit, saveEdit, cancelEdit, deleteMe}) => {
   const date = Bill.getDate(item)
 
-  return <div>
-    name: {item.doc.name}<br/>
-    group: {item.doc.group}<br/>
-    date: <FormattedDate value={date}/><br/>
-    <Button onClick={startEdit}>edit</Button>
-    <Button onClick={deleteMe}>delete</Button>
-
-    <BillForm show={editing} title={messages.page} edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
-  </div>
+  if (editing) {
+    return <BillForm title={messages.page} edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
+  } else {
+    return <div>
+      name: {item.doc.name}<br/>
+      group: {item.doc.group}<br/>
+      date: <FormattedDate value={date}/><br/>
+      <Button onClick={startEdit}>edit</Button>
+      <Button onClick={deleteMe}>delete</Button>
+    </div>
+  }
 })
