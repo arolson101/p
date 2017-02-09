@@ -10,8 +10,8 @@ import { selectBank } from './selectors'
 
 const messages = defineMessages({
   page: {
-    id: 'acCreate.page',
-    defaultMessage: 'Add Account'
+    id: 'AccountCreate.page',
+    defaultMessage: 'Create Account'
   }
 })
 
@@ -33,7 +33,7 @@ interface EnhancedProps {
 type AllProps = EnhancedProps & ConnectedProps & RouteProps<Account.Params>
 
 const enhance = compose<AllProps, {}>(
-  setDisplayName('AccountEdit'),
+  setDisplayName('AccountCreate'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
   connect<ConnectedProps, DispatchProps, RouteProps<Account.Params>>(

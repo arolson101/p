@@ -17,15 +17,15 @@ export { SubmitFunction }
 const messages = defineMessages({
   name: {
     id: 'acForm.name',
-    defaultMessage: 'Account Name'
+    defaultMessage: 'Name'
   },
   number: {
     id: 'acForm.number',
-    defaultMessage: 'Account Number'
+    defaultMessage: 'Number'
   },
   type: {
     id: 'acForm.type',
-    defaultMessage: 'Account Type'
+    defaultMessage: 'Type'
   },
   uniqueName: {
     id: 'acForm.uniqueName',

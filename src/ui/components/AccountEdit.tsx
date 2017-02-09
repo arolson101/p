@@ -10,8 +10,8 @@ import { Values, AccountForm, SubmitFunction } from './AccountForm'
 
 const messages = defineMessages({
   page: {
-    id: 'acUpdate.page',
-    defaultMessage: 'Edit'
+    id: 'AccountEdit.page',
+    defaultMessage: 'Edit Account'
   }
 })
 

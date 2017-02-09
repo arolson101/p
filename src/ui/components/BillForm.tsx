@@ -377,11 +377,6 @@ export const BillForm = enhance((props) => {
 
         <Modal.Body className={'form-horizontal'}>
           <Panel header={formatMessage(messages.infoHeader)}>
-            <TextField
-              name='name'
-              autoFocus
-              label={formatMessage(messages.name)}
-            />
             <SelectCreateableField
               name='group'
               options={groups}
@@ -389,12 +384,17 @@ export const BillForm = enhance((props) => {
               promptTextCreator={(label) => 'create group ' + label}
             />
             <TextField
-              name='notes'
-              label={formatMessage(messages.notes)}
+              name='name'
+              autoFocus
+              label={formatMessage(messages.name)}
             />
             <TextField
               name='web'
               label={formatMessage(messages.web)}
+            />
+            <TextField
+              name='notes'
+              label={formatMessage(messages.notes)}
             />
           </Panel>
 

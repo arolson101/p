@@ -10,8 +10,8 @@ import { selectBank } from './selectors'
 
 const messages = defineMessages({
   page: {
-    id: 'inUpdate.page',
-    defaultMessage: 'Edit'
+    id: 'BankEdit.page',
+    defaultMessage: 'Edit Institution'
   }
 })
 
