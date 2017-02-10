@@ -145,7 +145,6 @@ interface Props {
 
 interface ConnectedProps {
   lang: string
-  accountOptions: SelectOption[]
   monthOptions: SelectOption[]
   weekdayOptions: SelectOption[]
   bills: Bill.View[]
@@ -218,7 +217,6 @@ const enhance = compose<AllProps, Props>(
     (state: AppState): ConnectedProps => ({
       lang: state.i18n.lang,
       bills: state.db.current!.view.bills,
-      accountOptions: accountOptions(state),
       monthOptions: monthOptions(state),
       weekdayOptions: weekdayOptions(state),
     })
@@ -352,10 +350,10 @@ const enhance = compose<AllProps, Props>(
   })
 )
 
-const { TextField, DateField, SelectField, SelectCreateableField, CheckboxField } = typedFields<Values>()
+const { TextField, DateField, SelectField, SelectCreateableField, CheckboxField, AccountField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
-  const { edit, title, onSubmit, onCancel, showAdvanced, ui: { groups }, accountOptions, monthOptions,
+  const { edit, title, onSubmit, onCancel, showAdvanced, ui: { groups }, monthOptions,
     weekdayOptions, handleSubmit, frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule } = props
   const { formatMessage } = props.intl
 
@@ -396,11 +394,9 @@ export const BillForm = enhance((props) => {
           name='amount'
           label={formatMessage(messages.amount)}
         />
-        <SelectField
-          className='select-grouped'
+        <AccountField
           name='account'
           label={formatMessage(messages.account)}
-          options={accountOptions}
         />
 
         <hr/>
@@ -549,26 +545,6 @@ const dayMap = {
   FR: 5,
   SA: 6
 } as { [key: string]: number }
-
-const accountOptions = createSelector(
-  (state: AppState) => state.db.current!.view.banks,
-  (banks: Bank.View[]): SelectOption[] => {
-    const accounts = R.flatten(banks.map(bank =>
-      bank.accounts.length ? [
-        {
-          value: bank.doc._id,
-          label: bank.doc.name,
-          disabled: true
-        },
-        ...bank.accounts.map(acct => ({
-          value: acct.doc._id,
-          label: acct.doc.name
-        }))
-      ] : []
-    ))
-    return accounts
-  }
-)
 
 const weekdayOptions = createSelector(
   (state: AppState) => state.i18n.locale,
