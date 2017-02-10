@@ -6,6 +6,7 @@ import { Link } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from '../../docs'
 import { AppState } from '../../state'
+import { Favico } from './forms/Favico'
 import { RouteProps } from './props'
 import { selectBanks } from './selectors'
 
@@ -47,7 +48,11 @@ export const Accounts = enhance(props => {
       <ul>
         {banks.map(bank =>
           <li key={bank.doc._id}>
-            <Link to={Bank.to.view(bank.doc)}>{bank.doc.name}</Link>
+            <Favico value={bank.doc.favicon}/>
+            {' '}
+            <Link to={Bank.to.view(bank.doc)}>
+              {bank.doc.name}
+            </Link>
             <ul>
               {bank.accounts.map(account =>
                 <li key={account.doc._id}>

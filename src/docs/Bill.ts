@@ -6,6 +6,7 @@ export interface Bill {
   name: string
   group: string
   web: string
+  favicon?: string
   notes: string
   amount: number
   rruleString: string

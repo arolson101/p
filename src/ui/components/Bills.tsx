@@ -7,6 +7,7 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'r
 import { Bill } from '../../docs'
 import { AppState } from '../../state'
 import { BillDetail } from './BillDetail'
+import { Favico } from './forms/Favico'
 import { ListWithDetails, getRowData, currencyCellRenderer } from './ListWithDetails'
 import { selectBills } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
@@ -99,6 +100,8 @@ export const Bills = enhance((props: AllProps) => {
 
 const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Bill.View>) => (
   <div>
+    <Favico value={cellData.doc.favicon}/>
+    {' '}
     {cellData.doc.name}<br/>
     <small>{cellData.doc.notes}</small>
   </div>

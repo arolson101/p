@@ -10,6 +10,7 @@ export interface Bank {
   web?: string
   address?: string
   notes?: string
+  favicon?: string
 
   online?: boolean
 

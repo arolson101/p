@@ -6,6 +6,7 @@ import * as Select from 'react-select'
 import { AccountPicker } from './AccountPicker'
 import { ColorPicker, ColorPickerProps } from './ColorPicker'
 import { DatePicker, DatePickerProps } from './DatePicker'
+import { IconPicker, IconPickerProps } from './IconPicker'
 
 import './forms.css'
 
@@ -149,6 +150,7 @@ export const SelectCreateableControl = WrappedControl<string, Select.ReactCreata
 export const AccountControl = WrappedControl<string, Select.ReactSelectProps>(RFCompatibleSelect(AccountPicker))
 export const DateControl = WrappedControl<string, DatePickerProps>(DatePicker)
 export const ColorControl = WrappedControl<string, ColorPickerProps>(ColorPicker)
+export const IconControl = WrappedControl<string, IconPickerProps>(IconPicker)
 
 export const typedFields = function<Values> () {
   return ({
@@ -160,6 +162,7 @@ export const typedFields = function<Values> () {
     AccountField: FieldTemplate<Values, Select.ReactSelectProps>(AccountControl),
     CheckboxField: FieldTemplate<Values, RB.CheckboxProps>(RBCheckbox),
     DateField: FieldTemplate<Values, DatePickerProps>(DateControl),
-    ColorField: FieldTemplate<Values, ColorPickerProps>(ColorControl)
+    ColorField: FieldTemplate<Values, ColorPickerProps>(ColorControl),
+    IconField: FieldTemplate<Values, IconPickerProps>(IconControl),
   })
 }

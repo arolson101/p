@@ -12,11 +12,13 @@ import { Dispatch } from 'redux'
 import { reduxForm, ReduxFormProps, SubmitFunction, formValueSelector } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'
 import * as RRule from 'rrule-alt'
-import { Bank, Bill } from '../../docs'
+import { getFavicon } from '../../actions'
+import { Bill } from '../../docs'
 import { AppState } from '../../state'
 import { Validator } from '../../util'
 import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms, SelectOption } from './forms'
+import { IconPicker } from './forms/IconPicker'
 import { IntlProps } from './props'
 
 export { SubmitFunction }
@@ -158,6 +160,8 @@ interface FormProps {
   end: EndType
   showAdvanced: boolean
   rrule?: RRule
+  web: string
+  favicon: string
 }
 
 interface UIState {
@@ -172,6 +176,7 @@ interface Handlers {
   onFrequencyChange: SelectCallback
   onEndTypeChange: SelectCallback
   filterEndDate: (date: Date) => boolean
+  changeIcon: (favicon?: string) => void
 }
 
 type AllProps = Handlers & EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props
@@ -197,6 +202,7 @@ interface Values extends RRuleValues {
   notes: string
   amount: string
   account: string
+  favicon: string
   showAdvanced: boolean
 }
 
@@ -249,7 +255,9 @@ const enhance = compose<AllProps, Props>(
       frequency: formSelector(state, 'frequency'),
       end: formSelector(state, 'end'),
       showAdvanced: formSelector(state, 'showAdvanced'),
-      rrule: rruleSelector(state)
+      rrule: rruleSelector(state),
+      web: formSelector(state, 'web'),
+      favicon: formSelector(state, 'favicon'),
     })
   ),
   ui<UIState, FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props, {}>({
@@ -334,6 +342,22 @@ const enhance = compose<AllProps, Props>(
       }
     }
   ),
+  withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
+    'web',
+    async (props, prev) => {
+      const { web, favicon, change } = props
+      if (web && (favicon === undefined || prev)) { // avoid re-fetching icon
+        try {
+          console.log('getting favicon')
+          change('favicon', '')
+          const response = await getFavicon(web)
+          change('favicon', response!)
+        } catch (err) {
+          console.log('error getting favicon: ', err.message)
+        }
+      }
+    }
+  ),
   withHandlers<Handlers, EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>({
     onFrequencyChange: ({change}) => (eventKey: Frequency) => {
       change('frequency', eventKey)
@@ -346,6 +370,16 @@ const enhance = compose<AllProps, Props>(
         return moment(start).isBefore(date)
       }
       return false
+    },
+    changeIcon: ({change, web}) => async (favicon?: string) => {
+      if (favicon === undefined) {
+        // re-download
+        change('favicon', '')
+        const response = await getFavicon(web)
+        change('favicon', response)
+      } else {
+        change('favicon', favicon)
+      }
     }
   })
 )
@@ -383,6 +417,11 @@ export const BillForm = enhance((props) => {
         <TextField
           name='web'
           label={formatMessage(messages.web)}
+          addonBefore={
+            <InputGroup.Button>
+              <IconPicker value={props.favicon} onChange={props.changeIcon}/>
+            </InputGroup.Button>
+          }
         />
         <TextField
           name='notes'

@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-export const withPropChangeCallback = <Props extends {}>(prop: keyof Props, callback: (props: Props) => any) =>
+export const withPropChangeCallback = <Props extends {}>(prop: keyof Props, callback: (props: Props, prevValue?: any) => any) =>
   (Component: any) =>
     class extends React.Component<Props, any> {
       componentDidMount() {
@@ -8,7 +8,7 @@ export const withPropChangeCallback = <Props extends {}>(prop: keyof Props, call
       }
       componentWillReceiveProps(nextProps: any) {
         if (nextProps[prop] !== this.props[prop]) {
-          callback(nextProps)
+          callback(nextProps, this.props[prop])
         }
       }
       render() {

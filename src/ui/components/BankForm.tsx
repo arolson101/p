@@ -1,15 +1,17 @@
 import * as React from 'react'
-import { Collapse, PageHeader, ButtonToolbar, Button } from 'react-bootstrap'
+import { Collapse, PageHeader, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, formValueSelector, ReduxFormProps, SubmitFunction } from 'redux-form'
+import { getFavicon } from '../../actions'
 import { Bank } from '../../docs'
 import { Validator } from '../../util'
 import { AppState, FI, emptyfi } from '../../state'
 import { withPropChangeCallback } from '../enhancers'
 import { formatAddress } from '../../util'
 import { typedFields, forms } from './forms'
+import { IconPicker } from './forms/IconPicker'
 import { IntlProps } from './props'
 
 export { SubmitFunction }
@@ -87,10 +89,14 @@ interface ConnectedProps {
   filist: FI[]
   lang: string
   online: boolean
+  fi: string
+  web: string
+  favicon: string
 }
 
 interface EnhancedProps {
   onChangeFI: (index: number) => void
+  changeIcon: (favicon?: string) => void
 }
 
 type AllProps = IntlProps & EnhancedProps & ConnectedProps & Props & ReduxFormProps<Values>
@@ -102,7 +108,7 @@ export interface Values {
   web: string
   address: string
   notes: string
-  bankid: string
+  favicon: string
 
   online: boolean
 
@@ -131,7 +137,10 @@ const enhance = compose<AllProps, Props>(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
       lang: state.i18n.locale,
-      online: formSelector(state, 'online')
+      online: formSelector(state, 'online'),
+      fi: formSelector(state, 'fi'),
+      web: formSelector(state, 'web'),
+      favicon: formSelector(state, 'favicon'),
     })
   ),
   withProps<{}, ConnectedProps & Props & IntlProps>(({onSubmit, intl: { formatMessage }}) => ({
@@ -156,6 +165,19 @@ const enhance = compose<AllProps, Props>(
       initialize(values, false)
     }
   }),
+  withPropChangeCallback<EnhancedProps & ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>('web', async (props, prev) => {
+    const { web, favicon, change } = props
+    if (web && (favicon === undefined || prev)) { // avoid re-fetching icon
+      try {
+        console.log('getting favicon')
+        change('favicon', '')
+        const response = await getFavicon(web)
+        change('favicon', response!)
+      } catch (err) {
+        console.log('error getting favicon: ', err.message)
+      }
+    }
+  }),
   withProps<EnhancedProps, ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>(props => ({
     onChangeFI: (index: number) => {
       const { filist, change } = props
@@ -166,6 +188,16 @@ const enhance = compose<AllProps, Props>(
       change('fid', value.fid)
       change('org', value.org)
       change('ofx', value.ofx)
+    },
+    changeIcon: async (favicon?: string) => {
+      if (favicon === undefined) {
+        // re-download
+        props.change('favicon', '')
+        const response = await getFavicon(props.web)
+        props.change('favicon', response!)
+      } else {
+        props.change('favicon', favicon)
+      }
     }
   }))
 )
@@ -198,6 +230,11 @@ const { handleSubmit, edit, onSubmit, onCancel, onChangeFI, intl: { formatMessag
         <TextField
           name='web'
           label={formatMessage(messages.web)}
+          addonBefore={
+            <InputGroup.Button>
+              <IconPicker value={props.favicon} onChange={props.changeIcon}/>
+            </InputGroup.Button>
+          }
         />
         <MultilineTextField
           name='address'
