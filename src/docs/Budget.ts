@@ -16,6 +16,7 @@ export namespace Budget {
   export const docId = docURI.route<Params, DocId>('budget/:budgetId')
   export type Cache = Lookup<DocId, Doc>
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
+  export const icon = 'fa fa-signal'
 
   export type View = {
     doc: Doc

@@ -83,6 +83,7 @@ export namespace Account {
   export const docId = docURI.route<Params, DocId>('account/:bankId/:accountId')
   export type Cache = Lookup<DocId, Doc>
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
+  export const icon = 'fa fa-university'
 
   export type View = {
     doc: Doc

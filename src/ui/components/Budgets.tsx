@@ -283,6 +283,8 @@ const renderBudgets = injectIntl((props: any) => {
         </FieldArray>
       )}
       <Button onClick={() => fields.push()}>
+        <i className={Budget.icon}/>
+        {' '}
         <FormattedMessage {...messages.addBudget}/>
       </Button>
       <ButtonToolbar className='pull-right'>

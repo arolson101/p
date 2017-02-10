@@ -20,6 +20,7 @@ export namespace Bill {
   export const docId = docURI.route<Params, DocId>('bill/:billId')
   export type Cache = Lookup<DocId, Doc>
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
+  export const icon = 'fa fa-envelope'
 
   export type View = {
     doc: Doc

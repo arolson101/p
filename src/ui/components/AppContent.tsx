@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import * as SplitPane from 'react-split-pane'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
-import { Bank, Account } from '../../docs'
+import { Bank, Account, Budget, Bill } from '../../docs'
 import { AppState } from '../../state'
 import * as Mac from '../macOS'
 import * as Win from '../windows'
@@ -41,19 +41,19 @@ const appGroup: NavGroup = {
     },
     {
       id: '_accounts',
-      icon: 'fa fa-home',
+      icon: Account.icon,
       path: '/banks',
       title: 'accounts'
     },
     {
       id: '_bills',
-      icon: 'fa fa-home',
+      icon: Bill.icon,
       path: '/bills',
       title: 'bills'
     },
     {
       id: '_budgets',
-      icon: 'fa fa-home',
+      icon: Budget.icon,
       path: '/budgets',
       title: 'budgets'
     }
