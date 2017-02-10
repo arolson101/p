@@ -7,7 +7,7 @@ import { reduxForm, formValueSelector, ReduxFormProps, SubmitFunction } from 're
 import { Account } from '../../docs'
 import { Validator } from '../../util'
 import { AppState } from '../../state'
-import { ColorPicker } from './ColorPicker'
+import { ColorPicker } from './forms/ColorPicker'
 import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms } from './forms'
 import { IntlProps } from './props'
