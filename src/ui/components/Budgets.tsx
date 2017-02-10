@@ -32,13 +32,13 @@ const messages = defineMessages({
     id: 'Budgets.editBudget',
     defaultMessage: 'Edit'
   },
-  budgetPlaceholder: {
-    id: 'Budgets.budgetPlaceholder',
-    defaultMessage: 'Budget Name'
+  budget: {
+    id: 'Budgets.budget',
+    defaultMessage: 'Budget'
   },
-  categoryPlaceholder: {
-    id: 'Budgets.categoryPlaceholder',
-    defaultMessage: 'Category Name'
+  category: {
+    id: 'Budgets.category',
+    defaultMessage: 'Category'
   },
   uniqueBudget: {
     id: 'Budgets.uniqueBudget',
@@ -269,9 +269,8 @@ const renderBudgets = injectIntl((props: any) => {
           component={renderCategories}
         >
           <TextField
-            minimal
             name={`${budget}.name`}
-            placeholder={formatMessage(messages.budgetPlaceholder)}
+            label={formatMessage(messages.budget)}
             addonAfter={
               <InputGroup.Button>
                 <Button bsStyle='danger' onClick={() => fields.remove(index)}>
@@ -279,6 +278,10 @@ const renderBudgets = injectIntl((props: any) => {
                 </Button>
               </InputGroup.Button>
             }
+          />
+          <TextField
+            name={`${budget}.frequency`}
+            label='frequency'
           />
         </FieldArray>
       )}
@@ -302,9 +305,8 @@ const renderCategories = injectIntl((props: any) => {
         {fields.map((category: string, index: number) =>
           <ListGroupItem key={category}>
             <TextField
-              minimal
               name={`${category}.name`}
-              placeholder={formatMessage(messages.categoryPlaceholder)}
+              label={formatMessage(messages.category)}
               addonAfter={
                 <InputGroup.Button>
                   <Button bsStyle='danger' onClick={() => fields.remove(index)}>
@@ -312,6 +314,10 @@ const renderCategories = injectIntl((props: any) => {
                   </Button>
                 </InputGroup.Button>
               }
+            />
+            <TextField
+              name={`${category}.amount`}
+              label='amount'
             />
           </ListGroupItem>
         )}
