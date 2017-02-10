@@ -6,6 +6,8 @@ import * as Select from 'react-select'
 import { ColorPicker, ColorPickerProps } from './ColorPicker'
 import { DatePicker, DatePickerProps } from './DatePicker'
 
+import './forms.css'
+
 export const forms = defineMessages({
   password: {
     id: 'forms.password',
@@ -122,6 +124,7 @@ const RFCompatibleSelect = (Component: React.ComponentClass<Select.ReactSelectPr
 export interface SelectOption {
   value: any
   label: string
+  disabled?: boolean
 }
 
 const RBCheckbox = (props: RB.CheckboxProps & InjectedFieldProps<any>) =>

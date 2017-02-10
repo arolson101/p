@@ -397,6 +397,7 @@ export const BillForm = enhance((props) => {
           label={formatMessage(messages.amount)}
         />
         <SelectField
+          className='select-grouped'
           name='account'
           label={formatMessage(messages.account)}
           options={accountOptions}
@@ -552,11 +553,20 @@ const dayMap = {
 const accountOptions = createSelector(
   (state: AppState) => state.db.current!.view.banks,
   (banks: Bank.View[]): SelectOption[] => {
-    const accounts = R.flatten(banks.map(bank => bank.accounts))
-    return accounts.map(acct => ({
-      value: acct.doc._id,
-      label: acct.doc.name
-    }))
+    const accounts = R.flatten(banks.map(bank =>
+      bank.accounts.length ? [
+        {
+          value: bank.doc._id,
+          label: bank.doc.name,
+          disabled: true
+        },
+        ...bank.accounts.map(acct => ({
+          value: acct.doc._id,
+          label: acct.doc.name
+        }))
+      ] : []
+    ))
+    return accounts
   }
 )
 

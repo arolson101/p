@@ -1,0 +1,11 @@
+/* https://github.com/JedWatson/react-select/issues/59#issuecomment-167283851 */
+
+.select-grouped .Select-menu-outer .Select-option {
+  padding-left: 2em;
+}
+
+.select-grouped .Select-menu-outer .Select-option.is-disabled {
+  cursor: default;
+  padding-left: 1em;
+  font-weight: bold;
+}
