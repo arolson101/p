@@ -55,8 +55,9 @@ export const forms = defineMessages({
 
 interface FieldGroupProps<Name> {
   name: Name
-  label: string
+  label?: string
   help?: string
+  minimal?: boolean
   onChange?: (newValue: any) => any
   addonBefore?: React.ReactNode
   addonAfter?: React.ReactNode
@@ -64,7 +65,7 @@ interface FieldGroupProps<Name> {
 
 const WrappedControl = <Name extends string, Props>(Component: any, componentProps?: Props) =>
   (props: FieldGroupProps<Name> & Partial<InjectedFieldProps<string>> & Props) => {
-    const { addonBefore, addonAfter, input, meta, help, ...fieldProps } = props as any
+    const { minimal, addonBefore, addonAfter, input, meta, help, ...fieldProps } = props as any
     const { name, label } = fieldProps
     const { error, warning } = meta
     const onChange = (e: any) => {
@@ -83,14 +84,16 @@ const WrappedControl = <Name extends string, Props>(Component: any, componentPro
     }
     return (
       <RB.FormGroup controlId={name} {...{validationState: error ? 'error' : warning ? 'warning' : undefined}}>
-        <RB.ControlLabel className={'col-xs-2'}>{label}</RB.ControlLabel>
+        {!minimal &&
+          <RB.ControlLabel className={minimal ? '' : 'col-xs-2'}>{label}</RB.ControlLabel>
+        }
         {' '}
-        <div className={'col-xs-10'}>
+        <div className={minimal ? 'col-xs-12' : 'col-xs-10'}>
           <RB.FormControl.Feedback />
           {component}
         </div>
         {(error || warning || help) &&
-          <RB.HelpBlock className={'col-xs-10 col-xs-offset-2'}>{error || warning || help}</RB.HelpBlock>
+          <RB.HelpBlock className={minimal ? 'col-xs-12' : 'col-xs-10 col-xs-offset-2'}>{error || warning || help}</RB.HelpBlock>
         }
       </RB.FormGroup>
     )

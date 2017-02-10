@@ -14,7 +14,7 @@ export type FieldValue = any;
 
 export interface FieldArrayErrors {
   _error: string;
-  [key: string]: string;
+  [i: number]: ErrorsFor<any>
 }
 
 export type ErrorsFor<TValues> = { [P in keyof TValues] ?: string | FieldArrayErrors | string[] }
