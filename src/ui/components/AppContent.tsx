@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as R from 'ramda'
 import { connect } from 'react-redux'
 import * as SplitPane from 'react-split-pane'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
@@ -103,21 +104,23 @@ const enhance = compose<AllProps, RouteProps<any>>(
   )
 )
 
+const makeAccountList = R.pipe(
+  R.chain((bank: Bank.View) => bank.accounts),
+  R.map((account: Account.View): NavItem => ({
+    id: account.doc._id,
+    icon: Account.icons[account.doc.type],
+    path: Account.to.view(account.doc),
+    title: account.doc.name,
+    account
+  })),
+  R.sortBy((item: NavItem) => item.title.toLocaleLowerCase()),
+  R.sortBy((item: NavItem) => Object.keys(Account.Type).indexOf(item.account!.doc.type).toString())
+)
+
 export const AppContent = enhance(props => {
   const { banks, ThemeNav, children, location: { pathname }, router, onSizeChange, ui: { sidebarWidth } } = props
 
-  const accountGroup: NavGroup = { title: 'accounts', items: [] }
-  banks.forEach(bank => {
-    bank.accounts.forEach(account => {
-      accountGroup.items.push({
-        id: account.doc._id,
-        icon: Account.icons[account.doc.type],
-        path: Account.to.view(account.doc),
-        title: account.doc.name,
-        account
-      })
-    })
-  })
+  const accountGroup: NavGroup = { title: 'accounts', items: makeAccountList(banks) }
   const groups = [appGroup, accountGroup]
   let selectedId = ''
   groups.forEach(group => {

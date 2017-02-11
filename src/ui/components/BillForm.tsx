@@ -376,7 +376,7 @@ const enhance = compose<AllProps, Props>(
         // re-download
         change('favicon', '')
         const response = await getFavicon(web)
-        change('favicon', response)
+        change('favicon', response!)
       } else {
         change('favicon', favicon)
       }
