@@ -14,6 +14,7 @@ import { Validator } from '../../util'
 import { withPropChangeCallback } from '../enhancers'
 import { SettingsMenu } from './SettingsMenu'
 import { typedFields, forms } from './forms'
+import { Favico } from './forms/Favico'
 import { IntlProps, RouteProps } from './props'
 
 const messages = defineMessages({
@@ -262,17 +263,33 @@ export const Budgets = enhance((props: AllProps) => {
               {budget.categories.map(category =>
                 <ListGroupItem key={category.doc._id}>
                   <Grid fluid>
-                  <Col xs={2}>
-                    {category.doc.name}
-                  </Col>
-                  <Col xs={8}>
-                    <CategoryProgress category={category}/>
-                  </Col>
-                  <Col xs={2}>
-                    <em className='pull-right'><small>
-                      <FormattedNumber value={category.doc.amount} style='currency' currency='USD'/>
-                    </small></em>
-                  </Col>
+                    <Row>
+                      <Col xs={2}>
+                        {category.doc.name}
+                      </Col>
+                      <Col xs={8}>
+                        <CategoryProgress category={category}/>
+                      </Col>
+                      <Col xs={2}>
+                        <em className='pull-right'><small>
+                          <FormattedNumber value={category.doc.amount} style='currency' currency='USD'/>
+                        </small></em>
+                      </Col>
+                    </Row>
+                    {category.bills.map(bill =>
+                      <Row key={bill.doc._id}>
+                        <Col xs={8} xsOffset={2}>
+                          <Favico value={bill.doc.favicon}/>
+                          {' '}
+                          {bill.doc.name}
+                        </Col>
+                        <Col xs={2}>
+                          <em className='pull-right'><small>
+                            <FormattedNumber value={bill.doc.amount} style='currency' currency='USD'/>
+                          </small></em>
+                        </Col>
+                      </Row>
+                    )}
                   </Grid>
                 </ListGroupItem>
               )}
@@ -284,7 +301,7 @@ export const Budgets = enhance((props: AllProps) => {
   )
 })
 
-import { OverlayTrigger, Popover } from 'react-bootstrap'
+import { Row, OverlayTrigger, Popover } from 'react-bootstrap'
 
 const CategoryProgress = ({category}: {category: Category.View}) => {
   const max = parseFloat(category.doc.amount as any)

@@ -115,11 +115,15 @@ export const deleteDoc = (doc: AnyDocument): Deletion => ({
   _deleted: true
 })
 
-const buildView = (cache: DocCache): DbView => ({
-  banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache)),
-  bills: Lookup.map(cache.bills, bill => Bill.buildView(bill)),
-  budgets: Lookup.map(cache.budgets, budget => Budget.buildView(budget, cache))
-})
+const buildView = (cache: DocCache): DbView => {
+  const views = {
+    banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache)),
+    bills: Lookup.map(cache.bills, bill => Bill.buildView(bill)),
+    budgets: Lookup.map(cache.budgets, budget => Budget.buildView(budget, cache))
+  }
+  views.budgets.forEach(budget => Budget.linkView(budget, views))
+  return views
+}
 
 const updateCache = (cache: DocCache, changes: PouchDB.ChangeInfo<AnyDocument>[]) => {
   const selectCache = R.cond([

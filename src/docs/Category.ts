@@ -1,7 +1,6 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
-import { DocCache } from './index'
-import { Budget } from './Budget'
+import { DocCache, DbView, Bill, Budget } from './'
 
 export interface Category {
   name: string
@@ -19,12 +18,18 @@ export namespace Category {
 
   export type View = {
     doc: Doc
+    bills: Bill.View[]
   }
 
   export const buildView = (doc: Doc, cache: DocCache): View => {
     return ({
-      doc
+      doc,
+      bills: []
     })
+  }
+
+  export const linkView = (view: View, views: DbView) => {
+    view.bills = views.bills.filter(bill => bill.doc.category === view.doc._id)
   }
 
   export const isDocId = (id: string): id is DocId => {

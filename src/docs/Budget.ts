@@ -1,7 +1,6 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
-import { DocCache } from './index'
-import { Category } from './Category'
+import { DocCache, DbView, Bill, Category } from './'
 
 export interface Budget {
   name: string
@@ -32,6 +31,10 @@ export namespace Budget {
       doc,
       categories
     })
+  }
+
+  export const linkView = (view: View, views: DbView) => {
+    view.categories.map(category => Category.linkView(category, views))
   }
 
   export namespace routes {
