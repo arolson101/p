@@ -25,7 +25,7 @@ export const AppNav = ({groups, selectedId, onClick}: NavProps) =>
           onClick={() => onClick(item)}
         >
           <Text color='#414141' style={{width: '100%', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden'}}>
-            <i className={item.icon + ' fa-lg'}/>
+            <i className={item.icon + ' fa-lg fa-fw'}/>
             {' '}
             {item.title}
           </Text>
