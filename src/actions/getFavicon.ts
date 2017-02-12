@@ -56,7 +56,7 @@ const getPage = async (urlStr: string): Promise<Response> => {
   while (true) {
     response = await httpGet(urlStr)
     if (isRedirect(response.statusCode)) {
-      const location = response.headers.location
+      const location = url.resolve(urlStr, response.headers.location)
       if (!location) {
         throw new Error(`Bad response: redirect ${response.statusCode} with no 'location' header at ${urlStr}`)
       }
@@ -82,7 +82,8 @@ const getFaviconFromDocument = async (response: Response): Promise<string> => {
     throw new Error(`error parsing body from ${response.urlStr}`)
   }
   for (let child of doc.head.children as any as HTMLElement[]) {
-    if (child.nodeName.toLowerCase() === 'link' && (child.getAttribute('rel') || '').toLowerCase() === 'icon') {
+    const rel = (child.getAttribute('rel') || '').toLowerCase()
+    if (child.nodeName.toLowerCase() === 'link' && (rel === 'icon' || rel === 'shortcut icon')) {
       const href = child.getAttribute('href')
       if (href) {
         const location = url.resolve(response.urlStr, href)
