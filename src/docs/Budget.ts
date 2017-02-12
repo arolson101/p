@@ -71,4 +71,48 @@ export namespace Budget {
     })
     return { _id, ...budget }
   }
+
+  export const maybeCreateCategory = (label: string, budgets: Budget.View[], lang: string, docs: AnyDocument[]): Category.DocId => {
+    if (Category.isDocId(label)) {
+      return label
+    }
+
+    const { budget, category: name } = validateNewCategory(budgets, label)
+    if (!budget) {
+      throw new Error('invalid category label: ' + label)
+    }
+
+    const newCategory = Category.doc(
+      budget,
+      {
+        name,
+        amount: 0
+      },
+      lang
+    )
+    docs.push(newCategory)
+
+    const nextBudget: Budget.Doc = {
+      ...budget,
+      categories: [
+        ...budget.categories,
+        newCategory._id
+      ]
+    }
+    docs.push(nextBudget)
+
+    return newCategory._id
+  }
+
+  export interface CategoryInfo {
+    budget?: Budget.Doc
+    category: string
+  }
+
+  export const validateNewCategory = (budgets: Budget.View[], label?: string): CategoryInfo => {
+    const [budgetName, category] = (label || '').split(':').map(x => x.trim())
+    const idx = budgets.findIndex(b => b.doc.name.toLocaleLowerCase() === budgetName.toLocaleLowerCase())
+    const budget = (idx === -1 ? undefined : budgets[idx].doc)
+    return { budget, category }
+  }
 }

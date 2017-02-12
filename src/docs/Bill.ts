@@ -1,6 +1,7 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
 import * as RRule from 'rrule-alt'
+import { Category } from './Category'
 
 export interface Bill {
   name: string
@@ -9,6 +10,7 @@ export interface Bill {
   favicon?: string
   notes: string
   amount: number
+  category: Category.DocId
   rruleString: string
 }
 

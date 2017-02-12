@@ -29,6 +29,7 @@ export const AccountPicker = enhance((props) => {
       className='select-grouped'
       matchProp='label'
       valueRenderer={valueRenderer}
+      placeholder=''
       {...props}
     />
   )

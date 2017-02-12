@@ -27,7 +27,7 @@ export namespace Category {
     })
   }
 
-  export const isDocId = (id: string): boolean => {
+  export const isDocId = (id: string): id is DocId => {
     return !!docId(id as DocId)
   }
 

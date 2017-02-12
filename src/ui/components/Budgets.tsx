@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import { Grid, Row, Col, Alert, Panel, InputGroup, ButtonToolbar, Button,
+import { Grid, Col, Alert, Panel, InputGroup, ButtonToolbar, Button,
   PageHeader, ListGroup, ListGroupItem, ProgressBar } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, FormattedNumber, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
@@ -312,7 +312,6 @@ const CategoryProgress = ({category}: {category: Category.View}) => {
     </ProgressBar>
   }
 }
-
 
 const renderBudgets = injectIntl((props: any) => {
   const { children, fields, meta: { error }, intl: { formatMessage } } = props

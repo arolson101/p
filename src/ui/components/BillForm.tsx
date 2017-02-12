@@ -13,8 +13,8 @@ import { reduxForm, ReduxFormProps, SubmitFunction, formValueSelector } from 're
 import ui, { ReduxUIProps } from 'redux-ui'
 import * as RRule from 'rrule-alt'
 import { getFavicon } from '../../actions'
-import { Bill } from '../../docs'
-import { AppState } from '../../state'
+import { Account, Budget, Bill } from '../../docs'
+import { AppState, mapDispatchToProps, pushChanges } from '../../state'
 import { Validator } from '../../util'
 import { withPropChangeCallback } from '../enhancers'
 import { typedFields, forms, SelectOption } from './forms'
@@ -59,6 +59,10 @@ const messages = defineMessages({
   account: {
     id: 'BillForm.account',
     defaultMessage: 'Account'
+  },
+  budget: {
+    id: 'BillForm.budget',
+    defaultMessage: 'Budget'
   },
   uniqueName: {
     id: 'BillForm.uniqueName',
@@ -150,6 +154,11 @@ interface ConnectedProps {
   monthOptions: SelectOption[]
   weekdayOptions: SelectOption[]
   bills: Bill.View[]
+  budgets: Budget.View[]
+}
+
+interface DispatchProps {
+  pushChanges: pushChanges.Fcn
 }
 
 interface FormProps {
@@ -179,7 +188,15 @@ interface Handlers {
   changeIcon: (favicon?: string) => void
 }
 
-type AllProps = Handlers & EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props
+type AllProps = Handlers
+  & EnhancedProps
+  & ReduxUIProps<UIState>
+  & FormProps
+  & ReduxFormProps<Values>
+  & ConnectedProps
+  & DispatchProps
+  & IntlProps
+  & Props
 
 type Frequency = 'days' | 'weeks' | 'months' | 'years'
 type EndType = 'endDate' | 'endCount'
@@ -201,7 +218,8 @@ interface Values extends RRuleValues {
   web: string
   notes: string
   amount: string
-  account: string
+  account: Account.DocId
+  category: string
   favicon: string
   showAdvanced: boolean
 }
@@ -215,21 +233,22 @@ const enhance = compose<AllProps, Props>(
   setPropTypes({
     title: React.PropTypes.object.isRequired,
     edit: React.PropTypes.object,
-    onSubmit: React.PropTypes.func.isRequired,
     onCancel: React.PropTypes.func.isRequired
   } as PropTypes<Props>),
   injectIntl,
-  connect<ConnectedProps, {}, IntlProps & Props>(
+  connect<ConnectedProps, DispatchProps, IntlProps & Props>(
     (state: AppState): ConnectedProps => ({
       lang: state.i18n.lang,
       bills: state.db.current!.view.bills,
+      budgets: state.db.current!.view.budgets,
       monthOptions: monthOptions(state),
       weekdayOptions: weekdayOptions(state),
-    })
+    }),
+    mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
-  reduxForm<ConnectedProps & IntlProps & Props, Values>({
+  reduxForm<ConnectedProps & DispatchProps & IntlProps & Props, Values>({
     form: formName,
-    validate: (values: Values, props: AllProps) => {
+    validate: (values: Values, props) => {
       const v = new Validator(values)
       const { edit, bills, intl: { formatMessage } } = props
       const otherAccounts = bills.filter(otherBill => !edit || otherBill.doc._id !== edit.doc._id)
@@ -247,7 +266,7 @@ const enhance = compose<AllProps, Props>(
       end: 'endCount'
     }
   }),
-  connect<FormProps, {}, ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
+  connect<FormProps, {}, ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>(
     (state: AppState, props): FormProps => ({
       start: formSelector(state, 'start'),
       interval: formSelector(state, 'interval'),
@@ -260,13 +279,13 @@ const enhance = compose<AllProps, Props>(
       favicon: formSelector(state, 'favicon'),
     })
   ),
-  ui<UIState, FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props, {}>({
+  ui<UIState, FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props, {}>({
     state: {
       groups: (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)
     }
   }),
-  withProps<EnhancedProps, ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
-    ({onSubmit, lang, edit}) => ({
+  withProps<EnhancedProps, ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>(
+    ({onSubmit, pushChanges, lang, edit}) => ({
       onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
         const { intl: { formatMessage } } = props
         const v = new Validator(values)
@@ -279,20 +298,25 @@ const enhance = compose<AllProps, Props>(
 
         v.maybeThrowSubmissionError()
 
-        const { amount, frequency, start, end, until, count, interval, byweekday, bymonth, ...rest } = values
+        const { amount, frequency, start, end, until, count, interval, byweekday, bymonth, category, ...rest } = values
+        const docs: AnyDocument[] = []
 
         const bill: Bill = {
           ...(edit ? edit!.doc : {}),
           ...rest,
           amount: numeral(amount).value(),
+          category: Budget.maybeCreateCategory(category, props.budgets, lang, docs),
           rruleString: rrule.toString()
         }
         const doc = Bill.doc(bill, lang)
-        return onSubmit(doc, dispatch, props)
+        docs.push(doc)
+        await pushChanges({docs})
+        return onSubmit(doc)
       }
     })
   ),
-  withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
+  // tslint:disable-next-line:max-line-length
+  withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>(
     'edit',
     (props) => {
       const { edit, initialize, intl: { formatNumber } } = props
@@ -342,7 +366,8 @@ const enhance = compose<AllProps, Props>(
       }
     }
   ),
-  withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
+  // tslint:disable-next-line:max-line-length
+  withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>(
     'web',
     // TODO: debounce
     async (props, prev) => {
@@ -359,7 +384,8 @@ const enhance = compose<AllProps, Props>(
       }
     }
   ),
-  withHandlers<Handlers, EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>({
+  // tslint:disable-next-line:max-line-length
+  withHandlers<Handlers, EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>({
     onFrequencyChange: ({change}) => (eventKey: Frequency) => {
       change('frequency', eventKey)
     },
@@ -385,7 +411,7 @@ const enhance = compose<AllProps, Props>(
   })
 )
 
-const { TextField, DateField, SelectField, SelectCreateableField, CheckboxField, AccountField } = typedFields<Values>()
+const { TextField, DateField, SelectField, SelectCreateableField, CheckboxField, AccountField, BudgetField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
   const { edit, title, onSubmit, onCancel, showAdvanced, ui: { groups }, monthOptions,
@@ -409,6 +435,7 @@ export const BillForm = enhance((props) => {
           options={groups}
           label={formatMessage(messages.group)}
           promptTextCreator={(label) => 'create group ' + label}
+          placeholder=''
         />
         <TextField
           name='name'
@@ -437,6 +464,10 @@ export const BillForm = enhance((props) => {
         <AccountField
           name='account'
           label={formatMessage(messages.account)}
+        />
+        <BudgetField
+          name='category'
+          label={formatMessage(messages.budget)}
         />
 
         <hr/>

@@ -4,6 +4,7 @@ import * as RB from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import * as Select from 'react-select'
 import { AccountPicker } from './AccountPicker'
+import { BudgetPicker } from './BudgetPicker'
 import { ColorPicker, ColorPickerProps } from './ColorPicker'
 import { DatePicker, DatePickerProps } from './DatePicker'
 import { IconPicker, IconPickerProps } from './IconPicker'
@@ -153,8 +154,9 @@ export const PasswordControl = WrappedControl(RB.FormControl, {type: 'password'}
 export const SelectControl = WrappedControl<string, Select.ReactSelectProps>(RFCompatibleSelect(Select))
 export const SelectCreateableControl = WrappedControl<string, Select.ReactCreatableSelectProps>(RFCompatibleSelect(Select.Creatable))
 export const AccountControl = WrappedControl<string, Select.ReactSelectProps>(RFCompatibleSelect(AccountPicker))
-export const DateControl = WrappedControl<string, DatePickerProps>(DatePicker)
+export const BudgetControl = WrappedControl<string, Select.ReactSelectProps>(RFCompatibleSelect(BudgetPicker))
 export const ColorControl = WrappedControl<string, ColorPickerProps>(ColorPicker)
+export const DateControl = WrappedControl<string, DatePickerProps>(DatePicker)
 export const IconControl = WrappedControl<string, IconPickerProps>(IconPicker)
 
 export const typedFields = function<Values> () {
@@ -165,6 +167,7 @@ export const typedFields = function<Values> () {
     SelectField: FieldTemplate<Values, Select.ReactSelectProps>(SelectControl),
     SelectCreateableField: FieldTemplate<Values, Select.ReactCreatableSelectProps>(SelectCreateableControl),
     AccountField: FieldTemplate<Values, Select.ReactSelectProps>(AccountControl),
+    BudgetField: FieldTemplate<Values, Select.ReactSelectProps>(BudgetControl),
     CheckboxField: FieldTemplate<Values, RB.CheckboxProps>(RBCheckbox),
     DateField: FieldTemplate<Values, DatePickerProps>(DateControl),
     ColorField: FieldTemplate<Values, ColorPickerProps>(ColorControl),
