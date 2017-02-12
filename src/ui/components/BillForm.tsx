@@ -430,17 +430,17 @@ export const BillForm = enhance((props) => {
       </PageHeader>
 
       <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+        <TextField
+          autoFocus
+          name='name'
+          label={formatMessage(messages.name)}
+        />
         <SelectCreateableField
           name='group'
           options={groups}
           label={formatMessage(messages.group)}
           promptTextCreator={(label) => 'create group ' + label}
           placeholder=''
-        />
-        <TextField
-          name='name'
-          autoFocus
-          label={formatMessage(messages.name)}
         />
         <TextField
           name='web'
