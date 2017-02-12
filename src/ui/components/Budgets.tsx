@@ -123,7 +123,7 @@ const enhance = compose<AllProps, {}>(
         const vi = v.arraySubvalidator('budgets', i) as Validator<BudgetValues>
         vi.arrayUnique('categories', 'name', formatMessage(messages.uniqueCategory))
         const budget = values.budgets[i]
-        for (let j = 0; budget.categories && j < budget.categories.length; j++) {
+        for (let j = 0; budget && budget.categories && j < budget.categories.length; j++) {
           const ci = vi.arraySubvalidator('categories', j)
           ci.numeral('amount', formatMessage(forms.number))
         }
@@ -187,7 +187,7 @@ const enhance = compose<AllProps, {}>(
         const categories = values.budgets[i].categories
         for (let c = 0; categories && c < categories.length; c++) {
           const cv = bv.arraySubvalidator('categories', c)
-          cv.required(['name', 'amount'], formatMessage(forms.required))
+          cv.required(['name'], formatMessage(forms.required))
         }
       }
       v.maybeThrowSubmissionError()
