@@ -82,6 +82,6 @@ const categoryOptions = createSelector(
         }))
       ] : []
     ))
-    return options
+    return R.sortBy((option: SelectOption) => option.label, options)
   }
 )
