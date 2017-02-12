@@ -63,6 +63,7 @@ interface FieldGroupProps<Name> {
   help?: string
   minimal?: boolean
   onChange?: (newValue: any) => any
+  onBlur?: (newValue: any) => any
   addonBefore?: React.ReactNode
   addonAfter?: React.ReactNode
 }
@@ -76,7 +77,11 @@ const WrappedControl = <Name extends string, Props>(Component: any, componentPro
       if (input.onChange) { input.onChange(e) }
       if (props.onChange) { props.onChange(e) }
     }
-    let component = <Component {...componentProps} {...fieldProps} {...input} onChange={onChange}/>
+    const onBlur = (e: any) => {
+      if (input.onBlur) { input.onBlur(e) }
+      if (props.onBlur) { props.onBlur(e) }
+    }
+    let component = <Component {...componentProps} {...fieldProps} {...input} onChange={onChange} onBlur={onBlur}/>
     if (addonBefore || addonAfter) {
       component = (
         <RB.InputGroup>

@@ -5,6 +5,7 @@ import { Budget } from './Budget'
 
 export interface Category {
   name: string
+  amount: number
 }
 
 export namespace Category {

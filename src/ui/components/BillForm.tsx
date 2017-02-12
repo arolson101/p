@@ -344,6 +344,7 @@ const enhance = compose<AllProps, Props>(
   ),
   withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & IntlProps & Props>(
     'web',
+    // TODO: debounce
     async (props, prev) => {
       const { web, favicon, change } = props
       if (web && (favicon === undefined || prev)) { // avoid re-fetching icon

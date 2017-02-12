@@ -1,9 +1,10 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import { Alert, Panel, InputGroup, ButtonToolbar, Button, PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
-import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
+import { Grid, Row, Col, Alert, Panel, InputGroup, ButtonToolbar, Button,
+  PageHeader, ListGroup, ListGroupItem, ProgressBar } from 'react-bootstrap'
+import { injectIntl, FormattedMessage, FormattedNumber, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, shallowEqual } from 'recompose'
 import { ReduxFormProps, FieldArray, reduxForm } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteBudget } from '../../actions'
@@ -36,9 +37,17 @@ const messages = defineMessages({
     id: 'Budgets.budget',
     defaultMessage: 'Budget'
   },
+  frequency: {
+    id: 'Budgets.frequency',
+    defaultMessage: 'Frequency'
+  },
   category: {
     id: 'Budgets.category',
     defaultMessage: 'Category'
+  },
+  targetAmount: {
+    id: 'Budgets.targetAmount',
+    defaultMessage: 'Amount'
   },
   uniqueBudget: {
     id: 'Budgets.uniqueBudget',
@@ -71,13 +80,14 @@ interface EnhancedProps {
 type AllProps = ReduxFormProps<Values> & ReduxUIProps<UIState> & EnhancedProps & ConnectedProps & DispatchProps
 
 interface CategoryValues {
+  _id: string
   name: string
-  id: string
+  amount: number
 }
 
 interface BudgetValues {
+  _id: string
   name: string
-  id: string
   categories: CategoryValues[]
 }
 
@@ -111,6 +121,11 @@ const enhance = compose<AllProps, {}>(
       for (let i = 0; values.budgets && i < values.budgets.length; i++) {
         const vi = v.arraySubvalidator('budgets', i) as Validator<BudgetValues>
         vi.arrayUnique('categories', 'name', formatMessage(messages.uniqueCategory))
+        const budget = values.budgets[i]
+        for (let j = 0; budget.categories && j < budget.categories.length; j++) {
+          const ci = vi.arraySubvalidator('categories', j)
+          ci.numeral('amount', formatMessage(forms.number))
+        }
       }
       return v.errors
     }
@@ -126,34 +141,35 @@ const enhance = compose<AllProps, {}>(
         bv.required(['name'], formatMessage(forms.required))
         const bvalues = values.budgets[i]
         if (bvalues) {
-          const lastBudget = budgets.find(budget => budget.doc._id === bvalues.id)
+          const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
           let nextBudget = lastBudget
             ? lastBudget.doc
             : Budget.doc({name: bvalues.name, categories: []}, lang)
 
-          if (nextBudget.name !== bvalues.name) {
-            nextBudget = {
-              ...nextBudget,
-              name: bvalues.name
-            }
+          nextBudget = {
+            ...nextBudget,
+            name: bvalues.name
           }
 
           const categories = bvalues.categories.map(bc => {
             if (!bc) {
               return '' as Category.DocId
             }
-            if (bc.id && lastBudget) {
-              const existingCategory = lastBudget.categories.find(cat => cat.doc._id === bc.id)
+            if (bc._id && lastBudget) {
+              const existingCategory = lastBudget.categories.find(cat => cat.doc._id === bc._id)
               if (!existingCategory) {
-                throw new Error('existing category id ' + bc.id + ' not found')
+                throw new Error('existing category id ' + bc._id + ' not found')
               }
-              if (existingCategory.doc.name !== bc.name) {
-                const nextCategory = { ...existingCategory.doc, name: bc.name }
+              const nextCategory = {
+                ...existingCategory.doc,
+                ...bc
+              }
+              if (!shallowEqual(existingCategory, nextCategory)) {
                 changes.push(nextCategory)
               }
               return existingCategory.doc._id
             } else {
-              const newCategory = Category.doc(nextBudget, {name: bc.name}, lang)
+              const newCategory = Category.doc(nextBudget, {name: bc.name, amount: bc.amount}, lang)
               changes.push(newCategory)
               return newCategory._id
             }
@@ -163,14 +179,14 @@ const enhance = compose<AllProps, {}>(
             nextBudget = { ...nextBudget, categories }
           }
 
-          if (!lastBudget || lastBudget.doc !== nextBudget) {
+          if (!lastBudget || !shallowEqual(lastBudget.doc, nextBudget)) {
             changes.push(nextBudget)
           }
         }
         const categories = values.budgets[i].categories
         for (let c = 0; categories && c < categories.length; c++) {
           const cv = bv.arraySubvalidator('categories', c)
-          cv.required(['name'], formatMessage(forms.required))
+          cv.required(['name', 'amount'], formatMessage(forms.required))
         }
       }
       v.maybeThrowSubmissionError()
@@ -188,10 +204,11 @@ const enhance = compose<AllProps, {}>(
       const values: Values = {
         budgets: budgets.map((budget): BudgetValues => ({
           name: budget.doc.name,
-          id: budget.doc._id,
+          _id: budget.doc._id,
           categories: budget.categories.map((category): CategoryValues => ({
             name: category.doc.name,
-            id: category.doc._id
+            _id: category.doc._id,
+            amount: category.doc.amount
           }))
         }))
       }
@@ -244,7 +261,19 @@ export const Budgets = enhance((props: AllProps) => {
               }
               {budget.categories.map(category =>
                 <ListGroupItem key={category.doc._id}>
-                  {category.doc.name}
+                  <Grid fluid>
+                  <Col xs={2}>
+                    {category.doc.name}
+                  </Col>
+                  <Col xs={8}>
+                    <CategoryProgress category={category}/>
+                  </Col>
+                  <Col xs={2}>
+                    <em className='pull-right'><small>
+                      <FormattedNumber value={category.doc.amount} style='currency' currency='USD'/>
+                    </small></em>
+                  </Col>
+                  </Grid>
                 </ListGroupItem>
               )}
             </ListGroup>
@@ -254,6 +283,36 @@ export const Budgets = enhance((props: AllProps) => {
     </form>
   )
 })
+
+import { OverlayTrigger, Popover } from 'react-bootstrap'
+
+const CategoryProgress = ({category}: {category: Category.View}) => {
+  const max = parseFloat(category.doc.amount as any)
+  const expenses = category.doc.amount / 4
+  const contributions = category.doc.amount / 3
+
+  const overlay = (
+    <Popover id={'popover-category-' + category.doc._id}>
+      Contributions: ${contributions}<br/>
+      Expenses: ${expenses}
+    </Popover>
+  )
+
+  if (contributions > expenses) {
+    return <OverlayTrigger trigger={['hover', 'focus']} placement='bottom' overlay={overlay}>
+      <ProgressBar>
+        <ProgressBar max={max} now={expenses} label={`expenses $ ${expenses}`}/>
+        <ProgressBar max={max} now={contributions - expenses} label={`contributed $ ${contributions}`} bsStyle='success'/>
+      </ProgressBar>
+    </OverlayTrigger>
+  } else {
+    return <ProgressBar>
+      <ProgressBar max={max} now={contributions} label={`contributed $ ${contributions}`} bsStyle='success'/>
+      <ProgressBar max={max} now={expenses - contributions} label={`expenses $ ${expenses}`} bsStyle='danger'/>
+    </ProgressBar>
+  }
+}
+
 
 const renderBudgets = injectIntl((props: any) => {
   const { children, fields, meta: { error }, intl: { formatMessage } } = props
@@ -279,10 +338,10 @@ const renderBudgets = injectIntl((props: any) => {
               </InputGroup.Button>
             }
           />
-          <TextField
+          {/*<TextField
             name={`${budget}.frequency`}
-            label='frequency'
-          />
+            label={formatMessage(messages.frequency)}
+          />*/}
         </FieldArray>
       )}
       <Button onClick={() => fields.push()}>
@@ -317,7 +376,7 @@ const renderCategories = injectIntl((props: any) => {
             />
             <TextField
               name={`${category}.amount`}
-              label='amount'
+              label={formatMessage(messages.targetAmount)}
             />
           </ListGroupItem>
         )}
