@@ -7,12 +7,12 @@ import { connect } from 'react-redux'
 import { AutoSizer } from 'react-virtualized'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { createSelector } from 'reselect'
-import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack } from 'victory'
+import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack, VictoryGroup, VictoryVoronoiTooltip } from 'victory'
 import { Bank, Bill, Account } from '../../docs'
 import { AppState } from '../../state'
 import { CurrencyDisplay } from './CurrencyDisplay'
 import { Favico } from './forms/Favico'
-import { RouteProps } from './props'
+import { RouteProps, IntlProps } from './props'
 import { SettingsMenu } from './SettingsMenu'
 
 const messages = defineMessages({
@@ -44,6 +44,7 @@ interface BillDisplayGroup {
 interface DataPoint {
   date: Date
   value: number
+  name: string
 }
 
 interface AccountData {
@@ -56,7 +57,7 @@ interface ConnectedProps {
   data: AccountData[]
 }
 
-type AllProps = ConnectedProps & RouteProps<any>
+type AllProps = ConnectedProps & RouteProps<any> & IntlProps
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('Bills'),
@@ -72,7 +73,7 @@ const enhance = compose<AllProps, {}>(
 )
 
 export const Bills = enhance((props: AllProps) => {
-  const { groups, router } = props
+  const { groups, router, intl: { formatDate, formatNumber } } = props
   const now = new Date()
 
   return (
@@ -93,13 +94,14 @@ export const Bills = enhance((props: AllProps) => {
 
       <AutoSizer disableHeight>
         {(autoSizerProps: AutoSizer.ChildrenProps) => (
-          <div style={{width: autoSizerProps.width, borderStyle: 'solid', borderWidth: 1}}>
+          <div style={{width: autoSizerProps.width}}>
             <VictoryChart
-              height={200}
+              height={300}
               width={autoSizerProps.width}
               domainPadding={20}
               theme={VictoryTheme.material}
             >
+
               <VictoryAxis
                 scale='time'
               />
@@ -110,14 +112,26 @@ export const Bills = enhance((props: AllProps) => {
               <VictoryStack
                 colorScale={'warm'}
               >
-                {props.data.map(account => account.points.length &&
-                  <VictoryLine
+                {props.data.map(account => account.points.length > 1 &&
+                  <VictoryGroup
                     key={account.name}
-                    name={account.name}
                     data={account.points}
                     x='date'
                     y='value'
-                  />
+                    name={account.name}
+                  >
+                    <VictoryLine
+                    />
+                    <VictoryVoronoiTooltip
+                      labels={
+                        (d: DataPoint) => {
+                          const date = formatDate(d.date, {})
+                          const amount = formatNumber(d.value, {style: 'currency', currency: 'USD'})
+                          return `${account.name}\n${date} - ${d.name}\n${amount}`
+                        }
+                      }
+                    />
+                  </VictoryGroup>
                 )}
               </VictoryStack>
             </VictoryChart>
@@ -225,7 +239,7 @@ const selectAccountData = createSelector(
               pts.push({...pt, value: pt.value + prev})
               return pts
             },
-            [{date: start, value: account.balance}]
+            [{date: start, value: account.balance, name: 'initial balance'}]
           )
         )(bills)
 
