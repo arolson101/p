@@ -1,7 +1,7 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
 import * as RRule from 'rrule-alt'
-import { Category } from './Category'
+import { DocCache, Account, Budget, Category } from './'
 
 export interface Bill {
   name: string
@@ -10,6 +10,7 @@ export interface Bill {
   favicon?: string
   notes: string
   amount: number
+  account?: Account.DocId
   category: Category.DocId
   rruleString: string
 }
@@ -27,12 +28,18 @@ export namespace Bill {
   export type View = {
     doc: Doc
     rrule: RRule
+    account?: Account.Doc
+    budget?: Budget.Doc
+    category?: Category.Doc
   }
 
-  export const buildView = (doc: Doc): View => {
+  export const buildView = (doc: Doc, docCache: DocCache): View => {
     return ({
       doc,
-      rrule: RRule.fromString(doc.rruleString)
+      rrule: RRule.fromString(doc.rruleString),
+      account: doc.account && docCache.accounts.get(doc.account),
+      budget: doc.category && docCache.budgets.get(Category.budgetId(doc.category)),
+      category: doc.category && docCache.categories.get(doc.category)
     })
   }
 

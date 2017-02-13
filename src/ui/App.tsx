@@ -55,6 +55,7 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
                 <Route path={Transaction.routes.view} component={Components.TransactionView}/>
                 <Route path={Bill.routes.all} component={Components.Bills}/>
                 <Route path={Bill.routes.create} component={Components.BillCreate}/>
+                <Route path={Bill.routes.edit} component={Components.BillEdit}/>
                 <Route path={Budget.routes.all} component={Components.Budgets}/>
               </Route>
               <Route path='*' component={NotFoundRoute}/>

@@ -46,4 +46,12 @@ export namespace Category {
     const _id = docId({ budgetId, categoryId })
     return { _id, ...category }
   }
+
+  export const budgetId = (category: DocId): Budget.DocId => {
+    const parts = docId(category)
+    if (!parts) {
+      throw new Error('invalid category docid: ' + category)
+    }
+    return Budget.docId(parts)
+  }
 }

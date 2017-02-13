@@ -118,7 +118,7 @@ export const deleteDoc = (doc: AnyDocument): Deletion => ({
 const buildView = (cache: DocCache): DbView => {
   const views = {
     banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache)),
-    bills: Lookup.map(cache.bills, bill => Bill.buildView(bill)),
+    bills: Lookup.map(cache.bills, bill => Bill.buildView(bill, cache)),
     budgets: Lookup.map(cache.budgets, budget => Budget.buildView(budget, cache))
   }
   views.budgets.forEach(budget => Budget.linkView(budget, views))

@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 import { AppState } from '../../state'
-import { Bank, Account, Transaction } from '../../docs'
+import { Bank, Account, Transaction, Bill } from '../../docs'
 import { RouteProps } from './props'
 
 export const selectBanks = (state: AppState) => {
@@ -8,13 +8,6 @@ export const selectBanks = (state: AppState) => {
     throw new Error('no open db!')
   }
   return state.db.current.view.banks
-}
-
-export const selectBills = (state: AppState) => {
-  if (!state.db.current) {
-    throw new Error('no open db!')
-  }
-  return state.db.current.view.bills
 }
 
 export const selectBank = createSelector(
@@ -62,5 +55,30 @@ export const selectTransaction = createSelector(
       throw new Error('transaction not found!')
     }
     return transaction
+  }
+)
+
+export const selectBills = (state: AppState) => {
+  if (!state.db.current) {
+    throw new Error('no open db!')
+  }
+  return state.db.current.view.bills
+}
+
+export const selectBill = createSelector(
+  (state: AppState, props?: RouteProps<Bill.Params>) => state.db.current && state.db.current.view.bills,
+  (state: AppState, props?: RouteProps<Bill.Params>) => props && Bill.docId(props.params),
+  (bills, billId) => {
+    if (!bills) {
+      throw new Error('no bills!')
+    }
+    if (!billId) {
+      throw new Error('no billId!')
+    }
+    const bill = bills.find(b => b.doc._id === billId)
+    if (!bill) {
+      throw new Error('bill not found!')
+    }
+    return bill
   }
 )

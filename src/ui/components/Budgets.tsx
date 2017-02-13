@@ -2,7 +2,7 @@ import * as R from 'ramda'
 import * as React from 'react'
 import { Grid, Col, Alert, Panel, InputGroup, ButtonToolbar, Button,
   PageHeader, ListGroup, ListGroupItem, ProgressBar } from 'react-bootstrap'
-import { injectIntl, FormattedMessage, FormattedNumber, defineMessages } from 'react-intl'
+import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, shallowEqual } from 'recompose'
 import { ReduxFormProps, FieldArray, reduxForm } from 'redux-form'
@@ -12,6 +12,7 @@ import { Budget, Category } from '../../docs'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state'
 import { Validator } from '../../util'
 import { withPropChangeCallback } from '../enhancers'
+import { CurrencyDisplay } from './CurrencyDisplay'
 import { SettingsMenu } from './SettingsMenu'
 import { typedFields, forms } from './forms'
 import { Favico } from './forms/Favico'
@@ -271,8 +272,8 @@ export const Budgets = enhance((props: AllProps) => {
                         <CategoryProgress category={category}/>
                       </Col>
                       <Col xs={2}>
-                        <em className='pull-right'><small>
-                          <FormattedNumber value={category.doc.amount} style='currency' currency='USD'/>
+                        <em><small>
+                          <CurrencyDisplay amount={category.doc.amount}/>
                         </small></em>
                       </Col>
                     </Row>
@@ -284,8 +285,8 @@ export const Budgets = enhance((props: AllProps) => {
                           {bill.doc.name}
                         </Col>
                         <Col xs={2}>
-                          <em className='pull-right'><small>
-                            <FormattedNumber value={bill.doc.amount} style='currency' currency='USD'/>
+                          <em><small>
+                            <CurrencyDisplay amount={bill.doc.amount}/>
                           </small></em>
                         </Col>
                       </Row>

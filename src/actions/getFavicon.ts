@@ -21,6 +21,7 @@ const isValidUrl = (urlStr: string): boolean => {
   }
 }
 
+// TODO: switch to https://github.com/mzabriskie/axios
 const httpGet = (urlStr: string): Promise<Response> => {
   return new Promise((resolve, reject) => {
     const obj = url.parse(urlStr)
