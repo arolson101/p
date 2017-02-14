@@ -1,6 +1,6 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from '../util'
-import { DocCache, DbView, Bill, Category } from './'
+import { DocCache, DbView, Category } from './'
 
 export interface Budget {
   name: string
