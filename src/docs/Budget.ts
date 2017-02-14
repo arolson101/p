@@ -5,6 +5,7 @@ import { DocCache, DbView, Category } from './'
 export interface Budget {
   name: string
   categories: Category.DocId[]
+  sortOrder: number
 }
 
 export namespace Budget {
@@ -16,6 +17,7 @@ export namespace Budget {
   export type Cache = Lookup<DocId, Doc>
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
   export const icon = 'fa fa-signal'
+  export const compare = (a: View, b: View) => (a.doc.sortOrder - b.doc.sortOrder)
 
   export type View = {
     doc: Doc

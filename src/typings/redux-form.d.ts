@@ -152,53 +152,55 @@ export interface InjectedFieldProps<Name> {
 
 export type SubmitFunction<TValues> = (data: TValues, dispatch?: Dispatch<any>, props?: any) => Promise<any> | void
 
+export interface ArrayOperations {
+    // Inserts a value into the given array field in your form. This is a bound action creator,
+    // so it returns nothing.
+    insert(field:String, index:Number, value:any) : void
+
+    // Moves a value at the given from index to the given to index in the given array field in
+    // your form. This is a bound action creator, so it returns nothing.
+    move(field:String, from:Number, to:Number) : void
+
+    // Pops a value off of the end of a given array field in your form. This is a bound action
+    // creator, so it returns nothing.
+    pop(field:String) : void
+
+    // Pushes the given value onto the end of the given array field in your form. This is a bound
+    // action creator, so it returns nothing.
+    push(field:String, value:any) : void
+
+    // Removes a value at the given index from the given array field in your form. This is a bound
+    // action creator, so it returns nothing.
+    remove(field:String, index:Number) : void
+
+    // Removes all the values from the given array field in your form. This is a bound action
+    // creator, so it returns nothing.
+    removeAll(field:String) : void
+
+    // Shifts a value out of the beginning of the given array in your form. This is a bound action
+    // creator, so it returns nothing.
+    shift(field:String) : void
+
+    // Performs an Array.splice operation on the given array in your form. This is a bound action
+    // creator, so it returns nothing.
+    splice(field:String, index:Number, removeNum:Number, value:any) : void
+
+    // Swaps two values at the given indexes of the given array field in your form. This is a bound
+    // action creator, so it returns nothing.
+    swap(field:String, indexA:Number, indexB:Number) : void
+
+    // Unshifts the given value into the beginning of the given array field in your form. This is a
+    // bound action creator, so it returns nothing.
+    unshift(field:String, value:any) : void
+}
+
 export interface ReduxFormProps<TValues> {
 
     // true if any of the fields have been marked as touched, false otherwise.
     anyTouched : boolean
 
     // A set of pre-bound action creators for you to operate on array fields in your form.
-    array : {
-        // Inserts a value into the given array field in your form. This is a bound action creator,
-        // so it returns nothing.
-        insert(field:String, index:Number, value:any) : void
-
-        // Moves a value at the given from index to the given to index in the given array field in
-        // your form. This is a bound action creator, so it returns nothing.
-        move(field:String, from:Number, to:Number) : void
-
-        // Pops a value off of the end of a given array field in your form. This is a bound action
-        // creator, so it returns nothing.
-        pop(field:String) : void
-
-        // Pushes the given value onto the end of the given array field in your form. This is a bound
-        // action creator, so it returns nothing.
-        push(field:String, value:any) : void
-
-        // Removes a value at the given index from the given array field in your form. This is a bound
-        // action creator, so it returns nothing.
-        remove(field:String, index:Number) : void
-
-        // Removes all the values from the given array field in your form. This is a bound action
-        // creator, so it returns nothing.
-        removeAll(field:String) : void
-
-        // Shifts a value out of the beginning of the given array in your form. This is a bound action
-        // creator, so it returns nothing.
-        shift(field:String) : void
-
-        // Performs an Array.splice operation on the given array in your form. This is a bound action
-        // creator, so it returns nothing.
-        splice(field:String, index:Number, removeNum:Number, value:any) : void
-
-        // Swaps two values at the given indexes of the given array field in your form. This is a bound
-        // action creator, so it returns nothing.
-        swap(field:String, indexA:Number, indexB:Number) : void
-
-        // Unshifts the given value into the beginning of the given array field in your form. This is a
-        // bound action creator, so it returns nothing.
-        unshift(field:String, value:any) : void
-    }
+    array : ArrayOperations
 
     // A function that may be called to initiate asynchronous validation if asynchronous validation
     // is enabled.
@@ -532,6 +534,47 @@ export interface FieldArrayProps {
    */
   component: React.Component<any, any>;
   withRef?: boolean;
+
+  validate: (value: any, allValues: any[], props: any) => string
+  warn: (value: any, allValues: any[], props: any) => string
+  props: any
+}
+
+export type FieldCallback<T> = (name: string, index: number, fields: Fields) => T
+
+export interface Fields {
+    name(): string
+    forEach(callback: FieldCallback<void>): void
+    get(index: number): any
+    getAll(): any[]
+    insert(index: number, value: any): void
+    length: number
+    map<T>(callback: FieldCallback<T>): T[]
+    move(from: number, to: number): void
+    pop(): void
+    push(value?: any): void
+    remove(index: number): void
+    removeAll(): void
+    shift(): void
+    swap(indexA: number, indexB: number): void
+    unshift(value: any): void
+}
+
+export interface Meta {
+    dirty: boolean
+    error?: string
+    warning?: string
+    invalid: boolean
+    pristine: boolean
+    submitting: boolean
+    valid: boolean
+}
+
+export interface FieldArrayParams extends React.Props<any> {
+    name: string
+    valid: boolean
+    fields: Fields
+    meta: Meta
 }
 
 export class FieldArray extends React.Component<any, any> {}

@@ -16,3 +16,7 @@ html, body, #root {
 .progress {
     margin-bottom: 0px !important;
 }
+
+.sortableHelper {
+   z-index: 10;
+}
