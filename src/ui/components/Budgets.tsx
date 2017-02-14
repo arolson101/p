@@ -1,14 +1,15 @@
 import autobind = require('autobind-decorator')
+import * as numeral from 'numeral'
 import * as R from 'ramda'
 import * as React from 'react'
-import { Row, OverlayTrigger, Popover, Grid, Col, Alert, Panel, InputGroup, ButtonToolbar, Button,
-  PageHeader, ListGroup, ListGroupItem, ProgressBar } from 'react-bootstrap'
+import { Row, Grid, Col, Alert, Panel, InputGroup, ButtonToolbar, Button, PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
+import { Link } from 'react-router'
 import { shallowEqual } from 'recompose'
 import { ReduxFormProps, FieldArray, reduxForm } from 'redux-form'
 import { deleteBudget } from '../../actions'
-import { Budget, Category } from '../../docs'
+import { Bill, Budget, Category } from '../../docs'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state'
 import { Validator } from '../../util'
 import { CurrencyDisplay } from './CurrencyDisplay'
@@ -49,6 +50,10 @@ const messages = defineMessages({
   targetAmount: {
     id: 'Budgets.targetAmount',
     defaultMessage: 'Amount'
+  },
+  categoryAmount: {
+    id: 'Budgets.categoryAmount',
+    defaultMessage: 'Category budget'
   },
   uniqueBudget: {
     id: 'Budgets.uniqueBudget',
@@ -146,7 +151,7 @@ export class Budgets extends React.Component<AllProps, State> {
           </PageHeader>
 
           {editing &&
-            <FieldArray name='budgets' component={renderBudgets}>
+            <FieldArray name='budgets' component={this.renderBudgets}>
               <Button onClick={this.toggleEdit}>
                 <FormattedMessage {...forms.cancel}/>
               </Button>
@@ -158,7 +163,12 @@ export class Budgets extends React.Component<AllProps, State> {
 
           {!editing && budgets.map(budget =>
             <Panel key={budget.doc._id} header={
-              <h1>{budget.doc.name}</h1>
+              <h1>
+                {budget.doc.name}
+                <span className='pull-right'>
+                  <CurrencyDisplay amount={this.budgetTotal(budget)}/>
+                </span>
+              </h1>
             }>
               <ListGroup fill>
                 {budget.categories.length === 0 &&
@@ -170,29 +180,31 @@ export class Budgets extends React.Component<AllProps, State> {
                   <ListGroupItem key={category.doc._id}>
                     <Grid fluid>
                       <Row>
-                        <Col xs={2}>
-                          {category.doc.name}
-                        </Col>
-                        <Col xs={8}>
-                          <CategoryProgress category={category}/>
-                        </Col>
-                        <Col xs={2}>
-                          <em><small>
-                            <CurrencyDisplay amount={category.doc.amount}/>
-                          </small></em>
-                        </Col>
+                        <Col xs={10}>{category.doc.name}</Col>
+                        <Col xs={2}><CurrencyDisplay amount={this.categoryTotal(category)}/></Col>
                       </Row>
+
+                      {category.doc.amount > 0 && category.bills.length > 0 &&
+                        <Row>
+                          <Col xs={2}></Col>
+                          <Col xs={4}><FormattedMessage {...messages.categoryAmount}/></Col>
+                          <Col xs={2}>
+                            <CurrencyDisplay amount={category.doc.amount}/>
+                          </Col>
+                        </Row>
+                      }
+
                       {category.bills.map(bill =>
                         <Row key={bill.doc._id}>
-                          <Col xs={8} xsOffset={2}>
-                            <Favico value={bill.doc.favicon}/>
-                            {' '}
-                            {bill.doc.name}
+                          <Col xs={4} xsOffset={2}>
+                            <Link to={Bill.to.edit(bill.doc)}>
+                              <Favico value={bill.doc.favicon}/>
+                              {' '}
+                              {bill.doc.name}
+                            </Link>
                           </Col>
                           <Col xs={2}>
-                            <em><small>
-                              <CurrencyDisplay amount={bill.doc.amount}/>
-                            </small></em>
+                            <CurrencyDisplay amount={bill.doc.amount}/>
                           </Col>
                         </Row>
                       )}
@@ -207,6 +219,7 @@ export class Budgets extends React.Component<AllProps, State> {
     )
   }
 
+  @autobind
   async onSubmit(values: Values) {
     const v = new Validator(values)
     const { budgets, pushChanges, intl: { formatMessage }, lang } = this.props
@@ -238,7 +251,8 @@ export class Budgets extends React.Component<AllProps, State> {
             }
             const nextCategory = {
               ...existingCategory.doc,
-              ...bc
+              ...bc,
+              amount: numeral(bc.amount).value()
             }
             if (!shallowEqual(existingCategory, nextCategory)) {
               changes.push(nextCategory)
@@ -270,6 +284,16 @@ export class Budgets extends React.Component<AllProps, State> {
     if (changes.length) {
       await pushChanges({docs: changes})
     }
+
+    this.setState({editing: false})
+  }
+
+  budgetTotal(budget: Budget.View): number {
+    return budget.categories.reduce((val, category) => val + this.categoryTotal(category), 0)
+  }
+
+  categoryTotal(category: Category.View): number {
+    return category.bills.reduce((val, bill) => val + bill.doc.amount, category.doc.amount)
   }
 
   @autobind
@@ -292,110 +316,85 @@ export class Budgets extends React.Component<AllProps, State> {
     }
     this.setState({editing})
   }
-}
 
-const CategoryProgress = ({category}: {category: Category.View}) => {
-  const max = parseFloat(category.doc.amount as any)
-  const expenses = category.doc.amount / 4
-  const contributions = category.doc.amount / 3
-
-  const overlay = (
-    <Popover id={'popover-category-' + category.doc._id}>
-      Contributions: ${contributions}<br/>
-      Expenses: ${expenses}
-    </Popover>
-  )
-
-  if (contributions > expenses) {
-    return <OverlayTrigger trigger={['hover', 'focus']} placement='bottom' overlay={overlay}>
-      <ProgressBar>
-        <ProgressBar max={max} now={expenses} label={`expenses $ ${expenses}`}/>
-        <ProgressBar max={max} now={contributions - expenses} label={`contributed $ ${contributions}`} bsStyle='success'/>
-      </ProgressBar>
-    </OverlayTrigger>
-  } else {
-    return <ProgressBar>
-      <ProgressBar max={max} now={contributions} label={`contributed $ ${contributions}`} bsStyle='success'/>
-      <ProgressBar max={max} now={expenses - contributions} label={`expenses $ ${expenses}`} bsStyle='danger'/>
-    </ProgressBar>
-  }
-}
-
-const renderBudgets = injectIntl((props: any) => {
-  const { children, fields, meta: { error }, intl: { formatMessage } } = props
-  return (
-    <div>
-      {error &&
-        <Alert bsStyle='danger'>{error}</Alert>
-      }
-      {fields.map((budget: string, index: number) =>
-        <FieldArray
-          key={`${budget}.categories`}
-          name={`${budget}.categories`}
-          component={renderCategories}
-        >
-          <TextField
-            name={`${budget}.name`}
-            label={formatMessage(messages.budget)}
-            addonAfter={
-              <InputGroup.Button>
-                <Button bsStyle='danger' onClick={() => fields.remove(index)}>
-                  <i className='fa fa-trash-o fa-lg'/>
-                </Button>
-              </InputGroup.Button>
-            }
-          />
-          {/*<TextField
-            name={`${budget}.frequency`}
-            label={formatMessage(messages.frequency)}
-          />*/}
-        </FieldArray>
-      )}
-      <Button onClick={() => fields.push()}>
-        <i className={Budget.icon}/>
-        {' '}
-        <FormattedMessage {...messages.addBudget}/>
-      </Button>
-      <ButtonToolbar className='pull-right'>
-        {children}
-      </ButtonToolbar>
-    </div>
-  )
-})
-
-const renderCategories = injectIntl((props: any) => {
-  const { name, fields, children, meta: { error }, intl: { formatMessage } } = props
-  return (
-    <Panel key={name} header={children}>
-      <ListGroup fill>
-        {fields.map((category: string, index: number) =>
-          <ListGroupItem key={category}>
+  @autobind
+  renderBudgets({ children, fields, meta: { error } }: any) {
+    const { intl: { formatMessage } } = this.props
+    return (
+      <div>
+        {error &&
+          <Alert bsStyle='danger'>{error}</Alert>
+        }
+        {fields.map((budget: string, index: number) =>
+          <FieldArray
+            key={`${budget}.categories`}
+            name={`${budget}.categories`}
+            component={this.renderCategories}
+          >
             <TextField
-              name={`${category}.name`}
-              label={formatMessage(messages.category)}
+              name={`${budget}.name`}
+              label={formatMessage(messages.budget)}
               addonAfter={
                 <InputGroup.Button>
                   <Button bsStyle='danger' onClick={() => fields.remove(index)}>
-                    <i className='fa fa-minus'/>
+                    <i className='fa fa-trash-o fa-lg'/>
                   </Button>
                 </InputGroup.Button>
               }
             />
-            <TextField
-              name={`${category}.amount`}
-              label={formatMessage(messages.targetAmount)}
-            />
-          </ListGroupItem>
+            {/*<TextField
+              name={`${budget}.frequency`}
+              label={formatMessage(messages.frequency)}
+            />*/}
+          </FieldArray>
         )}
-        {error &&
-          <ListGroupItem>
-            <Alert bsStyle='danger'>{error}</Alert>
-          </ListGroupItem>
-        }
-      </ListGroup>
-      <ButtonToolbar>
-        <Button onClick={() => fields.push()}><i className='fa fa-plus'/> add category</Button>
-      </ButtonToolbar>
-    </Panel>
-  )
-})
+        <Button onClick={() => fields.push()}>
+          <i className={Budget.icon}/>
+          {' '}
+          <FormattedMessage {...messages.addBudget}/>
+        </Button>
+        <ButtonToolbar className='pull-right'>
+          {children}
+        </ButtonToolbar>
+      </div>
+    )
+  }
+
+  @autobind
+  renderCategories({ name, fields, children, meta: { error } }: any) {
+    const { intl: { formatMessage } } = this.props
+    return (
+      <Panel key={name} header={children}>
+        <ListGroup fill>
+          {fields.map((category: string, index: number) =>
+            <ListGroupItem key={category}>
+              <TextField
+                name={`${category}.name`}
+                label={formatMessage(messages.category)}
+                addonAfter={
+                  <InputGroup.Button>
+                    <Button bsStyle='danger' onClick={() => fields.remove(index)}>
+                      <i className='fa fa-minus'/>
+                    </Button>
+                  </InputGroup.Button>
+                }
+              />
+              <TextField
+                name={`${category}.amount`}
+                label={formatMessage(messages.targetAmount)}
+              />
+            </ListGroupItem>
+          )}
+          {error &&
+            <ListGroupItem>
+              <Alert bsStyle='danger'>{error}</Alert>
+            </ListGroupItem>
+          }
+        </ListGroup>
+        <ButtonToolbar>
+          <Button onClick={() => fields.push()}><i className='fa fa-plus'/> add category</Button>
+        </ButtonToolbar>
+      </Panel>
+    )
+  }
+}
