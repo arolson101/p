@@ -1,22 +1,21 @@
+import autobind = require('autobind-decorator')
 import * as R from 'ramda'
 import * as React from 'react'
-import { Grid, Col, Alert, Panel, InputGroup, ButtonToolbar, Button,
+import { Row, OverlayTrigger, Popover, Grid, Col, Alert, Panel, InputGroup, ButtonToolbar, Button,
   PageHeader, ListGroup, ListGroupItem, ProgressBar } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, shallowEqual } from 'recompose'
+import { shallowEqual } from 'recompose'
 import { ReduxFormProps, FieldArray, reduxForm } from 'redux-form'
-import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteBudget } from '../../actions'
 import { Budget, Category } from '../../docs'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state'
 import { Validator } from '../../util'
-import { withPropChangeCallback } from '../enhancers'
 import { CurrencyDisplay } from './CurrencyDisplay'
 import { SettingsMenu } from './SettingsMenu'
 import { typedFields, forms } from './forms'
 import { Favico } from './forms/Favico'
-import { IntlProps, RouteProps } from './props'
+import { IntlProps } from './props'
 
 const messages = defineMessages({
   page: {
@@ -71,15 +70,11 @@ interface DispatchProps {
   deleteBudget: deleteBudget.Fcn
 }
 
-interface UIState {
+interface State {
   editing: boolean
 }
 
-interface EnhancedProps {
-  onSubmit: (values: Values) => void
-}
-
-type AllProps = ReduxFormProps<Values> & ReduxUIProps<UIState> & EnhancedProps & ConnectedProps & DispatchProps
+type AllProps = ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps
 
 interface CategoryValues {
   _id: string
@@ -97,112 +92,191 @@ interface Values {
   budgets: BudgetValues[]
 }
 
-const enhance = compose<AllProps, {}>(
-  setDisplayName('Budget'),
-  onlyUpdateForPropTypes,
-  setPropTypes({}),
-  injectIntl,
-  connect<ConnectedProps, DispatchProps, {}>(
-    (state: AppState): ConnectedProps => ({
-      lang: state.i18n.lang,
-      budgets: state.db.current!.view.budgets
-    }),
-    mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget })
-  ),
-  ui<UIState, ConnectedProps & DispatchProps & RouteProps<Budget.Params> & IntlProps, {}>({
-    state: {
-      editing: false
-    } as UIState
+const { TextField } = typedFields<any>()
+
+@injectIntl
+@(connect<ConnectedProps, DispatchProps, IntlProps>(
+  (state: AppState): ConnectedProps => ({
+    lang: state.i18n.lang,
+    budgets: state.db.current!.view.budgets
   }),
-  reduxForm<EnhancedProps & ConnectedProps & DispatchProps & RouteProps<Budget.Params> & IntlProps, Values>({
-    form: 'BudgetForm',
-    validate: (values, props) => {
-      const v = new Validator(values)
-      const { intl: { formatMessage } } = props
-      v.arrayUnique('budgets', 'name', formatMessage(messages.uniqueBudget))
-      for (let i = 0; values.budgets && i < values.budgets.length; i++) {
-        const vi = v.arraySubvalidator('budgets', i) as Validator<BudgetValues>
-        vi.arrayUnique('categories', 'name', formatMessage(messages.uniqueCategory))
-        const budget = values.budgets[i]
-        for (let j = 0; budget && budget.categories && j < budget.categories.length; j++) {
-          const ci = vi.arraySubvalidator('categories', j)
-          ci.numeral('amount', formatMessage(forms.number))
-        }
+  mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget })
+) as any)
+@(reduxForm<AllProps, Values>({
+  form: 'BudgetForm',
+  validate: (values, props) => {
+    const v = new Validator(values)
+    const { intl: { formatMessage } } = props
+    v.arrayUnique('budgets', 'name', formatMessage(messages.uniqueBudget))
+    for (let i = 0; values.budgets && i < values.budgets.length; i++) {
+      const vi = v.arraySubvalidator('budgets', i) as Validator<BudgetValues>
+      vi.arrayUnique('categories', 'name', formatMessage(messages.uniqueCategory))
+      const budget = values.budgets[i]
+      for (let j = 0; budget && budget.categories && j < budget.categories.length; j++) {
+        const ci = vi.arraySubvalidator('categories', j)
+        ci.numeral('amount', formatMessage(forms.number))
       }
-      return v.errors
     }
-  }),
-  withHandlers<EnhancedProps, ReduxFormProps<Values> & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps>({
-    onSubmit: (props) => async (values: Values) => {
-      const v = new Validator(values)
-      const { budgets, updateUI, pushChanges, intl: { formatMessage }, lang } = props
-      const changes: AnyDocument[] = []
+    return v.errors
+  }
+}) as any)
+export class Budgets extends React.Component<AllProps, State> {
+  state: State = {
+    editing: false
+  }
 
-      for (let i = 0; values.budgets && i < values.budgets.length; i++) {
-        const bv = v.arraySubvalidator('budgets', i) as Validator<BudgetValues>
-        bv.required(['name'], formatMessage(forms.required))
-        const bvalues = values.budgets[i]
-        if (bvalues) {
-          const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
-          let nextBudget = lastBudget
-            ? lastBudget.doc
-            : Budget.doc({name: bvalues.name, categories: []}, lang)
+  render() {
+    const { budgets, handleSubmit } = this.props
+    const { editing } = this.state
 
-          nextBudget = {
-            ...nextBudget,
-            name: bvalues.name
+    return (
+      <form onSubmit={handleSubmit(this.onSubmit)}>
+        <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+
+          <PageHeader>
+            <SettingsMenu
+              items={[
+                {
+                  message: messages.editBudget,
+                  onClick: this.toggleEdit
+                },
+              ]}
+            />
+            <FormattedMessage {...messages.page}/>
+          </PageHeader>
+
+          {editing &&
+            <FieldArray name='budgets' component={renderBudgets}>
+              <Button onClick={this.toggleEdit}>
+                <FormattedMessage {...forms.cancel}/>
+              </Button>
+              <Button type='submit' bsStyle='primary'>
+                <FormattedMessage {...forms.save}/>
+              </Button>
+            </FieldArray>
           }
 
-          const categories = bvalues.categories.map(bc => {
-            if (!bc) {
-              return '' as Category.DocId
-            }
-            if (bc._id && lastBudget) {
-              const existingCategory = lastBudget.categories.find(cat => cat.doc._id === bc._id)
-              if (!existingCategory) {
-                throw new Error('existing category id ' + bc._id + ' not found')
-              }
-              const nextCategory = {
-                ...existingCategory.doc,
-                ...bc
-              }
-              if (!shallowEqual(existingCategory, nextCategory)) {
-                changes.push(nextCategory)
-              }
-              return existingCategory.doc._id
-            } else {
-              const newCategory = Category.doc(nextBudget, {name: bc.name, amount: bc.amount}, lang)
-              changes.push(newCategory)
-              return newCategory._id
-            }
-          })
+          {!editing && budgets.map(budget =>
+            <Panel key={budget.doc._id} header={
+              <h1>{budget.doc.name}</h1>
+            }>
+              <ListGroup fill>
+                {budget.categories.length === 0 &&
+                  <ListGroupItem>
+                    <small><em>no categories</em></small>
+                  </ListGroupItem>
+                }
+                {budget.categories.map(category =>
+                  <ListGroupItem key={category.doc._id}>
+                    <Grid fluid>
+                      <Row>
+                        <Col xs={2}>
+                          {category.doc.name}
+                        </Col>
+                        <Col xs={8}>
+                          <CategoryProgress category={category}/>
+                        </Col>
+                        <Col xs={2}>
+                          <em><small>
+                            <CurrencyDisplay amount={category.doc.amount}/>
+                          </small></em>
+                        </Col>
+                      </Row>
+                      {category.bills.map(bill =>
+                        <Row key={bill.doc._id}>
+                          <Col xs={8} xsOffset={2}>
+                            <Favico value={bill.doc.favicon}/>
+                            {' '}
+                            {bill.doc.name}
+                          </Col>
+                          <Col xs={2}>
+                            <em><small>
+                              <CurrencyDisplay amount={bill.doc.amount}/>
+                            </small></em>
+                          </Col>
+                        </Row>
+                      )}
+                    </Grid>
+                  </ListGroupItem>
+                )}
+              </ListGroup>
+            </Panel>
+          )}
+        </div>
+      </form>
+    )
+  }
 
-          if (!R.equals(categories, nextBudget.categories)) {
-            nextBudget = { ...nextBudget, categories }
-          }
+  async onSubmit(values: Values) {
+    const v = new Validator(values)
+    const { budgets, pushChanges, intl: { formatMessage }, lang } = this.props
+    const changes: AnyDocument[] = []
 
-          if (!lastBudget || !shallowEqual(lastBudget.doc, nextBudget)) {
-            changes.push(nextBudget)
-          }
+    for (let i = 0; values.budgets && i < values.budgets.length; i++) {
+      const bv = v.arraySubvalidator('budgets', i) as Validator<BudgetValues>
+      bv.required(['name'], formatMessage(forms.required))
+      const bvalues = values.budgets[i]
+      if (bvalues) {
+        const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
+        let nextBudget = lastBudget
+          ? lastBudget.doc
+          : Budget.doc({name: bvalues.name, categories: []}, lang)
+
+        nextBudget = {
+          ...nextBudget,
+          name: bvalues.name
         }
-        const categories = values.budgets[i].categories
-        for (let c = 0; categories && c < categories.length; c++) {
-          const cv = bv.arraySubvalidator('categories', c)
-          cv.required(['name'], formatMessage(forms.required))
+
+        const categories = bvalues.categories.map(bc => {
+          if (!bc) {
+            return '' as Category.DocId
+          }
+          if (bc._id && lastBudget) {
+            const existingCategory = lastBudget.categories.find(cat => cat.doc._id === bc._id)
+            if (!existingCategory) {
+              throw new Error('existing category id ' + bc._id + ' not found')
+            }
+            const nextCategory = {
+              ...existingCategory.doc,
+              ...bc
+            }
+            if (!shallowEqual(existingCategory, nextCategory)) {
+              changes.push(nextCategory)
+            }
+            return existingCategory.doc._id
+          } else {
+            const newCategory = Category.doc(nextBudget, {name: bc.name, amount: bc.amount}, lang)
+            changes.push(newCategory)
+            return newCategory._id
+          }
+        })
+
+        if (!R.equals(categories, nextBudget.categories)) {
+          nextBudget = { ...nextBudget, categories }
+        }
+
+        if (!lastBudget || !shallowEqual(lastBudget.doc, nextBudget)) {
+          changes.push(nextBudget)
         }
       }
-      v.maybeThrowSubmissionError()
-
-      if (changes.length) {
-        await pushChanges({docs: changes})
+      const categories = values.budgets[i].categories
+      for (let c = 0; categories && c < categories.length; c++) {
+        const cv = bv.arraySubvalidator('categories', c)
+        cv.required(['name'], formatMessage(forms.required))
       }
-      updateUI({editing: false})
     }
-  }),
-  withPropChangeCallback<EnhancedProps & ReduxFormProps<Values> & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps>(
-    'budgets',
-    (props) => {
-      const { budgets, initialize } = props
+    v.maybeThrowSubmissionError()
+
+    if (changes.length) {
+      await pushChanges({docs: changes})
+    }
+  }
+
+  @autobind
+  toggleEdit() {
+    const editing = !this.state.editing
+    if (editing) {
+      const { budgets, initialize } = this.props
       const values: Values = {
         budgets: budgets.map((budget): BudgetValues => ({
           name: budget.doc.name,
@@ -216,93 +290,9 @@ const enhance = compose<AllProps, {}>(
       }
       initialize(values, false)
     }
-  ),
-)
-
-const { TextField } = typedFields<any>()
-
-export const Budgets = enhance((props: AllProps) => {
-  const { ui: { editing }, updateUI, budgets } = props
-
-  return (
-    <form onSubmit={props.handleSubmit(props.onSubmit)}>
-      <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
-
-        <PageHeader>
-          <SettingsMenu
-            items={[
-              {
-                message: messages.editBudget,
-                onClick: () => updateUI({editing: !editing})
-              },
-            ]}
-          />
-          <FormattedMessage {...messages.page}/>
-        </PageHeader>
-
-        {editing &&
-          <FieldArray name='budgets' component={renderBudgets}>
-            <Button onClick={() => updateUI({editing: false})}>
-              <FormattedMessage {...forms.cancel}/>
-            </Button>
-            <Button type='submit' bsStyle='primary'>
-              <FormattedMessage {...forms.save}/>
-            </Button>
-          </FieldArray>
-        }
-
-        {!editing && budgets.map(budget =>
-          <Panel key={budget.doc._id} header={
-            <h1>{budget.doc.name}</h1>
-          }>
-            <ListGroup fill>
-              {budget.categories.length === 0 &&
-                <ListGroupItem>
-                  <small><em>no categories</em></small>
-                </ListGroupItem>
-              }
-              {budget.categories.map(category =>
-                <ListGroupItem key={category.doc._id}>
-                  <Grid fluid>
-                    <Row>
-                      <Col xs={2}>
-                        {category.doc.name}
-                      </Col>
-                      <Col xs={8}>
-                        <CategoryProgress category={category}/>
-                      </Col>
-                      <Col xs={2}>
-                        <em><small>
-                          <CurrencyDisplay amount={category.doc.amount}/>
-                        </small></em>
-                      </Col>
-                    </Row>
-                    {category.bills.map(bill =>
-                      <Row key={bill.doc._id}>
-                        <Col xs={8} xsOffset={2}>
-                          <Favico value={bill.doc.favicon}/>
-                          {' '}
-                          {bill.doc.name}
-                        </Col>
-                        <Col xs={2}>
-                          <em><small>
-                            <CurrencyDisplay amount={bill.doc.amount}/>
-                          </small></em>
-                        </Col>
-                      </Row>
-                    )}
-                  </Grid>
-                </ListGroupItem>
-              )}
-            </ListGroup>
-          </Panel>
-        )}
-      </div>
-    </form>
-  )
-})
-
-import { Row, OverlayTrigger, Popover } from 'react-bootstrap'
+    this.setState({editing})
+  }
+}
 
 const CategoryProgress = ({category}: {category: Category.View}) => {
   const max = parseFloat(category.doc.amount as any)
