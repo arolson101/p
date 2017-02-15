@@ -57,6 +57,7 @@ module.exports = {
       { test: /\.css$/, loader: ExtractTextPlugin.extract('style-loader', 'css-loader') },
       { test: /\.(svg|woff|woff2|ttf|eot)($|\?)/, loader: "file?name=fonts/[name].[ext]" },
       { test: /\.(png|gif|jpg)($|\?)/, loader: "file?name=images/[name].[ext]" },
+      { test: /\.json$/, loader: 'json-loader'}
     ],
 
     preLoaders: [

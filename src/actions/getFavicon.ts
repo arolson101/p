@@ -1,18 +1,21 @@
-import * as http from 'http'
-import * as https from 'https'
-import * as url from 'url'
+import * as URL from 'url'
+import axios, { AxiosPromise, AxiosResponse } from 'axios'
+const axiosHttpAdapter = require('axios/lib/adapters/http')
 
-interface Response {
-  urlStr: string
-  statusCode: number
-  headers: any
-  body: Buffer
+// https://github.com/mzabriskie/axios/pull/493 - supposed to fix this but it's not working
+const fixUrl = (url: string): string => {
+  let obj = URL.parse(url)
+  if (!obj.protocol) {
+    return 'http://' + url
+  } else {
+    return url
+  }
 }
 
-const isValidUrl = (urlStr: string): boolean => {
-  let obj = url.parse(urlStr)
+const isValidUrl = (url: string): boolean => {
+  let obj = URL.parse(fixUrl(url))
   if (!obj.protocol) {
-    obj = url.parse('http://' + urlStr)
+    obj = URL.parse('http://' + url)
   }
   if (!obj.host) {
     return false
@@ -21,73 +24,33 @@ const isValidUrl = (urlStr: string): boolean => {
   }
 }
 
-// TODO: switch to https://github.com/mzabriskie/axios
-const httpGet = (urlStr: string): Promise<Response> => {
-  return new Promise((resolve, reject) => {
-    const obj = url.parse(urlStr)
-    if (!obj.protocol) {
-      urlStr = 'http://' + urlStr
-    }
-    const get = (obj.protocol === 'https:' ? https.get : http.get)
-    get(urlStr, (response) => {
-      const { statusCode } = response
-      if (statusCode < 400) {
-        const data: any[] = []
-        response.on('error', reject)
-        response.on('data', chunk => data.push(chunk))
-        response.on('end', () => {
-          const body = Buffer.concat(data)
-          resolve({urlStr, statusCode, headers: response.headers, body})
-        })
-      } else {
-        reject(new Error(`Request failed: status ${statusCode} for ${urlStr}`))
-      }
-    })
+const httpGet = (url: string): AxiosPromise => {
+  return axios.get(fixUrl(url), {
+    // force axios to use http adapter because xhr throws ERR_INSECURE_RESPONSE and for favicons I don't care
+    adapter: axiosHttpAdapter,
+    responseType: 'arraybuffer'
   })
 }
 
-const isRedirect = (code: number) => {
-  return (300 <= code && code < 400)
-}
-
-const getPage = async (urlStr: string): Promise<Response> => {
-  const seenLocations = new Set<string>()
-  seenLocations.add(urlStr)
-  let response: Response
-  while (true) {
-    response = await httpGet(urlStr)
-    if (isRedirect(response.statusCode)) {
-      const location = url.resolve(urlStr, response.headers.location)
-      if (!location) {
-        throw new Error(`Bad response: redirect ${response.statusCode} with no 'location' header at ${urlStr}`)
-      }
-      if (seenLocations.has(location)) {
-        throw new Error(`Bad response: circular redirect to already-visited location ${location}`)
-      }
-      urlStr = location
-    } else {
-      break
-    }
+const getFaviconFromDocument = async (response: AxiosResponse): Promise<string> => {
+  if (!response.data) {
+    throw new Error('no data')
   }
-
-  return response
-}
-
-const getFaviconFromDocument = async (response: Response): Promise<string> => {
-  if (!response.body) {
-    throw new Error('no body')
+  const currentUrl = (response as any).request._currentUrl as string
+  if (!currentUrl) {
+    throw new Error('response.request._currentUrl was empty')
   }
   const parser = new DOMParser()
-  const doc = parser.parseFromString(response.body.toString('utf8'), 'text/html')
+  const doc = parser.parseFromString(response.data.toString('utf8'), 'text/html')
   if (!doc) {
-    throw new Error(`error parsing body from ${response.urlStr}`)
+    throw new Error(`error parsing body from ${currentUrl}`)
   }
   for (let child of doc.head.children as any as HTMLElement[]) {
     const rel = (child.getAttribute('rel') || '').toLowerCase()
     if (child.nodeName.toLowerCase() === 'link' && (rel === 'icon' || rel === 'shortcut icon')) {
       const href = child.getAttribute('href')
       if (href) {
-        const location = url.resolve(response.urlStr, href)
+        const location = URL.resolve(currentUrl, href)
         const data = await getIconDataURI(location)
         if (data) {
           return data
@@ -96,33 +59,33 @@ const getFaviconFromDocument = async (response: Response): Promise<string> => {
     }
   }
   // console.log(`No icon in html; falling back to /favicon.ico`)
-  const location = url.resolve(response.urlStr, '/favicon.ico')
+  const location = URL.resolve(currentUrl, '/favicon.ico')
   return await getIconDataURI(location)
 }
 
-const getIconDataURI = async (urlStr: string): Promise<string> => {
-  const response = await getPage(urlStr)
-  if (response.statusCode === 200 && response.body) {
+const getIconDataURI = async (url: string): Promise<string> => {
+  const response = await httpGet(url)
+  if (response.status === 200 && response.data) {
     const type = response.headers['content-type'] as string
     if (!type.startsWith('text') && type.indexOf(' ') === -1) {
-      // console.log(`${response.urlStr} appears to be a good icon`)
-      const data = new Buffer(response.body).toString('base64')
+      // console.log(`${response.url} appears to be a good icon`)
+      const data = new Buffer(response.data).toString('base64')
       return `data:${type};base64,${data}`
     }
   }
   return ''
 }
 
-export const getFavicon = async (urlStr: string): Promise<string | undefined> => {
+export const getFavicon = async (url: string): Promise<string | undefined> => {
   try {
-    if (!isValidUrl(urlStr)) {
+    if (!isValidUrl(url)) {
       return undefined
     }
-    const response = await getPage(urlStr)
+    const response = await httpGet(url)
     const favico = await getFaviconFromDocument(response)
     return favico
   } catch (err) {
-    console.log(`error retrieving favicon from ${urlStr}: ${err.message}`)
+    console.log(`error retrieving favicon from ${url}: ${err.message}`)
     return ''
   }
 }
