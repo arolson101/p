@@ -35,7 +35,6 @@ const bufferToString = (buffer: Buffer) => buffer.toString('base64') as Compress
 
 const dehydrate = R.pipe(
   JSON.stringify as (obj: jsondiffpatch.Delta<NakedDoc, NakedDoc>) => string,
-  (x: string) => new Buffer(x), // not necessary- deflateSync accepts a string but the typing doesn't have it
   zlib.deflateSync,
   bufferToString
 )
