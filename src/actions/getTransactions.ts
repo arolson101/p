@@ -1,7 +1,7 @@
 import * as ofx4js from 'ofx4js'
 import { defineMessages, FormattedMessage } from 'react-intl'
-import { AppThunk, ThunkFcn } from '../state'
-import { Bank, Account, Transaction } from '../docs'
+import { AppThunk, ThunkFcn } from '../state/index'
+import { Bank, Account, Transaction } from '../docs/index'
 import { createConnection, getFinancialAccount } from './online'
 
 type FormatMessage = (messageDescriptor: FormattedMessage.MessageDescriptor, values?: Object) => string

@@ -2,9 +2,9 @@ import * as React from 'react'
 import * as Helmet from 'react-helmet'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
-import { AppState } from '../../state'
-import * as Mac from '../macOS'
-import * as Win from '../windows'
+import { AppState } from '../../state/index'
+import * as Mac from '../macOS/index'
+import * as Win from '../windows/index'
 import { RouteProps } from './props'
 
 export interface AppWindowProps {

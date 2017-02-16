@@ -1,6 +1,6 @@
 import { FinancialInstitution, FinancialInstitutionProfile } from 'filist'
 import { ThunkAction } from 'redux'
-import { AppThunk } from './'
+import { AppThunk } from './index'
 
 export interface FI extends FinancialInstitution {
   id: number // array index + 1

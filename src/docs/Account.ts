@@ -1,7 +1,7 @@
-import randomColor = require('randomcolor')
+const randomColor = require('randomcolor')
 import * as docURI from 'docuri'
 import { defineMessages } from 'react-intl'
-import { makeid, Lookup } from '../util'
+import { makeid, Lookup } from '../util/index'
 import { Bank } from './Bank'
 import { Transaction } from './Transaction'
 import { DocCache } from './index'

@@ -5,12 +5,12 @@ import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, ReduxFormProps, SubmissionError } from 'redux-form'
-import { DbInfo } from '../../docs'
-import { AppState, loadDb, deleteDb, mapDispatchToProps } from '../../state'
-import { Validator } from '../../util'
+import { DbInfo } from '../../docs/index'
+import { AppState, loadDb, deleteDb, mapDispatchToProps } from '../../state/index'
+import { Validator } from '../../util/index'
 import { ConfirmDelete } from './ConfirmDelete'
 import { IntlProps } from './props'
-import { typedFields, forms } from './forms'
+import { typedFields, forms } from './forms/index'
 
 interface Props {
   info: DbInfo

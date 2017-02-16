@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto'
 import * as docURI from 'docuri'
-import { Lookup } from '../util'
-import { Bank, Account } from './'
+import { Lookup } from '../util/index'
+import { Bank, Account } from './index'
 
 export interface Split {
   [categoryId: string]: number

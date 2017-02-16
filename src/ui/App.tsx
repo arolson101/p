@@ -3,9 +3,9 @@ import * as React from 'react'
 import { Router, Route, IndexRoute, RouteComponentProps } from 'react-router'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
-import { DbInfo, Bank, Account, Transaction, Bill, Budget } from '../docs'
-import { AppState } from '../state'
-import * as Components from './components'
+import { DbInfo, Bank, Account, Transaction, Bill, Budget } from '../docs/index'
+import { AppState } from '../state/index'
+import * as Components from './components/index'
 
 interface Props {
   history: History.History

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { RouteProps } from '../components/props'
-import debounce = require('lodash.debounce')
+const debounce = require('lodash.debounce')
 
 export const withQuerySyncedState = <T extends {}>(name: string, setter: string, dflt: T, convert: (val: string) => T) =>
   (Component: any) =>

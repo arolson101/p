@@ -1,5 +1,5 @@
-import { AppThunk, ThunkFcn, deleteDoc, Deletion } from '../state'
-import { Bank, Account, Budget } from '../docs'
+import { AppThunk, ThunkFcn, deleteDoc, Deletion } from '../state/index'
+import { Bank, Account, Budget } from '../docs/index'
 
 type DeleteBankArgs = { bank: Bank.View }
 export namespace deleteBank { export type Fcn = ThunkFcn<DeleteBankArgs, string> }

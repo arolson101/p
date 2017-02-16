@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
-import { AppState } from '../../state'
-import { Bank, Account, Transaction, Bill } from '../../docs'
+import { AppState } from '../../state/index'
+import { Bank, Account, Transaction, Bill } from '../../docs/index'
 import { RouteProps } from './props'
 
 export const selectBanks = (state: AppState) => {

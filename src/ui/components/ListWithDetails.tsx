@@ -5,9 +5,9 @@ import * as SplitPane from 'react-split-pane'
 import { AutoSizer, Table, Column } from 'react-virtualized'
 import { withRouter } from 'react-router'
 import { compose, setDisplayName, withHandlers, setPropTypes, onlyUpdateForPropTypes } from 'recompose'
-import { AppState } from '../../state'
+import { AppState } from '../../state/index'
 import { RouteProps } from './props'
-import { withQuerySyncedState } from '../enhancers'
+import { withQuerySyncedState } from '../enhancers/index'
 import './ListWithDetails.css'
 
 interface Props<T> {

@@ -1,4 +1,4 @@
-import autobind = require('autobind-decorator')
+const autobind = require('autobind-decorator')
 import * as moment from 'moment'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
@@ -6,7 +6,7 @@ import { FormControl, FormControlProps } from 'react-bootstrap'
 import * as RDatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withState } from 'recompose'
-import { withPropChangeCallback, checkPropChange } from '../../enhancers'
+import { withPropChangeCallback, checkPropChange } from '../../enhancers/index'
 
 import './DatePicker.css'
 
@@ -21,7 +21,6 @@ interface State {
   startDate?: moment.Moment
 }
 
-@onlyUpdateForPropTypes
 export class DatePicker extends React.Component<Props, State> {
   static propTypes: PropTypes<Props> = {
     value: React.PropTypes.string.isRequired,

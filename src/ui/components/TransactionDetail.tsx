@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Link } from 'react-router'
 import 'react-virtualized/styles.css'
-import { Transaction } from '../../docs'
+import { Transaction } from '../../docs/index'
 
 interface ConnectedProps {
   item: Transaction.View

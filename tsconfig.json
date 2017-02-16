@@ -11,9 +11,16 @@
     "skipLibCheck": true, // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/14324
 
     "jsx": "react",
-    "module": "commonjs",
-    "target": "es2015",
-    "sourceMap": true
+    "target": "es2017",
+    "module": "es2015",
+    "moduleResolution": "node",
+    "sourceMap": true,
+
+    "lib": [
+      "es2015",
+      "es2017",
+      "dom"
+    ]
   },
   "exclude": [
     "node_modules"

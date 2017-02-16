@@ -4,9 +4,9 @@ import { defineMessages, FormattedDate } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withHandlers, mapProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
-import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from '../../state'
-import { Bill } from '../../docs'
-import { withPropChangeCallback } from '../enhancers'
+import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from '../../state/index'
+import { Bill } from '../../docs/index'
+import { withPropChangeCallback } from '../enhancers/index'
 import { BillForm, SubmitFunction } from './BillForm'
 
 const messages = defineMessages({

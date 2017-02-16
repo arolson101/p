@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { Bank } from '../../docs'
-import { AppState, FI, mapDispatchToProps, pushChanges } from '../../state'
+import { Bank } from '../../docs/index'
+import { AppState, FI, mapDispatchToProps, pushChanges } from '../../state/index'
 import { Values, BankForm, SubmitFunction } from './BankForm'
 import { RouteProps } from './props'
 

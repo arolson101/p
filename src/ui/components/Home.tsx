@@ -1,4 +1,4 @@
-import autobind = require('autobind-decorator')
+const autobind = require('autobind-decorator')
 import * as moment from 'moment'
 import * as R from 'ramda'
 import * as React from 'react'
@@ -9,9 +9,9 @@ import { connect } from 'react-redux'
 import { AutoSizer } from 'react-virtualized'
 import { createSelector } from 'reselect'
 // import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack, VictoryGroup, VictoryVoronoiTooltip } from 'victory'
-import { deleteBudget } from '../../actions'
-import { Bank, Bill, Account, Budget, Category } from '../../docs'
-import { AppState, mapDispatchToProps, pushChanges } from '../../state'
+import { deleteBudget } from '../../actions/index'
+import { Bank, Bill, Account, Budget, Category } from '../../docs/index'
+import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { CurrencyDisplay } from './CurrencyDisplay'
 import { Favico } from './forms/Favico'
 import { IntlProps } from './props'

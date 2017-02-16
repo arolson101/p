@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { FormattedNumber } from 'react-intl'
-import { Account } from '../../docs'
+import { Account } from '../../docs/index'
 
 interface Props {
   amount: number

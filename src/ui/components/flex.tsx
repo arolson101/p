@@ -1,7 +1,7 @@
 import * as React from 'react'
 import './flex.css'
 
-interface ContainerProps {
+/*interface ContainerProps {
   column?: boolean
 }
 
@@ -25,4 +25,4 @@ export const Item = (props: ItemProps & React.Props<any> & React.HTMLProps<HTMLD
       {children}
     </div>
   )
-}
+}*/

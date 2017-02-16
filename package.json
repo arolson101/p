@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "description",
   "scripts": {
-    "start": "cross-env NODE_ENV=development electron app --remote-debugging-port=9222",
-    "prod": "cross-env NODE_ENV=production electron app",
+    "start": "cross-env NODE_ENV=development electron app --js-flags=\"--harmony\" --remote-debugging-port=9222",
+    "prod": "cross-env NODE_ENV=production electron app --js-flags=\"--harmony\"",
     "postinstall": "rimraf node_modules/webpack/node_modules/uglify-js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -103,7 +103,6 @@
     "@types/recompose": "^0.20.4",
     "@types/redux": "^3.6.31",
     "@types/redux-thunk": "^2.1.31",
-    "@types/reselect": "^2.0.27",
     "@types/shortid": "0.0.28",
     "@types/speakingurl": "^10.0.0",
     "@types/sprintf-js": "0.0.27",

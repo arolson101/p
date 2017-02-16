@@ -1,12 +1,13 @@
 import * as electron from 'electron'
 import * as fs from 'fs'
-import debounce = require('lodash.debounce')
+const debounce = require('lodash.debounce')
 import * as path from 'path'
 import * as R from 'ramda'
 import { ThunkAction } from 'redux'
-import { Bank, Account, Category, Bill, Budget, Transaction, DocCache, DbView } from '../../docs'
-import { Lookup } from '../../util'
-import { AppThunk } from '../'
+import { Bank, Account, Category, Bill, Budget, Transaction, DocCache, DbView } from '../../docs/index'
+import { Lookup } from '../../util/index'
+import { wait } from '../../util/index'
+import { AppThunk } from '../index'
 import { DbInfo } from './DbInfo'
 import { incomingDelta, resolveConflict } from './delta'
 import { PouchDB, adapter } from './pouch'
@@ -89,8 +90,6 @@ export const createDb: DbThunk<CreateDbArgs, DbInfo> = ({name, password}) =>
     dispatch(DbInit(undefined))
     return info
   }
-
-import { wait } from '../../util'
 
 type PushChangesArgs = { docs: AnyDocument[] }
 export namespace pushChanges { export type Fcn = DbFcn<PushChangesArgs, void> }
