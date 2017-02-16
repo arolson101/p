@@ -3,6 +3,7 @@ import * as PouchDB from 'pouchdb-browser'
 export { PouchDB }
 
 PouchDB.plugin(require('pouchdb-adapter-node-websql'))
+PouchDB.plugin(require('pouchdb-replication-stream'))
 PouchDB.plugin(require('transform-pouch'))
 PouchDB.plugin(require('pouch-resolve-conflicts'))
 
