@@ -34,6 +34,7 @@ if (__DEVELOPMENT__) {
   config.entry.unshift('webpack/hot/only-dev-server');
   config.entry.unshift('react-hot-loader/patch');
   config.plugins.push(new webpack.HotModuleReplacementPlugin());
+  config.plugins.push(new webpack.NamedModulesPlugin());
   const compiler = webpack(config);
   const server = new WebpackDevServer(compiler, {
 		contentBase: __dirname,
