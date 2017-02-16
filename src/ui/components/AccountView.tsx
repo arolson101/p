@@ -66,9 +66,9 @@ interface Values {
 }
 
 interface HandlerProps {
-  addTransactions(): void
-  downloadTransactions(): void
-  deleteTransactions(): void
+  addTransactions (): void
+  downloadTransactions (): void
+  deleteTransactions (): void
 }
 
 const enhance = compose<AllProps, {}>(

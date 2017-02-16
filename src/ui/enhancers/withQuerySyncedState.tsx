@@ -6,7 +6,7 @@ export const withQuerySyncedState = <T extends {}>(name: string, setter: string,
   (Component: any) =>
     class extends React.PureComponent<RouteProps<any>, any> {
       private setValue: ((value: T) => void) & _.Cancelable
-      constructor(props?: any) {
+      constructor (props?: any) {
         super(props)
         const query = this.props.location.query as any
         const queryValue = (name in query) ? convert(query[name]) : dflt
@@ -25,10 +25,10 @@ export const withQuerySyncedState = <T extends {}>(name: string, setter: string,
           { leading: true }
         )
       }
-      componentWillUnmount() {
+      componentWillUnmount () {
         this.setValue.cancel()
       }
-      render() {
+      render () {
         return <Component {...this.props} {...this.state} {...{[setter]: this.setValue}} />
       }
     }

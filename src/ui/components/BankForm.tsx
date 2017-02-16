@@ -160,7 +160,7 @@ const enhance = compose<AllProps, Props>(
   withPropChangeCallback<ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>('edit', props => {
     const { edit, filist, initialize } = props
     if (edit) {
-      const fi = filist.findIndex(fi => fi.name === edit.fi) + 1
+      const fi = filist.findIndex(fiEntry => fiEntry.name === edit.fi) + 1
       const values = { ...edit, ...edit.login, fi }
       initialize(values, false)
     }
@@ -203,7 +203,7 @@ const enhance = compose<AllProps, Props>(
 )
 
 export const BankForm = enhance((props) => {
-const { handleSubmit, edit, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist, online } = props
+  const { handleSubmit, edit, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist, online } = props
   const title = edit ? messages.editTitle : messages.createTitle
   return (
     <form onSubmit={handleSubmit(onSubmit)}>

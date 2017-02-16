@@ -71,11 +71,7 @@ const enhance = compose<AllProps, Props<any>>(
       }
     },
     onRowClick: ({/*router, toView, items,*/ setSelectedIndex}) => ({index}: Table.OnRowClickProps) => {
-      // if (index !== -1) {
-      //   router.push(toView(items[index]))
-      // } else {
-        setSelectedIndex(index)
-      // }
+      setSelectedIndex(index)
     }
   })
 )

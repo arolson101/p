@@ -10,7 +10,7 @@ const SQLiteDatabase = require<any>('websql/lib/sqlite/SQLiteDatabase')
 const SQLiteDatabaseWithKey = (key?: string) =>
   class {
     _db: any
-    constructor(name: string) {
+    constructor (name: string) {
       this._db = new SQLiteDatabase(name)
       if (key) {
         this._db.exec(
@@ -30,7 +30,7 @@ const SQLiteDatabaseWithKey = (key?: string) =>
       }
     }
 
-    exec(queries: any, readOnly: any, callback: any) {
+    exec (queries: any, readOnly: any, callback: any) {
       return this._db.exec(queries, readOnly, callback)
     }
   }

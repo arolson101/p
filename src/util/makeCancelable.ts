@@ -1,6 +1,6 @@
 export interface CancelablePromise<T> {
   promise: Promise<T>
-  cancel(): void
+  cancel (): void
 }
 
 export const makeCancelable = <T>(promise: Promise<T>): CancelablePromise<T> => {
@@ -17,7 +17,7 @@ export const makeCancelable = <T>(promise: Promise<T>): CancelablePromise<T> => 
 
   return {
     promise: wrappedPromise,
-    cancel() {
+    cancel () {
       hasCanceled = true
     }
   }

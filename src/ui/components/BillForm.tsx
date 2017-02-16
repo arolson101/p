@@ -673,7 +673,7 @@ class ErrorMessage {
   field: keyof Values
   message: FormattedMessage.MessageDescriptor
 
-  constructor(field: keyof Values, formattedMessage: FormattedMessage.MessageDescriptor) {
+  constructor (field: keyof Values, formattedMessage: FormattedMessage.MessageDescriptor) {
     this.field = field
     this.message = formattedMessage
   }

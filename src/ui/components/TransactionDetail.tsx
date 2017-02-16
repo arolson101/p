@@ -10,7 +10,7 @@ interface ConnectedProps {
 type AllProps = ConnectedProps
 
 export class TransactionDetail extends React.Component<AllProps, any> {
-  render() {
+  render () {
     const { item } = this.props
     return (
       <div>

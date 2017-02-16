@@ -18,7 +18,7 @@ interface ConnectedProps {
 type AllProps = RouteProps<Transaction.Params> & ConnectedProps
 
 export class TransactionViewComponent extends React.Component<AllProps, any> {
-  render() {
+  render () {
     const { transaction } = this.props
     return (
       <div>

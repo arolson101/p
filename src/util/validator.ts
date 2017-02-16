@@ -6,18 +6,18 @@ export class Validator<V> {
   values: V
   errors: ErrorsFor<V>
 
-  constructor(values: V, errors: ErrorsFor<V> = {} as any) {
+  constructor (values: V, errors: ErrorsFor<V> = {} as any) {
     this.values = values
     this.errors = errors
   }
 
-  maybeThrowSubmissionError() {
+  maybeThrowSubmissionError () {
     if (!isEmpty(this.errors)) {
       throw new SubmissionError<V>(this.errors)
     }
   }
 
-  required<K extends keyof V>(keys: K[], message: string) {
+  required<K extends keyof V> (keys: K[], message: string) {
     for (let key of keys) {
       if (!this.values[key] && !this.errors[key]) {
         this.errors[key] = message
@@ -25,7 +25,7 @@ export class Validator<V> {
     }
   }
 
-  equal(key: keyof V, otherKey: keyof V, message: string) {
+  equal (key: keyof V, otherKey: keyof V, message: string) {
     if (this.values[key] && this.values[otherKey] && this.values[key] !== this.values[otherKey]) {
       if (!this.errors[key]) {
         this.errors[key] = message
@@ -33,7 +33,7 @@ export class Validator<V> {
     }
   }
 
-  unique(key: keyof V, values: string[], message: string) {
+  unique (key: keyof V, values: string[], message: string) {
     const value: string = this.values[key] as any
     if (value && values.findIndex(x => roughlyEqual(x, value)) !== -1) {
       if (!this.errors[key]) {
@@ -42,7 +42,7 @@ export class Validator<V> {
     }
   }
 
-  date(key: keyof V, message: string) {
+  date (key: keyof V, message: string) {
     const strValue = this.values[key] as any
     const value = moment(strValue, 'L')
     if (strValue && !value.isValid() && !this.errors[key]) {
@@ -50,7 +50,7 @@ export class Validator<V> {
     }
   }
 
-  numeral(key: keyof V, message: string) {
+  numeral (key: keyof V, message: string) {
     const strValue = this.values[key] as any
     const value = numeral(strValue)
     const x = value.value()
@@ -59,14 +59,14 @@ export class Validator<V> {
     }
   }
 
-  array(key: keyof V, message: string) {
+  array (key: keyof V, message: string) {
     const arrValue = this.values[key] as any as any[]
     if (!arrValue || !arrValue.length) {
       this.errors[key] = { _error: message }
     }
   }
 
-  arrayUnique<K extends keyof V>(key: K, subkey: string, message: string) {
+  arrayUnique<K extends keyof V> (key: K, subkey: string, message: string) {
     const array = this.values[key] as any as V[K][]
     if (array) {
       const selectedValues = array.filter(value => value).map(value => (value as any)[subkey])
@@ -89,7 +89,7 @@ export class Validator<V> {
     }
   }
 
-  arraySubvalidator(key: keyof V, i: number): Validator<any> {
+  arraySubvalidator (key: keyof V, i: number): Validator<any> {
     const values = this.values[key] as any as any[] || []
     if (!this.errors[key]) {
       this.errors[key] = {} as any

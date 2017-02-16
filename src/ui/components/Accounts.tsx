@@ -34,7 +34,8 @@ const enhance = compose<AllProps, {}>(
   connect<ConnectedProps, {}, {}>(
     (state: AppState): ConnectedProps => ({
       banks: selectBanks(state)
-  }))
+    })
+  )
 )
 
 export const Accounts = enhance(props => {

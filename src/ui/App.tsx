@@ -32,7 +32,7 @@ const requireAuth = (store: Redux.Store<AppState>) =>
   }
 
 class AppComponent extends React.Component<Props & ConnectedProps, any> {
-  render() {
+  render () {
     const { store, locale, history } = this.props
 
     return (

@@ -117,7 +117,7 @@ export class Home extends React.Component<AllProps, State> {
     month: new Date()
   }
 
-  render() {
+  render () {
     const { budgets, data, intl: { formatDate, formatNumber } } = this.props
     const { month } = this.state
 
@@ -234,13 +234,13 @@ export class Home extends React.Component<AllProps, State> {
   }
 
   @autobind
-  prevMonth() {
+  prevMonth () {
     const month = moment(this.state.month).subtract(1, 'month').toDate()
     this.setState({month})
   }
 
   @autobind
-  nextMonth() {
+  nextMonth () {
     const month = moment(this.state.month).add(1, 'month').toDate()
     this.setState({month})
   }

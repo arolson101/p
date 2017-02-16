@@ -105,33 +105,32 @@ export const fromAccountType = (str: Account.Type): ofx4js.domain.data.banking.A
   return (ofx4js.domain.data.banking.AccountType as any)[str]
 }
 
-// tslint:disable-next-line:max-line-length
-export const getFinancialAccount = (service: FinancialInstitutionImpl, bank: Bank.View, account: Account.View, formatMessage: FormatMessage): FinancialInstitutionAccount => {
+export const getFinancialAccount = (service: FinancialInstitutionImpl,
+                                    bank: Bank.View,
+                                    account: Account.View,
+                                    formatMessage: FormatMessage): FinancialInstitutionAccount => {
   const { username, password } = checkLogin(bank, formatMessage)
   const accountNumber = account.doc.number
   if (!accountNumber) { throw new Error(formatMessage(messages.noAccountNumber)) }
+  let accountDetails
 
   switch (account.doc.type) {
     case Account.Type.CHECKING:
     case Account.Type.SAVINGS:
     case Account.Type.CREDITLINE:
-    {
       const { bankid } = account.doc
       if (!bankid) { throw new Error(formatMessage(messages.nobankid)) }
-      const accountDetails = new ofx4js.domain.data.banking.BankAccountDetails()
+      accountDetails = new ofx4js.domain.data.banking.BankAccountDetails()
       accountDetails.setAccountNumber(accountNumber)
       accountDetails.setRoutingNumber(bankid)
       accountDetails.setAccountType(fromAccountType(account.doc.type))
       return service.loadBankAccount(accountDetails, username, password)
-    }
 
     case Account.Type.CREDITCARD:
-    {
-      const accountDetails = new ofx4js.domain.data.creditcard.CreditCardAccountDetails()
+      accountDetails = new ofx4js.domain.data.creditcard.CreditCardAccountDetails()
       accountDetails.setAccountNumber(accountNumber)
       accountDetails.setAccountKey(account.doc.key)
       return service.loadCreditCardAccount(accountDetails, username, password)
-    }
 
     default:
       throw new Error('unknown account type')

@@ -64,7 +64,7 @@ const enhance = compose<AllProps, RouteProps<Account.Params>>(
     } as UIState
   }),
   withProps<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Account.Params>>(
-  ({updateUI, bank, account, deleteAccount, router}) => ({
+    ({updateUI, bank, account, deleteAccount, router}) => ({
       confirmDelete: async () => {
         try {
           updateUI({error: undefined, deleting: true})

@@ -131,7 +131,7 @@ export class Budgets extends React.Component<AllProps, State> {
     editing: false
   }
 
-  render() {
+  render () {
     const { budgets, handleSubmit } = this.props
     const { editing } = this.state
 
@@ -171,7 +171,7 @@ export class Budgets extends React.Component<AllProps, State> {
   }
 
   @autobind
-  async onSubmit(values: Values) {
+  async onSubmit (values: Values) {
     const v = new Validator(values)
     const { budgets, pushChanges, intl: { formatMessage }, lang } = this.props
     const changes: AnyDocument[] = []
@@ -243,7 +243,7 @@ export class Budgets extends React.Component<AllProps, State> {
   }
 
   @autobind
-  toggleEdit() {
+  toggleEdit () {
     const editing = !this.state.editing
     if (editing) {
       const { budgets, initialize } = this.props
@@ -373,7 +373,7 @@ const SortableCategoriesList = SortableContainer(({error, fields, intl}: {error?
 
 type SortableCategoryProps = IntlProps & {
   category: string
-  onRemove(): void
+  onRemove (): void
 }
 const SortableCategory = SortableElement(({category, onRemove, intl: { formatMessage }}: SortableCategoryProps) =>
   <ListGroupItem key={category}>
