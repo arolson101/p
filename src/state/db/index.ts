@@ -8,6 +8,7 @@ import { Bank, Account, Category, Bill, Budget, Transaction, DocCache, DbView } 
 import { Lookup } from '../../util'
 import { AppThunk } from '../'
 import { DbInfo } from './DbInfo'
+import { incomingDelta, resolveConflict } from './delta'
 import { PouchDB, adapter } from './pouch'
 
 export { DbInfo }
@@ -99,7 +100,17 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
     if (!current) {
       throw new Error('no current db')
     }
-    await current.db.bulkDocs(docs)
+    try {
+      await current.db.bulkDocs(docs)
+    } catch (err) {
+      if (err.name === 'conflict') {
+        // TODO: resolve conflict
+        console.log('conflict!')
+        throw err
+      } else {
+        throw err
+      }
+    }
     await wait(5)
   }
 
@@ -165,6 +176,7 @@ export namespace loadDb { export type Fcn = DbFcn<LoadDbArgs, void> }
 export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
   async (dispatch, getState) => {
     const db = new PouchDB<AnyDocument>(info.location, adapter(password))
+    db.transform({incoming: incomingDelta})
 
     const changeQueue: PouchDB.ChangeInfo<AnyDocument>[] = []
     const processChanges = debounce(
@@ -203,8 +215,12 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
 
     console.time('load')
 
-    const allDocs = await db.allDocs({include_docs: true})
+    const allDocs = await db.allDocs({include_docs: true, conflicts: true})
     const docs: AnyDocument[] = allDocs.rows.map(row => row.doc!)
+    const conflicts = docs.filter((doc: PouchDB.Core.AllDocsMeta) => doc._conflicts && doc._conflicts.length > 0)
+    for (let conflict of conflicts) {
+      db.resolveConflicts(conflict, resolveConflict)
+    }
 
     const cache: DocCache = {
       banks: Bank.createCache(),

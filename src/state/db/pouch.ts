@@ -2,10 +2,12 @@ import * as PouchDB from 'pouchdb-browser'
 
 export { PouchDB }
 
-PouchDB.plugin(require<any>('pouchdb-adapter-node-websql'))
+PouchDB.plugin(require('pouchdb-adapter-node-websql'))
+PouchDB.plugin(require('transform-pouch'))
+PouchDB.plugin(require('pouch-resolve-conflicts'))
 
-const customOpenDatabase = require<any>('websql/custom')
-const SQLiteDatabase = require<any>('websql/lib/sqlite/SQLiteDatabase')
+const customOpenDatabase = require('websql/custom')
+const SQLiteDatabase = require('websql/lib/sqlite/SQLiteDatabase')
 
 const SQLiteDatabaseWithKey = (key?: string) =>
   class {
