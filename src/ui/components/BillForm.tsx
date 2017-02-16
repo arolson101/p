@@ -233,7 +233,8 @@ const enhance = compose<AllProps, Props>(
   setPropTypes({
     title: React.PropTypes.object.isRequired,
     edit: React.PropTypes.object,
-    onCancel: React.PropTypes.func.isRequired
+    onCancel: React.PropTypes.func.isRequired,
+    onSubmit: React.PropTypes.func.isRequired
   } as PropTypes<Props>),
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps & Props>(

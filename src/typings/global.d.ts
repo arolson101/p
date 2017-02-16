@@ -31,7 +31,8 @@ interface NodeModule {
 declare const __DEVELOPMENT__: boolean
 declare const __TEST__: boolean
 
-type PropTypes<T> = { [K in keyof T]: React.Requireable<any> }
+type PropTypes2<T, R extends React.Validator<any>> = { [K in keyof T]: R }
+type PropTypes<T> = PropTypes2<T, React.Validator<any>>
 
 type TDocument<T, ID> = PouchDB.Core.Document<T> & { _id: ID; _rev?: string } & PouchDB.Core.GetMeta
 type AnyDocument = TDocument<{}, string>
