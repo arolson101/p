@@ -1,6 +1,6 @@
 import * as History from 'history'
 import * as React from 'react'
-import { Router, Route, IndexRoute } from 'react-router'
+import { Router, Route, IndexRoute, RouteComponentProps } from 'react-router'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
 import { DbInfo, Bank, Account, Transaction, Bill, Budget } from '../docs'
@@ -16,7 +16,7 @@ interface ConnectedProps {
   locale: string
 }
 
-const NotFoundRoute = (props: Router.RouteComponentProps<any, any>) => (
+const NotFoundRoute = (props: RouteComponentProps<any, any> & React.Props<any>) => (
   <div>not found: {props.location ? (props.location.query as any).pathname : '(no location)'}{props.children}</div>
 )
 

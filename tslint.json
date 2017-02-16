@@ -2,10 +2,6 @@
   "extends": "tslint-config-standard",
   "rules": {
     "no-shadowed-variable": true,
-    "no-unused-variable":  [
-      true,
-      "react"
-    ],
     "no-switch-case-fall-through": false,
     "trailing-comma": [true, {"singleline": "never"}],
     "max-line-length": [

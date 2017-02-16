@@ -1,8 +1,6 @@
 var webpack = require("webpack");
 var fs = require("fs");
 var path = require("path");
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 if (!process.env.NODE_ENV) {
@@ -45,36 +43,31 @@ module.exports = {
   devtool: "eval",
 
   resolve: {
-      // Add '.ts' and '.tsx' as resolvable extensions.
-      extensions: ["", ".webpack.js", ".web.js", ".ts", ".tsx", ".js"]
+      extensions: [".ts", ".tsx", ".js"]
   },
 
   module: {
-    noParse: ['ws'],
+    rules: [
+      { enforce: 'pre', test: /\.tsx?$/, loader: "tslint-loader", exclude: /(node_modules)/ },
+      { enforce: 'pre', test: /\.js?$/, loader: "source-map-loader", exclude: [ /node_modules\/intl-/ ] },
 
-    loaders: [
+      { test: /\.css$/, use: [ 'style-loader', 'css-loader' ] },
       { test: /\.tsx?$/, loaders: ['react-hot-loader/webpack', 'awesome-typescript-loader'] },
-      { test: /\.css$/, loader: ExtractTextPlugin.extract('style-loader', 'css-loader') },
       { test: /\.(svg|woff|woff2|ttf|eot)($|\?)/, loader: "file?name=fonts/[name].[ext]" },
       { test: /\.(png|gif|jpg)($|\?)/, loader: "file?name=images/[name].[ext]" },
       { test: /\.json$/, loader: 'json-loader'}
     ],
-
-    preLoaders: [
-      { test: /\.tsx?$/, loader: "tslint" },
-
-      // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-      { test: /\.js$/, exclude: /intl-/, loader: "source-map-loader" }
-    ]
-  },
-
-  tslint: {
-//    emitErrors: true,
-//    failOnHint: true
   },
 
   plugins: [
-    new CheckerPlugin(),
+    new webpack.LoaderOptionsPlugin({
+        options: {
+            tslint: {
+                // emitErrors: true,
+                // failOnHint: true
+            }
+        }
+    }),
 
     new CopyWebpackPlugin([
       { from: '../node_modules/bootstrap/dist', to: 'lib/bootstrap' },
@@ -100,8 +93,6 @@ module.exports = {
       __DEVELOPMENT__,
       __TEST__: 0
     }),
-
-    new ExtractTextPlugin('p.css'),
   ],
 
   // When importing a module whose path matches one of the following, just

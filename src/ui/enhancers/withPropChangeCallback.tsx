@@ -7,8 +7,8 @@ export const withPropChangeCallback = <Props extends {}>(prop: keyof Props, call
         callback(this.props)
       }
       componentWillReceiveProps(nextProps: any) {
-        if (nextProps[prop] !== this.props[prop]) {
-          callback(nextProps, this.props[prop])
+        if (nextProps[prop] !== (this.props as any)[prop]) {
+          callback(nextProps, (this.props as any)[prop])
         }
       }
       render() {

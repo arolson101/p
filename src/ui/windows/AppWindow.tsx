@@ -22,7 +22,6 @@ export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps &
         { rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro.css' },
         { rel: 'stylesheet', type: 'text/css', href: 'lib/metro-ui/css/metro-icons.css' },
         { rel: 'stylesheet', type: 'text/css', href: 'lib/metro-bootstrap/css/metro-bootstrap.css' },
-        { rel: 'stylesheet', type: 'text/css', href: 'p.css' },
       ]}
     />
 

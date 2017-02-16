@@ -23,7 +23,7 @@ var targetStr = targetArgs.reduce(function (m, arg) {
 
 if (process.platform === 'win32') {
   // TODO: detect version
-  let target = '1.4.7'
+  let target = '1.4.15'
   let module_path = '../lib/binding/electron-v1.4-win32-x64';
   let module_name = 'node_sqlite3';
   cd('node_modules/win-sqlcipher/node_modules/sqlite3')
@@ -49,7 +49,7 @@ if (process.platform === 'win32') {
     exec('npm run prepublish')
 
     // TODO: detect version
-    let target = '1.4.7'
+    let target = '1.4.15'
     let module_path = '../lib/binding/electron-v1.4-darwin-x64';
     let sqlite_libname = 'sqlcipher';
     let sqlite = '`brew --prefix`';
