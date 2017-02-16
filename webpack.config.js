@@ -58,8 +58,7 @@ module.exports = {
       { test: /\.css$/, use: [ 'style-loader', 'css-loader' ] },
       { test: /\.tsx?$/, loaders: ['react-hot-loader/webpack', 'awesome-typescript-loader'] },
       { test: /\.(svg|woff|woff2|ttf|eot)($|\?)/, loader: "file?name=fonts/[name].[ext]" },
-      { test: /\.(png|gif|jpg)($|\?)/, loader: "file?name=images/[name].[ext]" },
-      { test: /\.json$/, loader: 'json-loader'}
+      { test: /\.(png|gif|jpg)($|\?)/, loader: "file?name=images/[name].[ext]" }
     ],
   },
 
