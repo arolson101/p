@@ -11,6 +11,11 @@ declare namespace PouchDB {
     dump(stream: NodeJS.WritableStream, opts?: DumpOptions): Promise<any>
     load(stream: NodeJS.ReadableStream): Promise<any>
   }
+
+
+  interface Static {
+      adapter(name: string, adapter: any): any;
+  }
 }
 
 declare module 'pouchdb-replication-stream' {

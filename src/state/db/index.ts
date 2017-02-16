@@ -177,6 +177,9 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     const db = new PouchDB<AnyDocument>(info.location, adapter(password))
     db.transform({incoming: incomingDelta})
 
+    // const file = fs.createWriteStream('dump.json')
+    // db.dump(file)
+
     const changeQueue: PouchDB.ChangeInfo<AnyDocument>[] = []
     const processChanges = debounce(
       () => {

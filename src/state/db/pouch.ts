@@ -2,10 +2,14 @@ import * as PouchDB from 'pouchdb-browser'
 
 export { PouchDB }
 
+const replicationStream = require('pouchdb-replication-stream')
+
 PouchDB.plugin(require('pouchdb-adapter-node-websql'))
-PouchDB.plugin(require('pouchdb-replication-stream'))
 PouchDB.plugin(require('transform-pouch'))
 PouchDB.plugin(require('pouch-resolve-conflicts'))
+
+PouchDB.plugin(replicationStream.plugin)
+PouchDB.adapter('writableStream', replicationStream.adapters.writableStream)
 
 const customOpenDatabase = require('websql/custom')
 const SQLiteDatabase = require('websql/lib/sqlite/SQLiteDatabase')
