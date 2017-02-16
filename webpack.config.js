@@ -49,7 +49,11 @@ module.exports = {
   module: {
     rules: [
       { enforce: 'pre', test: /\.tsx?$/, loader: "tslint-loader", exclude: /(node_modules)/ },
-      { enforce: 'pre', test: /\.js?$/, loader: "source-map-loader", exclude: [ /node_modules\/intl-/ ] },
+      { enforce: 'pre', test: /\.js?$/, loader: "source-map-loader", exclude: [
+        /intl-messageformat/,
+        /intl-relativeformat/,
+        /intl-format-cache/ ]
+      },
 
       { test: /\.css$/, use: [ 'style-loader', 'css-loader' ] },
       { test: /\.tsx?$/, loaders: ['react-hot-loader/webpack', 'awesome-typescript-loader'] },

@@ -158,7 +158,7 @@ const updateCache = (cache: DocCache, changes: PouchDB.ChangeInfo<AnyDocument>[]
     const map = selectCache(change.id)
     if (map) {
       console.assert(change.doc)
-      map.set(change.id, change.doc)
+      map.set(change.id, change.doc!)
     }
   }
 
@@ -217,7 +217,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
 
     const allDocs = await db.allDocs({include_docs: true, conflicts: true})
     const docs: AnyDocument[] = allDocs.rows.map(row => row.doc!)
-    const conflicts = docs.filter((doc: PouchDB.Core.AllDocsMeta) => doc._conflicts && doc._conflicts.length > 0)
+    const conflicts = docs.filter((doc: AnyDocument) => doc._conflicts && doc._conflicts.length > 0)
     for (let conflict of conflicts) {
       db.resolveConflicts(conflict, resolveConflict)
     }

@@ -8,6 +8,8 @@
     "noUnusedParameters": false,
     "noUnusedLocals": false,
 
+    "skipLibCheck": true, // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/14324
+
     "jsx": "react",
     "module": "commonjs",
     "target": "es2015",

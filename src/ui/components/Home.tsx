@@ -8,7 +8,7 @@ import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { AutoSizer } from 'react-virtualized'
 import { createSelector } from 'reselect'
-import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack, VictoryGroup, VictoryVoronoiTooltip } from 'victory'
+// import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack, VictoryGroup, VictoryVoronoiTooltip } from 'victory'
 import { deleteBudget } from '../../actions'
 import { Bank, Bill, Account, Budget, Category } from '../../docs'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state'
@@ -128,7 +128,7 @@ export class Home extends React.Component<AllProps, State> {
           <FormattedMessage {...messages.page}/>
         </PageHeader>
 
-        <AutoSizer disableHeight>
+        {/*<AutoSizer disableHeight>
           {(autoSizerProps: AutoSizer.ChildrenProps) => (
             <div style={{width: autoSizerProps.width}}>
               <VictoryChart
@@ -173,7 +173,7 @@ export class Home extends React.Component<AllProps, State> {
               </VictoryChart>
             </div>
           )}
-        </AutoSizer>
+        </AutoSizer>*/}
 
         <h3>
           {moment(month).format('MMMM YYYY')}
