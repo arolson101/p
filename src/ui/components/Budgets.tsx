@@ -264,7 +264,8 @@ export class Budgets extends React.Component<AllProps, State> {
   }
 }
 
-const editBudgetList = ({ children, fields, meta: { error }, intl }: any) => {
+const editBudgetList = (props: any) => {
+  const { children, fields, meta: { error }, intl } = props
   return (
     <div>
       {error &&
@@ -428,7 +429,6 @@ const CategoryDisplay = ({category}: { category: Category.View }) => (
   <ListGroupItem>
     <Grid fluid>
       <Row>
-        {/*<Col xs={1}><DragHandle/></Col>*/}
         <Col xs={10}>{category.doc.name}</Col>
         <Col xs={2}><CurrencyDisplay amount={categoryTotal(category)}/></Col>
       </Row>
