@@ -15,3 +15,10 @@ export const withPropChangeCallback = <Props extends {}>(prop: keyof Props, call
         return <Component {...this.props}/>
       }
     }
+
+export const checkPropChange = <T, K extends keyof T>(lastProps: T | undefined, nextProps: T, prop: K, callback: (value: T[K]) => void) => {
+  const nextValue = nextProps[prop]
+  if (!lastProps || lastProps[prop] !== nextValue) {
+    callback(nextValue)
+  }
+}

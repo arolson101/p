@@ -1,10 +1,12 @@
+import autobind = require('autobind-decorator')
 import * as moment from 'moment'
 import * as React from 'react'
-import { FormControl } from 'react-bootstrap'
+import * as ReactDOM from 'react-dom'
+import { FormControl, FormControlProps } from 'react-bootstrap'
 import * as RDatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withState } from 'recompose'
-import { withPropChangeCallback } from '../../enhancers'
+import { withPropChangeCallback, checkPropChange } from '../../enhancers'
 
 import './DatePicker.css'
 
@@ -15,44 +17,84 @@ interface Props {
 
 export type DatePickerProps = Partial<ReactDatePickerProps> & Props
 
-interface EnhancedProps {
+interface State {
   startDate?: moment.Moment
-  setStartDate: (startDate?: moment.Moment) => void
-  onChange: (value?: any) => void
-  onInputChange: (event: any) => void
 }
 
-type AllProps = Props & EnhancedProps
+@onlyUpdateForPropTypes
+export class DatePicker extends React.Component<Props, State> {
+  static propTypes: PropTypes<Props> = {
+    value: React.PropTypes.string.isRequired,
+    onChange: React.PropTypes.func.isRequired
+  }
 
-const enhance = compose<AllProps, Props>(
-  setDisplayName('DatePicker'),
-  onlyUpdateForPropTypes,
-  setPropTypes({
-    value: React.PropTypes.string,
-    onChange: React.PropTypes.func
-  } as PropTypes<Props>),
-  withState('startDate', 'setStartDate', undefined),
-  withPropChangeCallback('value', ({setStartDate, value}: AllProps) => {
-    setStartDate(value ? convertToDate(value) : undefined)
-  }),
-  withHandlers<AllProps, AllProps>({
-    onChange: ({onChange}: Props) => (value: Date) => {
-      if (onChange) {
-        onChange(moment(value).format('L'))
+  state: State = {
+    startDate: undefined
+  }
+
+  componentDidMount () {
+    checkPropChange(undefined, this.props, 'value', this.onValueChange)
+  }
+
+  componentWillReceiveProps (nextProps: any) {
+    checkPropChange(this.props, nextProps, 'value', this.onValueChange)
+  }
+
+  render () {
+    return <RDatePicker
+      {...this.props}
+      selected={this.state.startDate}
+      onChange={this.onChange}
+      customInput={
+        <FocusableFormControl type='input' onChange={this.onInputChange}/>
       }
-    },
-    onInputChange: ({onChange, setStartDate}) => (e: React.FormEvent<any>) => {
-      const strValue = (e.target as any).value
-      const value = convertToDate(strValue)
-      if (value) {
-        setStartDate(value)
-      }
-      if (onChange) {
-        onChange(strValue)
-      }
+    />
+  }
+
+  @autobind
+  onValueChange (value: string | undefined) {
+    const startDate = (value ? convertToDate(value) : undefined)
+    this.setState({startDate})
+  }
+
+  @autobind
+  onChange (value?: any) {
+    const { onChange } = this.props
+    if (onChange) {
+      onChange(moment(value).format('L'))
     }
-  })
-)
+  }
+
+  @autobind
+  onInputChange (e: React.FormEvent<any>) {
+    const {onChange} = this.props
+    const strValue = (e.target as any).value
+    const startDate = convertToDate(strValue)
+    if (startDate) {
+      this.setState({startDate})
+    }
+    if (onChange) {
+      onChange(strValue)
+    }
+  }
+}
+
+class FocusableFormControl extends React.Component<FormControlProps, any> {
+  control: any
+
+  focus () {
+    ReactDOM.findDOMNode<HTMLInputElement>(this.control).focus()
+  }
+
+  @autobind
+  setControl (control: any) {
+    this.control = control
+  }
+
+  render () {
+    return <FormControl ref={this.setControl} {...this.props}/>
+  }
+}
 
 const convertToDate = (strValue: string): moment.Moment | undefined => {
   const value = moment(strValue, 'L')
@@ -60,13 +102,3 @@ const convertToDate = (strValue: string): moment.Moment | undefined => {
     return value
   }
 }
-
-export const DatePicker = enhance((props) => {
-  const {onChange, startDate, onInputChange} = props
-  return <RDatePicker
-    {...props}
-    selected={startDate}
-    onChange={onChange}
-    customInput={<FormControl type='input' onChange={onInputChange}/>}
-  />
-})
