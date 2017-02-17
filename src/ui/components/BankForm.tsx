@@ -95,7 +95,7 @@ interface ConnectedProps {
 }
 
 interface EnhancedProps {
-  onChangeFI: (index: number) => void
+  onChangeFI: (event: any, index: number) => void
   changeIcon: (favicon?: string) => void
 }
 
@@ -179,7 +179,7 @@ const enhance = compose<AllProps, Props>(
     }
   }),
   withProps<EnhancedProps, ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>(props => ({
-    onChangeFI: (index: number) => {
+    onChangeFI: (event: any, index: number) => {
       const { filist, change } = props
       const value = index ? filist[index - 1] : emptyfi
       change('name', value.name)
