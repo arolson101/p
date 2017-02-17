@@ -54,8 +54,9 @@ const rebuildObject = R.reduce(
   {} as NakedDoc
 )
 
-export const incomingDelta = (doc: Doc): VersionedDoc => {
+export const incomingDelta = (idoc: Doc): VersionedDoc => {
   const t = new Date().valueOf()
+  const doc = idoc as VersionedDoc
 
   if (!doc.$deltas) {
     doc.$deltas = []
