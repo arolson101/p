@@ -37,3 +37,11 @@ type PropTypes<T> = PropTypes2<T, React.Validator<any>>
 type TDocument<T, ID> = PouchDB.Core.Document<T> & { _id: ID; _rev?: string } & PouchDB.Core.GetMeta
 type AnyDocument = TDocument<{}, string>
 type ChangeSet = Set<AnyDocument>
+
+namespace PouchDB {
+    namespace LevelDbAdapter {
+        interface LevelDbAdapterConfiguration extends Configuration.LocalDatabaseConfiguration {
+            db: any
+        }
+    }
+}

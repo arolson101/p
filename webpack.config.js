@@ -35,7 +35,13 @@ module.exports = {
   },
 
   //externals: nodeModules,
-  externals: {'ws': true, 'sqlite3': 'commonjs cross-sqlcipher'},
+  externals: {
+    'ws': true,
+    'sqlite3': 'commonjs cross-sqlcipher',
+    'pouchdb': 'commonjs pouchdb',
+    'leveldown': 'commonjs leveldown',
+    'leveldown/package': 'commonjs leveldown/package',
+  },
 
   target: 'electron-renderer',
 

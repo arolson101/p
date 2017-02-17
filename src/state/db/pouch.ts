@@ -1,4 +1,4 @@
-import * as PouchDB from 'pouchdb-browser'
+import * as PouchDB from 'pouchdb'
 
 export { PouchDB }
 
