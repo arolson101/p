@@ -219,7 +219,7 @@ export const BankForm = enhance((props) => {
           options={filist}
           labelKey='name'
           valueKey='id'
-          onChange={onChangeFI}
+          onChange={onChangeFI as any}
           help={formatMessage(messages.fiHelp)}
           placeholder={formatMessage(messages.fiPlaceholder)}
         />
