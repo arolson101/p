@@ -180,7 +180,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     console.log('db: ', info.location)
     // const db = new PouchDB<AnyDocument>(info.location)
     // const ldb = await openLevelDb(info.location, password)
-    const db = new PouchDB(info.location, { password, adapter: 'leveldb', db: levelcrypt } as any)
+    const db = new PouchDB(info.location, { password, adapter: 'leveldb'/*, db: levelcrypt*/ } as any)
     db.transform({incoming: incomingDelta})
 
     // const file = fs.createWriteStream('dump.json')
