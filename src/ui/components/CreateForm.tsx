@@ -1,4 +1,4 @@
-import { Button, ButtonToolbar } from 'react-bootstrap'
+import { Button, ButtonToolbar, Row } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
@@ -92,25 +92,25 @@ export const CreateForm = enhance((props) => {
   const { handleSubmit, onCancel, intl: { formatMessage } } = props
   return (
     <form onSubmit={handleSubmit}>
-      <div>
+      <Row>
         <TextField
           name='name'
           autoFocus
           label={formatMessage(messages.name)}
         />
-      </div>
-      <div>
+      </Row>
+      <Row>
         <PasswordField
           name='password'
           label={formatMessage(forms.password)}
         />
-      </div>
-      <div>
+      </Row>
+      <Row>
         <PasswordField
           name='confirmPassword'
           label={formatMessage(forms.confirmPassword)}
         />
-      </div>
+      </Row>
       <ButtonToolbar>
         <Button
           type='button'
