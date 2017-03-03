@@ -1,9 +1,11 @@
+import * as crypto from 'crypto'
 import * as electron from 'electron'
 import * as fs from 'fs'
 const debounce = require('lodash.debounce')
 import * as path from 'path'
 import * as R from 'ramda'
 import { ThunkAction } from 'redux'
+const uuidV4 = require('uuid/v4') as () => string
 import { Bank, Account, Category, Bill, Budget, Transaction, DocCache, DbView } from '../../docs/index'
 import { Lookup } from '../../util/index'
 import { wait } from '../../util/index'
@@ -11,14 +13,25 @@ import { AppThunk } from '../index'
 import { DbInfo } from './DbInfo'
 import { incomingDelta, resolveConflict } from './delta'
 import { PouchDB, adapter } from './pouch'
+import { dumpNextSequence } from './sync'
 
 export { DbInfo }
 
 const userData = electron.remote.app.getPath('userData')
 const ext = '.db'
+const localInfoDocId = '_local/uid'
+
+interface LocalDbInfo {
+  _id: string
+  localId: string
+  last: number
+  key: string
+}
 
 export interface CurrentDb {
   info: DbInfo
+  localInfo: LocalDbInfo
+  syncFolder: string
   db: PouchDB.Database<any>
   changes: PouchDB.ChangeEmitter
   processChanges: (() => void) & _.Cancelable
@@ -183,8 +196,22 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     const db = new PouchDB(info.location, { password, adapter: 'leveldb'/*, db: levelcrypt*/ } as any)
     db.transform({incoming: incomingDelta})
 
-    // const file = fs.createWriteStream('dump.json')
-    // db.dump(file)
+    let localInfo: LocalDbInfo
+    try {
+      localInfo = await db.get(localInfoDocId) as LocalDbInfo
+    } catch (ex) {
+      localInfo = {
+        _id: localInfoDocId,
+        key: crypto.randomBytes(32).toString('base64'),
+        localId: uuidV4(),
+        last: 0
+      }
+      await db.put(localInfo)
+    }
+    const syncFolder = path.join(userData, `${info.name}.sync`)
+    if (!fs.existsSync(syncFolder)) {
+      fs.mkdirSync(syncFolder)
+    }
 
     const changeQueue: PouchDB.ChangeInfo<AnyDocument>[] = []
     const processChanges = debounce(
@@ -200,9 +227,12 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
             bills: new Map(current.cache.bills),
             budgets: new Map(current.cache.budgets),
           }
+
           updateCache(nextCache, changes)
           const nextView = buildView(nextCache)
           dispatch(dbChanges(nextView, nextCache))
+
+          dumpNextSequence(current)
         }
       },
       1
@@ -255,7 +285,9 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     console.timeEnd('load')
     console.log(`${cache.transactions.size} transactions`)
 
-    dispatch(setDb({info, db, changes, processChanges, view, cache}))
+    const current = { info, db, syncFolder, localInfo, changes, processChanges, view, cache }
+    dispatch(setDb(current))
+    dumpNextSequence(current)
   }
 
 type DeleteDbArgs = { info: DbInfo }

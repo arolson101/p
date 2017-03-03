@@ -44,4 +44,12 @@ namespace PouchDB {
             db: any
         }
     }
+
+    namespace Core {
+        interface DatabaseInfo {
+            db_name: string
+            doc_count: number
+            update_seq: number
+        }
+    }
 }
