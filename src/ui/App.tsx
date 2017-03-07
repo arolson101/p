@@ -3,7 +3,7 @@ import * as React from 'react'
 import { Router, Route, IndexRoute, RouteComponentProps } from 'react-router'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
-import { DbInfo, Bank, Account, Transaction, Bill, Budget } from '../docs/index'
+import { DbInfo, Bank, Account, Transaction, Bill, Budget, SyncConnection } from '../docs/index'
 import { AppState } from '../state/index'
 import * as Components from './components/index'
 
@@ -57,6 +57,7 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
                 <Route path={Bill.routes.create} component={Components.BillCreate}/>
                 <Route path={Bill.routes.edit} component={Components.BillEdit}/>
                 <Route path={Budget.routes.all} component={Components.Budgets}/>
+                <Route path={SyncConnection.routes.all} component={Components.Syncs}/>
               </Route>
               <Route path='*' component={NotFoundRoute}/>
             </Route>

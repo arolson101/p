@@ -1,6 +1,7 @@
 const electron = require('electron')
 const path = require('path')
 const fs = require('fs')
+const { ipcMain } = electron
 // const electron_devtools_installer = require('electron-devtools-installer');
 // const installExtension = electron_devtools_installer.default;
 // //const  { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
@@ -124,6 +125,46 @@ app.on('activate', function () {
   }
 })
 
+
+const electronOauth2 = require('electron-oauth2')
+
+const windowParams = {
+  alwaysOnTop: true,
+  autoHideMenuBar: true,
+  webPreferences: {
+      nodeIntegration: false
+  }
+}
+
+ipcMain.on('oauth-getAccessToken', function (event, arg) {
+  const { config, options, channel } = arg
+  const myApiOauth = electronOauth2(config, windowParams);
+
+  myApiOauth.getAccessToken(options)
+    .then(
+      token => {
+        event.sender.send(channel, {token})
+      },
+      error => {
+        event.sender.send(channel, {error: error.message})
+      }
+    );
+})
+
+ipcMain.on('oauth-refreshToken', function (event, arg) {
+  const { config, refreshToken, channel } = arg
+  const myApiOauth = electronOauth2(config, windowParams);
+
+  myApiOauth.refreshToken(refreshToken)
+    .then(
+      token => {
+        event.sender.send(channel, {token})
+      },
+      error => {
+        event.sender.send(channel, {error: error.message})
+      }
+    );
+})
 
 
 function readConfig(configPath) {

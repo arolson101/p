@@ -27,6 +27,7 @@
     "axios": "^0.15.3",
     "bootstrap": "^3.3.7",
     "docuri": "^4.2.2",
+    "electron-oauth2": "^2.4.1",
     "font-awesome": "^4.7.0",
     "jsondiffpatch": "^0.2.4",
     "level-encrypt": "^3.1.0",

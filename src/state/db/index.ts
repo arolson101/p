@@ -6,7 +6,7 @@ import * as path from 'path'
 import * as R from 'ramda'
 import { ThunkAction } from 'redux'
 const uuidV4 = require('uuid/v4') as () => string
-import { Bank, Account, Category, Bill, Budget, Transaction, DocCache, DbView } from '../../docs/index'
+import { Bank, Account, Category, Bill, Budget, Transaction, SyncConnection, DocCache, DbView } from '../../docs/index'
 import { Lookup } from '../../util/index'
 import { wait } from '../../util/index'
 import { AppThunk } from '../index'
@@ -124,6 +124,18 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
       }
     }
     await wait(5)
+
+    const locals = docs.filter(doc => doc._id.startsWith('_local'))
+    for (let local of locals) {
+      const change: PouchDB.ChangeInfo<any> = {
+        id: local._id,
+        changes: [local],
+        doc: local,
+        deleted: false,
+        seq: 0
+      };
+      (current.changes as any).emit('change', change)
+    }
   }
 
 export interface Deletion {
@@ -142,7 +154,7 @@ const buildView = (cache: DocCache): DbView => {
   const views = {
     banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache)),
     bills: Lookup.map(cache.bills, bill => Bill.buildView(bill, cache)),
-    budgets: Lookup.map(cache.budgets, budget => Budget.buildView(budget, cache))
+    budgets: Lookup.map(cache.budgets, budget => Budget.buildView(budget, cache)),
   }
   views.budgets.forEach(budget => Budget.linkView(budget, views))
   return views
@@ -171,6 +183,11 @@ const updateCache = (cache: DocCache, changes: PouchDB.ChangeInfo<AnyDocument>[]
     if (map) {
       console.assert(change.doc)
       map.set(change.id, change.doc!)
+    } else if (change.doc) {
+      const doc = change.doc
+      if (SyncConnection.isDoc(doc)) {
+        cache.syncs = doc
+      }
     }
   }
 
@@ -226,6 +243,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
             categories: new Map(current.cache.categories),
             bills: new Map(current.cache.bills),
             budgets: new Map(current.cache.budgets),
+            syncs: current.cache.syncs,
           }
 
           updateCache(nextCache, changes)
@@ -260,13 +278,24 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       db.resolveConflicts(conflict, resolveConflict)
     }
 
+    let syncDoc: SyncConnection.Doc
+    try {
+      syncDoc = await db.get(SyncConnection.localId) as SyncConnection.Doc
+    } catch (err) {
+      if (err.name !== 'not_found') {
+        throw err
+      }
+      syncDoc = SyncConnection.defaultDoc
+    }
+
     const cache: DocCache = {
       banks: Bank.createCache(),
       accounts: Account.createCache(),
       transactions: Transaction.createCache(),
       categories: Category.createCache(),
       bills: Bill.createCache(),
-      budgets: Budget.createCache()
+      budgets: Budget.createCache(),
+      syncs: syncDoc,
     }
 
     docs.forEach(

@@ -3,6 +3,7 @@ export * from './Bank'
 export * from './Bill'
 export * from './Budget'
 export * from './Category'
+export * from './SyncConnection'
 export * from './Transaction'
 
 export { DbInfo } from '../state/db/DbInfo'
@@ -12,6 +13,7 @@ import { Bank } from './Bank'
 import { Bill } from './Bill'
 import { Budget } from './Budget'
 import { Category } from './Category'
+import { SyncConnection } from './SyncConnection'
 import { Transaction } from './Transaction'
 
 export interface DocCache {
@@ -21,6 +23,7 @@ export interface DocCache {
   categories: Category.Cache
   bills: Bill.Cache
   budgets: Budget.Cache
+  syncs: SyncConnection.Doc
 }
 
 export interface DbView {
