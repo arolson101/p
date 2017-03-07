@@ -12,7 +12,7 @@ import { wait } from '../../util/index'
 import { AppThunk } from '../index'
 import { DbInfo } from './DbInfo'
 import { incomingDelta, resolveConflict } from './delta'
-import { PouchDB, adapter } from './pouch'
+import { PouchDB } from './pouch'
 import { dumpNextSequence } from './sync'
 
 export { DbInfo }
@@ -200,7 +200,7 @@ const updateCache = (cache: DocCache, changes: PouchDB.ChangeInfo<AnyDocument>[]
   )
 }
 
-import { levelcrypt } from './levelcrypt'
+// import { levelcrypt } from './levelcrypt'
 
 type LoadDbArgs = { info: DbInfo, password: string }
 export namespace loadDb { export type Fcn = DbFcn<LoadDbArgs, void> }

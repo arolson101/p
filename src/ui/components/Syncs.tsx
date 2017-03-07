@@ -7,7 +7,7 @@ import { connect } from 'react-redux'
 import { SyncConnection } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { SyncProvider, syncProviders } from '../../sync/index'
-import { Favico } from './forms/Favico'
+// import { Favico } from './forms/Favico'
 import { IntlProps } from './props'
 
 const messages = defineMessages({

@@ -1,6 +1,5 @@
 import * as RI from 'react-intl'
 import * as RR from 'react-router'
-import { Location, History } from 'history'
 
 export type FormatMessageFcn = (messageDescriptor: RI.FormattedMessage.MessageDescriptor, values?: Object) => string
 

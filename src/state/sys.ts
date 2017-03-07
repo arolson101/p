@@ -8,8 +8,6 @@ const initialState: SysState = {
   theme: (process.platform === 'darwin' ? 'macOS' : 'windows')
 }
 
-type State = SysState
-
 export type SYS_SET_THEME = 'sys/setTheme'
 export const SYS_SET_THEME = 'sys/setTheme'
 

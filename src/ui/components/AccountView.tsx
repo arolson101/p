@@ -54,17 +54,6 @@ interface DispatchProps {
 
 type AllProps = IntlProps & ConnectedProps & HandlerProps & DispatchProps
 
-interface PageState {
-  scroll: number
-  selection: number
-}
-
-interface Values {
-  date: string
-  payee: string
-  amount: string
-}
-
 interface HandlerProps {
   addTransactions (): void
   downloadTransactions (): void

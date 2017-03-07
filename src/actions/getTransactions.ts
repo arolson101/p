@@ -21,7 +21,6 @@ type GetTransactionsArgs = { bank: Bank.View, account: Account.View, start: Date
 export namespace getTransactions { export type Fcn = ThunkFcn<GetTransactionsArgs, string> }
 export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, account, start, end, formatMessage}) =>
   async (dispatch, getState): Promise<string> => {
-    const res = []
     try {
       const service = createConnection(bank, formatMessage)
       const bankAccount = getFinancialAccount(service, bank, account, formatMessage)

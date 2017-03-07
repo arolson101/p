@@ -1,5 +1,4 @@
 import * as jsondiffpatch from 'jsondiffpatch'
-import * as PouchDB from 'pouchdb-browser'
 import * as R from 'ramda'
 import * as zlib from 'zlib'
 

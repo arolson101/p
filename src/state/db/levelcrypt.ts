@@ -1,11 +1,10 @@
 
 import * as crypto from 'crypto'
-const hydration = require('hydration')
+// const hydration = require('hydration')
+const NodeBuffer = require('buffer').Buffer
 const updown = require('level-updown')
-const leveldown = require('leveldown')
+// const leveldown = require('leveldown')
 const levelup = require('levelup') as (hostname: string, options?: levelupOptions) => LevelUp
-
-
 
 const getDoc = <T>(db: LevelUp, key: string) => {
   return new Promise<T | undefined>((resolve, reject) => {
@@ -14,7 +13,7 @@ const getDoc = <T>(db: LevelUp, key: string) => {
         resolve(undefined)
       } else {
         try {
-          const t = JSON.parse(JSON.parse(value)) as T
+          const t = JSON.parse(value) as T
           resolve(t)
         } catch (err) {
           resolve(undefined)
@@ -73,8 +72,6 @@ interface KeyDoc {
 
 const keyDocKey = 'local/keyDoc'
 
-
-
 const createKeyInfo = (): KeyInfo => {
   const salt = crypto.randomBytes(16).toString('base64')
   const iterations = 64000 + Math.trunc(Math.random() * 20000)
@@ -85,7 +82,7 @@ const createKeyInfo = (): KeyInfo => {
 
 const computeKey = (password: string, info: KeyInfo): Buffer => {
   const { salt, iterations, keylen, digest } = info
-  return crypto.pbkdf2Sync(password, new Buffer(salt, 'base64'), iterations, keylen, digest)
+  return crypto.pbkdf2Sync(password, NodeBuffer.from(salt, 'base64'), iterations, keylen, digest)
 }
 
 const createCipherInfo = (): CipherInfo => {
@@ -96,16 +93,16 @@ const createCipherInfo = (): CipherInfo => {
 
 const createCipher = (key: Buffer, info: CipherInfo) => {
   const { algorithm, iv } = info
-  return crypto.createCipheriv(algorithm, key, new Buffer(iv, 'base64'))
+  return crypto.createCipheriv(algorithm, key, NodeBuffer.from(iv, 'base64'))
 }
 
 const createDecipher = (key: Buffer, info: CipherInfo) => {
   const { algorithm, iv } = info
-  return crypto.createDecipheriv(algorithm, key, new Buffer(iv, 'base64'))
+  return crypto.createDecipheriv(algorithm, key, NodeBuffer.from(iv, 'base64'))
 }
 
 const encryptMasterKey = (key: Buffer, cipher: crypto.Cipher): EncryptedData => {
-  const cipherText = Buffer.concat([
+  const cipherText = NodeBuffer.concat([
     cipher.update(key),
     cipher.final()
   ]).toString('base64')
@@ -114,9 +111,9 @@ const encryptMasterKey = (key: Buffer, cipher: crypto.Cipher): EncryptedData => 
 }
 
 const decryptMasterKey = (decipher: crypto.Decipher, masterKey: EncryptedData): Buffer => {
-  decipher.setAuthTag(new Buffer(masterKey.authTag, 'base64'))
-  const key = Buffer.concat([
-    decipher.update(new Buffer(masterKey.cipherText, 'base64')),
+  decipher.setAuthTag(NodeBuffer(masterKey.authTag, 'base64'))
+  const key = NodeBuffer.concat([
+    decipher.update(NodeBuffer(masterKey.cipherText, 'base64')),
     decipher.final() // will throw if auth tag doesn't match
   ])
   return key
@@ -149,7 +146,6 @@ const decryptMasterKeyDoc = (doc: KeyDoc, password: string): Buffer => {
   return masterKey
 }
 
-
 const openLevelDb = async (opts: any, baseDb: LevelUp, password: string): Promise<any> => {
   try {
     let keyDoc = await getDoc<KeyDoc>(baseDb, keyDocKey)
@@ -166,17 +162,11 @@ const openLevelDb = async (opts: any, baseDb: LevelUp, password: string): Promis
   }
 }
 
-
 export function levelcrypt (location: string) {
 
   const db = levelup(location, {
     keyEncoding: 'binary',
-    valueEncoding: {
-      encode: dehydrate,
-      decode: function identity (val: any) {
-        return val
-      }
-    }
+    valueEncoding: 'binary'
   } as any)
   const ud = updown(db)
 
@@ -196,7 +186,7 @@ export function levelcrypt (location: string) {
 
   function hashKey (key: any) {
     let hash = sha256(key)
-    if (!Buffer.isBuffer(hash)) { hash = new Buffer(hash) }
+    if (!NodeBuffer.isBuffer(hash)) { hash = NodeBuffer.from(hash) }
 
     return hash
   }
@@ -210,7 +200,7 @@ export function levelcrypt (location: string) {
   }
 
   function postNext (err: any, key: any, value: any, callback: any, next: any) {
-    if (!err && value) { value = hydrate(decryptValue(value)) }
+    if (!err && value) { value = decryptValue(value) }
 
     next(err, key, value, callback)
   }
@@ -221,7 +211,7 @@ export function levelcrypt (location: string) {
   }
 
   function postGet (key: any, options: any, err: any, value: any, callback: any, next: any) {
-    if (!err) { value = hydrate(decryptValue(value)) }
+    if (!err) { value = decryptValue(value) }
 
     next(key, options, err, value, callback)
   }
@@ -279,7 +269,7 @@ function encrypt (data: any, opts: any) {
   let key = opts.key || crypto.pbkdf2Sync(opts.password, salt, opts.iterations, opts.keyBytes, opts.digest)
   let iv = opts.iv || crypto.randomBytes(opts.ivBytes)
   let cipher = crypto.createCipheriv(opts.algorithm, key, iv)
-  let ciphertext = Buffer.concat([cipher.update(data), cipher.final()])
+  let ciphertext = NodeBuffer.concat([cipher.update(data), cipher.final()])
   let parts = [
     iv,
     ciphertext
@@ -301,27 +291,27 @@ function decrypt (data: any, opts: any) {
   }
 
   let decipher = crypto.createDecipheriv(opts.algorithm, key, iv)
-  let m = decipher.update(parts[1])
-  data = Buffer.concat([m, decipher.final()]).toString()
+  let m = decipher.update(ciphertext)
+  data = NodeBuffer.concat([m, decipher.final()]).toString()
   return JSON.parse(data)
 }
 
-function hydrate (entity: any) {
-  return hydration.hydrate(entity)
-}
+// function hydrate (entity: any) {
+//   return hydration.hydrate(entity)
+// }
 
-function dehydrate (entity: any) {
-  // if (Buffer.isBuffer(entity)) return entity
-  let data = hydration.dehydrate(entity)
-  return new Buffer(JSON.stringify(data))
-}
+// function dehydrate (entity: any) {
+//   // if (Buffer.isBuffer(entity)) return entity
+//   let data = hydration.dehydrate(entity)
+//   return new Buffer(JSON.stringify(data))
+// }
 
 function serialize (buffers: any) {
   let parts: any[] = []
   let idx = 0
   buffers.forEach(function (part: any) {
-    let len = new Buffer(4)
-    if (typeof part === 'string') { part = new Buffer(part) }
+    let len = NodeBuffer.alloc(4)
+    if (typeof part === 'string') { part = NodeBuffer.from(part) }
     len.writeUInt32BE(part.length, 0)
     parts.push(len)
     idx += len.length
@@ -329,10 +319,11 @@ function serialize (buffers: any) {
     idx += part.length
   })
 
-  return Buffer.concat(parts)
+  return NodeBuffer.concat(parts).toString('base64')
 }
 
 function unserialize (buf: any) {
+  buf = NodeBuffer.from(buf, 'base64')
   let parts = []
   let l = buf.length
   let idx = 0
@@ -349,9 +340,9 @@ function unserialize (buf: any) {
   return parts
 }
 
-function assert (statement: any, errMsg: any) {
-  if (!statement) { throw new Error(errMsg || 'Assertion failed') }
-}
+// function assert (statement: any, errMsg: any) {
+//   if (!statement) { throw new Error(errMsg || 'Assertion failed') }
+// }
 
 // function sha256 (key: any) {
 //   return crypto.createHash('sha256').update(key).digest()

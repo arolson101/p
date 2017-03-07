@@ -2,7 +2,6 @@ import * as React from 'react'
 import { defineMessages } from 'react-intl'
 import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bill } from '../../docs/index'
-import { mapDispatchToProps } from '../../state/index'
 import { BillForm, SubmitFunction } from './BillForm'
 import { RouteProps } from './props'
 

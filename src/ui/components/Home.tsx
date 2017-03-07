@@ -6,7 +6,7 @@ import { Row, OverlayTrigger, Popover, Grid, Col, Panel, ButtonToolbar, Button,
   PageHeader, ListGroup, ListGroupItem, ProgressBar } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { AutoSizer } from 'react-virtualized'
+// import { AutoSizer } from 'react-virtualized'
 import { createSelector } from 'reselect'
 // import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack, VictoryGroup, VictoryVoronoiTooltip } from 'victory'
 import { deleteBudget } from '../../actions/index'
@@ -87,21 +87,21 @@ interface State {
 
 type AllProps = ConnectedProps & DispatchProps & IntlProps
 
-interface CategoryValues {
-  _id: string
-  name: string
-  amount: number
-}
+// interface CategoryValues {
+//   _id: string
+//   name: string
+//   amount: number
+// }
 
-interface BudgetValues {
-  _id: string
-  name: string
-  categories: CategoryValues[]
-}
+// interface BudgetValues {
+//   _id: string
+//   name: string
+//   categories: CategoryValues[]
+// }
 
-interface Values {
-  budgets: BudgetValues[]
-}
+// interface Values {
+//   budgets: BudgetValues[]
+// }
 
 @injectIntl
 @(connect<ConnectedProps, DispatchProps, IntlProps>(
@@ -118,7 +118,8 @@ export class Home extends React.Component<AllProps, State> {
   }
 
   render () {
-    const { budgets, data, intl: { formatDate, formatNumber } } = this.props
+    // const { budgets, data, intl: { formatDate, formatNumber } } = this.props
+    const { budgets } = this.props
     const { month } = this.state
 
     return (

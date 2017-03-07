@@ -1,5 +1,4 @@
 import { FinancialInstitution, FinancialInstitutionProfile } from 'filist'
-import { ThunkAction } from 'redux'
 import { AppThunk } from './index'
 
 export interface FI extends FinancialInstitution {
@@ -13,9 +12,6 @@ export type FiState = {
 const initialState: FiState = {
   list: []
 }
-
-type State = FiState
-type Thunk = ThunkAction<any, State, any>
 
 export const emptyprofile: FinancialInstitutionProfile = {
   address1: '',

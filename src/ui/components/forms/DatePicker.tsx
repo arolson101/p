@@ -5,8 +5,7 @@ import * as ReactDOM from 'react-dom'
 import { FormControl, FormControlProps } from 'react-bootstrap'
 import * as RDatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withState } from 'recompose'
-import { withPropChangeCallback, checkPropChange } from '../../enhancers/index'
+import { checkPropChange } from '../../enhancers/index'
 
 import './DatePicker.css'
 
