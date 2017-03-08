@@ -97,7 +97,7 @@ export class Syncs extends React.Component<AllProps, {}> {
               )}
               <ListGroupItem>
                 <Button onClick={() => this.addSync(provider)}>
-                  <i className='fa fa-add'/>
+                  <i className='fa fa-plus'/>
                   {' '}
                   <FormattedMessage {...messages.addSync}/>
                 </Button>
