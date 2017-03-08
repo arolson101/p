@@ -83,11 +83,11 @@ module.exports = {
     }),
 
     new CopyWebpackPlugin([
-      { from: '../node_modules/bootstrap/dist', to: 'lib/bootstrap' },
-      { from: '../node_modules/metro-ui/build', to: 'lib/metro-ui' },
-      { from: '../node_modules/metro-bootstrap/dist', to: 'lib/metro-bootstrap' },
-      { from: '../node_modules/font-awesome/css', to: 'lib/font-awesome/css' },
-      { from: '../node_modules/font-awesome/fonts', to: 'lib/font-awesome/fonts' },
+      { from: '../node_modules/bootstrap/dist', to: 'lib' },
+      { from: '../node_modules/metro-ui/build', to: 'lib' },
+      { from: '../node_modules/metro-bootstrap/dist', to: 'lib' },
+      { from: '../node_modules/font-awesome/css', to: 'lib/css' },
+      { from: '../node_modules/font-awesome/fonts', to: 'lib/fonts' },
     ]),
 
     // globals

@@ -55,7 +55,7 @@ export const AppWindow = enhance(props => {
   return <div>
     <Helmet
       link={[
-        {rel: 'stylesheet', type: 'text/css', href: 'lib/font-awesome/css/font-awesome.css'},
+        {rel: 'stylesheet', type: 'text/css', href: 'lib/css/font-awesome.css'},
       ]}
     />
     <ThemeWindow title={title} onBack={onBack} onForward={onForward}>
