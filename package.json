@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "description",
   "scripts": {
-    "start": "cross-env NODE_ENV=development electron app --js-flags=\"--harmony\" --remote-debugging-port=9222",
-    "prod": "cross-env NODE_ENV=production electron app --js-flags=\"--harmony\"",
-    "postinstall": "rimraf node_modules/webpack/node_modules/uglify-js",
+    "client": "cross-env NODE_ENV=development electron app --js-flags=\"--harmony\" --remote-debugging-port=9222",
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "prod": "cross-env NODE_ENV=production webpack && electron app --js-flags=\"--harmony\"",
+    "postinstall": "rimraf node_modules/webpack/node_modules/uglify-js && electron-rebuild",
+    "server": "cross-env NODE_ENV=development nodemon --watch webpack.config.js --exec \"webpack-dev-server --hot --inline\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "build": {
@@ -115,6 +117,10 @@
     "@types/webpack-dev-server": "^1.12.6",
     "@types/webpack-env": "^1.13.0",
     "awesome-typescript-loader": "^3.0.4-rc.2",
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.4.0",
+    "babel-preset-env": "^1.2.1",
+    "concurrently": "^3.4.0",
     "copy-webpack-plugin": "^4.0.1",
     "cross-env": "^3.1.4",
     "css-loader": "^0.26.1",
@@ -126,6 +132,7 @@
     "file-loader": "^0.10.0",
     "filist": "^1.0.3",
     "json-loader": "^0.5.4",
+    "nodemon": "^1.11.0",
     "react-addons-perf": "^15.4.2",
     "react-hot-loader": "^3.0.0-beta.6",
     "rimraf": "^2.5.4",
@@ -138,7 +145,7 @@
     "typescript": "^2.1.6",
     "uglify-js": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
     "webpack": "^2.2.1",
-    "webpack-dev-server": "^2.3.0",
+    "webpack-dev-server": "^2.4.1",
     "webpack-hot-middleware": "^2.17.0"
   }
 }

@@ -27,25 +27,25 @@ const __DEVELOPMENT__ = (process.env.NODE_ENV == 'development');
 
 if (__DEVELOPMENT__) {
   const port = 3003;
-  const WebpackDevServer = require('webpack-dev-server');
-  const webpack = require('webpack');
-  const config = require('../webpack.config.js');
+  // const WebpackDevServer = require('webpack-dev-server');
+  // const webpack = require('webpack');
+  // const config = require('../webpack.config.js');
   indexURL = `http://localhost:${port}`;
-  config.entry.unshift(`webpack-dev-server/client?${indexURL}`);
-  config.entry.unshift('webpack/hot/only-dev-server');
-  config.entry.unshift('react-hot-loader/patch');
-  config.plugins.push(new webpack.HotModuleReplacementPlugin());
-  config.plugins.push(new webpack.NamedModulesPlugin());
-  const compiler = webpack(config);
-  const server = new WebpackDevServer(compiler, {
-		contentBase: __dirname,
-    hot: true,
-    historyApiFallback: true,
-    //stats: { colors: true }
-    noInfo: true,
-    quiet: true
-  });
-  server.listen(port);
+  // config.entry.unshift(`webpack-dev-server/client?${indexURL}`);
+  // config.entry.unshift('webpack/hot/only-dev-server');
+  // config.entry.unshift('react-hot-loader/patch');
+  // config.plugins.push(new webpack.HotModuleReplacementPlugin());
+  // config.plugins.push(new webpack.NamedModulesPlugin());
+  // const compiler = webpack(config);
+  // const server = new WebpackDevServer(compiler, {
+	// 	contentBase: __dirname,
+  //   hot: true,
+  //   historyApiFallback: true,
+  //   //stats: { colors: true }
+  //   noInfo: true,
+  //   quiet: true
+  // });
+  // server.listen(port);
 }
 
 // Keep a global reference of the window object, if you don't, the window will

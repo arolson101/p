@@ -9,39 +9,42 @@ if (!process.env.NODE_ENV) {
 const __DEVELOPMENT__ = (process.env.NODE_ENV == 'development');
 
 
-var nodeModules = {};
-fs.readdirSync(path.join(__dirname, 'node_modules'))
-//["sqlite3", "filist", "i18next", "rrule", "faker", "sockjs-client"]
-//	.concat(["electron", "fs", "path"])
-  .filter(function(x) {
-    return ['.bin', 'react-fa'].indexOf(x) === -1;
-  })
-  .forEach(function(mod) {
-    nodeModules[mod] = 'commonjs ' + mod;
-  });
-//console.log(nodeModules)
+var externals = {
+  'ws': true,
+  'sqlite3': 'commonjs cross-sqlcipher',
+  'pouchdb': 'commonjs pouchdb',
+  'leveldown': 'commonjs leveldown',
+  'leveldown/package': 'commonjs leveldown/package',
+};
+
+if (__DEVELOPMENT__) {
+  fs.readdirSync(path.join(__dirname, 'node_modules'))
+    .filter(function(x) {
+      return ['.bin'].indexOf(x) === -1;
+    })
+    .forEach(function(mod) {
+      externals[mod] = 'commonjs ' + mod;
+    });
+}
 
 module.exports = {
   context: path.join(__dirname, 'src'),
-  entry: [
-    "./index.tsx"
-  ],
+  entry: {
+    p: ["./index.tsx"]
+  },
   output: {
     devtoolModuleFilenameTemplate: (info) => `file:///${path.normalize(info.absoluteResourcePath).replace(/\\/g, '/')}`,
     path: path.join(__dirname, "app"),
-    filename: "p.js",
+    filename: "[name].js",
     library: "p",
     publicPath: "/"
   },
-
-  //externals: nodeModules,
-  externals: {
-    'ws': true,
-    'sqlite3': 'commonjs cross-sqlcipher',
-    'pouchdb': 'commonjs pouchdb',
-    'leveldown': 'commonjs leveldown',
-    'leveldown/package': 'commonjs leveldown/package',
+  devServer: {
+    contentBase: path.join(__dirname, 'app'),
+    port: 3003
   },
+
+  externals: externals,
 
   target: 'electron-renderer',
 
@@ -116,11 +119,16 @@ module.exports = {
 };
 
 
-if (!__DEVELOPMENT__) {
-	module.exports.plugins.push(new webpack.optimize.UglifyJsPlugin({
-		compress: {
-			warnings: false
-		},
-		test: /\.jsx?($|\?)/i
-	}));
+if (__DEVELOPMENT__) {
+  module.exports.entry.p.push('webpack/hot/only-dev-server')
+  module.exports.entry.p.push('react-hot-loader/patch')
+	module.exports.plugins.push(new webpack.NamedModulesPlugin())
+} else {
+  module.exports.devtool = "sourcemaps"
+	// module.exports.plugins.push(new webpack.optimize.UglifyJsPlugin({
+	// 	compress: {
+	// 		warnings: false
+	// 	},
+	// 	test: /\.jsx?($|\?)/i
+	// }));
 }
