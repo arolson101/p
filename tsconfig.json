@@ -6,7 +6,7 @@
     "experimentalDecorators": true,
 
     "noUnusedParameters": false,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
 
     "skipLibCheck": true, // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/14324
 
