@@ -123,7 +123,10 @@ export class Syncs extends React.Component<AllProps, {}> {
       const token = await provider.refreshToken(sync.token)
       const nextSync = {
         ...sync,
-        token,
+        token: {
+          ...sync.token,
+          ...token
+        },
         tokenTime: new Date().valueOf()
       }
       const nextSyncs = update(syncs, { connections: { [index]: { $set: nextSync } } })
