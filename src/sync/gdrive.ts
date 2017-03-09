@@ -32,6 +32,6 @@ export const googleDriveSyncProvider: SyncProvider = {
   },
 
   refreshToken: (token: Token) => {
-    return oauthRefreshToken(googleDriveConfig, token.access_token)
+    return oauthRefreshToken(googleDriveConfig, token.refresh_token)
   }
 }

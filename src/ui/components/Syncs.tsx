@@ -1,8 +1,8 @@
 const autobind = require('autobind-decorator')
-import * as moment from 'moment'
+import * as update from 'immutability-helper'
 import * as React from 'react'
 import { Panel, Button, PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
-import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
+import { injectIntl, FormattedMessage, defineMessages, FormattedRelative } from 'react-intl'
 import { connect } from 'react-redux'
 import { SyncConnection } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
@@ -23,33 +23,9 @@ const messages = defineMessages({
     id: 'Syncs.addSync',
     defaultMessage: 'Add Sync'
   },
-  editBudget: {
-    id: 'Syncs.editBudget',
-    defaultMessage: 'Edit'
-  },
-  budget: {
-    id: 'Syncs.budget',
-    defaultMessage: 'Budget'
-  },
-  frequency: {
-    id: 'Syncs.frequency',
-    defaultMessage: 'Frequency'
-  },
-  category: {
-    id: 'Syncs.category',
-    defaultMessage: 'Category'
-  },
-  targetAmount: {
-    id: 'Syncs.targetAmount',
-    defaultMessage: 'Amount'
-  },
-  uniqueBudget: {
-    id: 'Syncs.uniqueBudget',
-    defaultMessage: 'Budget name already used'
-  },
-  uniqueCategory: {
-    id: 'Syncs.uniqueCategory',
-    defaultMessage: 'Category name already used in this budget'
+  expires: {
+    id: 'Syncs.expires',
+    defaultMessage: 'Expires'
   },
 })
 
@@ -91,8 +67,11 @@ export class Syncs extends React.Component<AllProps, {}> {
             <ListGroup fill>
               {syncs.connections.filter(sync => sync.provider === provider.id).map((sync, index) =>
                 <ListGroupItem key={sync.provider}>
-                  {sync.provider}
-                  <Button onClick={() => this.removeSync(index)}>remove</Button>
+                  <FormattedMessage {...messages.expires}/>
+                  {' '}
+                  <FormattedRelative value={SyncConnection.expiration(sync).valueOf()}/>
+                  <Button onClick={() => this.refreshToken(provider, sync, index)}>refresh</Button>
+                  <Button className='pull-right' onClick={() => this.removeSync(index)}>remove</Button>
                 </ListGroupItem>
               )}
               <ListGroupItem>
@@ -114,20 +93,12 @@ export class Syncs extends React.Component<AllProps, {}> {
     try {
       const { pushChanges, syncs } = this.props
       const token = await provider.getToken()
-      const expires = moment().add(token.expires_in, 'seconds').valueOf()
-      const nextSyncs = {
-        ...syncs,
-        connections: [
-          ...syncs.connections,
-          {
-            provider: provider.id,
-            accessToken: token.access_token,
-            refreshToken: token.refresh_token,
-            tokenType: token.token_type,
-            expires
-          }
-        ]
+      const sync: SyncConnection = {
+        provider: provider.id,
+        token,
+        tokenTime: new Date().valueOf()
       }
+      const nextSyncs = update(syncs, { connections: { $push: [sync] } })
       pushChanges({docs: [nextSyncs]})
     } catch (err) {
       console.log(err)
@@ -138,13 +109,24 @@ export class Syncs extends React.Component<AllProps, {}> {
   async removeSync (index: number) {
     try {
       const { pushChanges, syncs } = this.props
-      const nextSyncs = {
-        ...syncs,
-        connections: [
-          ...syncs.connections.slice(0, index),
-          ...syncs.connections.slice(index + 1)
-        ]
+      const nextSyncs = update(syncs, { connections: { $splice: [[index, 1]] } })
+      pushChanges({docs: [nextSyncs]})
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  @autobind
+  async refreshToken (provider: SyncProvider, sync: SyncConnection, index: number) {
+    try {
+      const { pushChanges, syncs } = this.props
+      const token = await provider.refreshToken(sync.token)
+      const nextSync = {
+        ...sync,
+        token,
+        tokenTime: new Date().valueOf()
       }
+      const nextSyncs = update(syncs, { connections: { [index]: { $set: nextSync } } })
       pushChanges({docs: [nextSyncs]})
     } catch (err) {
       console.log(err)

@@ -1,9 +1,10 @@
+import * as moment from 'moment'
+import { Token } from '../util/index'
+
 export interface SyncConnection {
   provider: string
-  accessToken: string
-  refreshToken: string
-  tokenType: string
-  expires: number // new Date().valueOf()
+  token: Token
+  tokenTime: number
 }
 
 export namespace SyncConnection {
@@ -32,5 +33,15 @@ export namespace SyncConnection {
 
   export const isDoc = (doc: AnyDocument): doc is Doc => {
     return (doc._id === localId)
+  }
+
+  export const expiration = (sync: SyncConnection): Date => {
+    const expires = moment(sync.tokenTime).add(sync.token.expires_in, 'seconds')
+    return expires.toDate()
+  }
+
+  export const isExpired = (sync: SyncConnection): boolean => {
+    const expires = expiration(sync)
+    return moment().isAfter(expires)
   }
 }
