@@ -9,6 +9,7 @@ import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { SyncProvider, syncProviders } from '../../sync/index'
 // import { Favico } from './forms/Favico'
 import { IntlProps } from './props'
+import { test } from '../../sync/gdrive'
 
 const messages = defineMessages({
   page: {
@@ -70,6 +71,7 @@ export class Syncs extends React.Component<AllProps, {}> {
                   <FormattedMessage {...messages.expires}/>
                   {' '}
                   <FormattedRelative value={SyncConnection.expiration(sync).valueOf()}/>
+                  <Button onClick={() => test(sync.token)}>test</Button>
                   <Button onClick={() => this.refreshToken(provider, sync, index)}>refresh</Button>
                   <Button className='pull-right' onClick={() => this.removeSync(index)}>remove</Button>
                 </ListGroupItem>

@@ -53,3 +53,18 @@ namespace PouchDB {
         }
     }
 }
+
+declare module google {
+    namespace auth {
+        class OAuth2 {
+            constructor();
+            setCredentials(credentials: Partial<google.oauth2.v2.Tokeninfo>);
+        }
+    }
+    export interface GoogleApis {
+        auth: {
+            OAuth2: typeof auth.OAuth2
+        }
+        drive(opts: {version: 'v3', auth: any}): drive.v3.Drive;
+    }
+}
