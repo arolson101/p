@@ -1,7 +1,7 @@
 import * as crypto from 'crypto'
 import * as fs from 'fs'
 const debounce = require('lodash.debounce')
-const MemoryStream = require('memorystream')
+const MemoryStream = require('memorystream') as new () => MemoryStream
 import * as path from 'path'
 import * as zlib from 'zlib'
 import { CurrentDb } from './index'

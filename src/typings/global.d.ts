@@ -68,3 +68,9 @@ declare module google {
         drive(opts: {version: 'v3', auth: any}): drive.v3.Drive;
     }
 }
+
+declare type MemoryStream = NodeJS.WritableStream & NodeJS.ReadableStream & {
+    constructor(args?: any)
+    toString(): string
+    toBuffer(): Buffer
+}

@@ -1,9 +1,10 @@
 /// <reference path='../../node_modules/google-api-nodejs-tsd/dist/googleapis.oauth2.v2/googleapis.oauth2.v2.d.ts'/>
 /// <reference path='../../node_modules/google-api-nodejs-tsd/dist/googleapis.drive.v3/googleapis.drive.v3.d.ts'/>
 
+const MemoryStream = require('memorystream') as new (arg?: any, opts?: any) => MemoryStream
 import { defineMessages } from 'react-intl'
 import { Token, OAuthConfig, OAuthOptions, oauthGetAccessToken, oauthRefreshToken } from '../util/index'
-import { SyncProvider } from './index'
+import { SyncProvider, FileInfo } from './index'
 
 const google = require<google.GoogleApis>('googleapis')
 // const GoogleAuth = require('google-auth-library')
@@ -20,7 +21,8 @@ const messages = defineMessages({
 })
 
 const mimeTypes = {
-  folder: 'application/vnd.google-apps.folder'
+  folder: 'application/vnd.google-apps.folder',
+  binary: 'application/octet-stream'
 }
 
 const googleDriveConfig: OAuthConfig = {
@@ -53,21 +55,29 @@ const getDrive = (token: Token) => {
 }
 
 interface Query {
-  name: string
+  name?: string
+  parent?: string
   isFolder?: boolean
 }
 
 const fileQuery = (drive: google.drive.v3.Drive, query: Query, pageToken: string | null = null): Promise<google.drive.v3.FileList> => {
   return new Promise<google.drive.v3.FileList>((resolve, reject) => {
-    let q = `name = '${query.name}'`
-    if (query.isFolder) {
-      q += ` and mimeType = '${mimeTypes.folder}'`
+    const qs: string[] = []
+    if (query.name) {
+      qs.push(`name = ${query.name}`)
     }
+    if (query.isFolder) {
+      qs.push(`mimeType = '${mimeTypes.folder}'`)
+    }
+    if (query.parent) {
+      qs.push(`'${query.parent}' in parents`)
+    }
+    const q = qs.join(' and ')
     drive.files.list(
       {
         q,
         spaces: 'appDataFolder',
-        fields: 'nextPageToken, files(name, id)',
+        fields: 'nextPageToken, files(name, id, size)',
         pageToken
       } as any,
       (err, res) => {
@@ -92,8 +102,8 @@ const findFiles = async (drive: google.drive.v3.Drive, query: Query): Promise<go
   return files
 }
 
-const createFolderResource = (drive: google.drive.v3.Drive, name: string, parent?: string): Promise<string> => {
-  return new Promise<string>((resolve, reject) => {
+const createFolderResource = (drive: google.drive.v3.Drive, name: string, parent?: string): Promise<google.drive.v3.File> => {
+  return new Promise<google.drive.v3.File>((resolve, reject) => {
     const resource: Partial<google.drive.v3.File> = {
       name,
       mimeType: mimeTypes.folder
@@ -103,68 +113,145 @@ const createFolderResource = (drive: google.drive.v3.Drive, name: string, parent
       resource.parents = [parent]
     }
 
-    drive.files.create({
-      resource,
-      fields: 'id'
-    } as any, (err, file) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(file.id)
+    drive.files.create(
+      {
+        resource,
+        fields: 'id'
+      } as any,
+      (err, file) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(file)
+        }
       }
-    })
+    )
   })
 }
 
-const createFolder = async (token: Token, name: string, parent?: string): Promise<string> => {
-  const drive = getDrive(token)
-  const files = await findFiles(drive, {name, isFolder: true})
-  if (files.length) {
-    return files[0].id
+const uploadFile = (drive: google.drive.v3.Drive, fileInfo: FileInfo, mimeType: string): Promise<google.drive.v3.File> => {
+  if (!fileInfo.data) {
+    throw new Error('no data provided')
   }
-  return await createFolderResource(drive, name, parent)
+
+  return new Promise<google.drive.v3.File>((resolve, reject) => {
+    const resource: Partial<google.drive.v3.File> = {
+      name: fileInfo.name,
+      parents: [fileInfo.folder]
+    }
+    const body = new MemoryStream()
+    const media = {
+      mimeType,
+      body
+    }
+
+    drive.files.create(
+      {
+        resource,
+        media,
+        fields: 'id, size'
+      } as any,
+      (err, file) => {
+        if (err) {
+          reject(err)
+        } else {
+          if (parseFloat(file.size) !== fileInfo.data!.length) {
+            console.warn(`file ${fileInfo.name} (id ${file.id}) is ${file.size} on server but should be ${fileInfo.data!.length}!`)
+          }
+          resolve(file)
+        }
+      }
+    )
+
+    body.write(fileInfo.data!)
+    body.end()
+  })
+}
+
+const downloadFile = (drive: google.drive.v3.Drive, fileId: string): Promise<Buffer> => {
+  return new Promise<Buffer>((resolve, reject) => {
+    const req = drive.files.get(
+      {fileId, alt: 'media'} as any,
+      (err, file) => {
+        if (err) {
+          reject(err)
+        }
+      }
+    ) as NodeJS.ReadableStream
+
+    const memStream = new MemoryStream(null, {readable: false})
+    req.on('end', () => resolve(memStream.toBuffer()))
+    req.on('error', (err: Error) => reject(err))
+    req.pipe(memStream)
+  })
+}
+
+const deleteFile = (drive: google.drive.v3.Drive, fileId: string): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
+    drive.files.delete(
+      {
+        fileId
+      },
+      (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve()
+        }
+      }
+    )
+  })
+}
+
+const toFileInfo = (file: google.drive.v3.File): FileInfo => ({
+  name: file.name,
+  id: file.id,
+  folder: file.parents[0],
+  size: parseFloat(file.size)
+})
+
+const mkdir = async (token: Token, dir: FileInfo): Promise<FileInfo> => {
+  const drive = getDrive(token)
+  const files = await findFiles(drive, {name: dir.name, isFolder: true, parent: dir.folder})
+  if (files.length) {
+    return toFileInfo(files[0])
+  }
+  const folder = await createFolderResource(drive, dir.name, dir.folder)
+  return toFileInfo(folder)
+}
+
+const list = async (token: Token, folderId?: string): Promise<FileInfo[]> => {
+  const drive = getDrive(token)
+  const files = await findFiles(drive, {parent: folderId})
+  return files.map(toFileInfo)
+}
+
+const get = async (token: Token, id: string): Promise<Buffer> => {
+  const drive = getDrive(token)
+  return await downloadFile(drive, id)
+}
+
+const put = async (token: Token, fileInfo: FileInfo): Promise<FileInfo> => {
+  const drive = getDrive(token)
+  const file = await uploadFile(drive, fileInfo, mimeTypes.binary)
+  return toFileInfo(file)
+}
+
+const del = async (token: Token, id: string): Promise<void> => {
+  const drive = getDrive(token)
+  await deleteFile(drive, id)
 }
 
 export const googleDriveSyncProvider: SyncProvider = {
   id: 'GoogleDrive',
   title: messages.title,
+
   getToken,
   refreshToken,
-}
 
-export const test = async (token: Token) => {
-
-  try {
-    const id = await createFolder(token, 'foo', 'appDataFolder')
-    console.log(id)
-  } catch (ex) {
-    console.error(ex)
-  }
-
-  const auth = new google.auth.OAuth2()
-  auth.setCredentials(token)
-
-  const drive = google.drive({version: 'v3', auth}) as google.drive.v3.Drive
-  drive.files.list({
-    spaces: 'appDataFolder',
-    pageSize: 10,
-    // fields: "nextPageToken, files(id, name)"
-  },
-  function (err: Error, response) {
-    if (err) {
-      console.log('The API returned an error: ' + err)
-      return
-    }
-    console.log(response)
-    let files = response.files
-    if (files.length === 0) {
-      console.log('No files found.')
-    } else {
-      console.log('Files:')
-      for (let i = 0; i < files.length; i++) {
-        let file = files[i]
-        console.log('%s (%s)', file.name, file.id)
-      }
-    }
-  })
+  mkdir,
+  list,
+  get,
+  put,
+  del
 }
