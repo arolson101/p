@@ -90,10 +90,11 @@ export function levelcrypt (location: string) {
   }
 
   function hashKey (key: any) {
-    let hash = sha256(key)
-    if (!NodeBuffer.isBuffer(hash)) { hash = NodeBuffer.from(hash) }
+    // let hash = sha256(key)
+    // if (!NodeBuffer.isBuffer(hash)) { hash = NodeBuffer.from(hash) }
 
-    return hash
+    // return hash
+    return key
   }
 
   function postIterator (iterator: any) {
@@ -118,10 +119,12 @@ export function levelcrypt (location: string) {
   function postGet (key: any, options: any, err: any, value: any, callback: any, next: any) {
     if (!err) { value = decryptValue(value) }
 
+    console.log(`postGet(${key.toString('base64')}, ${(value || '').toString()})`)
     next(key, options, err, value, callback)
   }
 
   function prePut (key: any, value: any, options: any, callback: any, next: any) {
+    console.log(`prePut(${key.toString('base64')}, ${value.toString()})`)
     key = hashKey(key)
     value = encryptValue(value)
     next(key, value, options, callback)
@@ -130,6 +133,7 @@ export function levelcrypt (location: string) {
   function preBatch (array: any, options: any, callback: any, next: any) {
     for (let i = 0; i < array.length; i++) {
       let row = array[i]
+      console.log(`preBatch(${row.key.toString('base64')}, ${row.value.toString()})`)
       row.key = hashKey(row.key)
       if (row.type === 'put') {
         row.value = encryptValue(row.value)

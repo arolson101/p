@@ -200,7 +200,7 @@ const updateCache = (cache: DocCache, changes: PouchDB.ChangeInfo<AnyDocument>[]
   )
 }
 
-// import { levelcrypt } from './levelcrypt'
+import { levelcrypt } from './levelcrypt'
 
 type LoadDbArgs = { info: DbInfo, password: string }
 export namespace loadDb { export type Fcn = DbFcn<LoadDbArgs, void> }
@@ -210,7 +210,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     console.log('db: ', info.location)
     // const db = new PouchDB<AnyDocument>(info.location)
     // const ldb = await openLevelDb(info.location, password)
-    const db = new PouchDB(info.location, { password, adapter: 'leveldb'/*, db: levelcrypt*/ } as any)
+    const db = new PouchDB(info.location, { password, adapter: 'leveldb', db: levelcrypt } as any)
     db.transform({incoming: incomingDelta})
 
     let localInfo: LocalDbInfo
@@ -264,6 +264,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     .on(
       'change',
       (change: PouchDB.ChangeInfo<{}>) => {
+        console.log('change: ', change)
         changeQueue.push(change)
         processChanges()
       }
