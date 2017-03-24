@@ -198,7 +198,7 @@ function decrypt (data: any, opts: any) {
   let decipher = crypto.createDecipheriv(opts.algorithm, key, iv)
   let m = decipher.update(ciphertext)
   data = NodeBuffer.concat([m, decipher.final()]).toString()
-  return JSON.parse(data)
+  return data
 }
 
 // function hydrate (entity: any) {
