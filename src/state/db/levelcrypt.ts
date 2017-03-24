@@ -1,10 +1,14 @@
 
 import * as crypto from 'crypto'
+import { KeyDoc, createKeyDoc, decryptMasterKeyDoc } from '../../util/index'
+
 // const hydration = require('hydration')
 const NodeBuffer = require('buffer').Buffer
 const updown = require('level-updown')
 // const leveldown = require('leveldown')
 const levelup = require('levelup') as (hostname: string, options?: levelupOptions) => LevelUp
+
+const keyDocKey = 'local/keyDoc'
 
 const getDoc = <T>(db: LevelUp, key: string) => {
   return new Promise<T | undefined>((resolve, reject) => {
@@ -45,105 +49,6 @@ const closeDb = (db: LevelUp) => {
       }
     })
   })
-}
-
-interface KeyInfo {
-  salt: string
-  iterations: number
-  keylen: number
-  digest: string
-}
-
-interface CipherInfo {
-  algorithm: string
-  iv: string
-}
-
-interface EncryptedData {
-  cipherText: string
-  authTag: string
-}
-
-interface KeyDoc {
-  keyInfo: KeyInfo
-  cipherInfo: CipherInfo
-  masterKeyData: EncryptedData
-}
-
-const keyDocKey = 'local/keyDoc'
-
-const createKeyInfo = (): KeyInfo => {
-  const salt = crypto.randomBytes(16).toString('base64')
-  const iterations = 64000 + Math.trunc(Math.random() * 20000)
-  const keylen = 32
-  const digest = 'sha512'
-  return { salt, iterations, keylen, digest }
-}
-
-const computeKey = (password: string, info: KeyInfo): Buffer => {
-  const { salt, iterations, keylen, digest } = info
-  return crypto.pbkdf2Sync(password, NodeBuffer.from(salt, 'base64'), iterations, keylen, digest)
-}
-
-const createCipherInfo = (): CipherInfo => {
-  const algorithm = 'aes-256-gcm'
-  const iv = crypto.randomBytes(16).toString('base64')
-  return { algorithm, iv }
-}
-
-const createCipher = (key: Buffer, info: CipherInfo) => {
-  const { algorithm, iv } = info
-  return crypto.createCipheriv(algorithm, key, NodeBuffer.from(iv, 'base64'))
-}
-
-const createDecipher = (key: Buffer, info: CipherInfo) => {
-  const { algorithm, iv } = info
-  return crypto.createDecipheriv(algorithm, key, NodeBuffer.from(iv, 'base64'))
-}
-
-const encryptMasterKey = (key: Buffer, cipher: crypto.Cipher): EncryptedData => {
-  const cipherText = NodeBuffer.concat([
-    cipher.update(key),
-    cipher.final()
-  ]).toString('base64')
-  const authTag = cipher.getAuthTag().toString('base64')
-  return { cipherText, authTag }
-}
-
-const decryptMasterKey = (decipher: crypto.Decipher, masterKey: EncryptedData): Buffer => {
-  decipher.setAuthTag(NodeBuffer(masterKey.authTag, 'base64'))
-  const key = NodeBuffer.concat([
-    decipher.update(NodeBuffer(masterKey.cipherText, 'base64')),
-    decipher.final() // will throw if auth tag doesn't match
-  ])
-  return key
-}
-
-const createKeyDoc = (password: string) => {
-  const keyBytes = 32
-  const masterKey = crypto.randomBytes(keyBytes)
-
-  const keyInfo = createKeyInfo()
-  const passKey = computeKey(password, keyInfo)
-
-  const cipherInfo = createCipherInfo()
-  const cipher = createCipher(passKey, cipherInfo)
-
-  const masterKeyData = encryptMasterKey(masterKey, cipher)
-
-  const doc: KeyDoc = {
-    keyInfo,
-    cipherInfo,
-    masterKeyData
-  }
-  return { masterKey, doc }
-}
-
-const decryptMasterKeyDoc = (doc: KeyDoc, password: string): Buffer => {
-  const passKey = computeKey(password, doc.keyInfo)
-  const decipher = createDecipher(passKey, doc.cipherInfo)
-  const masterKey = decryptMasterKey(decipher, doc.masterKeyData)
-  return masterKey
 }
 
 const openLevelDb = async (opts: any, baseDb: LevelUp, password: string): Promise<any> => {
