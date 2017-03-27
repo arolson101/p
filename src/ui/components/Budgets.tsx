@@ -195,6 +195,7 @@ export class Budgets extends React.Component<AllProps, State> {
         }
 
         const categories = (bvalues.categories || []).map(bc => {
+          const amount = numeral(bc.amount).value() || 0
           if (!bc) {
             return '' as Category.DocId
           }
@@ -206,14 +207,14 @@ export class Budgets extends React.Component<AllProps, State> {
             const nextCategory = {
               ...existingCategory.doc,
               ...bc,
-              amount: numeral(bc.amount).value() || 0
+              amount
             }
             if (!shallowEqual(existingCategory, nextCategory)) {
               changes.push(nextCategory)
             }
             return existingCategory.doc._id
           } else {
-            const newCategory = Category.doc(nextBudget, {name: bc.name, amount: bc.amount}, lang)
+            const newCategory = Category.doc(nextBudget, {name: bc.name, amount}, lang)
             changes.push(newCategory)
             return newCategory._id
           }
