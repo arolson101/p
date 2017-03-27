@@ -206,10 +206,7 @@ type LoadDbArgs = { info: DbInfo, password: string }
 export namespace loadDb { export type Fcn = DbFcn<LoadDbArgs, void> }
 export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
   async (dispatch, getState) => {
-    // const db = new PouchDB<AnyDocument>(info.location, adapter(password))
     console.log('db: ', info.location)
-    // const db = new PouchDB<AnyDocument>(info.location)
-    // const ldb = await openLevelDb(info.location, password)
     const db = new PouchDB(info.location, { password, adapter: 'leveldb', db: levelcrypt } as any)
     db.transform({incoming: incomingDelta})
 
@@ -235,6 +232,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       () => {
         const changes = changeQueue.splice(0)
         const { db: { current } } = getState()
+        console.log('processChanges: ', changes.length)
         if (current) {
           let nextCache: DocCache = {
             banks: new Map(current.cache.banks),

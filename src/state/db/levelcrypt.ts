@@ -1,11 +1,7 @@
-
 import * as crypto from 'crypto'
 import { KeyDoc, createKeyDoc, decryptMasterKeyDoc } from '../../util/index'
 
-// const hydration = require('hydration')
-const NodeBuffer = require('buffer').Buffer
 const updown = require('level-updown')
-// const leveldown = require('leveldown')
 const levelup = require('levelup') as (hostname: string, options?: levelupOptions) => LevelUp
 
 const keyDocKey = 'local/keyDoc'
@@ -51,7 +47,7 @@ const closeDb = (db: LevelUp) => {
   })
 }
 
-const openLevelDb = async (opts: any, baseDb: LevelUp, password: string): Promise<any> => {
+const openLevelDb = async (opts: Options, baseDb: LevelUp, password: string): Promise<any> => {
   try {
     let keyDoc = await getDoc<KeyDoc>(baseDb, keyDocKey)
     if (keyDoc) {
@@ -67,37 +63,29 @@ const openLevelDb = async (opts: any, baseDb: LevelUp, password: string): Promis
   }
 }
 
+interface Options {
+  algorithm: string
+  ivBytes: number
+  key?: Buffer
+}
+
 export function levelcrypt (location: string) {
 
-  const db = levelup(location, {
-    keyEncoding: 'binary',
-    valueEncoding: 'binary'
-  } as any)
-  const ud = updown(db)
-
-  let opts = {
+  let opts: Options = {
     algorithm: 'aes-256-cbc',
     ivBytes: 16,
-    key: null
+    key: undefined
   }
 
-  let encryptValue = function (data: any) {
+  const encryptValue = function (data: any) {
     return encrypt(data, opts)
   }
 
-  let decryptValue = function (data: any) {
+  const decryptValue = function (data: any) {
     return decrypt(data, opts)
   }
 
-  function hashKey (key: any) {
-    // let hash = sha256(key)
-    // if (!NodeBuffer.isBuffer(hash)) { hash = NodeBuffer.from(hash) }
-
-    // return hash
-    return key
-  }
-
-  function postIterator (iterator: any) {
+  const postIterator = (iterator: any) => {
     iterator.extendWith({
       postNext: postNext
     })
@@ -105,36 +93,24 @@ export function levelcrypt (location: string) {
     return iterator
   }
 
-  function postNext (err: any, key: any, value: any, callback: any, next: any) {
+  const postNext = (err: any, key: any, value: any, callback: any, next: any) => {
     if (!err && value) { value = decryptValue(value) }
-
     next(err, key, value, callback)
   }
 
-  function preHashKey (key: any, options: any, callback: any, next: any) {
-    key = hashKey(key)
-    next(key, options, callback)
-  }
-
-  function postGet (key: any, options: any, err: any, value: any, callback: any, next: any) {
+  const postGet = (key: any, options: any, err: any, value: any, callback: any, next: any) => {
     if (!err) { value = decryptValue(value) }
-
-    console.log(`postGet(${key.toString('base64')}, ${(value || '').toString()})`)
     next(key, options, err, value, callback)
   }
 
-  function prePut (key: any, value: any, options: any, callback: any, next: any) {
-    console.log(`prePut(${key.toString('base64')}, ${value.toString()})`)
-    key = hashKey(key)
+  const prePut = (key: any, value: any, options: any, callback: any, next: any) => {
     value = encryptValue(value)
     next(key, value, options, callback)
   }
 
-  function preBatch (array: any, options: any, callback: any, next: any) {
+  const preBatch = (array: any, options: any, callback: any, next: any) => {
     for (let i = 0; i < array.length; i++) {
       let row = array[i]
-      console.log(`preBatch(${row.key.toString('base64')}, ${row.value.toString()})`)
-      row.key = hashKey(row.key)
       if (row.type === 'put') {
         row.value = encryptValue(row.value)
       }
@@ -143,11 +119,15 @@ export function levelcrypt (location: string) {
     next(array, options, callback)
   }
 
+  const db = levelup(location, {
+    keyEncoding: 'binary',
+    valueEncoding: 'binary'
+  })
+
+  const ud = updown(db)
   ud.extendWith({
-    preGet: preHashKey,
     postGet: postGet,
     postIterator: postIterator,
-    preDel: preHashKey,
     prePut: prePut,
     preBatch: preBatch,
     open: (options: any, callback: any, next: any) => {
@@ -156,10 +136,7 @@ export function levelcrypt (location: string) {
           callback(err)
         } else {
           openLevelDb(opts, db, options.password).then(
-            () => {
-              console.log('key retrieved: ', opts.key)
-              callback()
-            },
+            () => callback(),
             (err2: Error) => callback(err2)
           )
         }
@@ -169,58 +146,35 @@ export function levelcrypt (location: string) {
   return ud
 }
 
-function sha256 (key: any) {
-  return crypto.createHash('sha256').update(key).digest()
-}
-
-function encrypt (data: any, opts: any) {
-  let salt = !opts.key && (opts.salt || crypto.randomBytes(opts.saltBytes))
-  let key = opts.key || crypto.pbkdf2Sync(opts.password, salt, opts.iterations, opts.keyBytes, opts.digest)
-  let iv = opts.iv || crypto.randomBytes(opts.ivBytes)
-  let cipher = crypto.createCipheriv(opts.algorithm, key, iv)
-  let ciphertext = NodeBuffer.concat([cipher.update(data), cipher.final()])
+const encrypt = (data: any, opts: Options) => {
+  let iv = crypto.randomBytes(opts.ivBytes)
+  let cipher = crypto.createCipheriv(opts.algorithm, opts.key, iv)
+  let ciphertext = Buffer.concat([cipher.update(data), cipher.final()])
   let parts = [
     iv,
     ciphertext
   ]
 
-  if (salt) { parts.push(salt) }
-
   return serialize(parts)
 }
 
-function decrypt (data: any, opts: any) {
+const decrypt = (data: any, opts: Options) => {
   let parts = unserialize(data)
   let iv = parts[0]
   let ciphertext = parts[1]
-  let salt = parts[2]
-  let key = opts.key
-  if (!key) {
-    key = crypto.pbkdf2Sync(opts.password, salt, opts.iterations, opts.keyBytes, opts.digest)
-  }
 
-  let decipher = crypto.createDecipheriv(opts.algorithm, key, iv)
+  let decipher = crypto.createDecipheriv(opts.algorithm, opts.key, iv)
   let m = decipher.update(ciphertext)
-  data = NodeBuffer.concat([m, decipher.final()]).toString()
+  data = Buffer.concat([m, decipher.final()]).toString()
   return data
 }
 
-// function hydrate (entity: any) {
-//   return hydration.hydrate(entity)
-// }
-
-// function dehydrate (entity: any) {
-//   // if (Buffer.isBuffer(entity)) return entity
-//   let data = hydration.dehydrate(entity)
-//   return new Buffer(JSON.stringify(data))
-// }
-
-function serialize (buffers: any) {
+const serialize = (buffers: any) => {
   let parts: any[] = []
   let idx = 0
-  buffers.forEach(function (part: any) {
-    let len = NodeBuffer.alloc(4)
-    if (typeof part === 'string') { part = NodeBuffer.from(part) }
+  buffers.forEach((part: any) => {
+    let len = Buffer.alloc(4)
+    if (typeof part === 'string') { part = Buffer.from(part) }
     len.writeUInt32BE(part.length, 0)
     parts.push(len)
     idx += len.length
@@ -228,11 +182,11 @@ function serialize (buffers: any) {
     idx += part.length
   })
 
-  return NodeBuffer.concat(parts).toString('base64')
+  return Buffer.concat(parts).toString('base64')
 }
 
-function unserialize (buf: any) {
-  buf = NodeBuffer.from(buf, 'base64')
+const unserialize = (buf: any) => {
+  buf = Buffer.from(buf, 'base64')
   let parts = []
   let l = buf.length
   let idx = 0
@@ -248,41 +202,3 @@ function unserialize (buf: any) {
 
   return parts
 }
-
-// function assert (statement: any, errMsg: any) {
-//   if (!statement) { throw new Error(errMsg || 'Assertion failed') }
-// }
-
-// function sha256 (key: any) {
-//   return crypto.createHash('sha256').update(key).digest()
-// }
-
-// function normalizeOpts (_opts: any) {
-//   let opts: any = {}
-//   let defaults: any = _opts.key ? DEFAULT_KEY_BASED_OPTS : DEFAULT_PASSWORD_BASED_OPTS
-//   for (let p in defaults) {
-//     opts[p] = p in _opts ? _opts[p] : defaults[p]
-//   }
-
-//   assert(typeof opts.algorithm === 'string', 'Expected string "algorithm"')
-//   assert(typeof opts.ivBytes === 'number', 'Expected number "ivBytes"')
-
-//   if (!opts.key) {
-//     assert(typeof opts.keyBytes === 'number', 'Expected number "keyBytes"')
-//     assert(typeof opts.iterations === 'number', 'Expected number "iterations"')
-//     assert(typeof opts.password === 'string' || Buffer.isBuffer(opts.password), 'Expected string or Buffer "password"')
-//     assert(typeof opts.digest === 'string', 'Expected string "digest"')
-
-//     if (opts.salt) {
-//       assert(Buffer.isBuffer(opts.salt), 'Expected Buffer "salt"')
-//       // if global salt is provided don't recalculate key every time
-//       if (!opts.key) {
-//         opts.key = crypto.pbkdf2Sync(opts.password, opts.salt, opts.iterations, opts.keyBytes, opts.digest)
-//       }
-//     } else {
-//       assert(typeof opts.saltBytes === 'number', 'Expected number "saltBytes"')
-//     }
-//   }
-
-//   return opts
-// }
