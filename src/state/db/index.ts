@@ -6,12 +6,12 @@ import * as path from 'path'
 import * as R from 'ramda'
 import { ThunkAction } from 'redux'
 const uuidV4 = require('uuid/v4') as () => string
-import { Bank, Account, Category, Bill, Budget, Transaction, SyncConnection, DocCache, DbView } from '../../docs/index'
-import { Lookup } from '../../util/index'
+import { DocCache, DbView, LocalDoc } from '../../docs/index'
 import { wait } from '../../util/index'
 import { AppThunk } from '../index'
 import { DbInfo } from './DbInfo'
 import { incomingDelta, resolveConflict } from './delta'
+import { levelcrypt } from './levelcrypt'
 import { PouchDB } from './pouch'
 import { dumpNextSequence } from './sync'
 
@@ -112,8 +112,17 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
     if (!current) {
       throw new Error('no current db')
     }
+    const locals = docs.filter(doc => doc._id.startsWith('_local'))
+    if (locals.length) {
+      locals.push(
+        LocalDoc.updateIds(current.cache.local, locals)
+      )
+    }
     try {
-      await current.db.bulkDocs(docs)
+      await current.db.bulkDocs([
+        ...docs,
+        ...locals
+      ])
     } catch (err) {
       if (err.name === 'conflict') {
         // TODO: resolve conflict
@@ -125,7 +134,6 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
     }
     await wait(5)
 
-    const locals = docs.filter(doc => doc._id.startsWith('_local'))
     for (let local of locals) {
       const change: PouchDB.ChangeInfo<any> = {
         id: local._id,
@@ -150,57 +158,16 @@ export const deleteDoc = (doc: AnyDocument): Deletion => ({
   _deleted: true
 })
 
-const buildView = (cache: DocCache): DbView => {
-  const views = {
-    banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache)),
-    bills: Lookup.map(cache.bills, bill => Bill.buildView(bill, cache)),
-    budgets: Lookup.map(cache.budgets, budget => Budget.buildView(budget, cache)),
-  }
-  views.budgets.forEach(budget => Budget.linkView(budget, views))
-  return views
-}
-
-const updateCache = (cache: DocCache, changes: PouchDB.ChangeInfo<AnyDocument>[]) => {
-  const selectCache = R.cond([
-    [Transaction.isDocId, R.always(cache.transactions)],
-    [Bank.isDocId, R.always(cache.banks)],
-    [Account.isDocId, R.always(cache.accounts)],
-    [Category.isDocId, R.always(cache.categories)],
-    [Bill.isDocId, R.always(cache.bills)],
-    [Budget.isDocId, R.always(cache.budgets)],
-  ]) as (docId: string) => Map<string, AnyDocument> | undefined
-
-  const isDeletion = (change: PouchDB.ChangeInfo<AnyDocument>): boolean => !!change.deleted
-  const deleteItem = (change: PouchDB.ChangeInfo<AnyDocument>): void => {
-    const map = selectCache(change.id)
-    if (map) {
-      map.delete(change.id)
+const safeGet = async <T> (db: PouchDB.Database<any>, id: string, create: () => T): Promise<T> => {
+  try {
+    return await db.get(id) as T
+  } catch (err) {
+    if (err.name !== 'not_found') {
+      throw err
     }
+    return create()
   }
-
-  const upsertItem = (change: PouchDB.ChangeInfo<AnyDocument>): void => {
-    const map = selectCache(change.id)
-    if (map) {
-      console.assert(change.doc)
-      map.set(change.id, change.doc!)
-    } else if (change.doc) {
-      const doc = change.doc
-      if (SyncConnection.isDoc(doc)) {
-        cache.syncs = doc
-      }
-    }
-  }
-
-  R.forEach(
-    R.cond([
-      [isDeletion, deleteItem],
-      [R.T, upsertItem]
-    ]) as (change: PouchDB.ChangeInfo<AnyDocument>) => void,
-    changes
-  )
 }
-
-import { levelcrypt } from './levelcrypt'
 
 type LoadDbArgs = { info: DbInfo, password: string }
 export namespace loadDb { export type Fcn = DbFcn<LoadDbArgs, void> }
@@ -232,20 +199,10 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       () => {
         const changes = changeQueue.splice(0)
         const { db: { current } } = getState()
-        console.log('processChanges: ', changes.length)
+        console.log(`processChanges: ${changes.length}`, changes)
         if (current) {
-          let nextCache: DocCache = {
-            banks: new Map(current.cache.banks),
-            accounts: new Map(current.cache.accounts),
-            transactions: new Map(current.cache.transactions),
-            categories: new Map(current.cache.categories),
-            bills: new Map(current.cache.bills),
-            budgets: new Map(current.cache.budgets),
-            syncs: current.cache.syncs,
-          }
-
-          updateCache(nextCache, changes)
-          const nextView = buildView(nextCache)
+          const nextCache = DocCache.updateCache(current.cache, changes)
+          const nextView = DbView.buildView(nextCache)
           dispatch(dbChanges(nextView, nextCache))
 
           dumpNextSequence(current)
@@ -270,45 +227,23 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
 
     console.time('load')
 
+    const local = await safeGet<LocalDoc.Doc>(db, LocalDoc.DocId, LocalDoc.create)
+    const localDocs: AnyDocument[] = []
+    for (let id in local.ids) {
+      const doc = await safeGet<AnyDocument | undefined>(db, id, () => undefined)
+      if (doc) {
+        localDocs.push(doc)
+      }
+    }
     const allDocs = await db.allDocs({include_docs: true, conflicts: true})
-    const docs: AnyDocument[] = allDocs.rows.map(row => row.doc!)
+    const docs: AnyDocument[] = allDocs.rows.map(row => row.doc!).concat(localDocs).concat(local)
     const conflicts = docs.filter((doc: AnyDocument) => doc._conflicts && doc._conflicts.length > 0)
     for (let conflict of conflicts) {
       db.resolveConflicts(conflict, resolveConflict)
     }
 
-    let syncDoc: SyncConnection.Doc
-    try {
-      syncDoc = await db.get(SyncConnection.localId) as SyncConnection.Doc
-    } catch (err) {
-      if (err.name !== 'not_found') {
-        throw err
-      }
-      syncDoc = SyncConnection.defaultDoc
-    }
-
-    const cache: DocCache = {
-      banks: Bank.createCache(),
-      accounts: Account.createCache(),
-      transactions: Transaction.createCache(),
-      categories: Category.createCache(),
-      bills: Bill.createCache(),
-      budgets: Budget.createCache(),
-      syncs: syncDoc,
-    }
-
-    docs.forEach(
-      R.cond([
-        [Transaction.isDoc, (doc: Transaction.Doc) => cache.transactions.set(doc._id, doc)],
-        [Bank.isDoc, (doc: Bank.Doc) => cache.banks.set(doc._id, doc)],
-        [Account.isDoc, (doc: Account.Doc) => cache.accounts.set(doc._id, doc)],
-        [Category.isDoc, (doc: Category.Doc) => cache.categories.set(doc._id, doc)],
-        [Bill.isDoc, (doc: Bill.Doc) => cache.bills.set(doc._id, doc)],
-        [Budget.isDoc, (doc: Budget.Doc) => cache.budgets.set(doc._id, doc)],
-      ]) as (doc: AnyDocument) => void
-    )
-
-    const view = buildView(cache)
+    const cache = DocCache.addDocsToCache(docs)
+    const view = DbView.buildView(cache)
 
     console.timeEnd('load')
     console.log(`${cache.transactions.size} transactions`)
@@ -330,6 +265,7 @@ export const deleteDb: DbThunk<DeleteDbArgs, void> = ({info}) =>
     }
 
     // delete file
+    // TODO: this won't work with leveldb
     fs.unlinkSync(info.location)
     dispatch(DbInit(undefined))
   }

@@ -1,5 +1,4 @@
 const autobind = require('autobind-decorator')
-import * as update from 'immutability-helper'
 import * as React from 'react'
 import { Panel, Button, PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages, FormattedRelative } from 'react-intl'
@@ -30,7 +29,8 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  syncs: SyncConnection.Doc
+  syncs: SyncConnection.Doc[]
+  lang: string
 }
 
 interface DispatchProps {
@@ -42,7 +42,8 @@ type AllProps = ConnectedProps & DispatchProps & IntlProps
 @injectIntl
 @(connect<ConnectedProps, DispatchProps, IntlProps>(
   (state: AppState): ConnectedProps => ({
-    syncs: state.db.current!.cache.syncs,
+    syncs: state.db.current!.view.syncs,
+    lang: state.i18n.lang,
   }),
   mapDispatchToProps<DispatchProps>({ pushChanges })
 ) as any)
@@ -65,7 +66,7 @@ export class Syncs extends React.Component<AllProps, {}> {
             }
           >
             <ListGroup fill>
-              {syncs.connections.filter(sync => sync.provider === provider.id).map((sync, index) =>
+              {syncs.filter(sync => sync.provider === provider.id).map((sync, index) =>
                 <ListGroupItem key={sync.provider}>
                   <FormattedMessage {...messages.expires}/>
                   {' '}
@@ -92,15 +93,14 @@ export class Syncs extends React.Component<AllProps, {}> {
   @autobind
   async addSync (provider: SyncProvider) {
     try {
-      const { pushChanges, syncs } = this.props
+      const { pushChanges, lang } = this.props
       const token = await provider.getToken()
-      const sync: SyncConnection = {
+      const sync = SyncConnection.doc({
         provider: provider.id,
         token,
         tokenTime: new Date().valueOf()
-      }
-      const nextSyncs = update(syncs, { connections: { $push: [sync] } })
-      pushChanges({docs: [nextSyncs]})
+      }, lang)
+      pushChanges({docs: [sync]})
     } catch (err) {
       console.log(err)
     }
@@ -108,19 +108,20 @@ export class Syncs extends React.Component<AllProps, {}> {
 
   @autobind
   async removeSync (index: number) {
-    try {
-      const { pushChanges, syncs } = this.props
-      const nextSyncs = update(syncs, { connections: { $splice: [[index, 1]] } })
-      pushChanges({docs: [nextSyncs]})
-    } catch (err) {
-      console.log(err)
-    }
+    // TODO
+    // try {
+    //   const { pushChanges, syncs } = this.props
+    //   const nextSyncs = update(syncs, { connections: { $splice: [[index, 1]] } })
+    //   pushChanges({docs: [nextSyncs]})
+    // } catch (err) {
+    //   console.log(err)
+    // }
   }
 
   @autobind
-  async refreshToken (provider: SyncProvider, sync: SyncConnection, index: number) {
+  async refreshToken (provider: SyncProvider, sync: SyncConnection.Doc, index: number) {
     try {
-      const { pushChanges, syncs } = this.props
+      const { pushChanges } = this.props
       const token = await provider.refreshToken(sync.token)
       const nextSync = {
         ...sync,
@@ -130,8 +131,7 @@ export class Syncs extends React.Component<AllProps, {}> {
         },
         tokenTime: new Date().valueOf()
       }
-      const nextSyncs = update(syncs, { connections: { [index]: { $set: nextSync } } })
-      pushChanges({docs: [nextSyncs]})
+      pushChanges({docs: [nextSync]})
     } catch (err) {
       console.log(err)
     }

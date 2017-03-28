@@ -1,5 +1,6 @@
+import * as docURI from 'docuri'
 import * as moment from 'moment'
-import { Token } from '../util/index'
+import { makeid, Lookup, Token } from '../util/index'
 
 export interface SyncConnection {
   provider: string
@@ -8,17 +9,14 @@ export interface SyncConnection {
 }
 
 export namespace SyncConnection {
-  export interface Doc {
-    _id: '_local/syncs'
-    connections: SyncConnection[]
-  }
+  export type Id = ':syncId' | 'create' | makeid
+  export type DocId = '_local/sync/:syncId'
+  export type Doc = TDocument<SyncConnection, DocId>
+  export interface Params { syncId: Id }
+  export const docId = docURI.route<Params, DocId>('_local/sync/:syncId')
+  export type Cache = Lookup<DocId, Doc>
+  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
-  export const defaultDoc: Doc = {
-    _id: '_local/syncs',
-    connections: []
-  }
-
-  export const localId = '_local/syncs'
   export const icon = 'fa fa-server'
 
   export namespace routes {
@@ -31,8 +29,27 @@ export namespace SyncConnection {
     }
   }
 
+  export const isDocId = (id: string): id is DocId => {
+    return !!docId(id as DocId)
+  }
+
   export const isDoc = (doc: AnyDocument): doc is Doc => {
-    return (doc._id === localId)
+    return !!docId(doc._id as DocId)
+  }
+
+  export const idFromDocId = (sync: DocId): Id => {
+    const aparts = docId(sync)
+    if (!aparts) {
+      throw new Error('not a sync id: ' + sync)
+    }
+    return aparts.syncId
+  }
+
+  export const doc = (sync: SyncConnection, lang: string): Doc => {
+    const _id = docId({
+      syncId: makeid(sync.provider, lang)
+    })
+    return { _id, ...sync }
   }
 
   export const expiration = (sync: SyncConnection): Date => {

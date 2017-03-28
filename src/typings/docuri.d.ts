@@ -11,5 +11,5 @@ declare module "docuri" {
         (str: S, obj: T): S;
     }
 
-    export function route<T, S>(route: string): Route<T, S>;
+    export function route<T, S>(route: S): Route<T, S>;
 }
