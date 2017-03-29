@@ -113,6 +113,8 @@ export function levelcrypt (location: string) {
       let row = array[i]
       if (row.type === 'put') {
         row.value = encryptValue(row.value)
+      } else if (row.type === 'del') {
+        row.value = new Buffer('0')
       }
     }
 

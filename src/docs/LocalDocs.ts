@@ -27,7 +27,11 @@ export namespace LocalDoc {
   export const updateIds = (localDocs: Doc, updated: AnyDocument[]): Doc => {
     const ids = { ...localDocs.ids }
     for (let doc of updated) {
-      ids[doc._id] = true
+      if (doc._deleted) {
+        delete ids[doc._id]
+      } else {
+        ids[doc._id] = true
+      }
     }
     return {
       ...localDocs,

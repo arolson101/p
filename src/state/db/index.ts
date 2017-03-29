@@ -139,7 +139,7 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
         id: local._id,
         changes: [local],
         doc: local,
-        deleted: false,
+        deleted: local._deleted,
         seq: 0
       };
       (current.changes as any).emit('change', change)
