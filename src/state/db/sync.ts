@@ -5,6 +5,7 @@ const MemoryStream = require('memorystream') as new () => MemoryStream
 import * as path from 'path'
 import * as zlib from 'zlib'
 import { CurrentDb } from './index'
+import { SyncProvider } from '../../sync/index'
 
 const getLastDumpSeq = async (dir: string): Promise<number> => {
   return new Promise<number>((resolve, reject) => {
@@ -42,3 +43,13 @@ export const dumpNextSequence = debounce(async (current: CurrentDb) => {
     console.log(`done`)
   }
 }, 1000, { trailing: true, leading: false })
+
+export const runSync = async (current: CurrentDb, provider: SyncProvider) => {
+  // get index
+  // attempt to decrypt with password; if doesn't decrypt, user has to fix
+  // get key from index
+  // get directories
+  // for every directory that's not ours, ingest new files
+  // get latest change from our folder
+  // write any changes made since then
+}

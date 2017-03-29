@@ -137,7 +137,7 @@ const uploadFile = (drive: google.drive.v3.Drive, fileInfo: FileInfo, mimeType: 
   return new Promise<google.drive.v3.File>((resolve, reject) => {
     const resource: Partial<google.drive.v3.File> = {
       name: fileInfo.name,
-      parents: [fileInfo.folder]
+      parents: fileInfo.folder ? [fileInfo.folder] : []
     }
     const body = new MemoryStream()
     const media = {

@@ -1,11 +1,12 @@
 import { FormattedMessage } from 'react-intl'
-import { googleDriveSyncProvider } from './gdrive'
 import { Token } from '../util/index'
+import { fsSyncProvider } from './fsSync'
+import { googleDriveSyncProvider } from './gdrive'
 
 export interface FileInfo {
   name: string
   id?: string
-  folder: string
+  folder?: string
   size?: number
   data?: Buffer
 }
@@ -25,5 +26,6 @@ export interface SyncProvider {
 }
 
 export const syncProviders = [
-  googleDriveSyncProvider
+  googleDriveSyncProvider,
+  fsSyncProvider
 ]
