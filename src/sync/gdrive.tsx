@@ -1,11 +1,14 @@
 /// <reference path='../../node_modules/google-api-nodejs-tsd/dist/googleapis.oauth2.v2/googleapis.oauth2.v2.d.ts'/>
 /// <reference path='../../node_modules/google-api-nodejs-tsd/dist/googleapis.drive.v3/googleapis.drive.v3.d.ts'/>
 
+import * as React from 'react'
 const MemoryStream = require('memorystream') as new (arg?: any, opts?: any) => MemoryStream
-import { defineMessages } from 'react-intl'
-import { Token, OAuthConfig, OAuthOptions, oauthGetAccessToken, oauthRefreshToken } from '../util/index'
+import { defineMessages, FormattedMessage, FormattedRelative } from 'react-intl'
+import { OAuthConfig, OAuthOptions, oauthGetAccessToken, oauthRefreshToken } from '../util/index'
+import { SyncConnection, SyncConnectionToken } from '../docs/index'
 import { SyncProvider, FileInfo } from './index'
 
+const googleDriveSyncId = 'GoogleDrive'
 const google = require<google.GoogleApis>('googleapis')
 // const GoogleAuth = require('google-auth-library')
 // const google = {
@@ -17,6 +20,10 @@ const messages = defineMessages({
   title: {
     id: 'gdrive.message',
     defaultMessage: 'Google Drive'
+  },
+  expires: {
+    id: 'gdrive.expires',
+    defaultMessage: 'Expires'
   },
 })
 
@@ -39,17 +46,9 @@ const googleDriveOptions: OAuthOptions = {
   accessType: 'offline'
 }
 
-const getToken = () => {
-  return oauthGetAccessToken(googleDriveConfig, googleDriveOptions)
-}
-
-const refreshToken = (token: Token) => {
-  return oauthRefreshToken(googleDriveConfig, token.refresh_token)
-}
-
-const getDrive = (token: Token) => {
+const getDrive = (config: SyncConnectionToken) => {
   const auth = new google.auth.OAuth2()
-  auth.setCredentials(token)
+  auth.setCredentials(config.token)
 
   return google.drive({version: 'v3', auth}) as google.drive.v3.Drive
 }
@@ -129,11 +128,7 @@ const createFolderResource = (drive: google.drive.v3.Drive, name: string, parent
   })
 }
 
-const uploadFile = (drive: google.drive.v3.Drive, fileInfo: FileInfo, mimeType: string): Promise<google.drive.v3.File> => {
-  if (!fileInfo.data) {
-    throw new Error('no data provided')
-  }
-
+const uploadFile = (drive: google.drive.v3.Drive, fileInfo: FileInfo, data: Buffer, mimeType: string): Promise<google.drive.v3.File> => {
   return new Promise<google.drive.v3.File>((resolve, reject) => {
     const resource: Partial<google.drive.v3.File> = {
       name: fileInfo.name,
@@ -155,15 +150,15 @@ const uploadFile = (drive: google.drive.v3.Drive, fileInfo: FileInfo, mimeType: 
         if (err) {
           reject(err)
         } else {
-          if (parseFloat(file.size) !== fileInfo.data!.length) {
-            console.warn(`file ${fileInfo.name} (id ${file.id}) is ${file.size} on server but should be ${fileInfo.data!.length}!`)
+          if (parseFloat(file.size) !== data.length) {
+            console.warn(`file ${fileInfo.name} (id ${file.id}) is ${file.size} on server but should be ${data.length}!`)
           }
           resolve(file)
         }
       }
     )
 
-    body.write(fileInfo.data!)
+    body.write(data)
     body.end()
   })
 }
@@ -210,8 +205,36 @@ const toFileInfo = (file: google.drive.v3.File): FileInfo => ({
   size: parseFloat(file.size)
 })
 
-const mkdir = async (token: Token, dir: FileInfo): Promise<FileInfo> => {
-  const drive = getDrive(token)
+const createConfig = (): Promise<SyncConnectionToken> => {
+  return new Promise<SyncConnectionToken>(async (resolve, reject) => {
+    const token = await oauthGetAccessToken(googleDriveConfig, googleDriveOptions)
+    resolve({
+      provider: googleDriveSyncId,
+      token,
+      tokenTime: new Date().valueOf()
+    })
+  })
+}
+
+const configNeedsUpdate = (config: SyncConnectionToken): boolean => {
+  return SyncConnection.isExpired(config)
+}
+
+const updateConfig = async (config: SyncConnectionToken): Promise<SyncConnectionToken> => {
+  const token = await oauthRefreshToken(googleDriveConfig, config.token.refresh_token)
+  return { ...config, token, tokenTime: new Date().valueOf() }
+}
+
+const drawConfig = (config: SyncConnectionToken) => {
+  return <span>
+    <FormattedMessage {...messages.expires}/>
+    {' '}
+    <FormattedRelative value={SyncConnection.expiration(config).valueOf()}/>
+  </span>
+}
+
+const mkdir = async (config: SyncConnectionToken, dir: FileInfo): Promise<FileInfo> => {
+  const drive = getDrive(config)
   const files = await findFiles(drive, {name: dir.name, isFolder: true, parent: dir.folder})
   if (files.length) {
     return toFileInfo(files[0])
@@ -220,34 +243,36 @@ const mkdir = async (token: Token, dir: FileInfo): Promise<FileInfo> => {
   return toFileInfo(folder)
 }
 
-const list = async (token: Token, folderId?: string): Promise<FileInfo[]> => {
-  const drive = getDrive(token)
+const list = async (config: SyncConnectionToken, folderId?: string): Promise<FileInfo[]> => {
+  const drive = getDrive(config)
   const files = await findFiles(drive, {parent: folderId})
   return files.map(toFileInfo)
 }
 
-const get = async (token: Token, id: string): Promise<Buffer> => {
-  const drive = getDrive(token)
+const get = async (config: SyncConnectionToken, id: string): Promise<Buffer> => {
+  const drive = getDrive(config)
   return await downloadFile(drive, id)
 }
 
-const put = async (token: Token, fileInfo: FileInfo): Promise<FileInfo> => {
-  const drive = getDrive(token)
-  const file = await uploadFile(drive, fileInfo, mimeTypes.binary)
+const put = async (config: SyncConnectionToken, fileInfo: FileInfo, data: Buffer): Promise<FileInfo> => {
+  const drive = getDrive(config)
+  const file = await uploadFile(drive, fileInfo, data, mimeTypes.binary)
   return toFileInfo(file)
 }
 
-const del = async (token: Token, id: string): Promise<void> => {
-  const drive = getDrive(token)
+const del = async (config: SyncConnectionToken, id: string): Promise<void> => {
+  const drive = getDrive(config)
   await deleteFile(drive, id)
 }
 
-export const googleDriveSyncProvider: SyncProvider = {
-  id: 'GoogleDrive',
+export const googleDriveSyncProvider: SyncProvider<SyncConnectionToken> = {
+  id: googleDriveSyncId,
   title: messages.title,
 
-  getToken,
-  refreshToken,
+  createConfig,
+  configNeedsUpdate,
+  updateConfig,
+  drawConfig,
 
   mkdir,
   list,

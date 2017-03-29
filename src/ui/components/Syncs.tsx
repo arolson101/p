@@ -1,10 +1,10 @@
 const autobind = require('autobind-decorator')
 import * as React from 'react'
 import { Panel, Button, PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
-import { injectIntl, FormattedMessage, defineMessages, FormattedRelative } from 'react-intl'
+import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { SyncConnection } from '../../docs/index'
-import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
+import { AppState, mapDispatchToProps, pushChanges, deleteDoc } from '../../state/index'
 import { SyncProvider, syncProviders } from '../../sync/index'
 // import { Favico } from './forms/Favico'
 import { IntlProps } from './props'
@@ -21,10 +21,6 @@ const messages = defineMessages({
   addSync: {
     id: 'Syncs.addSync',
     defaultMessage: 'Add Sync'
-  },
-  expires: {
-    id: 'Syncs.expires',
-    defaultMessage: 'Expires'
   },
 })
 
@@ -66,14 +62,11 @@ export class Syncs extends React.Component<AllProps, {}> {
             }
           >
             <ListGroup fill>
-              {syncs.filter(sync => sync.provider === provider.id).map((sync, index) =>
+              {syncs.filter(sync => sync.provider === provider.id).map((sync) =>
                 <ListGroupItem key={sync.provider}>
-                  <FormattedMessage {...messages.expires}/>
-                  {' '}
-                  <FormattedRelative value={SyncConnection.expiration(sync).valueOf()}/>
+                  {provider.drawConfig(sync)}
                   {/*<Button onClick={() => test(sync.token)}>test</Button>*/}
-                  <Button onClick={() => this.refreshToken(provider, sync, index)}>refresh</Button>
-                  <Button className='pull-right' onClick={() => this.removeSync(index)}>remove</Button>
+                  <Button className='pull-right' onClick={() => this.removeSync(sync)}>remove</Button>
                 </ListGroupItem>
               )}
               <ListGroupItem>
@@ -91,15 +84,11 @@ export class Syncs extends React.Component<AllProps, {}> {
   }
 
   @autobind
-  async addSync (provider: SyncProvider) {
+  async addSync (provider: SyncProvider<any>) {
     try {
       const { pushChanges, lang } = this.props
-      const token = await provider.getToken()
-      const sync = SyncConnection.doc({
-        provider: provider.id,
-        token,
-        tokenTime: new Date().valueOf()
-      }, lang)
+      const config = await provider.createConfig()
+      const sync = SyncConnection.doc(config, lang)
       pushChanges({docs: [sync]})
     } catch (err) {
       console.log(err)
@@ -107,31 +96,10 @@ export class Syncs extends React.Component<AllProps, {}> {
   }
 
   @autobind
-  async removeSync (index: number) {
-    // TODO
-    // try {
-    //   const { pushChanges, syncs } = this.props
-    //   const nextSyncs = update(syncs, { connections: { $splice: [[index, 1]] } })
-    //   pushChanges({docs: [nextSyncs]})
-    // } catch (err) {
-    //   console.log(err)
-    // }
-  }
-
-  @autobind
-  async refreshToken (provider: SyncProvider, sync: SyncConnection.Doc, index: number) {
+  async removeSync (provider: SyncConnection.Doc) {
     try {
       const { pushChanges } = this.props
-      const token = await provider.refreshToken(sync.token)
-      const nextSync = {
-        ...sync,
-        token: {
-          ...sync.token,
-          ...token
-        },
-        tokenTime: new Date().valueOf()
-      }
-      pushChanges({docs: [nextSync]})
+      pushChanges({docs: [deleteDoc(provider)]})
     } catch (err) {
       console.log(err)
     }

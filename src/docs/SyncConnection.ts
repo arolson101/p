@@ -2,11 +2,18 @@ import * as docURI from 'docuri'
 import * as moment from 'moment'
 import { makeid, Lookup, Token } from '../util/index'
 
-export interface SyncConnection {
+export interface SyncConnectionToken {
   provider: string
   token: Token
   tokenTime: number
 }
+
+export interface SyncConnectionFS {
+  provider: string
+  root: string
+}
+
+export type SyncConnection = SyncConnectionToken | SyncConnectionFS
 
 export namespace SyncConnection {
   export type Id = ':syncId' | 'create' | makeid
@@ -52,12 +59,12 @@ export namespace SyncConnection {
     return { _id, ...sync }
   }
 
-  export const expiration = (sync: SyncConnection): Date => {
+  export const expiration = (sync: SyncConnectionToken): Date => {
     const expires = moment(sync.tokenTime).add(sync.token.expires_in, 'seconds')
     return expires.toDate()
   }
 
-  export const isExpired = (sync: SyncConnection): boolean => {
+  export const isExpired = (sync: SyncConnectionToken): boolean => {
     const expires = expiration(sync)
     return moment().isAfter(expires)
   }

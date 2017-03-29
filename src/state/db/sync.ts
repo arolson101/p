@@ -44,7 +44,7 @@ export const dumpNextSequence = debounce(async (current: CurrentDb) => {
   }
 }, 1000, { trailing: true, leading: false })
 
-export const runSync = async (current: CurrentDb, provider: SyncProvider) => {
+export const runSync = async (current: CurrentDb, provider: SyncProvider<any>) => {
   // get index
   // attempt to decrypt with password; if doesn't decrypt, user has to fix
   // get key from index

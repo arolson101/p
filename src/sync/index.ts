@@ -1,28 +1,28 @@
 import { FormattedMessage } from 'react-intl'
-import { Token } from '../util/index'
 import { fsSyncProvider } from './fsSync'
 import { googleDriveSyncProvider } from './gdrive'
 
 export interface FileInfo {
   name: string
   id?: string
-  folder?: string
+  folder: string
   size?: number
-  data?: Buffer
 }
 
-export interface SyncProvider {
+export interface SyncProvider<Config> {
   id: string
   title: FormattedMessage.MessageDescriptor
 
-  getToken: () => Promise<Token>
-  refreshToken: (token: Token) => Promise<Token>
+  createConfig: () => Promise<Config>
+  configNeedsUpdate: (config: Config) => boolean
+  updateConfig: (config: Config) => Promise<Config>
+  drawConfig: (config: any) => React.ReactElement<any>
 
-  mkdir: (token: Token, dir: FileInfo) => Promise<FileInfo>
-  list: (token: Token, folderId?: string) => Promise<FileInfo[]>
-  get: (token: Token, id: string) => Promise<Buffer>
-  put: (token: Token, fileInfo: FileInfo) => Promise<FileInfo>
-  del: (token: Token, id: string) => Promise<void>
+  mkdir: (config: Config, dir: FileInfo) => Promise<FileInfo>
+  list: (config: Config, folderId?: string) => Promise<FileInfo[]>
+  get: (config: Config, id: string) => Promise<Buffer>
+  put: (config: Config, fileInfo: FileInfo, data: Buffer) => Promise<FileInfo>
+  del: (config: Config, id: string) => Promise<void>
 }
 
 export const syncProviders = [
