@@ -1,6 +1,7 @@
 import { FormattedMessage } from 'react-intl'
 import { fsSyncProvider } from './fsSync'
 import { googleDriveSyncProvider } from './gdrive'
+import { SyncConnection } from '../docs/index'
 
 export interface FileInfo {
   name: string
@@ -16,7 +17,7 @@ export interface SyncProvider<Config> {
   createConfig: () => Promise<Config>
   configNeedsUpdate: (config: Config) => boolean
   updateConfig: (config: Config) => Promise<Config>
-  drawConfig: (config: any) => React.ReactElement<any>
+  drawConfig: (config: Config) => React.ReactElement<any>
 
   mkdir: (config: Config, dir: FileInfo) => Promise<FileInfo>
   list: (config: Config, folderId?: string) => Promise<FileInfo[]>
@@ -25,7 +26,7 @@ export interface SyncProvider<Config> {
   del: (config: Config, id: string) => Promise<void>
 }
 
-export const syncProviders = [
+export const syncProviders: SyncProvider<SyncConnection>[] = [
   googleDriveSyncProvider,
   fsSyncProvider
 ]
