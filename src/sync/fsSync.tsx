@@ -10,7 +10,7 @@ const fsSyncId = 'fsSync'
 
 const messages = defineMessages({
   title: {
-    id: 'fsSync.message',
+    id: 'fsSync.title',
     defaultMessage: 'Filesystem'
   },
 })
@@ -23,7 +23,18 @@ const createConfig = (): Promise<SyncConnectionFS> => {
       } else if (fileNames.length !== 1) {
         reject(new Error('only one path should be returned'))
       } else {
-        resolve({provider: fsSyncId, root: fileNames[0]})
+        const config: SyncConnectionFS = {
+          provider: fsSyncId,
+          password: '',
+          state: 'ERR_PASSWORD',
+          message: '',
+          lastAttempt: 0,
+          lastSuccess: 0,
+          otherSyncs: {},
+
+          root: fileNames[0]
+        }
+        resolve(config)
       }
     })
   })
@@ -54,13 +65,13 @@ const mkdir = (config: SyncConnectionFS, dir: FileInfo): Promise<FileInfo> => {
   })
 }
 
-const getSize = async (file: string): Promise<number> => {
-  return new Promise<number>((resolve, reject) => {
+const stat = async (file: string): Promise<fs.Stats> => {
+  return new Promise<fs.Stats>((resolve, reject) => {
     fs.stat(file, (err, stats) => {
       if (err) {
         reject(err)
       } else {
-        resolve(stats.size)
+        resolve(stats)
       }
     })
   })
@@ -78,8 +89,10 @@ const list = (config: SyncConnectionFS, folderId?: string): Promise<FileInfo[]> 
         for (let file in files) {
           const id = path.join(config.root, folder, file)
           const name = path.basename(file)
-          const size = await getSize(file)
-          fileInfos.push({name, id, folder, size})
+          const stats = await stat(file)
+          const size = stats.size
+          const isFolder = stats.isDirectory()
+          fileInfos.push({name, id, folder, size, isFolder})
         }
         resolve(fileInfos)
       }

@@ -4,8 +4,13 @@ const debounce = require('lodash.debounce')
 const MemoryStream = require('memorystream') as new () => MemoryStream
 import * as path from 'path'
 import * as zlib from 'zlib'
+import { SyncConnection } from '../../docs/index'
+import { AppThunk, ThunkFcn, pushChanges } from '../../state/index'
+import { syncProviders } from '../../sync/index'
+import { KeyDoc, createKeyDoc, decryptMasterKeyDoc } from '../../util/index'
 import { CurrentDb } from './index'
-import { SyncProvider } from '../../sync/index'
+
+const indexFileName = 'p.key'
 
 const getLastDumpSeq = async (dir: string): Promise<number> => {
   return new Promise<number>((resolve, reject) => {
@@ -44,12 +49,141 @@ export const dumpNextSequence = debounce(async (current: CurrentDb) => {
   }
 }, 1000, { trailing: true, leading: false })
 
-export const runSync = async (current: CurrentDb, provider: SyncProvider<any>) => {
-  // get index
-  // attempt to decrypt with password; if doesn't decrypt, user has to fix
-  // get key from index
-  // get directories
-  // for every directory that's not ours, ingest new files
-  // get latest change from our folder
-  // write any changes made since then
-}
+type RunSyncArgs = { config: SyncConnection.Doc }
+export namespace runSync { export type Fcn = ThunkFcn<RunSyncArgs, void> }
+export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
+  async (dispatch, getState): Promise<void> => {
+    const { db: { current } } = getState()
+    if (!current) {
+      throw new Error('no open db')
+    }
+
+    const otherSyncs = { ...config.otherSyncs }
+    const finish = (state: SyncConnection.State, message?: string) => {
+      const lastAttempt = new Date().valueOf()
+      const doc = { ...config, state, message, lastAttempt, otherSyncs }
+      if (state === 'OK') {
+        doc.lastSuccess = lastAttempt
+      }
+      dispatch(pushChanges({docs: [doc]}))
+    }
+
+    try {
+      const provider = syncProviders.find(p => p.id === config.provider)
+      if (!provider) {
+        throw new Error(`unknown provider ${config.provider}`)
+      }
+
+      if (!config.password) {
+        finish('ERR_PASSWORD')
+        return
+      }
+
+      const fileInfos = await provider.list(config)
+
+      // get index file contents
+      let indexFileInfo = fileInfos.find(info => info.name === indexFileName)
+      let indexFileContents: KeyDoc
+
+      // create new index
+      if (!indexFileInfo) {
+        const doc = createKeyDoc(config.password)
+        indexFileContents = doc.doc
+        const indexFileBuffer = Buffer.from(JSON.stringify(indexFileContents))
+        // upload it
+        indexFileInfo = await provider.put(
+          config,
+          {
+            name: indexFileName,
+            folder: '',
+            isFolder: false
+          },
+          indexFileBuffer
+        )
+      }
+
+      if (!indexFileInfo.id) {
+        throw new Error(`index file ${indexFileName} does not have an id`)
+      }
+
+      // download existing index
+      const indexFileBuffer = await provider.get(config, indexFileInfo.id)
+      indexFileContents = JSON.parse(indexFileBuffer.toString())
+
+      // attempt to decrypt with password; if doesn't decrypt, user has to fix
+      let masterKey: Buffer
+      try {
+        masterKey = decryptMasterKeyDoc(indexFileContents, config.password)
+      } catch (err) {
+        finish('ERR_PASSWORD', err.message)
+        return
+      }
+
+      // for every directory that's not ours, ingest new files
+      const folders = fileInfos.filter(info => info.isFolder && info.name !== current.localInfo.localId)
+      for (let folder of folders) {
+        const folderFileInfos = await provider.list(config, folder.id)
+        folderFileInfos.sort((a, b) => parseFloat(a.name) - parseFloat(b.name))
+        const last = otherSyncs[folder.name] || -1
+        for (let file of folderFileInfos) {
+          const seq = parseFloat(file.name)
+          if (seq < last) {
+            console.log(`skipping import of ${folder.name}/${file.name} - older than ${last}`)
+            continue
+          }
+
+          if (!file.id) {
+            throw new Error(`file ${folder.name}/${file.name} does not have an id`)
+          }
+
+          const data = await provider.get(config, file.id)
+          const memStream = new MemoryStream()
+          memStream
+            .pipe(crypto.createDecipher('aes-256-ctr', masterKey))
+            .pipe(zlib.createUnzip())
+
+          const load = current.db.load(memStream)
+          memStream.write(data)
+          memStream.end()
+
+          await load
+          otherSyncs[folder.name] = seq
+        }
+      }
+
+      // create a folder for our dumps
+      let ourFolder = fileInfos.find(info => info.isFolder && info.name === current.localInfo.localId)
+      if (!ourFolder) {
+        const name = current.localInfo.localId
+        ourFolder = await provider.mkdir(config, { name, folder: '', isFolder: true })
+      }
+
+      if (!ourFolder.id) {
+        throw new Error(`folder ${ourFolder.name} does not have an id`)
+      }
+
+      // get latest change from our folder
+      const ourFiles = await provider.list(config, ourFolder.id)
+      const since = Math.max(0, ...ourFiles.map(file => parseFloat(file.name)))
+      let info = await current.db.info()
+
+      // write any changes made since then
+      if (info.update_seq !== since) {
+        const name = info.update_seq.toString()
+
+        const memStream = new MemoryStream()
+        memStream
+          .pipe(zlib.createGzip())
+          .pipe(crypto.createCipher('aes-256-ctr', new Buffer(current.localInfo.key, 'base64')))
+
+        await current.db.dump(memStream, {since})
+
+        const data = memStream.toBuffer()
+        await provider.put(config, { name, folder: ourFolder.id, isFolder: false }, data)
+      }
+
+      finish('OK')
+    } catch (err) {
+      finish('ERROR', err.message)
+    }
+  }

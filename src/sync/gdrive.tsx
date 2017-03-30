@@ -18,7 +18,7 @@ const google = require<google.GoogleApis>('googleapis')
 
 const messages = defineMessages({
   title: {
-    id: 'gdrive.message',
+    id: 'gdrive.title',
     defaultMessage: 'Google Drive'
   },
   expires: {
@@ -202,7 +202,8 @@ const toFileInfo = (file: google.drive.v3.File): FileInfo => ({
   name: file.name,
   id: file.id,
   folder: file.parents[0],
-  size: parseFloat(file.size)
+  size: parseFloat(file.size),
+  isFolder: (file.mimeType === mimeTypes.folder)
 })
 
 const createConfig = (): Promise<SyncConnectionToken> => {
@@ -210,6 +211,13 @@ const createConfig = (): Promise<SyncConnectionToken> => {
     const token = await oauthGetAccessToken(googleDriveConfig, googleDriveOptions)
     resolve({
       provider: googleDriveSyncId,
+      password: '',
+      state: 'ERR_PASSWORD',
+      message: '',
+      lastAttempt: 0,
+      lastSuccess: 0,
+      otherSyncs: {},
+
       token,
       tokenTime: new Date().valueOf()
     })

@@ -8,6 +8,7 @@ export interface FileInfo {
   id?: string
   folder: string
   size?: number
+  isFolder: boolean
 }
 
 export interface SyncProvider<Config> {

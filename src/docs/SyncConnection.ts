@@ -2,20 +2,30 @@ import * as docURI from 'docuri'
 import * as moment from 'moment'
 import { makeid, Lookup, Token } from '../util/index'
 
-export interface SyncConnectionToken {
+interface SyncConnectionBase {
   provider: string
+  password: string
+  state: SyncConnection.State
+  message: string
+  lastAttempt: number
+  lastSuccess: number
+  otherSyncs: { [otherId: string]: number }
+}
+
+export interface SyncConnectionToken extends SyncConnectionBase {
   token: Token
   tokenTime: number
 }
 
-export interface SyncConnectionFS {
-  provider: string
+export interface SyncConnectionFS extends SyncConnectionBase {
   root: string
 }
 
 export type SyncConnection = SyncConnectionToken | SyncConnectionFS
 
 export namespace SyncConnection {
+  export type State = 'ERR_PASSWORD' | 'ERROR' | 'OK'
+
   export type Id = ':syncId' | 'create' | makeid
   export type DocId = '_local/sync/:syncId'
   export type Doc = TDocument<SyncConnection, DocId>

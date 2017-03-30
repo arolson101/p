@@ -6,6 +6,7 @@ import { connect } from 'react-redux'
 import { SyncConnection } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges, deleteDoc } from '../../state/index'
 import { SyncProvider, syncProviders } from '../../sync/index'
+import { runSync } from '../../state/db/sync'
 // import { Favico } from './forms/Favico'
 import { IntlProps } from './props'
 
@@ -31,6 +32,7 @@ interface ConnectedProps {
 
 interface DispatchProps {
   pushChanges: pushChanges.Fcn
+  runSync: runSync.Fcn
 }
 
 type AllProps = ConnectedProps & DispatchProps & IntlProps
@@ -41,7 +43,7 @@ type AllProps = ConnectedProps & DispatchProps & IntlProps
     syncs: state.db.current!.view.syncs,
     lang: state.i18n.lang,
   }),
-  mapDispatchToProps<DispatchProps>({ pushChanges })
+  mapDispatchToProps<DispatchProps>({ pushChanges, runSync })
 ) as any)
 export class Syncs extends React.Component<AllProps, {}> {
   render () {
@@ -65,7 +67,7 @@ export class Syncs extends React.Component<AllProps, {}> {
               {syncs.filter(sync => sync.provider === provider.id).map((sync) =>
                 <ListGroupItem key={sync.provider}>
                   {provider.drawConfig(sync)}
-                  {/*<Button onClick={() => test(sync.token)}>test</Button>*/}
+                  <Button onClick={() => this.runSync(sync)}>run sync</Button>
                   <Button className='pull-right' onClick={() => this.removeSync(sync)}>remove</Button>
                 </ListGroupItem>
               )}
@@ -100,6 +102,16 @@ export class Syncs extends React.Component<AllProps, {}> {
     try {
       const { pushChanges } = this.props
       pushChanges({docs: [deleteDoc(provider)]})
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  @autobind
+  async runSync (provider: SyncConnection.Doc) {
+    try {
+      const { runSync } = this.props
+      runSync({config: provider})
     } catch (err) {
       console.log(err)
     }
