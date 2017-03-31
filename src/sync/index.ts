@@ -6,7 +6,7 @@ import { SyncConnection } from '../docs/index'
 export interface FileInfo {
   name: string
   id?: string
-  folder: string
+  folderId: string
   size?: number
   isFolder: boolean
 }

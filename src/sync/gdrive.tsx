@@ -132,7 +132,7 @@ const uploadFile = (drive: google.drive.v3.Drive, fileInfo: FileInfo, data: Buff
   return new Promise<google.drive.v3.File>((resolve, reject) => {
     const resource: Partial<google.drive.v3.File> = {
       name: fileInfo.name,
-      parents: fileInfo.folder ? [fileInfo.folder] : []
+      parents: fileInfo.folderId ? [fileInfo.folderId] : []
     }
     const body = new MemoryStream()
     const media = {
@@ -201,7 +201,7 @@ const deleteFile = (drive: google.drive.v3.Drive, fileId: string): Promise<void>
 const toFileInfo = (file: google.drive.v3.File): FileInfo => ({
   name: file.name,
   id: file.id,
-  folder: file.parents[0],
+  folderId: file.parents.length ? file.parents[0] : '',
   size: parseFloat(file.size),
   isFolder: (file.mimeType === mimeTypes.folder)
 })
@@ -243,11 +243,11 @@ const drawConfig = (config: SyncConnectionToken) => {
 
 const mkdir = async (config: SyncConnectionToken, dir: FileInfo): Promise<FileInfo> => {
   const drive = getDrive(config)
-  const files = await findFiles(drive, {name: dir.name, isFolder: true, parent: dir.folder})
+  const files = await findFiles(drive, {name: dir.name, isFolder: true, parent: dir.folderId})
   if (files.length) {
     return toFileInfo(files[0])
   }
-  const folder = await createFolderResource(drive, dir.name, dir.folder)
+  const folder = await createFolderResource(drive, dir.name, dir.folderId)
   return toFileInfo(folder)
 }
 

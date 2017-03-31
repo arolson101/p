@@ -219,7 +219,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     .on(
       'change',
       (change: PouchDB.ChangeInfo<{}>) => {
-        console.log('change: ', change)
+        // console.log('change: ', change)
         changeQueue.push(change)
         processChanges()
       }

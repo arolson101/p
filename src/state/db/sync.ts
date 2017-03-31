@@ -1,7 +1,7 @@
 import * as crypto from 'crypto'
 import * as fs from 'fs'
 const debounce = require('lodash.debounce')
-const MemoryStream = require('memorystream') as new () => MemoryStream
+const MemoryStream = require('memorystream') as new (arg?: any, opts?: any) => MemoryStream
 import * as path from 'path'
 import * as zlib from 'zlib'
 import { SyncConnection } from '../../docs/index'
@@ -74,6 +74,7 @@ export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
         throw new Error(`unknown provider ${config.provider}`)
       }
 
+      // config.password = 'asdf'
       if (!config.password) {
         finish('ERR_PASSWORD')
         return
@@ -95,7 +96,7 @@ export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
           config,
           {
             name: indexFileName,
-            folder: '',
+            folderId: '',
             isFolder: false
           },
           indexFileBuffer
@@ -137,16 +138,19 @@ export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
           }
 
           const data = await provider.get(config, file.id)
+          const out = new MemoryStream()
           const memStream = new MemoryStream()
           memStream
             .pipe(crypto.createDecipher('aes-256-ctr', masterKey))
-            .pipe(zlib.createUnzip())
+            .pipe(zlib.createGunzip())
+            .pipe(out)
 
-          const load = current.db.load(memStream)
+          const load = current.db.load(out)
           memStream.write(data)
           memStream.end()
 
           await load
+          console.log(`loaded {${folder.name}}/${file.name}`)
           otherSyncs[folder.name] = seq
         }
       }
@@ -155,7 +159,7 @@ export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
       let ourFolder = fileInfos.find(info => info.isFolder && info.name === current.localInfo.localId)
       if (!ourFolder) {
         const name = current.localInfo.localId
-        ourFolder = await provider.mkdir(config, { name, folder: '', isFolder: true })
+        ourFolder = await provider.mkdir(config, { name, folderId: '', isFolder: true })
       }
 
       if (!ourFolder.id) {
@@ -171,15 +175,22 @@ export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
       if (info.update_seq !== since) {
         const name = info.update_seq.toString()
 
+        const output = new MemoryStream(null, { readable : false, writable: true })
         const memStream = new MemoryStream()
         memStream
           .pipe(zlib.createGzip())
-          .pipe(crypto.createCipher('aes-256-ctr', new Buffer(current.localInfo.key, 'base64')))
+          .pipe(crypto.createCipher('aes-256-ctr', masterKey))
+          .pipe(output)
 
+        console.log(`dumping from ${since} to ${info.update_seq}...`)
         await current.db.dump(memStream, {since})
 
-        const data = memStream.toBuffer()
-        await provider.put(config, { name, folder: ourFolder.id, isFolder: false }, data)
+        console.log(`dump completed; waiting for stream to finish...`)
+        await finished(output)
+        const data = output.toBuffer()
+
+        console.log(`writing to {${ourFolder.id}}/${name}`)
+        await provider.put(config, { name, folderId: ourFolder.id, isFolder: false }, data)
       }
 
       finish('OK')
@@ -187,3 +198,14 @@ export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
       finish('ERROR', err.message)
     }
   }
+
+const finished = (stream: NodeJS.EventEmitter) => {
+  return new Promise<void>((resolve, reject) => {
+    stream.once('finish', () => {
+      resolve()
+    })
+    stream.once('error', (err: Error) => {
+      reject(err)
+    })
+  })
+}

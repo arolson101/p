@@ -54,12 +54,12 @@ const drawConfig = (config: SyncConnectionFS) => {
 
 const mkdir = (config: SyncConnectionFS, dir: FileInfo): Promise<FileInfo> => {
   return new Promise<FileInfo>((resolve, reject) => {
-    const id = path.join(config.root, dir.folder, dir.name)
+    const id = path.join(dir.folderId || config.root, dir.name)
     fs.mkdir(id, (err) => {
       if (err) {
         reject(err)
       } else {
-        resolve({...dir, id})
+        resolve({...dir, folderId: dir.folderId, id})
       }
     })
   })
@@ -79,20 +79,19 @@ const stat = async (file: string): Promise<fs.Stats> => {
 
 const list = (config: SyncConnectionFS, folderId?: string): Promise<FileInfo[]> => {
   return new Promise<FileInfo[]>((resolve, reject) => {
-    const folder = folderId || ''
-    const dir = path.join(config.root, folder)
+    const dir = folderId || config.root
     fs.readdir(dir, async (err, files) => {
       if (err) {
         reject(err)
       } else {
         const fileInfos: FileInfo[] = []
-        for (let file in files) {
-          const id = path.join(config.root, folder, file)
+        for (let file of files) {
+          const id = path.join(dir, file)
           const name = path.basename(file)
-          const stats = await stat(file)
+          const stats = await stat(id)
           const size = stats.size
           const isFolder = stats.isDirectory()
-          fileInfos.push({name, id, folder, size, isFolder})
+          fileInfos.push({name, id, folderId: dir, size, isFolder})
         }
         resolve(fileInfos)
       }
@@ -113,7 +112,7 @@ const get = (config: SyncConnectionFS, id: string): Promise<Buffer> => {
 }
 
 const put = (config: SyncConnectionFS, fileInfo: FileInfo, data: Buffer): Promise<FileInfo> => {
-  const id = path.join(config.root, fileInfo.folder, fileInfo.name)
+  const id = fileInfo.id || path.join(fileInfo.folderId || config.root, fileInfo.name)
   return new Promise<FileInfo>((resolve, reject) => {
     fs.writeFile(id, data, (err) => {
       if (err) {
