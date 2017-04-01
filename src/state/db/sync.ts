@@ -8,46 +8,46 @@ import { SyncConnection } from '../../docs/index'
 import { AppThunk, ThunkFcn, pushChanges } from '../../state/index'
 import { syncProviders } from '../../sync/index'
 import { KeyDoc, createKeyDoc, decryptMasterKeyDoc } from '../../util/index'
-import { CurrentDb } from './index'
+// import { CurrentDb } from './index'
 
 const indexFileName = 'p.key'
 
-const getLastDumpSeq = async (dir: string): Promise<number> => {
-  return new Promise<number>((resolve, reject) => {
-    fs.readdir(dir, (err, files) => {
-      if (err) {
-        reject(err)
-      }
-      const seqs = files
-        .map(parseFloat)
-        .filter(x => !isNaN(x))
-      resolve(Math.max(0, ...seqs))
-    })
-  })
-}
+// const getLastDumpSeq = async (dir: string): Promise<number> => {
+//   return new Promise<number>((resolve, reject) => {
+//     fs.readdir(dir, (err, files) => {
+//       if (err) {
+//         reject(err)
+//       }
+//       const seqs = files
+//         .map(parseFloat)
+//         .filter(x => !isNaN(x))
+//       resolve(Math.max(0, ...seqs))
+//     })
+//   })
+// }
 
-export const dumpNextSequence = debounce(async (current: CurrentDb) => {
-  const dir = path.join(current.syncFolder, current.localInfo.localId)
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir)
-  }
+// export const dumpNextSequence = debounce(async (current: CurrentDb) => {
+//   const dir = path.join(current.syncFolder, current.localInfo.localId)
+//   if (!fs.existsSync(dir)) {
+//     fs.mkdirSync(dir)
+//   }
 
-  const since = await getLastDumpSeq(dir)
-  let info = await current.db.info()
-  if (info.update_seq !== since) {
-    const fileName = path.join(dir, `${info.update_seq}`)
+//   const since = await getLastDumpSeq(dir)
+//   let info = await current.db.info()
+//   if (info.update_seq !== since) {
+//     const fileName = path.join(dir, `${info.update_seq}`)
 
-    const memStream = new MemoryStream()
-    memStream
-      .pipe(zlib.createGzip())
-      .pipe(crypto.createCipher('aes-256-ctr', new Buffer(current.localInfo.key, 'base64')))
-      .pipe(fs.createWriteStream(fileName))
+//     const memStream = new MemoryStream()
+//     memStream
+//       .pipe(zlib.createGzip())
+//       .pipe(crypto.createCipher('aes-256-ctr', new Buffer(current.localInfo.key, 'base64')))
+//       .pipe(fs.createWriteStream(fileName))
 
-    console.log(`dumping ${since} -> ${info.update_seq} to ${fileName}...`)
-    await current.db.dump(memStream, {since})
-    console.log(`done`)
-  }
-}, 1000, { trailing: true, leading: false })
+//     console.log(`dumping ${since} -> ${info.update_seq} to ${fileName}...`)
+//     await current.db.dump(memStream, {since})
+//     console.log(`done`)
+//   }
+// }, 1000, { trailing: true, leading: false })
 
 type RunSyncArgs = { config: SyncConnection.Doc }
 export namespace runSync { export type Fcn = ThunkFcn<RunSyncArgs, void> }

@@ -162,6 +162,10 @@ const encrypt = (data: any, opts: Options) => {
 
 const decrypt = (data: any, opts: Options) => {
   let parts = unserialize(data)
+  if (parts.length !== 2) {
+    return data
+  }
+
   let iv = parts[0]
   let ciphertext = parts[1]
 

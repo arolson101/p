@@ -13,7 +13,6 @@ import { DbInfo } from './DbInfo'
 import { incomingDelta, resolveConflict } from './delta'
 import { levelcrypt } from './levelcrypt'
 import { PouchDB } from './pouch'
-import { dumpNextSequence } from './sync'
 
 export { DbInfo }
 
@@ -31,7 +30,6 @@ interface LocalDbInfo {
 export interface CurrentDb {
   info: DbInfo
   localInfo: LocalDbInfo
-  syncFolder: string
   db: PouchDB.Database<any>
   changes: PouchDB.ChangeEmitter
   processChanges: (() => void) & _.Cancelable
@@ -189,10 +187,6 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       }
       await db.put(localInfo)
     }
-    const syncFolder = path.join(userData, `${info.name}.sync`)
-    if (!fs.existsSync(syncFolder)) {
-      fs.mkdirSync(syncFolder)
-    }
 
     const changeQueue: PouchDB.ChangeInfo<AnyDocument>[] = []
     const processChanges = debounce(
@@ -205,7 +199,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
           const nextView = DbView.buildView(nextCache)
           dispatch(dbChanges(nextView, nextCache))
 
-          dumpNextSequence(current)
+          // dumpNextSequence(current)
         }
       },
       1
@@ -214,14 +208,17 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     const changes = db.changes({
       since: 'now',
       live: true,
-      include_docs: true
+      include_docs: true,
+      conflicts: true
     })
     .on(
       'change',
       (change: PouchDB.ChangeInfo<{}>) => {
         // console.log('change: ', change)
-        changeQueue.push(change)
-        processChanges()
+        if (!change.deleted && change.doc && !resolveConflicts(db, change.doc)) {
+          changeQueue.push(change)
+          processChanges()
+        }
       }
     )
 
@@ -237,10 +234,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     }
     const allDocs = await db.allDocs({include_docs: true, conflicts: true})
     const docs: AnyDocument[] = allDocs.rows.map(row => row.doc!).concat(localDocs).concat(local)
-    const conflicts = docs.filter((doc: AnyDocument) => doc._conflicts && doc._conflicts.length > 0)
-    for (let conflict of conflicts) {
-      db.resolveConflicts(conflict, resolveConflict)
-    }
+    resolveConflicts(db, ...docs)
 
     const cache = DocCache.addDocsToCache(docs)
     const view = DbView.buildView(cache)
@@ -248,10 +242,19 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     console.timeEnd('load')
     console.log(`${cache.transactions.size} transactions`)
 
-    const current = { info, db, syncFolder, localInfo, changes, processChanges, view, cache }
+    const current = { info, db, localInfo, changes, processChanges, view, cache }
     dispatch(setDb(current))
-    dumpNextSequence(current)
+    // dumpNextSequence(current)
   }
+
+const resolveConflicts = (db: PouchDB.Database<any>, ...docs: AnyDocument[]): boolean => {
+  const conflicts = docs.filter((doc: AnyDocument) => doc._conflicts && doc._conflicts.length > 0)
+  for (let conflict of conflicts) {
+    // console.log('conflict: ', conflict)
+    db.resolveConflicts(conflict, resolveConflict)
+  }
+  return conflicts.length > 0
+}
 
 type DeleteDbArgs = { info: DbInfo }
 export namespace deleteDb { export type Fcn = DbFcn<DeleteDbArgs, void> }

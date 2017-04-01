@@ -91,7 +91,7 @@ export const resolveConflict = (a: VersionedDoc, b: VersionedDoc): VersionedDoc 
     $deltas
   }
 
-  console.log('resolved conflict: ', a, b, ret)
+  // console.log('resolved conflict: ', a, b, ret)
   return ret
 }
 
