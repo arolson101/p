@@ -9,6 +9,7 @@ import { SyncProvider, syncProviders } from '../../sync/index'
 import { runSync } from '../../state/db/sync'
 // import { Favico } from './forms/Favico'
 import { IntlProps } from './props'
+import { SyncStatus } from './SyncStatus'
 
 const messages = defineMessages({
   page: {
@@ -66,7 +67,7 @@ export class Syncs extends React.Component<AllProps, {}> {
             <ListGroup fill>
               {syncs.filter(sync => sync.provider === provider.id).map((sync) =>
                 <ListGroupItem key={sync.provider}>
-                  {provider.drawConfig(sync)}
+                  <SyncStatus sync={sync}/>
                   <Button onClick={() => this.runSync(sync)}>run sync</Button>
                   <Button className='pull-right' onClick={() => this.removeSync(sync)}>remove</Button>
                 </ListGroupItem>
