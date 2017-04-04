@@ -268,10 +268,28 @@ export const deleteDb: DbThunk<DeleteDbArgs, void> = ({info}) =>
     }
 
     // delete file
-    // TODO: this won't work with leveldb
-    fs.unlinkSync(info.location)
+    rimraf(info.location)
     dispatch(DbInit(undefined))
   }
+
+/**
+ * Remove directory recursively
+ * @param {string} dir_path
+ * @see http://stackoverflow.com/a/42505874/3027390
+ */
+const rimraf = (dirPath: string) => {
+  if (fs.existsSync(dirPath)) {
+    fs.readdirSync(dirPath).forEach(function(entry) {
+      const entryPath = path.join(dirPath, entry);
+      if (fs.lstatSync(entryPath).isDirectory()) {
+        rimraf(entryPath)
+      } else {
+        fs.unlinkSync(entryPath)
+      }
+    })
+    fs.rmdirSync(dirPath)
+  }
+}
 
 export namespace unloadDb { export type Fcn = () => void }
 export const unloadDb = (): SetDbAction => setDb(undefined)
