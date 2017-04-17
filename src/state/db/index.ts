@@ -215,7 +215,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       'change',
       (change: PouchDB.ChangeInfo<{}>) => {
         // console.log('change: ', change)
-        if (!change.deleted && change.doc && !resolveConflicts(db, change.doc)) {
+        if (!resolveConflicts(db, change.doc)) {
           changeQueue.push(change)
           processChanges()
         }
@@ -247,8 +247,8 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     // dumpNextSequence(current)
   }
 
-const resolveConflicts = (db: PouchDB.Database<any>, ...docs: AnyDocument[]): boolean => {
-  const conflicts = docs.filter((doc: AnyDocument) => doc._conflicts && doc._conflicts.length > 0)
+const resolveConflicts = (db: PouchDB.Database<any>, ...docs: (AnyDocument | undefined)[]): boolean => {
+  const conflicts = docs.filter((doc: AnyDocument | undefined) => doc && doc._conflicts && doc._conflicts.length > 0)
   for (let conflict of conflicts) {
     // console.log('conflict: ', conflict)
     db.resolveConflicts(conflict, resolveConflict)
@@ -279,8 +279,8 @@ export const deleteDb: DbThunk<DeleteDbArgs, void> = ({info}) =>
  */
 const rimraf = (dirPath: string) => {
   if (fs.existsSync(dirPath)) {
-    fs.readdirSync(dirPath).forEach(function(entry) {
-      const entryPath = path.join(dirPath, entry);
+    fs.readdirSync(dirPath).forEach(function (entry) {
+      const entryPath = path.join(dirPath, entry)
       if (fs.lstatSync(entryPath).isDirectory()) {
         rimraf(entryPath)
       } else {
