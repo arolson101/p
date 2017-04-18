@@ -26,7 +26,7 @@ const createConfig = (): Promise<SyncConnectionFS> => {
         const config: SyncConnectionFS = {
           provider: fsSyncId,
           password: '',
-          state: 'ERR_PASSWORD',
+          state: 'INIT',
           message: '',
           lastAttempt: 0,
           lastSuccess: 0,

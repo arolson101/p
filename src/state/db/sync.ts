@@ -128,7 +128,7 @@ export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
         const last = otherSyncs[folder.name] || -1
         for (let file of folderFileInfos) {
           const seq = parseFloat(file.name)
-          if (seq < last) {
+          if (seq <= last) {
             console.log(`skipping import of ${folder.name}/${file.name} - older than ${last}`)
             continue
           }

@@ -24,7 +24,7 @@ export interface SyncConnectionFS extends SyncConnectionBase {
 export type SyncConnection = SyncConnectionToken | SyncConnectionFS
 
 export namespace SyncConnection {
-  export type State = 'ERR_PASSWORD' | 'ERROR' | 'OK'
+  export type State = 'ERR_PASSWORD' | 'ERROR' | 'INIT' | 'OK'
 
   export type Id = ':syncId' | 'create' | makeid
   export type DocId = '_local/sync/:syncId'
@@ -67,6 +67,10 @@ export namespace SyncConnection {
       syncId: makeid(sync.provider, lang)
     })
     return { _id, ...sync }
+  }
+
+  export const inputPassword = (sync: SyncConnection.Doc, password: string): SyncConnection.Doc => {
+    return { ...sync, password, state: 'INIT' }
   }
 
   export const expiration = (sync: SyncConnectionToken): Date => {

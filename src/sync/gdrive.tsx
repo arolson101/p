@@ -212,7 +212,7 @@ const createConfig = (): Promise<SyncConnectionToken> => {
     resolve({
       provider: googleDriveSyncId,
       password: '',
-      state: 'ERR_PASSWORD',
+      state: 'INIT',
       message: '',
       lastAttempt: 0,
       lastSuccess: 0,
