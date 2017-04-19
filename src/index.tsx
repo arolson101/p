@@ -1,8 +1,6 @@
 import * as React from 'react'
 import { render } from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
-import { hashHistory } from 'react-router'
-import { syncHistoryWithStore } from 'react-router-redux'
 import { createAppStore, AppInit } from './state/index'
 import { App } from './ui/index'
 
@@ -20,9 +18,7 @@ require('react-select/dist/react-select.css')
 setObservableConfig(rxjsconfig)
 
 const main = (element: Element) => {
-  const history = hashHistory
-  const store = createAppStore(history)
-  const syncedHistory = syncHistoryWithStore(history, store)
+  const store = createAppStore()
 
   if (module.hot) {
     module.hot.accept('./ui', () => {
@@ -30,7 +26,7 @@ const main = (element: Element) => {
       const NextApp = require<any>('./ui').App
       render(
         <AppContainer>
-          <NextApp store={store} history={syncedHistory} />
+          <NextApp store={store} />
         </AppContainer>,
         element
       )
@@ -47,7 +43,7 @@ const main = (element: Element) => {
     render(
       (
         <AppContainer>
-          <App store={store} history={syncedHistory} />
+          <App store={store} />
         </AppContainer>
       ),
       element

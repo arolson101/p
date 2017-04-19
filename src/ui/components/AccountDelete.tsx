@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteAccount } from '../../actions/index'
@@ -50,6 +51,7 @@ const enhance = compose<AllProps, RouteProps<Account.Params>>(
   setDisplayName('AccountDelete'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
+  withRouter,
   connect<ConnectedProps, DispatchProps, RouteProps<Account.Params>>(
     (state: AppState, props) => ({
       bank: selectBank(state, props),
@@ -64,13 +66,13 @@ const enhance = compose<AllProps, RouteProps<Account.Params>>(
     } as UIState
   }),
   withProps<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Account.Params>>(
-    ({updateUI, bank, account, deleteAccount, router}) => ({
+    ({updateUI, bank, account, deleteAccount, history}) => ({
       confirmDelete: async () => {
         try {
           updateUI({error: undefined, deleting: true})
           await deleteAccount({bank, account})
           updateUI({deleting: false})
-          router.replace(DbInfo.to.home())
+          history.replace(DbInfo.to.home())
         } catch (err) {
           updateUI({error: err.message, deleting: false})
         }
@@ -80,7 +82,7 @@ const enhance = compose<AllProps, RouteProps<Account.Params>>(
 )
 
 export const AccountDelete = enhance(props => {
-  const { router, account, ui: { error, deleting }, confirmDelete } = props
+  const { history, account, ui: { error, deleting }, confirmDelete } = props
   return (
     <div>
       <p><FormattedMessage {...messages.text} values={{name: account.doc.name}}/></p>
@@ -92,7 +94,7 @@ export const AccountDelete = enhance(props => {
       <ButtonToolbar className='pull-right'>
         <Button
           type='button'
-          onClick={() => router.goBack()}
+          onClick={() => history.goBack()}
           disabled={deleting}
         >
           <FormattedMessage {...forms.cancel}/>

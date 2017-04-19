@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank } from '../../docs/index'
 import { AppState, FI, mapDispatchToProps, pushChanges } from '../../state/index'
@@ -22,10 +23,11 @@ interface EnhancedProps {
 
 type AllProps = EnhancedProps & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<AllProps, void>(
   setDisplayName('BankCreate'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
+  withRouter,
   connect<ConnectedProps, DispatchProps, RouteProps<Bank.Params>>(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
@@ -33,9 +35,9 @@ const enhance = compose<AllProps, {}>(
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
-  withProps<EnhancedProps, ConnectedProps & DispatchProps & RouteProps<Bank.Params>>(({router, pushChanges, filist, lang}) => ({
+  withProps<EnhancedProps, ConnectedProps & DispatchProps & RouteProps<Bank.Params>>(({history, pushChanges, filist, lang}) => ({
     onCancel: () => {
-      router.goBack()
+      history.goBack()
     },
     onSubmit: async (values: Values) => {
       const { fi, username, password, ...newValues } = values
@@ -52,7 +54,7 @@ const enhance = compose<AllProps, {}>(
       const doc = Bank.doc(bank, lang)
       await pushChanges({docs: [doc]})
 
-      router.replace(Bank.to.view(doc))
+      history.replace(Bank.to.view(doc))
     }
   }))
 )

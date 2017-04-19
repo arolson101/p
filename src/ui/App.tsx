@@ -1,6 +1,7 @@
 import * as History from 'history'
 import * as React from 'react'
-import { Router, Route, IndexRoute, RouteComponentProps } from 'react-router'
+import { RouteComponentProps } from 'react-router'
+import { Route, Redirect, HashRouter as Router } from 'react-router-dom'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
 import { DbInfo, Bank, Account, Transaction, Bill, Budget, SyncConnection } from '../docs/index'
@@ -8,7 +9,6 @@ import { AppState } from '../state/index'
 import * as Components from './components/index'
 
 interface Props {
-  history: History.History
   store: Redux.Store<AppState>
 }
 
@@ -16,8 +16,8 @@ interface ConnectedProps {
   locale: string
 }
 
-const NotFoundRoute = (props: RouteComponentProps<any, any> & React.Props<any>) => (
-  <div>not found: {props.location ? (props.location.query as any).pathname : '(no location)'}{props.children}</div>
+const NotFoundRoute = (props: RouteComponentProps<any> & React.Props<any>) => (
+  <div>not found: {props.location ? props.location.pathname : '(no location)'}{props.children}</div>
 )
 
 const requireAuth = (store: Redux.Store<AppState>) =>
@@ -33,16 +33,23 @@ const requireAuth = (store: Redux.Store<AppState>) =>
 
 class AppComponent extends React.Component<Props & ConnectedProps, any> {
   render () {
-    const { store, locale, history } = this.props
+    const { store, locale } = this.props
 
     return (
       <Provider store={store}>
         <IntlProvider locale={locale}>
-          <Router history={history}>
-            <Route path='/' component={Components.AppWindow}>
-              <IndexRoute component={Components.Login}/>
-              <Route onEnter={requireAuth(store)} component={Components.AppContent}>
-                <Route path={DbInfo.routes.home} component={Components.Home} />
+          <Router>
+            <Components.AppWindow>
+              <Route exact path='/' component={Components.Login}/>
+              <Route
+                render={
+                  props => store.getState().db.current ?
+                    <Components.AppContent/>
+                    :
+                    <Redirect to={{pathname: '/', state: { nextPathname: props.location }}} />
+                }
+              >
+                <Route path={DbInfo.routes.home} component={Components.Home as any} />
                 <Route path={Bank.routes.all} component={Components.Accounts} />
                 <Route path={Bank.routes.create} component={Components.BankCreate}/>
                 <Route path={Bank.routes.view} component={Components.BankView}/>
@@ -56,11 +63,11 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
                 <Route path={Bill.routes.all} component={Components.Bills}/>
                 <Route path={Bill.routes.create} component={Components.BillCreate}/>
                 <Route path={Bill.routes.edit} component={Components.BillEdit}/>
-                <Route path={Budget.routes.all} component={Components.Budgets}/>
-                <Route path={SyncConnection.routes.all} component={Components.Syncs}/>
+                <Route path={Budget.routes.all} component={Components.Budgets as any}/>
+                <Route path={SyncConnection.routes.all} component={Components.Syncs as any}/>
               </Route>
               <Route path='*' component={NotFoundRoute}/>
-            </Route>
+            </Components.AppWindow>
           </Router>
         </IntlProvider>
       </Provider>

@@ -1,6 +1,8 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
-import * as Helmet from 'react-helmet'
+import Helmet from 'react-helmet'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import { AppState } from '../../state/index'
 import * as Mac from '../macOS/index'
@@ -24,11 +26,12 @@ interface EnhancedProps {
 
 type AllProps = EnhancedProps & ConnectedProps & RouteProps<any>
 
-const enhance = compose<AllProps, RouteProps<any>>(
+const enhance = compose<AllProps, void>(
   setDisplayName('AppWindow'),
   onlyUpdateForPropTypes,
+  withRouter,
   setPropTypes({
-    location: React.PropTypes.object
+    location: PropTypes.object
   }),
   connect<ConnectedProps, {}, RouteProps<any>>(
     (state: AppState) => ({
@@ -36,13 +39,13 @@ const enhance = compose<AllProps, RouteProps<any>>(
     })
   ),
   withProps<EnhancedProps, ConnectedProps & RouteProps<any>>(
-    ({router}) => ({
+    ({history}) => ({
       onBack: () => {
-        router.goBack()
+        history.goBack()
       },
 
       onForward: () => {
-        router.goForward()
+        history.goForward()
       }
     })
   )

@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteBank } from '../../actions/index'
@@ -49,6 +50,7 @@ const enhance = compose<AllProps, RouteProps<Bank.Params>>(
   setDisplayName('BankDelete'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
+  withRouter,
   connect<ConnectedProps, DispatchProps, RouteProps<Bank.Params>>(
     (state: AppState, props) => ({
       bank: selectBank(state, props)
@@ -62,13 +64,13 @@ const enhance = compose<AllProps, RouteProps<Bank.Params>>(
     } as UIState
   }),
   withProps<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Bank.Params>>(
-    ({updateUI, bank, deleteBank, router}) => ({
+    ({updateUI, bank, deleteBank, history}) => ({
       confirmDelete: async () => {
         try {
           updateUI({error: undefined, deleting: true})
           await deleteBank({bank})
           updateUI({deleting: false})
-          router.replace(DbInfo.to.home())
+          history.replace(DbInfo.to.home())
         } catch (err) {
           updateUI({error: err.message, deleting: false})
         }
@@ -78,7 +80,7 @@ const enhance = compose<AllProps, RouteProps<Bank.Params>>(
 )
 
 export const BankDelete = enhance(props => {
-  const { router, bank, ui: { error, deleting }, confirmDelete } = props
+  const { history, bank, ui: { error, deleting }, confirmDelete } = props
   return (
     <div>
       <p><FormattedMessage {...messages.text} values={{name: bank.doc.name}}/></p>
@@ -90,7 +92,7 @@ export const BankDelete = enhance(props => {
       <ButtonToolbar className='pull-right'>
         <Button
           type='button'
-          onClick={() => router.goBack()}
+          onClick={() => history.goBack()}
           disabled={deleting}
         >
           <FormattedMessage {...forms.cancel}/>

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { PageHeader } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from '../../docs/index'
 import { AppState } from '../../state/index'
@@ -25,9 +25,9 @@ interface ConnectedProps {
   banks: Bank.View[]
 }
 
-type AllProps = React.Props<any> & ConnectedProps & RouteProps<any>
+type AllProps = React.Props<any> & ConnectedProps
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<AllProps, void>(
   setDisplayName('Accounts'),
   onlyUpdateForPropTypes,
   setPropTypes({}),

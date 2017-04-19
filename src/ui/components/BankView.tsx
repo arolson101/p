@@ -2,7 +2,8 @@ import * as React from 'react'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { Alert, PageHeader, ProgressBar, Table, Button, Modal } from 'react-bootstrap'
 import { connect } from 'react-redux'
-import { Link } from 'react-router'
+import { withRouter } from 'react-router'
+import { Link } from 'react-router-dom'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { getAccounts } from '../../actions/index'
@@ -88,11 +89,12 @@ type AllProps = EnhancedProps
   & IntlProps
   & RouteProps<Bank.Params>
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<AllProps, void>(
   setDisplayName('BankView'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
   injectIntl,
+  withRouter,
   connect<ConnectedProps, DispatchProps, IntlProps & RouteProps<Bank.Params>>(
     (state: AppState, props) => ({
       bank: selectBank(state, props)
@@ -137,7 +139,7 @@ const enhance = compose<AllProps, {}>(
 )
 
 export const BankView = enhance(props => {
-  const { bank, router, toggleShowAll, hideModal, getAccountList } = props
+  const { bank, history, toggleShowAll, hideModal, getAccountList } = props
   const { ui: { working, showModal, message, error, showAll } } = props
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -201,7 +203,7 @@ export const BankView = enhance(props => {
           </thead>
           <tbody>
             {bank.accounts.filter(account => account.doc.visible || showAll).map(account => account &&
-              <tr key={account.doc._id} href={router.createHref(Account.to.view(account.doc))}>
+              <tr key={account.doc._id} onClick={() => history.push(Account.to.view(account.doc))}>
                 {showAll &&
                   <td>{account.doc.visible}</td>
                 }

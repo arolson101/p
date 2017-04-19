@@ -38,7 +38,7 @@ interface DispatchProps {
 
 type AllProps = ConnectedProps & DispatchProps & IntlProps
 
-@injectIntl
+@(injectIntl as any)
 @(connect<ConnectedProps, DispatchProps, IntlProps>(
   (state: AppState): ConnectedProps => ({
     syncs: state.db.current!.view.syncs,

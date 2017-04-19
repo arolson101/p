@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from '../../docs/index'
 import { AppState, pushChanges, mapDispatchToProps } from '../../state/index'
@@ -23,10 +24,11 @@ interface EnhancedProps {
 
 type AllProps = EnhancedProps & ConnectedProps & DispatchProps & RouteProps<Account.Params>
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<AllProps, void>(
   setDisplayName('AccountEdit'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
+  withRouter,
   connect<ConnectedProps, DispatchProps, RouteProps<Account.Params>>(
     (state: AppState, props) => ({
       bank: selectBank(state, props),
@@ -34,9 +36,9 @@ const enhance = compose<AllProps, {}>(
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
-  withProps<EnhancedProps, ConnectedProps & DispatchProps & RouteProps<Account.Params>>(({router, pushChanges, account}) => ({
+  withProps<EnhancedProps, ConnectedProps & DispatchProps & RouteProps<Account.Params>>(({history, pushChanges, account}) => ({
     onCancel: () => {
-      router.goBack()
+      history.goBack()
     },
     onSubmit: async (values: Values) => {
       const doc: Account.Doc = {
@@ -45,7 +47,7 @@ const enhance = compose<AllProps, {}>(
       }
       await pushChanges({docs: [doc]})
 
-      router.replace(Account.to.view(doc))
+      history.replace(Account.to.view(doc))
     }
   }))
 )

@@ -40,4 +40,4 @@ export const TransactionView = compose(
       transaction: selectTransaction(state, props),
     })
   )
-)(TransactionViewComponent) as React.ComponentClass<{}>
+)(TransactionViewComponent) as React.ComponentClass<void>

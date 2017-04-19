@@ -1,6 +1,7 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { Button, OverlayTrigger, Popover } from 'react-bootstrap'
-import { SketchPicker } from 'react-color'
+import { SketchPicker, ColorResult } from 'react-color'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 
 import './ColorPicker.css'
@@ -14,7 +15,7 @@ interface Props extends ColorPickerProps {
 }
 
 interface EnhancedProps {
-  handleChange: (color: ReactColor.ColorResult) => void
+  handleChange: (color: ColorResult) => void
 }
 
 type AllProps = EnhancedProps & Props
@@ -23,11 +24,11 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('ColorPicker'),
   onlyUpdateForPropTypes,
   setPropTypes({
-    value: React.PropTypes.string,
-    onChange: React.PropTypes.func
+    value: PropTypes.string,
+    onChange: PropTypes.func
   } as PropTypes<ColorPickerProps>),
   withHandlers<AllProps, AllProps>({
-    handleChange: ({onChange}) => (color: ReactColor.ColorResult) => {
+    handleChange: ({onChange}) => (color: ColorResult) => {
       if (onChange) {
         onChange(color.hex)
       }

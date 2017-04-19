@@ -1,5 +1,6 @@
 const autobind = require('autobind-decorator')
 import * as moment from 'moment'
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { FormControl, FormControlProps } from 'react-bootstrap'
@@ -22,8 +23,8 @@ interface State {
 
 export class DatePicker extends React.Component<Props, State> {
   static propTypes: PropTypes<Props> = {
-    value: React.PropTypes.string.isRequired,
-    onChange: React.PropTypes.func.isRequired
+    value: PropTypes.string.isRequired,
+    onChange: PropTypes.func.isRequired
   }
 
   state: State = {

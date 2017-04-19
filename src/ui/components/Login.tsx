@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Grid, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { DbInfo } from '../../docs/index'
@@ -45,10 +46,11 @@ interface EnhancedProps {
 
 type AllProps = EnhancedProps & ReduxUIProps<UIState> & RouteProps<any> & ConnectedProps
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<AllProps, void>(
   setDisplayName('Login'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
+  withRouter,
   connect<ConnectedProps, {}, RouteProps<any>>(
     (state: AppState): ConnectedProps => ({
       files: state.db.files
@@ -65,8 +67,8 @@ const enhance = compose<AllProps, {}>(
     deselect: ({ updateUI }) => () => {
       updateUI({activeId: ''} as UIState)
     },
-    onLogin: ({router}) => (dbInfo: DbInfo) => {
-      router.push(DbInfo.to.home())
+    onLogin: ({history}) => (dbInfo: DbInfo) => {
+      history.push(DbInfo.to.home())
     }
   })
 )
@@ -74,7 +76,7 @@ const enhance = compose<AllProps, {}>(
 const activeProps = { bsStyle: 'info' }
 const createId = '_create'
 
-export const Login = enhance(({ files, router, ui: { activeId }, updateUI, deselect, onLogin }) => (
+export const Login = enhance(({ files, ui: { activeId }, updateUI, deselect, onLogin }) => (
   <Grid>
     <div style={{padding: 50}}>
       <ListGroup>

@@ -1,6 +1,8 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import * as R from 'ramda'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router'
 import * as SplitPane from 'react-split-pane'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
@@ -82,11 +84,12 @@ interface UIState {
 
 type AllProps = EnhancedProps & ConnectedProps & RouteProps<any> & ReduxUIProps<UIState>
 
-const enhance = compose<AllProps, RouteProps<any>>(
+const enhance = compose<AllProps, void>(
   setDisplayName('AppContent'),
   onlyUpdateForPropTypes,
+  withRouter,
   setPropTypes({
-    location: React.PropTypes.object
+    location: PropTypes.object
   }),
   connect<ConnectedProps, {}, RouteProps<any>>(
     (state: AppState): ConnectedProps => ({
@@ -124,7 +127,7 @@ const makeAccountList = R.pipe(
 )
 
 export const AppContent = enhance(props => {
-  const { banks, ThemeNav, children, location: { pathname }, router, onSizeChange, ui: { sidebarWidth } } = props
+  const { banks, ThemeNav, children, location: { pathname }, history, onSizeChange, ui: { sidebarWidth } } = props
 
   const accountGroup: NavGroup = { title: 'accounts', items: makeAccountList(banks) }
   const groups = [appGroup, accountGroup]
@@ -144,7 +147,7 @@ export const AppContent = enhance(props => {
       defaultSize={sidebarWidth}
       onChange={onSizeChange}
     >
-      <ThemeNav groups={groups} selectedId={selectedId} onClick={item => router.push(item.path)} />
+      <ThemeNav groups={groups} selectedId={selectedId} onClick={item => history.push(item.path)} />
       <div style={{
         backgroundColor: 'white',
         display: 'flex',

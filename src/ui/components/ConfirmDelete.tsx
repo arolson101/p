@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { Button, Modal } from 'react-bootstrap'
 import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
@@ -30,12 +31,12 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('ConfirmDelete'),
   onlyUpdateForPropTypes,
   setPropTypes({
-    component: React.PropTypes.func.isRequired,
-    event: React.PropTypes.string.isRequired,
-    title: React.PropTypes.string.isRequired,
-    body: React.PropTypes.string.isRequired,
-    confirm: React.PropTypes.string.isRequired,
-    onConfirmed: React.PropTypes.func.isRequired,
+    component: PropTypes.func.isRequired,
+    event: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+    confirm: PropTypes.string.isRequired,
+    onConfirmed: PropTypes.func.isRequired,
   } as PropTypes<Props>),
   ui<UIState, Props, {}>({
     state: {
