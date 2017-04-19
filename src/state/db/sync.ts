@@ -2,7 +2,6 @@ import * as crypto from 'crypto'
 import * as fs from 'fs'
 const debounce = require('lodash.debounce')
 const MemoryStream = require('memorystream') as new (arg?: any, opts?: any) => MemoryStream
-import * as path from 'path'
 import * as zlib from 'zlib'
 import { SyncConnection } from '../../docs/index'
 import { AppThunk, ThunkFcn, pushChanges } from '../../state/index'
@@ -74,7 +73,10 @@ export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
         throw new Error(`unknown provider ${config.provider}`)
       }
 
-      // config.password = 'asdf'
+      if (provider.configNeedsUpdate(config)) {
+        config = await provider.updateConfig(config) as SyncConnection.Doc
+      }
+
       if (!config.password) {
         finish('ERR_PASSWORD')
         return

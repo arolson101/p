@@ -14,7 +14,6 @@ interface SyncConnectionBase {
 
 export interface SyncConnectionToken extends SyncConnectionBase {
   token: Token
-  tokenTime: number
 }
 
 export interface SyncConnectionFS extends SyncConnectionBase {
@@ -73,13 +72,7 @@ export namespace SyncConnection {
     return { ...sync, password, state: 'INIT' }
   }
 
-  export const expiration = (sync: SyncConnectionToken): Date => {
-    const expires = moment(sync.tokenTime).add(sync.token.expires_in, 'seconds')
-    return expires.toDate()
-  }
-
   export const isExpired = (sync: SyncConnectionToken): boolean => {
-    const expires = expiration(sync)
-    return moment().isAfter(expires)
+    return moment().isAfter(sync.token.expiry_date)
   }
 }

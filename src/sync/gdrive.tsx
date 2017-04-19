@@ -16,6 +16,10 @@ const google = require<google.GoogleApis>('googleapis')
 //   drive: require</*google.drive.v3.Drive*/ any>('googleapis/apis/drive/v3')
 // }
 
+type GDrive = google.drive.v3.Drive
+type GFileList = google.drive.v3.FileList
+type GFile = google.drive.v3.File
+
 const messages = defineMessages({
   title: {
     id: 'gdrive.title',
@@ -50,7 +54,7 @@ const getDrive = (config: SyncConnectionToken) => {
   const auth = new google.auth.OAuth2()
   auth.setCredentials(config.token)
 
-  return google.drive({version: 'v3', auth}) as google.drive.v3.Drive
+  return google.drive({version: 'v3', auth}) as GDrive
 }
 
 interface Query {
@@ -59,11 +63,11 @@ interface Query {
   isFolder?: boolean
 }
 
-const fileQuery = (drive: google.drive.v3.Drive, query: Query, pageToken: string | null = null): Promise<google.drive.v3.FileList> => {
-  return new Promise<google.drive.v3.FileList>((resolve, reject) => {
+const fileQuery = (drive: GDrive, query: Query, pageToken: string | null = null) => {
+  return new Promise<GFileList>((resolve, reject) => {
     const qs: string[] = []
     if (query.name) {
-      qs.push(`name = ${query.name}`)
+      qs.push(`name = '${query.name}'`)
     }
     if (query.isFolder) {
       qs.push(`mimeType = '${mimeTypes.folder}'`)
@@ -76,7 +80,7 @@ const fileQuery = (drive: google.drive.v3.Drive, query: Query, pageToken: string
       {
         q,
         spaces: 'appDataFolder',
-        fields: 'nextPageToken, files(name, id, size)',
+        fields: 'nextPageToken, files(name, id, size, parents, mimeType)',
         pageToken
       } as any,
       (err, res) => {
@@ -90,26 +94,23 @@ const fileQuery = (drive: google.drive.v3.Drive, query: Query, pageToken: string
   })
 }
 
-const findFiles = async (drive: google.drive.v3.Drive, query: Query): Promise<google.drive.v3.File[]> => {
-  let files: google.drive.v3.File[] = []
+const findFiles = async (drive: GDrive, query: Query): Promise<GFile[]> => {
+  let files: GFile[] = []
   let nextPageToken = null
   do {
-    const res: google.drive.v3.FileList = await fileQuery(drive, query, nextPageToken)
+    const res: GFileList = await fileQuery(drive, query, nextPageToken)
     files = [...files, ...res.files]
     nextPageToken = res.nextPageToken
   } while (nextPageToken)
   return files
 }
 
-const createFolderResource = (drive: google.drive.v3.Drive, name: string, parent?: string): Promise<google.drive.v3.File> => {
-  return new Promise<google.drive.v3.File>((resolve, reject) => {
-    const resource: Partial<google.drive.v3.File> = {
+const createFolderResource = (drive: GDrive, name: string, parent?: string): Promise<GFile> => {
+  return new Promise<GFile>((resolve, reject) => {
+    const resource: Partial<GFile> = {
       name,
-      mimeType: mimeTypes.folder
-    }
-
-    if (parent) {
-      resource.parents = [parent]
+      mimeType: mimeTypes.folder,
+      parents: [parent ? parent : 'appDataFolder']
     }
 
     drive.files.create(
@@ -128,12 +129,13 @@ const createFolderResource = (drive: google.drive.v3.Drive, name: string, parent
   })
 }
 
-const uploadFile = (drive: google.drive.v3.Drive, fileInfo: FileInfo, data: Buffer, mimeType: string): Promise<google.drive.v3.File> => {
-  return new Promise<google.drive.v3.File>((resolve, reject) => {
-    const resource: Partial<google.drive.v3.File> = {
+const uploadFile = (drive: GDrive, fileInfo: FileInfo, data: Buffer, mimeType: string): Promise<GFile> => {
+  return new Promise<GFile>((resolve, reject) => {
+    const resource: Partial<GFile> = {
       name: fileInfo.name,
-      parents: fileInfo.folderId ? [fileInfo.folderId] : []
+      parents: [fileInfo.folderId ? fileInfo.folderId : 'appDataFolder']
     }
+
     const body = new MemoryStream()
     const media = {
       mimeType,
@@ -163,7 +165,7 @@ const uploadFile = (drive: google.drive.v3.Drive, fileInfo: FileInfo, data: Buff
   })
 }
 
-const downloadFile = (drive: google.drive.v3.Drive, fileId: string): Promise<Buffer> => {
+const downloadFile = (drive: GDrive, fileId: string): Promise<Buffer> => {
   return new Promise<Buffer>((resolve, reject) => {
     const req = drive.files.get(
       {fileId, alt: 'media'} as any,
@@ -181,7 +183,7 @@ const downloadFile = (drive: google.drive.v3.Drive, fileId: string): Promise<Buf
   })
 }
 
-const deleteFile = (drive: google.drive.v3.Drive, fileId: string): Promise<void> => {
+const deleteFile = (drive: GDrive, fileId: string): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
     drive.files.delete(
       {
@@ -198,10 +200,10 @@ const deleteFile = (drive: google.drive.v3.Drive, fileId: string): Promise<void>
   })
 }
 
-const toFileInfo = (file: google.drive.v3.File): FileInfo => ({
+const toFileInfo = (file: GFile): FileInfo => ({
   name: file.name,
   id: file.id,
-  folderId: file.parents.length ? file.parents[0] : '',
+  folderId: file.parents && file.parents.length ? file.parents[0] : '',
   size: parseFloat(file.size),
   isFolder: (file.mimeType === mimeTypes.folder)
 })
@@ -218,8 +220,7 @@ const createConfig = (): Promise<SyncConnectionToken> => {
       lastSuccess: 0,
       otherSyncs: {},
 
-      token,
-      tokenTime: new Date().valueOf()
+      token
     })
   })
 }
@@ -230,14 +231,14 @@ const configNeedsUpdate = (config: SyncConnectionToken): boolean => {
 
 const updateConfig = async (config: SyncConnectionToken): Promise<SyncConnectionToken> => {
   const token = await oauthRefreshToken(googleDriveConfig, config.token.refresh_token)
-  return { ...config, token, tokenTime: new Date().valueOf() }
+  return { ...config, token }
 }
 
 const drawConfig = (config: SyncConnectionToken) => {
   return <span>
     <FormattedMessage {...messages.expires}/>
     {' '}
-    <FormattedRelative value={SyncConnection.expiration(config).valueOf()}/>
+    <FormattedRelative value={config.token.expiry_date}/>
   </span>
 }
 

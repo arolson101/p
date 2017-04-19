@@ -17,7 +17,8 @@ export interface OAuthOptions {
 export interface Token {
   access_token: string
   refresh_token: string
-  expires_in: number
+  expires_in?: number
+  expiry_date: number
   token_type: string
 }
 
@@ -36,6 +37,7 @@ export const oauthGetAccessToken = async (config: OAuthConfig, options: OAuthOpt
       if (reply.error) {
         reject(new Error(reply.error))
       } else {
+        fixToken(reply.token)
         resolve(reply.token)
       }
     })
@@ -50,8 +52,16 @@ export const oauthRefreshToken = async (config: OAuthConfig, refreshToken: strin
       if (reply.error) {
         reject(new Error(reply.error))
       } else {
+        fixToken(reply.token)
         resolve(reply.token)
       }
     })
   })
+}
+
+const fixToken = (token: Token) => {
+  if (token && token.expires_in) {
+    token.expiry_date = ((new Date()).getTime() + (token.expires_in * 1000))
+    delete token.expires_in
+  }
 }
