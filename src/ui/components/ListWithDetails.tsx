@@ -113,7 +113,7 @@ export const ListWithDetails = enhance((props) => {
       </div>
       <div>
         {selectedItem &&
-          <DetailComponent {...props} item={selectedItem}/>
+          <DetailComponent item={selectedItem}/>
         }
       </div>
    </SplitPane>

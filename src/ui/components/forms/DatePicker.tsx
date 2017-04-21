@@ -41,7 +41,7 @@ export class DatePicker extends React.Component<Props, State> {
 
   render () {
     return <RDatePicker
-      {...this.props}
+      {...this.props as any}
       selected={this.state.startDate}
       onChange={this.onChange}
       customInput={

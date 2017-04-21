@@ -84,7 +84,7 @@ interface UIState {
 
 type AllProps = EnhancedProps & ConnectedProps & RouteProps<any> & ReduxUIProps<UIState>
 
-const enhance = compose<AllProps, void>(
+const enhance = compose<AllProps, {}>(
   setDisplayName('AppContent'),
   onlyUpdateForPropTypes,
   withRouter,

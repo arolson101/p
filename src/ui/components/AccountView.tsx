@@ -61,7 +61,7 @@ interface HandlerProps {
   deleteTransactions (): void
 }
 
-const enhance = compose<AllProps, void>(
+const enhance = compose<AllProps, RouteProps<Account.Params>>(
   setDisplayName('AccountViewComponent'),
   onlyUpdateForPropTypes,
   setPropTypes({

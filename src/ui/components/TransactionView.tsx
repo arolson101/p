@@ -25,7 +25,7 @@ export class TransactionViewComponent extends React.Component<AllProps, any> {
         <PageHeader>
           {transaction.doc.name}
         </PageHeader>
-        <TransactionDetail {...this.props} item={transaction}/>
+        <TransactionDetail item={transaction}/>
       </div>
     )
   }

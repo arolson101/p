@@ -26,7 +26,7 @@ interface EnhancedProps {
 
 type AllProps = EnhancedProps & ConnectedProps & RouteProps<any>
 
-const enhance = compose<AllProps, void>(
+const enhance = compose<AllProps, {}>(
   setDisplayName('AppWindow'),
   onlyUpdateForPropTypes,
   withRouter,

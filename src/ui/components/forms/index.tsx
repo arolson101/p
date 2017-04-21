@@ -82,7 +82,7 @@ const WrappedControl = <Name extends string, Props>(Component: any, componentPro
       if (input.onBlur) { input.onBlur(e) }
       if (props.onBlur) { props.onBlur(e) }
     }
-    let component = <Component {...componentProps} {...fieldProps} {...input} onChange={onChange} onBlur={onBlur}/>
+    let component = <Component {...componentProps as any} {...fieldProps} {...input} onChange={onChange} onBlur={onBlur}/>
     if (addonBefore || addonAfter) {
       component = (
         <RB.InputGroup>
