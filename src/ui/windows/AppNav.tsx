@@ -11,7 +11,7 @@ export const AppNav = ({groups, selectedId, onClick}: NavProps) =>
         <em style={{padding: 10}}><small>{group.title}</small></em>
         <Nav bsStyle='pills' stacked>
           {group.items.map(item =>
-            <NavItem key={item.title} active={item.id === selectedId} onClick={() => onClick(item)}>
+            <NavItem key={item.title} active={item.id === selectedId} href={history.createHref(item)}>
               <span className={item.icon + ' fa-fw fa-lg'} />
               {' '}
               {item.title}

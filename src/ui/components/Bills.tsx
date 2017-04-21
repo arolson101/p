@@ -84,7 +84,7 @@ export const Bills = enhance((props) => {
           <ListGroup fill>
           {group.bills.map(bill => {
             return (
-              <ListGroupItem key={bill.view.doc.name} onClick={() => history.push(Bill.to.edit(bill.view.doc))}>
+              <ListGroupItem key={bill.view.doc.name} href={history.createHref(Bill.to.edit(bill.view.doc))}>
                 <Grid fluid>
                   <Col xs={2}>
                     <FormattedDate value={bill.next} /><br/>
