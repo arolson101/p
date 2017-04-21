@@ -46,7 +46,7 @@ export const SettingsMenu = enhance((props) => {
           const { message, to, ...menuItemProps } = item
           const key = message ? (typeof message === 'string' ? message : message.id) : index
           if (to) {
-            menuItemProps.href = history.createHref(to)
+            menuItemProps.href = history.createHref({pathname: to})
           }
           return (
             <MenuItem key={key} {...menuItemProps}>

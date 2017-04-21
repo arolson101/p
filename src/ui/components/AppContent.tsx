@@ -93,7 +93,7 @@ const enhance = compose<AllProps, {}>(
   }),
   connect<ConnectedProps, {}, RouteProps<any>>(
     (state: AppState): ConnectedProps => ({
-      ThemeNav: state.sys.theme === 'macOS' ? Mac.AppNav : Win.AppNav,
+      ThemeNav: state.sys.theme === 'macOS' ? Mac.AppNav : Win.AppNav as any,
       banks: state.db.current!.view.banks
     })
   ),
@@ -140,6 +140,8 @@ export const AppContent = enhance(props => {
     })
   })
 
+  console.log('created href: ', history.createHref({pathname: '/a/b'}))
+
   return (
     <SplitPane
       split='vertical'
@@ -147,7 +149,11 @@ export const AppContent = enhance(props => {
       defaultSize={sidebarWidth}
       onChange={onSizeChange}
     >
-      <ThemeNav groups={groups} selectedId={selectedId} onClick={item => history.push(item.path)} />
+      <ThemeNav groups={groups} selectedId={selectedId} onClick={item => {
+        const href = history.createHref({pathname: item.path})
+        console.log('push: ', href)
+        history.push(href)
+      }} />
       <div style={{
         backgroundColor: 'white',
         display: 'flex',

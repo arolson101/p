@@ -203,7 +203,7 @@ export const BankView = enhance(props => {
           </thead>
           <tbody>
             {bank.accounts.filter(account => account.doc.visible || showAll).map(account => account &&
-              <tr key={account.doc._id} href={history.createHref(Account.to.view(account.doc))}>
+              <tr key={account.doc._id} href={history.createHref({pathname: Account.to.view(account.doc)})}>
                 {showAll &&
                   <td>{account.doc.visible}</td>
                 }
