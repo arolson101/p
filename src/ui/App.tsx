@@ -1,7 +1,7 @@
 import * as History from 'history'
 import * as React from 'react'
 import { RouteComponentProps } from 'react-router'
-import { Route, Redirect, HashRouter as Router } from 'react-router-dom'
+import { Route, Switch, Redirect, BrowserRouter as Router } from 'react-router-dom'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
 import { DbInfo, Bank, Account, Transaction, Bill, Budget, SyncConnection } from '../docs/index'
@@ -40,33 +40,36 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
         <IntlProvider locale={locale}>
           <Router>
             <Components.AppWindow>
-              <Route exact path='/' component={Components.Login}/>
-              <Route
-                render={
-                  props => store.getState().db.current ?
-                    <Components.AppContent/>
-                    :
-                    <Redirect to={{pathname: '/', state: { nextPathname: props.location }}} />
-                }
-              >
-                <Route path={DbInfo.routes.home} component={Components.Home as any} />
-                <Route path={Bank.routes.all} component={Components.Accounts} />
-                <Route path={Bank.routes.create} component={Components.BankCreate}/>
-                <Route path={Bank.routes.view} component={Components.BankView}/>
-                <Route path={Bank.routes.edit} component={Components.BankEdit}/>
-                <Route path={Bank.routes.del} component={Components.BankDelete}/>
-                <Route path={Account.routes.create} component={Components.AccountCreate}/>
-                <Route path={Account.routes.view} component={Components.AccountView}/>
-                <Route path={Account.routes.edit} component={Components.AccountEdit}/>
-                <Route path={Account.routes.del} component={Components.AccountDelete}/>
-                <Route path={Transaction.routes.view} component={Components.TransactionView}/>
-                <Route path={Bill.routes.all} component={Components.Bills}/>
-                <Route path={Bill.routes.create} component={Components.BillCreate}/>
-                <Route path={Bill.routes.edit} component={Components.BillEdit}/>
-                <Route path={Budget.routes.all} component={Components.Budgets as any}/>
-                <Route path={SyncConnection.routes.all} component={Components.Syncs as any}/>
-              </Route>
-              <Route path='*' component={NotFoundRoute}/>
+              <Switch>
+                <Route exact path='/' component={Components.Login}/>
+                <Route
+                  render={
+                    props => store.getState().db.current ?
+                      <Components.AppContent>
+                        <Route path={DbInfo.routes.home} component={Components.Home as any} />
+                        <Route path={Bank.routes.all} component={Components.Accounts} />
+                        <Route path={Bank.routes.create} component={Components.BankCreate}/>
+                        <Route path={Bank.routes.view} component={Components.BankView}/>
+                        <Route path={Bank.routes.edit} component={Components.BankEdit}/>
+                        <Route path={Bank.routes.del} component={Components.BankDelete}/>
+                        <Route path={Account.routes.create} component={Components.AccountCreate}/>
+                        <Route path={Account.routes.view} component={Components.AccountView}/>
+                        <Route path={Account.routes.edit} component={Components.AccountEdit}/>
+                        <Route path={Account.routes.del} component={Components.AccountDelete}/>
+                        <Route path={Transaction.routes.view} component={Components.TransactionView}/>
+                        <Route path={Bill.routes.all} component={Components.Bills}/>
+                        <Route path={Bill.routes.create} component={Components.BillCreate}/>
+                        <Route path={Bill.routes.edit} component={Components.BillEdit}/>
+                        <Route path={Budget.routes.all} component={Components.Budgets as any}/>
+                        <Route path={SyncConnection.routes.all} component={Components.Syncs as any}/>
+                      </Components.AppContent>
+                      :
+                      <Redirect to={{pathname: '/', state: { nextPathname: props.location }}} />
+                  }
+                >
+                </Route>
+                <Route path='*' component={NotFoundRoute}/>
+              </Switch>
             </Components.AppWindow>
           </Router>
         </IntlProvider>
