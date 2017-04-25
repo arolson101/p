@@ -53,6 +53,7 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
 
         for (let accountProfile of accountProfiles) {
           const accountName = accountProfile.getDescription()
+            || (accountProfiles.length === 1 ? bank.doc.name : `${bank.doc.name} ${accountProfiles.indexOf(accountProfile)}`)
           let accountType: Account.Type
           let accountNumber: string
           let bankid = ''
