@@ -24,12 +24,12 @@ interface EnhancedProps {
   onForward: () => void
 }
 
-type AllProps = EnhancedProps & ConnectedProps & RouteProps<any>
+type AllProps = EnhancedProps & ConnectedProps & RouteProps<any> & React.Props<any>
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('AppWindow'),
-  onlyUpdateForPropTypes,
   withRouter,
+  onlyUpdateForPropTypes,
   setPropTypes({
     location: PropTypes.object
   }),
@@ -51,9 +51,9 @@ const enhance = compose<AllProps, {}>(
   )
 )
 
-export const AppWindow = enhance(props => {
+export const AppWindow = enhance((props) => {
   const { ThemeWindow, onBack, onForward, children } = props
-  const title = 'p: ' + props.location.pathname + props.location.search
+  const title = 'p: ' + props.location.pathname + props.location.hash + props.location.search
 
   return <div>
     <Helmet

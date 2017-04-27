@@ -86,8 +86,8 @@ type AllProps = EnhancedProps & ConnectedProps & RouteProps<any> & ReduxUIProps<
 
 const enhance = compose<AllProps, {}>(
   setDisplayName('AppContent'),
-  onlyUpdateForPropTypes,
   withRouter,
+  onlyUpdateForPropTypes,
   setPropTypes({
     location: PropTypes.object
   }),
