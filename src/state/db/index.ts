@@ -5,6 +5,7 @@ const debounce = require('lodash.debounce')
 import * as path from 'path'
 import * as R from 'ramda'
 import { ThunkAction } from 'redux'
+import * as Rx from 'rxjs/Rx'
 const uuidV4 = require('uuid/v4') as () => string
 import { DocCache, DbView, LocalDoc } from '../../docs/index'
 import { wait } from '../../util/index'
@@ -31,8 +32,8 @@ export interface CurrentDb {
   info: DbInfo
   localInfo: LocalDbInfo
   db: PouchDB.Database<any>
-  changes: PouchDB.ChangeEmitter
-  processChanges: (() => void) & _.Cancelable
+  rx: Rx.Subject<DbChangeInfo>
+  changeProcessed$: Rx.Subject<string>
   view: DbView
   cache: DocCache
 }
@@ -50,6 +51,7 @@ const initialState: DbState = {
 type State = DbSlice
 type DbThunk<Args, Ret> = (args: Args) => ThunkAction<Promise<Ret>, State, any>
 type DbFcn<Args, Ret> = (args: Args) => Promise<Ret>
+type DbChangeInfo = PouchDB.ChangeInfo<{}>
 
 type DB_SET_CURRENT = 'db/setCurrent'
 const DB_SET_CURRENT = 'db/setCurrent'
@@ -116,11 +118,26 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
         LocalDoc.updateIds(current.cache.local, locals)
       )
     }
+
+    const allDocs = [
+      ...docs,
+      ...locals
+    ]
+
+    const docsProcessed = current.changeProcessed$
+      .scan(
+        (ids, id) => {
+          console.log(`docsProcessed: ${id}`)
+          // remove id from ids
+          return ids.filter(elt => elt !== id)
+        },
+        allDocs.map(doc => doc._id)
+      )
+      .takeWhile(arr => arr.length > 0)
+      .toPromise()
+
     try {
-      await current.db.bulkDocs([
-        ...docs,
-        ...locals
-      ])
+      await current.db.bulkDocs(allDocs)
     } catch (err) {
       if (err.name === 'conflict') {
         // TODO: resolve conflict
@@ -130,18 +147,20 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
         throw err
       }
     }
-    await wait(5)
 
     for (let local of locals) {
-      const change: PouchDB.ChangeInfo<any> = {
+      current.rx.next({
         id: local._id,
         changes: [local],
         doc: local,
         deleted: local._deleted,
         seq: 0
-      };
-      (current.changes as any).emit('change', change)
+      } as DbChangeInfo)
     }
+
+    console.log('waiting for docsProcessed')
+    await docsProcessed
+    console.log('docsProcessed')
   }
 
 export interface Deletion {
@@ -188,39 +207,42 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       await db.put(localInfo)
     }
 
-    const changeQueue: PouchDB.ChangeInfo<AnyDocument>[] = []
-    const processChanges = debounce(
-      () => {
-        const changes = changeQueue.splice(0)
-        const { db: { current } } = getState()
-        console.log(`processChanges: ${changes.length}`, changes)
-        if (current) {
-          const nextCache = DocCache.updateCache(current.cache, changes)
-          const nextView = DbView.buildView(nextCache)
-          dispatch(dbChanges(nextView, nextCache))
-
-          // dumpNextSequence(current)
-        }
-      },
-      1
-    )
-
-    const changes = db.changes({
-      since: 'now',
-      live: true,
-      include_docs: true,
-      conflicts: true
-    })
-    .on(
-      'change',
-      (change: PouchDB.ChangeInfo<{}>) => {
-        // console.log('change: ', change)
+    const observable: Rx.Observable<DbChangeInfo> = Rx.Observable.create((observer: Rx.Observer<DbChangeInfo>) => {
+      const changes = db.changes({
+        since: 'now',
+        live: true,
+        include_docs: true,
+        conflicts: true
+      })
+      .on('change', (change) => {
         if (!resolveConflicts(db, change.doc)) {
-          changeQueue.push(change)
-          processChanges()
+          observer.next(change)
         }
+      })
+      .on('complete', () => {
+        observer.complete()
+      })
+      return () => changes.cancel()
+    })
+
+    const rx: Rx.Subject<DbChangeInfo> = Rx.Subject.create(observable)
+    const changeProcessed$ = new Rx.Subject<string>()
+
+    const debounce$ = rx.debounceTime(10)
+
+    rx.buffer(debounce$).forEach((changeInfos) => {
+      const { db: { current } } = getState()
+      console.log(`processChanges: ${changeInfos.length}`, changeInfos)
+      if (current) {
+        const nextCache = DocCache.updateCache(current.cache, changeInfos)
+        const nextView = DbView.buildView(nextCache)
+        dispatch(dbChanges(nextView, nextCache))
+
+        changeInfos.forEach(ci => changeProcessed$.next(ci.id))
+
+        // dumpNextSequence(current)
       }
-    )
+    })
 
     console.time('load')
 
@@ -242,7 +264,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     console.timeEnd('load')
     console.log(`${cache.transactions.size} transactions`)
 
-    const current = { info, db, localInfo, changes, processChanges, view, cache }
+    const current = { info, db, localInfo, rx, changeProcessed$, view, cache }
     dispatch(setDb(current))
     // dumpNextSequence(current)
   }
@@ -307,8 +329,7 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
 
     case DB_SET_CURRENT:
       if (state.current) {
-        state.current.changes.cancel()
-        state.current.processChanges.cancel()
+        state.current.db.close()
       }
       return { ...state, current: action.current }
 
