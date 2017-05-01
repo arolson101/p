@@ -36,9 +36,10 @@ const getFaviconFromDocument = async (response: AxiosResponse): Promise<string> 
   if (!response.data) {
     throw new Error('no data')
   }
-  const currentUrl = (response as any).request._currentUrl as string
+  // https://github.com/mzabriskie/axios/issues/799
+  const currentUrl: string = (response as any).request.res.responseUrl
   if (!currentUrl) {
-    throw new Error('response.request._currentUrl was empty')
+    throw new Error('response.request.res.responseUrl was empty')
   }
   const parser = new DOMParser()
   const doc = parser.parseFromString(response.data.toString('utf8'), 'text/html')
@@ -65,7 +66,7 @@ const getFaviconFromDocument = async (response: AxiosResponse): Promise<string> 
 
 const getIconDataURI = async (url: string): Promise<string> => {
   const response = await httpGet(url)
-  if (response.status === 200 && response.data) {
+  if (response.status === 200 && response.data && (response.data as Buffer).length) {
     const type = response.headers['content-type'] as string
     if (!type.startsWith('text') && type.indexOf(' ') === -1) {
       // console.log(`${response.url} appears to be a good icon`)
