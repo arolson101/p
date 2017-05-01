@@ -45,7 +45,6 @@ const AuthComponent = withRouter(connect(
   })
 )(renderFcn))
 
-let x = 0
 class AppComponent extends React.Component<Props & ConnectedProps, any> {
   render () {
     const { store, locale } = this.props
@@ -58,22 +57,24 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
               <Route exact path='/' component={Components.Login}/>
               <AuthComponent>
                 <Components.AppContent>
-                  <Route path={'/' + DbInfo.routes.home} component={Components.Home as any} />
-                  <Route path={'/' + Bank.routes.all} component={Components.Accounts} />
-                  <Route path={'/' + Bank.routes.create} component={Components.BankCreate}/>
-                  <Route path={'/' + Bank.routes.view} component={Components.BankView}/>
-                  <Route path={'/' + Bank.routes.edit} component={Components.BankEdit}/>
-                  <Route path={'/' + Bank.routes.del} component={Components.BankDelete}/>
-                  <Route path={'/' + Account.routes.create} component={Components.AccountCreate}/>
-                  <Route path={'/' + Account.routes.view} component={Components.AccountView}/>
-                  <Route path={'/' + Account.routes.edit} component={Components.AccountEdit}/>
-                  <Route path={'/' + Account.routes.del} component={Components.AccountDelete}/>
-                  <Route path={'/' + Transaction.routes.view} component={Components.TransactionView}/>
-                  <Route path={'/' + Bill.routes.all} component={Components.Bills}/>
-                  <Route path={'/' + Bill.routes.create} component={Components.BillCreate}/>
-                  <Route path={'/' + Bill.routes.edit} component={Components.BillEdit}/>
-                  <Route path={'/' + Budget.routes.all} component={Components.Budgets as any}/>
-                  <Route path={'/' + SyncConnection.routes.all} component={Components.Syncs as any}/>
+                  <Switch>
+                    <Route exact path={'/' + DbInfo.routes.home} component={Components.Home as any} />
+                    <Route exact path={'/' + Bank.routes.all} component={Components.Accounts} />
+                    <Route exact path={'/' + Bank.routes.create} component={Components.BankCreate}/>
+                    <Route exact path={'/' + Bank.routes.view} component={Components.BankView}/>
+                    <Route exact path={'/' + Bank.routes.edit} component={Components.BankEdit}/>
+                    <Route exact path={'/' + Bank.routes.del} component={Components.BankDelete}/>
+                    <Route exact path={'/' + Account.routes.create} component={Components.AccountCreate}/>
+                    <Route exact path={'/' + Account.routes.view} component={Components.AccountView}/>
+                    <Route exact path={'/' + Account.routes.edit} component={Components.AccountEdit}/>
+                    <Route exact path={'/' + Account.routes.del} component={Components.AccountDelete}/>
+                    <Route exact path={'/' + Transaction.routes.view} component={Components.TransactionView}/>
+                    <Route exact path={'/' + Bill.routes.all} component={Components.Bills}/>
+                    <Route exact path={'/' + Bill.routes.create} component={Components.BillCreate}/>
+                    <Route exact path={'/' + Bill.routes.edit} component={Components.BillEdit}/>
+                    <Route exact path={'/' + Budget.routes.all} component={Components.Budgets as any}/>
+                    <Route exact path={'/' + SyncConnection.routes.all} component={Components.Syncs as any}/>
+                  </Switch>
                 </Components.AppContent>
               </AuthComponent>
             </Components.AppWindow>
