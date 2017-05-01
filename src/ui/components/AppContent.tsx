@@ -140,8 +140,6 @@ export const AppContent = enhance(props => {
     })
   })
 
-  console.log('created href: ', history.createHref({pathname: '/a/b'}))
-
   return (
     <SplitPane
       split='vertical'
@@ -149,11 +147,7 @@ export const AppContent = enhance(props => {
       defaultSize={sidebarWidth}
       onChange={onSizeChange}
     >
-      <ThemeNav groups={groups} selectedId={selectedId} onClick={item => {
-        const href = history.createHref({pathname: item.path})
-        console.log('push: ', href)
-        history.push(href)
-      }} />
+      <ThemeNav groups={groups} selectedId={selectedId} onClick={item => history.push(item.path)} />
       <div style={{
         backgroundColor: 'white',
         display: 'flex',

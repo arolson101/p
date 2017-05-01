@@ -46,7 +46,7 @@ interface EnhancedProps {
 
 type AllProps = EnhancedProps & ReduxUIProps<UIState> & RouteProps<any> & ConnectedProps
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<AllProps, RouteProps<any>>(
   setDisplayName('Login'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
