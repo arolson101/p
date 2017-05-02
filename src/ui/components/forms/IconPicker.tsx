@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { DropdownButton, MenuItem } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
@@ -35,8 +36,8 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('IconPicker'),
   onlyUpdateForPropTypes,
   setPropTypes({
-    value: React.PropTypes.string,
-    onChange: React.PropTypes.func
+    value: PropTypes.string,
+    onChange: PropTypes.func
   } as PropTypes<IconPickerProps>),
   withHandlers<EnhancedProps, Props>({
     onMenuItem: (props) => (eventKey: EventKey) => {

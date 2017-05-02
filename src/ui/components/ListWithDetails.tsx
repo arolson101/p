@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { FormattedDate, FormattedNumber } from 'react-intl'
@@ -41,10 +42,10 @@ const enhance = compose<AllProps, Props<any>>(
   withRouter,
   onlyUpdateForPropTypes,
   setPropTypes({
-    items: React.PropTypes.array.isRequired,
-    toView: React.PropTypes.func.isRequired,
-    columns: React.PropTypes.array.isRequired,
-    DetailComponent: React.PropTypes.func.isRequired,
+    items: PropTypes.array.isRequired,
+    toView: PropTypes.func.isRequired,
+    columns: PropTypes.array.isRequired,
+    DetailComponent: PropTypes.func.isRequired,
   } as PropTypes<Props<any>>),
   connect<ConnectedProps, {}, RouteProps<any> & Props<any>>(
     (state: AppState) => ({
@@ -112,7 +113,7 @@ export const ListWithDetails = enhance((props) => {
       </div>
       <div>
         {selectedItem &&
-          <DetailComponent {...props} item={selectedItem}/>
+          <DetailComponent item={selectedItem}/>
         }
       </div>
    </SplitPane>

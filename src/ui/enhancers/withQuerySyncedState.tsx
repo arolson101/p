@@ -8,17 +8,18 @@ export const withQuerySyncedState = <T extends {}>(name: string, setter: string,
       private setValue: ((value: T) => void) & _.Cancelable
       constructor (props?: any) {
         super(props)
-        const query = this.props.location.query as any
-        const queryValue = (name in query) ? convert(query[name]) : dflt
+        const query = new URLSearchParams(this.props.location.search)
+        const queryValue = query.has(name) ? convert(query.get(name)!) : dflt
         this.state = {
           [name]: queryValue
         }
+        query.set(name, queryValue as any)
         this.setValue = debounce(
           (value: T) => {
             this.setState({[name]: value}, () => {
-              const { location, router } = this.props
-              const nextLocation = { ...location, query: { ...location.query, ...this.state }}
-              router.replace(nextLocation)
+              const { location, history } = this.props
+              const nextLocation = { ...location, search: query.toString() }
+              history.replace(nextLocation)
             })
           },
           200,

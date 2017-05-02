@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { Button } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
@@ -52,7 +53,7 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
   onlyUpdateForPropTypes,
   setPropTypes({
-    sync: React.PropTypes.object,
+    sync: PropTypes.object,
   } as PropTypes<Props>),
   injectIntl,
   connect<ConnectedProps, DispatchProps, Props & IntlProps>(

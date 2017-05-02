@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Window, TitleBar } from 'react-desktop/windows'
-import * as Helmet from 'react-helmet'
+import Helmet from 'react-helmet'
 import { AppWindowProps } from '../components/AppWindow'
 import * as electron from 'electron'
 

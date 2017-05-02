@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Grid, Col, Panel, ListGroup, ListGroupItem, PageHeader } from 'react-bootstrap'
 import { injectIntl, FormattedDate, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { createSelector } from 'reselect'
 import { Bill } from '../../docs/index'
@@ -45,11 +46,12 @@ interface ConnectedProps {
 
 type AllProps = ConnectedProps & RouteProps<any> & IntlProps
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<AllProps, void>(
   setDisplayName('Bills'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
   injectIntl,
+  withRouter,
   connect<ConnectedProps, {}, {}>(
     (state: AppState): ConnectedProps => ({
       groups: selectBillDisplayGroups(state)
@@ -57,8 +59,8 @@ const enhance = compose<AllProps, {}>(
   )
 )
 
-export const Bills = enhance((props: AllProps) => {
-  const { groups, router } = props
+export const Bills = enhance((props) => {
+  const { groups, history } = props
 
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -82,7 +84,7 @@ export const Bills = enhance((props: AllProps) => {
           <ListGroup fill>
           {group.bills.map(bill => {
             return (
-              <ListGroupItem key={bill.view.doc.name} href={router.createHref(Bill.to.edit(bill.view.doc))}>
+              <ListGroupItem key={bill.view.doc.name} href={history.createHref({pathname: Bill.to.edit(bill.view.doc)})}>
                 <Grid fluid>
                   <Col xs={2}>
                     <FormattedDate value={bill.next} /><br/>

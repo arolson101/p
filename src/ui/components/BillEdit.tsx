@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router'
 import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bill } from '../../docs/index'
 import { AppState } from '../../state/index'
@@ -30,17 +31,18 @@ const enhance = compose<AllProps, RouteProps<Bill.Params>>(
   setDisplayName('BillEdit'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
+  withRouter,
   connect<ConnectedProps, {}, RouteProps<Bill.Params>>(
     (state: AppState, props): ConnectedProps => ({
       bill: selectBill(state, props)
     }),
   ),
   withHandlers<EnhancedProps, ConnectedProps & RouteProps<Bill.Params>>({
-    onCancel: ({router}) => () => {
-      router.goBack()
+    onCancel: ({history}) => () => {
+      history.goBack()
     },
-    onSubmit: ({router}) => async (doc: Bill.Doc) => {
-      router.replace(Bill.to.all())
+    onSubmit: ({history}) => async (doc: Bill.Doc) => {
+      history.replace(Bill.to.all())
     }
   })
 )

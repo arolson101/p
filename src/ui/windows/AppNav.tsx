@@ -1,10 +1,19 @@
 import * as React from 'react'
 import { Nav, NavItem } from 'react-bootstrap'
 import { FormattedNumber } from 'react-intl'
+import { withRouter } from 'react-router'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import { NavProps } from '../components/AppContent'
+import { RouteProps } from '../components/props'
 import './AppNav.css'
 
-export const AppNav = ({groups, selectedId, onClick}: NavProps) =>
+type AllProps = RouteProps<any> & NavProps
+
+const enhance = compose<AllProps, NavProps>(
+  withRouter,
+)
+
+export const AppNav = enhance(({groups, selectedId, onClick, history}) =>
   <div>
     {groups.map(group =>
       <div key={group.title}>
@@ -26,3 +35,4 @@ export const AppNav = ({groups, selectedId, onClick}: NavProps) =>
       </div>
     )}
   </div>
+)

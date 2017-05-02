@@ -1,5 +1,6 @@
 import * as moment from 'moment'
 import * as numeral from 'numeral'
+import * as PropTypes from 'prop-types'
 import * as R from 'ramda'
 import * as React from 'react'
 import { Collapse, DropdownButton, MenuItem, SelectCallback,
@@ -231,10 +232,10 @@ const enhance = compose<AllProps, Props>(
   setDisplayName(formName),
   onlyUpdateForPropTypes,
   setPropTypes({
-    title: React.PropTypes.object.isRequired,
-    edit: React.PropTypes.object,
-    onCancel: React.PropTypes.func.isRequired,
-    onSubmit: React.PropTypes.func.isRequired
+    title: PropTypes.object.isRequired,
+    edit: PropTypes.object,
+    onCancel: PropTypes.func.isRequired,
+    onSubmit: PropTypes.func.isRequired
   } as PropTypes<Props>),
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps & Props>(
@@ -492,7 +493,7 @@ export const BillForm = enhance((props) => {
               >
                 {['endCount', 'endDate'].map((et: EndType) =>
                   <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
-                    <FormattedMessage {...messages[et]} values={{interval}}/>
+                    <FormattedMessage {...messages[et]} values={{interval: interval.toString()}}/>
                   </MenuItem>
                 )}
               </DropdownButton>
@@ -516,7 +517,7 @@ export const BillForm = enhance((props) => {
               >
                 {['endCount', 'endDate'].map((et: EndType) =>
                   <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
-                    <FormattedMessage {...messages[et]} values={{interval}}/>
+                    <FormattedMessage {...messages[et]} values={{interval: interval.toString()}}/>
                   </MenuItem>
                 )}
               </DropdownButton>
@@ -540,11 +541,11 @@ export const BillForm = enhance((props) => {
               pullRight
               componentClass={InputGroup.Button}
               id='interval-addon-frequency'
-              title={formatMessage(messages[frequency], {interval})}
+              title={formatMessage(messages[frequency], {interval: interval.toString()})}
             >
               {['days', 'weeks', 'months', 'years'].map((cf: Frequency) =>
                 <MenuItem key={cf} eventKey={cf} onSelect={onFrequencyChange} active={frequency === cf}>
-                  <FormattedMessage {...messages[cf]} values={{interval}}/>
+                  <FormattedMessage {...messages[cf]} values={{interval: interval.toString()}}/>
                 </MenuItem>
               )}
             </DropdownButton>

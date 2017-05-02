@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as R from 'ramda'
 import * as React from 'react'
 import { PageHeader } from 'react-bootstrap'
@@ -60,12 +61,10 @@ interface HandlerProps {
   deleteTransactions (): void
 }
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<AllProps, RouteProps<Account.Params>>(
   setDisplayName('AccountViewComponent'),
   onlyUpdateForPropTypes,
-  setPropTypes({
-    params: React.PropTypes.object.isRequired
-  }),
+  setPropTypes({}),
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps & RouteProps<Account.Params>>(
     (state: AppState, props) => ({

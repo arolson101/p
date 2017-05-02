@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { Button } from 'react-bootstrap'
 import { defineMessages, FormattedDate } from 'react-intl'
@@ -45,7 +46,7 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('BillDetail'),
   onlyUpdateForPropTypes,
   setPropTypes({
-    item: React.PropTypes.object.isRequired
+    item: PropTypes.object.isRequired
   }),
   connect<{}, DispatchProps, Props>(
     (state: AppState) => ({}),

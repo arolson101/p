@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { ButtonGroup, DropdownButton, MenuItem, MenuItemProps } from 'react-bootstrap'
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl'
@@ -28,13 +29,13 @@ const enhance = compose<AllProps, Props>(
   withRouter,
   onlyUpdateForPropTypes,
   setPropTypes({
-    items: React.PropTypes.array.isRequired
+    items: PropTypes.array.isRequired
   } as PropTypes<Props>),
   injectIntl
 )
 
 export const SettingsMenu = enhance((props) => {
-  const { items, router, intl: { formatMessage } } = props
+  const { items, history, intl: { formatMessage } } = props
   return (
     <ButtonGroup className='pull-right'>
       <DropdownButton bsSize='small' id='in-action-menu' title={formatMessage(messages.options)} pullRight>
@@ -45,7 +46,7 @@ export const SettingsMenu = enhance((props) => {
           const { message, to, ...menuItemProps } = item
           const key = message ? (typeof message === 'string' ? message : message.id) : index
           if (to) {
-            menuItemProps.href = router.createHref(to)
+            menuItemProps.href = history.createHref({pathname: to})
           }
           return (
             <MenuItem key={key} {...menuItemProps}>

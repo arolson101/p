@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import { PageHeader, InputGroup, Button, ButtonToolbar } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
@@ -97,10 +98,10 @@ const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
   onlyUpdateForPropTypes,
   setPropTypes({
-    edit: React.PropTypes.object,
-    accounts: React.PropTypes.array.isRequired,
-    onSubmit: React.PropTypes.func.isRequired,
-    onCancel: React.PropTypes.func.isRequired
+    edit: PropTypes.object,
+    accounts: PropTypes.array.isRequired,
+    onSubmit: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired
   } as PropTypes<Props>),
   injectIntl,
   withProps<{}, Props & IntlProps>(({onSubmit}) => ({

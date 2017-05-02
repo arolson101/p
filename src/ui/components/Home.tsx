@@ -103,7 +103,7 @@ type AllProps = ConnectedProps & DispatchProps & IntlProps
 //   budgets: BudgetValues[]
 // }
 
-@injectIntl
+@(injectIntl as any)
 @(connect<ConnectedProps, DispatchProps, IntlProps>(
   (state: AppState): ConnectedProps => ({
     lang: state.i18n.lang,
@@ -300,7 +300,7 @@ const selectAccountData = createSelector(
           )
         )(bills)
 
-        console.log(account.doc.name, points)
+        // console.log(account.doc.name, points)
 
         return {
           name: account.doc.name,

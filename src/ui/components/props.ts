@@ -7,4 +7,4 @@ export interface IntlProps {
   intl: RI.InjectedIntl
 }
 
-export type RouteProps<Params> = RR.RouteComponentProps<Params, {}>
+export type RouteProps<Params> = RR.RouteComponentProps<Params>

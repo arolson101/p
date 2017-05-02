@@ -5,7 +5,7 @@ import * as React from 'react'
 import { Row, Grid, Col, Alert, Panel, InputGroup, ButtonToolbar, Button, PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 import { shallowEqual } from 'recompose'
 import { ReduxFormProps, FieldArray, FieldArrayParams, reduxForm, Fields } from 'redux-form'
@@ -100,7 +100,7 @@ interface Values {
 
 const { TextField } = typedFields<any>()
 
-@injectIntl
+@(injectIntl as any)
 @(connect<ConnectedProps, DispatchProps, IntlProps>(
   (state: AppState): ConnectedProps => ({
     lang: state.i18n.lang,

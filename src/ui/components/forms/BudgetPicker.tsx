@@ -62,7 +62,7 @@ export const BudgetPicker = enhance((props) => {
     <Select.Creatable
       matchProp='label'
       placeholder=''
-      {...props}
+      {...props as any}
     />
   )
 })

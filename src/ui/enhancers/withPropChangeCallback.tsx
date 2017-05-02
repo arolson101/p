@@ -12,7 +12,7 @@ export const withPropChangeCallback = <Props extends {}>(prop: keyof Props, call
         }
       }
       render () {
-        return <Component {...this.props}/>
+        return <Component {...this.props as any}/>
       }
     }
 
