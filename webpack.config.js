@@ -74,12 +74,13 @@ module.exports = {
 
   plugins: [
     new webpack.LoaderOptionsPlugin({
-        options: {
-            tslint: {
-                // emitErrors: true,
-                // failOnHint: true
-            }
+      options: {
+        tslint: {
+          // typeCheck: true,
+          // emitErrors: true,
+          // failOnHint: true
         }
+      }
     }),
 
     new CopyWebpackPlugin([
