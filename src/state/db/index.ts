@@ -1,14 +1,12 @@
 import * as crypto from 'crypto'
 import * as electron from 'electron'
 import * as fs from 'fs'
-const debounce = require('lodash.debounce')
 import * as path from 'path'
 import * as R from 'ramda'
 import { ThunkAction } from 'redux'
 import * as Rx from 'rxjs/Rx'
 const uuidV4 = require('uuid/v4') as () => string
 import { DocCache, DbView, LocalDoc } from '../../docs/index'
-import { wait } from '../../util/index'
 import { AppThunk } from '../index'
 import { DbInfo } from './DbInfo'
 import { incomingDelta, resolveConflict } from './delta'
@@ -119,25 +117,21 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
       )
     }
 
-    const allDocs = [
+    const docsToWrite = [
       ...docs,
       ...locals
     ]
 
     const docsProcessed = current.changeProcessed$
       .scan(
-        (ids, id) => {
-          console.log(`docsProcessed: ${id}`)
-          // remove id from ids
-          return ids.filter(elt => elt !== id)
-        },
-        allDocs.map(doc => doc._id)
+        (awaitingIds, id) => awaitingIds.filter(elt => elt !== id),
+        docsToWrite.map(doc => doc._id)
       )
       .takeWhile(arr => arr.length > 0)
       .toPromise()
 
     try {
-      await current.db.bulkDocs(allDocs)
+      await current.db.bulkDocs(docsToWrite)
     } catch (err) {
       if (err.name === 'conflict') {
         // TODO: resolve conflict
@@ -158,9 +152,7 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
       } as DbChangeInfo)
     }
 
-    console.log('waiting for docsProcessed')
     await docsProcessed
-    console.log('docsProcessed')
   }
 
 export interface Deletion {
@@ -222,15 +214,18 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       .on('complete', () => {
         observer.complete()
       })
-      return () => changes.cancel()
+      return () => {
+        changes.cancel()
+      }
     })
 
-    const rx: Rx.Subject<DbChangeInfo> = Rx.Subject.create(observable)
+    const rx = new Rx.Subject<DbChangeInfo>()
+    observable.subscribe(rx)
     const changeProcessed$ = new Rx.Subject<string>()
 
-    const debounce$ = rx.debounceTime(10)
-
-    rx.buffer(debounce$).forEach((changeInfos) => {
+    rx
+    .buffer(rx.debounceTime(10))
+    .forEach((changeInfos) => {
       const { db: { current } } = getState()
       console.log(`processChanges: ${changeInfos.length}`, changeInfos)
       if (current) {
