@@ -6,7 +6,6 @@ import './AppNav.css'
 
 export const AppNav = ({groups, selectedId, onClick}: NavProps) =>
   <ListView
-    disableRubberBand
     background='rgba(240,240,240,0.6)'
     style={{overflow: 'auto', paddingTop: 10}}
     className='appnav'
