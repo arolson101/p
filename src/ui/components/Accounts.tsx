@@ -7,7 +7,6 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'r
 import { Bank, Account } from '../../docs/index'
 import { AppState } from '../../state/index'
 import { Favico } from './forms/Favico'
-import { RouteProps } from './props'
 import { selectBanks } from './selectors'
 
 const messages = defineMessages({

@@ -6,9 +6,7 @@
     "experimentalDecorators": true,
 
     "noUnusedParameters": false,
-    "noUnusedLocals": false,
-
-    "skipLibCheck": true, // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/14324
+    "noUnusedLocals": false, // https://github.com/Microsoft/TypeScript/issues/11324
 
     "jsx": "react",
     "target": "es2017",

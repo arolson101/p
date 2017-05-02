@@ -1,4 +1,3 @@
-import * as PropTypes from 'prop-types'
 import * as R from 'ramda'
 import * as React from 'react'
 import { PageHeader } from 'react-bootstrap'

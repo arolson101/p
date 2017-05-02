@@ -40,7 +40,7 @@ type TDocument<T, ID> = PouchDB.Core.Document<T>
 type AnyDocument = TDocument<{}, string>
 type ChangeSet = Set<AnyDocument>
 
-namespace PouchDB {
+declare namespace PouchDB {
     namespace LevelDbAdapter {
         interface LevelDbAdapterConfiguration extends Configuration.LocalDatabaseConfiguration {
             db: any
@@ -51,7 +51,6 @@ namespace PouchDB {
         interface DatabaseInfo {
             db_name: string
             doc_count: number
-            update_seq: number
         }
     }
 }
@@ -60,7 +59,7 @@ declare module google {
     namespace auth {
         class OAuth2 {
             constructor();
-            setCredentials(credentials: Partial<google.oauth2.v2.Tokeninfo>);
+            setCredentials(credentials: Partial<google.oauth2.v2.Tokeninfo>): void;
         }
     }
     export interface GoogleApis {
@@ -72,7 +71,6 @@ declare module google {
 }
 
 declare type MemoryStream = NodeJS.WritableStream & NodeJS.ReadableStream & {
-    constructor(args?: any)
     toString(): string
     toBuffer(): Buffer
 }

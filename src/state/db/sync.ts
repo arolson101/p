@@ -1,6 +1,5 @@
 import * as crypto from 'crypto'
-import * as fs from 'fs'
-const debounce = require('lodash.debounce')
+// const debounce = require('lodash.debounce')
 const MemoryStream = require('memorystream') as new (arg?: any, opts?: any) => MemoryStream
 import * as zlib from 'zlib'
 import { SyncConnection } from '../../docs/index'

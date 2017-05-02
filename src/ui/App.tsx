@@ -1,6 +1,4 @@
-import * as History from 'history'
 import * as React from 'react'
-import { RouteComponentProps } from 'react-router'
 import { Route, Switch, Redirect, withRouter, HashRouter as Router } from 'react-router-dom'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
@@ -16,22 +14,7 @@ interface ConnectedProps {
   locale: string
 }
 
-const NotFoundRoute = (props: RouteComponentProps<any> & React.Props<any>) => (
-  <div>not found: {props.location ? props.location.pathname : '(no location)'}{props.children}</div>
-)
-
-const requireAuth = (store: Redux.Store<AppState>) =>
-  (nextState: any, replace: any) => {
-    const { db: { current } } = store.getState()
-    if (!current) {
-      replace({
-        pathname: '/',
-        state: { nextPathname: nextState.location.pathname }
-      })
-    }
-  }
-
-const renderFcn = (props: any) => {
+const requireAuth = (props: any) => {
   if (props.current) {
     return props.children
   } else {
@@ -43,7 +26,7 @@ const AuthComponent = withRouter(connect(
   (state: AppState, props: any) => ({
     current: state.db.current,
   })
-)(renderFcn))
+)(requireAuth))
 
 class AppComponent extends React.Component<Props & ConnectedProps, any> {
   render () {
