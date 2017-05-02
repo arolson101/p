@@ -122,13 +122,12 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
       ...locals
     ]
 
-    const docsProcessed = current.changeProcessed$
+    const docsProcessed$ = current.changeProcessed$
       .scan(
         (awaitingIds, id) => awaitingIds.filter(elt => elt !== id),
         docsToWrite.map(doc => doc._id)
       )
       .takeWhile(arr => arr.length > 0)
-      .toPromise()
 
     try {
       await current.db.bulkDocs(docsToWrite)
@@ -152,7 +151,7 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
       } as DbChangeInfo)
     }
 
-    await docsProcessed
+    await docsProcessed$.toPromise()
   }
 
 export interface Deletion {
