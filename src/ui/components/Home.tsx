@@ -300,7 +300,7 @@ const selectAccountData = createSelector(
           )
         )(bills)
 
-        console.log(account.doc.name, points)
+        // console.log(account.doc.name, points)
 
         return {
           name: account.doc.name,
