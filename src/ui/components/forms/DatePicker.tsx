@@ -4,7 +4,7 @@ import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { FormControl, FormControlProps } from 'react-bootstrap'
-import * as RDatePicker from 'react-datepicker'
+import RDatePicker /*, { ReactDatePickerProps }*/ from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { checkPropChange } from '../../enhancers/index'
 
@@ -15,7 +15,7 @@ interface Props {
   onChange?: (value: string) => void
 }
 
-export type DatePickerProps = Partial<ReactDatePickerProps> & Props
+export type DatePickerProps = Partial<any /*ReactDatePickerProps*/> & Props
 
 interface State {
   startDate?: moment.Moment
