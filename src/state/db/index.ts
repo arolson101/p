@@ -166,14 +166,13 @@ export const deleteDoc = (doc: AnyDocument): Deletion => ({
   _deleted: true
 })
 
-const safeGet = async <T> (db: PouchDB.Database<any>, id: string, create: () => T): Promise<T> => {
+const safeGet = async <T> (db: PouchDB.Database<any>, id: string): Promise<T | undefined> => {
   try {
     return await db.get(id) as T
   } catch (err) {
     if (err.name !== 'not_found') {
       throw err
     }
-    return create()
   }
 }
 
@@ -247,10 +246,10 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
 
     console.time('load')
 
-    const local = await safeGet<LocalDoc.Doc>(db, LocalDoc.DocId, LocalDoc.create)
+    const local = await safeGet<LocalDoc.Doc>(db, LocalDoc.DocId) || LocalDoc.create()
     const localDocs: AnyDocument[] = []
     for (let id in local.ids) {
-      const doc = await safeGet<AnyDocument | undefined>(db, id, () => undefined)
+      const doc = await safeGet<AnyDocument | undefined>(db, id)
       if (doc) {
         localDocs.push(doc)
       }
