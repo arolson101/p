@@ -1,11 +1,11 @@
 import * as crypto from 'crypto'
 import * as electron from 'electron'
 import * as fs from 'fs'
+import * as os from 'os'
 import * as path from 'path'
 import * as R from 'ramda'
 import { ThunkAction } from 'redux'
 import * as Rx from 'rxjs/Rx'
-const uuidV4 = require('uuid/v4') as () => string
 import { DocCache, DbView, LocalDoc } from '../../docs/index'
 import { AppThunk } from '../index'
 import { DbInfo } from './DbInfo'
@@ -178,6 +178,13 @@ const safeGet = async <T> (db: PouchDB.Database<any>, id: string, create: () => 
   }
 }
 
+const genLocalId = (name: string): string => {
+  const hostname = os.hostname()
+  const userInfo = os.userInfo()
+  const random = crypto.randomBytes(4).toString('hex')
+  return `${hostname.substr(0,18)}-${userInfo.username.substr(0,18)}-${name.substr(0,18)}-${random}`
+}
+
 type LoadDbArgs = { info: DbInfo, password: string }
 export namespace loadDb { export type Fcn = DbFcn<LoadDbArgs, void> }
 export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
@@ -193,7 +200,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       localInfo = {
         _id: localInfoDocId,
         key: crypto.randomBytes(32).toString('base64'),
-        localId: uuidV4(),
+        localId: genLocalId(info.name),
         last: 0
       }
       await db.put(localInfo)
