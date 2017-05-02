@@ -135,6 +135,7 @@
     "electron": "^1.6.6",
     "electron-builder": "^17.1.1",
     "electron-devtools-installer": "^2.2.0",
+    "electron-download-tf": "^4.2.1",
     "electron-rebuild": "^1.5.7",
     "express": "^4.15.2",
     "file-loader": "^0.11.1",
