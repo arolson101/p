@@ -3,17 +3,18 @@ import * as numeral from 'numeral'
 import * as PropTypes from 'prop-types'
 import * as R from 'ramda'
 import * as React from 'react'
+import * as Rx from 'rxjs/Rx'
 import { Collapse, DropdownButton, MenuItem, SelectCallback,
          InputGroup, PageHeader, ButtonToolbar, Button, Alert } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps, withHandlers } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps, withHandlers, mapPropsStream } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, ReduxFormProps, SubmitFunction, formValueSelector } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'
 import * as RRule from 'rrule-alt'
-import { getFavicon } from '../../actions/index'
+import { getFavicon, getFavicon$ } from '../../actions/index'
 import { Account, Budget, Bill } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { Validator } from '../../util/index'
@@ -368,22 +369,39 @@ const enhance = compose<AllProps, Props>(
       }
     }
   ),
-  // tslint:disable-next-line:max-line-length
-  withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>(
-    'web',
-    // TODO: debounce
-    async (props, prev) => {
-      const { web, favicon, change } = props
-      if (web && (favicon === undefined || prev)) { // avoid re-fetching icon
-        try {
-          console.log('getting favicon')
-          change('favicon', '')
-          const response = await getFavicon(web)
-          change('favicon', response!)
-        } catch (err) {
-          console.log('error getting favicon: ', err.message)
-        }
-      }
+  mapPropsStream(
+    // tslint:disable-next-line:max-line-length
+    (props$: Rx.Observable<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>) => {
+      const changeIcon$ = props$
+      .filter((props) => { return true })
+        // .distinctUntilChanged((props, prev): boolean => {
+        //   console.log(`distinct: web: ${props.web} prev: ${prev.web}`)
+        //   return props.web === prev.web || props.favicon === undefined
+        //   return !(!!props.web && (props.favicon === undefined || !!prev.web))
+        // })
+        .pluck('web')
+        .debounceTime(500)
+        .do((web) => console.log(`getting favicon for ${web}`))
+        .switchMap(getFavicon$)
+        .withLatestFrom(props$, (icon, props) => {
+          const { change } = props
+          change('favicon', icon!)
+        })
+
+      return props$.merge(changeIcon$.ignoreElements())
+      // async (props, prev) => {
+      //   const { web, favicon, change } = props
+      //   if (web && (favicon === undefined || prev)) { // avoid re-fetching icon
+      //     try {
+      //       console.log('getting favicon')
+      //       change('favicon', '')
+      //       const response = await getFavicon(web)
+      //       change('favicon', response!)
+      //     } catch (err) {
+      //       console.log('error getting favicon: ', err.message)
+      //     }
+      //   }
+      // }
     }
   ),
   // tslint:disable-next-line:max-line-length

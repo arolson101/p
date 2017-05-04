@@ -1,6 +1,8 @@
+import * as Rx from 'rxjs/Rx'
 import * as URL from 'url'
-import axios, { AxiosPromise, AxiosResponse } from 'axios'
+import axios, { AxiosPromise, AxiosResponse, CancelTokenSource, CancelToken } from 'axios'
 const axiosHttpAdapter = require('axios/lib/adapters/http')
+const CancelToken = axios.CancelToken
 
 // https://github.com/mzabriskie/axios/pull/493 - supposed to fix this but it's not working
 const fixUrl = (url: string): string => {
@@ -13,6 +15,9 @@ const fixUrl = (url: string): string => {
 }
 
 const isValidUrl = (url: string): boolean => {
+  if (!url) {
+    return false
+  }
   let obj = URL.parse(fixUrl(url))
   if (!obj.protocol) {
     obj = URL.parse('http://' + url)
@@ -24,15 +29,16 @@ const isValidUrl = (url: string): boolean => {
   }
 }
 
-const httpGet = (url: string): AxiosPromise => {
+const httpGet = (url: string, cancelToken?: CancelToken): AxiosPromise => {
   return axios.get(fixUrl(url), {
     // force axios to use http adapter because xhr throws ERR_INSECURE_RESPONSE and for favicons I don't care
     adapter: axiosHttpAdapter,
-    responseType: 'arraybuffer'
+    responseType: 'arraybuffer',
+    cancelToken
   })
 }
 
-const getFaviconFromDocument = async (response: AxiosResponse): Promise<string> => {
+const getFaviconFromDocument = async (response: AxiosResponse, cancelToken?: CancelToken): Promise<string> => {
   if (!response.data) {
     throw new Error('no data')
   }
@@ -52,7 +58,7 @@ const getFaviconFromDocument = async (response: AxiosResponse): Promise<string> 
       const href = child.getAttribute('href')
       if (href) {
         const location = URL.resolve(currentUrl, href)
-        const data = await getIconDataURI(location)
+        const data = await getIconDataURI(location, cancelToken)
         if (data) {
           return data
         }
@@ -61,11 +67,11 @@ const getFaviconFromDocument = async (response: AxiosResponse): Promise<string> 
   }
   // console.log(`No icon in html; falling back to /favicon.ico`)
   const location = URL.resolve(currentUrl, '/favicon.ico')
-  return await getIconDataURI(location)
+  return await getIconDataURI(location, cancelToken)
 }
 
-const getIconDataURI = async (url: string): Promise<string> => {
-  const response = await httpGet(url)
+const getIconDataURI = async (url: string, cancelToken?: CancelToken): Promise<string> => {
+  const response = await httpGet(url, cancelToken)
   if (response.status === 200 && response.data && (response.data as Buffer).length) {
     const type = response.headers['content-type'] as string
     if (!type.startsWith('text') && type.indexOf(' ') === -1) {
@@ -77,16 +83,32 @@ const getIconDataURI = async (url: string): Promise<string> => {
   return ''
 }
 
-export const getFavicon = async (url: string): Promise<string | undefined> => {
+export const getFavicon = async (url: string, cancelToken?: CancelToken): Promise<string | undefined> => {
   try {
     if (!isValidUrl(url)) {
       return undefined
     }
-    const response = await httpGet(url)
-    const favico = await getFaviconFromDocument(response)
+    const response = await httpGet(url, cancelToken)
+    const favico = await getFaviconFromDocument(response, cancelToken)
     return favico
   } catch (err) {
-    console.log(`error retrieving favicon from ${url}: ${err.message}`)
+    if (!axios.isCancel(err)) {
+      console.log(`error retrieving favicon from ${url}: ${err.message}`)
+    }
     return ''
   }
+}
+
+export const getFavicon$ = (url: string): Rx.Observable<string | undefined> => {
+  return Rx.Observable.create((observer: Rx.Observer<string | undefined>) => {
+    const source = CancelToken.source()
+    getFavicon(url, source.token).then(
+      (icon) => observer.next(icon),
+      (err) => observer.error(err)
+    )
+
+    return () => {
+      source.cancel()
+    }
+  })
 }
