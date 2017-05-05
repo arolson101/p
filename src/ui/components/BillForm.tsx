@@ -373,13 +373,8 @@ const enhance = compose<AllProps, Props>(
     // tslint:disable-next-line:max-line-length
     (props$: Rx.Observable<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>) => {
       const changeIcon$ = props$
-      .filter((props) => { return true })
-        // .distinctUntilChanged((props, prev): boolean => {
-        //   console.log(`distinct: web: ${props.web} prev: ${prev.web}`)
-        //   return props.web === prev.web || props.favicon === undefined
-        //   return !(!!props.web && (props.favicon === undefined || !!prev.web))
-        // })
-        .pluck('web')
+        .pluck<any, string>('web')
+        .distinctUntilChanged()
         .debounceTime(500)
         .do((web) => console.log(`getting favicon for ${web}`))
         .switchMap(getFavicon$)
@@ -389,19 +384,6 @@ const enhance = compose<AllProps, Props>(
         })
 
       return props$.merge(changeIcon$.ignoreElements())
-      // async (props, prev) => {
-      //   const { web, favicon, change } = props
-      //   if (web && (favicon === undefined || prev)) { // avoid re-fetching icon
-      //     try {
-      //       console.log('getting favicon')
-      //       change('favicon', '')
-      //       const response = await getFavicon(web)
-      //       change('favicon', response!)
-      //     } catch (err) {
-      //       console.log('error getting favicon: ', err.message)
-      //     }
-      //   }
-      // }
     }
   ),
   // tslint:disable-next-line:max-line-length
