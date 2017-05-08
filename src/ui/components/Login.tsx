@@ -76,8 +76,11 @@ const enhance = compose<AllProps, RouteProps<any>>(
 const activeProps = { bsStyle: 'info' }
 const createId = '_create'
 
+import { Test } from './forms/createForm'
+
 export const Login = enhance(({ files, ui: { activeId }, updateUI, deselect, onLogin }) => (
   <Grid>
+    <Test/>
     <div style={{padding: 50}}>
       <ListGroup>
         {files.map(file => {
