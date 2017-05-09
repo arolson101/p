@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as RB from 'react-bootstrap'
-import { defineMessages, FormattedMessage } from 'react-intl'
+import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import * as Select from 'react-select'
 import { compose, mapPropsStream } from 'recompose'
@@ -78,7 +78,8 @@ interface InputFormField<V> extends FormField<V> {
 }
 
 const renderInput = (props: InputFormField<any> & WrapperProps) => {
-  const { input, meta, label, help, layout, rows, password, visibility, addonBefore, addonAfter, initialValue, ...passedProps } = props
+  const { input, meta, label, help, layout, rows,
+    password, visibility, addonBefore, addonAfter, initialValue, ...passedProps } = props
   const formControl = (
     <RB.FormControl
       componentClass={rows ? 'textarea' : undefined}
@@ -161,6 +162,7 @@ type SelectFormField<V> = FormField<V> & Select.ReactSelectProps & {
   parse?: (value: any) => any
   format?: (value: any) => string
   options: SelectOption[]
+  placeholderMessage?: FormattedMessage.MessageDescriptor
 }
 
 const noop = () => undefined
@@ -307,7 +309,7 @@ export const formComponent = <V extends {}>(config: FormConfig<V>) => {
 
   const selector = formValueSelector<V>(config.formName)
 
-  const enhance = compose<ReduxFormProps<V> & Props<V> & { visible: boolean[] }, Props<V>>(
+  const enhance = compose<ReduxFormProps<V> & Props<V> & InjectedIntlProps & { visible: boolean[] }, Props<V>>(
     connect(
       (state, props: Props<V>) => {
         const valueSelector = (...field: (keyof V)[]) => selector(state, ...field)
@@ -323,9 +325,10 @@ export const formComponent = <V extends {}>(config: FormConfig<V>) => {
       onChange,
       overwriteOnInitialValuesChange: true
     }),
+    injectIntl,
   )
   return enhance((props) => {
-    const { handleSubmit } = props
+    const { handleSubmit, intl: { formatMessage } } = props
     return <RB.Grid>
       <RB.Form horizontal onSubmit={handleSubmit}>
         {config.fields.map((field, index) => {
@@ -357,6 +360,10 @@ export const formComponent = <V extends {}>(config: FormConfig<V>) => {
               )
               break
             case 'select':
+              if (field.placeholderMessage) {
+                // hack: convert to a string here so components don't have to worry about intl
+                (fieldProps as any).placeholder = formatMessage(field.placeholderMessage as FormattedMessage.MessageDescriptor)
+              }
               component = <Field {...baseProps} component={renderSelect} {...fieldProps as any}/>
               break
             case 'checkbox':
@@ -410,6 +417,10 @@ const testMessages = defineMessages({
   select: {
     id: 'forms.select',
     defaultMessage: 'select'
+  },
+  selectPlaceholder: {
+    id: 'forms.selectPlaceholder',
+    defaultMessage: 'select placeholder'
   },
   checkbox: {
     id: 'forms.checkbox',
@@ -465,6 +476,7 @@ export const Test = formComponent<Values>({
     },
     { name: 'select',
       label: testMessages.select,
+      placeholderMessage: testMessages.selectPlaceholder,
       type: 'select',
       options: [
         { label: 'option 1', value: 'value 1' },
