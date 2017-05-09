@@ -1,9 +1,14 @@
 import * as React from 'react'
 import * as RB from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
+import { connect } from 'react-redux'
 import * as Select from 'react-select'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
-import { reduxForm, Field, FieldProps, InjectedFieldProps, change, ErrorsFor, SubmissionError } from 'redux-form'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, mapPropsStream } from 'recompose'
+import { reduxForm, Field, FieldProps, InjectedFieldProps, formValueSelector, change, ErrorsFor, SubmissionError } from 'redux-form'
+import * as Rx from 'rxjs/Rx'
+import { getFavicon$ } from '../../../actions/index'
+import { mapDispatchToProps } from '../../../state/index'
+import { IconPicker } from './IconPicker'
 
 const messages = defineMessages({
   save: {
@@ -29,29 +34,23 @@ interface LayoutProps {
   }
 }
 
-interface TextFormField<V> extends FormField<V> {
-  type: 'text' | 'password'
-  rows?: number
-  password?: boolean
-}
-
 type DontCare = { [key: string]: any }
 
 type WrapperProps = InjectedFieldProps<string> & FormField<any> & LayoutProps & React.Props<any>
 const Wrapper = (props: WrapperProps & DontCare) => {
-  const { input: { name }, meta: { warning, error }, label, help, layout } = props
+  const { input: { name }, meta: { warning, error }, label, help, layout, children } = props
   return (
     <RB.FormGroup
       controlId={name}
       validationState={error ? 'error' : warning ? 'warning' : undefined}
     >
       <RB.Col componentClass={RB.ControlLabel} {...layout.label}>
-        {props.label &&
-          <FormattedMessage {...props.label}/>
+        {label &&
+          <FormattedMessage {...label}/>
         }
       </RB.Col>
       <RB.Col {...layout.control}>
-        {props.children}
+        {children}
         {/*<RB.FormControl.Feedback/>*/}
         {help &&
           <RB.HelpBlock><FormattedMessage {...help}/></RB.HelpBlock>
@@ -64,20 +63,86 @@ const Wrapper = (props: WrapperProps & DontCare) => {
   )
 }
 
-const renderInput = (props: TextFormField<any> & WrapperProps) => {
-  const { input, meta, label, help, layout, rows, password, ...passedProps } = props
+// input ----------------------------------------------------------------------
+interface InputFormField<V> extends FormField<V> {
+  type: 'text' | 'password'
+  rows?: number
+  password?: boolean
+  addonBefore?: React.ReactNode
+  addonAfter?: React.ReactNode
+}
+
+const renderInput = (props: InputFormField<any> & WrapperProps) => {
+  const { input, meta, label, help, layout, rows, password, addonBefore, addonAfter, ...passedProps } = props
+  const formControl = (
+    <RB.FormControl
+      componentClass={rows ? 'textarea' : undefined}
+      type={password ? 'password' : undefined}
+      {...passedProps as any}
+      {...props.input}
+    />
+  )
+
   return (
     <Wrapper {...props}>
-      <RB.FormControl
-        componentClass={rows ? 'textarea' : undefined}
-        type={password ? 'password' : undefined}
-        {...passedProps as any}
-        {...props.input}
-      />
+      {(addonBefore || addonAfter) ? (
+        <RB.InputGroup>
+          {addonBefore}
+          {formControl}
+          {addonAfter}
+        </RB.InputGroup>
+      ) : (
+        formControl
+      )}
     </Wrapper>
   )
 }
 
+// url ------------------------------------------------------------------------
+interface UrlFormField<V> extends FormField<V> {
+  type: 'url'
+  favicoName: keyof V
+}
+
+type RenderUrlProps = UrlFormField<any> & WrapperProps & {
+  change: typeof change
+}
+
+const enhanceUrl = compose(
+  connect(
+    undefined,
+    mapDispatchToProps({ change })
+  ),
+  mapPropsStream(
+    (props$: Rx.Observable<RenderUrlProps>) => {
+      const changeIcon$ = props$
+        .pluck<RenderUrlProps, string>('input', 'value')
+        .distinctUntilChanged()
+        .debounceTime(500)
+        // .do((url) => console.log(`getting favicon for ${url}`))
+        .switchMap(getFavicon$)
+        .withLatestFrom(props$, (icon, props) => {
+          props.change(props.meta.form, props.favicoName, icon!)
+        })
+
+      return props$.merge(changeIcon$.ignoreElements())
+    }
+  ),
+)
+
+const renderUrl = enhanceUrl((props: RenderUrlProps) => {
+  const { favicoName, type, change, ...inputProps } = props
+  return renderInput(inputProps as any)
+})
+
+const renderFavico = (props: InjectedFieldProps<any>) => {
+  const { input: { value, onChange } } = props
+  return <RB.InputGroup.Button>
+    <IconPicker value={value} onChange={onChange} />
+  </RB.InputGroup.Button>
+}
+
+// select ---------------------------------------------------------------------
 export interface SelectOption {
   value: any
   label: string
@@ -96,16 +161,10 @@ const noop = () => undefined
 
 const renderSelect = (props: SelectFormField<any> & WrapperProps) => {
   const { input, meta: { warning, error }, createable, label, layout, ...passedProps } = props
-  let value = props.value
-  if (props.value && props.multi && props.delimiter) {
-    value = (props.value as string).split(props.delimiter)
-  }
   const Component = createable ? Select.Creatable : Select
-
   return (
     <Wrapper {...props}>
       <Component
-        value={value}
         {...passedProps as any}
         {...input}
         menuContainerStyle={{ zIndex: 5 }} // https://github.com/JedWatson/react-select/issues/1076
@@ -114,6 +173,8 @@ const renderSelect = (props: SelectFormField<any> & WrapperProps) => {
     </Wrapper>
   )
 }
+
+// date -----------------------------------------------------------------------
 
 // interface DateFormField<V> extends FormField<V> {
 //   type: 'date'
@@ -131,13 +192,9 @@ const renderSelect = (props: SelectFormField<any> & WrapperProps) => {
 //   type: 'budget'
 // }
 
-// interface UrlFormField<V> extends FormField<V> {
-//   type: 'url'
-//   faviconName: keyof V
-// }
-
-type FormFieldType<V> = TextFormField<V>
+type FormFieldType<V> = InputFormField<V>
   | SelectFormField<V>
+  | UrlFormField<V>
   // | DateFormField<V>
   // | CheckboxFormField<V>
   // | AccountFormField<V>
@@ -218,11 +275,22 @@ const formComponent = <V extends {}>(config: FormConfig<V>) => {
           ...layoutProps
         }
 
-        switch (type) {
+        switch (field.type) {
           case 'text':
             return <Field {...baseProps} component={renderInput} {...fieldProps as any}/>
           case 'password':
             return <Field {...baseProps} component={renderInput} {...fieldProps as any} password/>
+          case 'url':
+            return (
+              <Field {...baseProps} component={renderUrl} {...fieldProps as any}
+                addonBefore={
+                  <Field
+                    component={renderFavico}
+                    name={field.favicoName}
+                  />
+                }
+              />
+            )
           case 'select':
             return <Field {...baseProps} component={renderSelect} {...fieldProps as any}/>
 
@@ -249,6 +317,10 @@ const testMessages = defineMessages({
     id: 'forms.password',
     defaultMessage: 'password'
   },
+  url: {
+    id: 'forms.url',
+    defaultMessage: 'url'
+  },
   multiline: {
     id: 'forms.multiline',
     defaultMessage: 'multiline'
@@ -265,6 +337,8 @@ interface Values {
   multiline: string
   select: string
   select2: string
+  url: string
+  favicon: string
 }
 
 export const Test = formComponent<Values>({
@@ -278,6 +352,11 @@ export const Test = formComponent<Values>({
     { name: 'password',
       label: testMessages.password,
       type: 'password'
+    },
+    { name: 'url',
+      favicoName: 'favicon',
+      label: testMessages.url,
+      type: 'url'
     },
     { name: 'multiline',
       label: testMessages.multiline,

@@ -122,6 +122,9 @@ export interface InjectedFieldMetaProps {
   // and submit validation errors will be reported here.
   error?: string
 
+  // The name of the form. Could be useful if you want to manually dispatch actions.
+  form: string
+
   // The warning for this field if its value is not passing warning validation.
   warning?: string
 
