@@ -73,13 +73,14 @@ interface InputFormField<V> extends FormField<V> {
 }
 
 const renderInput = (props: InputFormField<any> & WrapperProps) => {
-  const { input, meta, label, help, layout, rows, password, addonBefore, addonAfter, ...passedProps } = props
+  const { input, meta, label, help, layout, rows, password, addonBefore, addonAfter, initialValue, ...passedProps } = props
   const formControl = (
     <RB.FormControl
       componentClass={rows ? 'textarea' : undefined}
       type={password ? 'password' : undefined}
-      {...passedProps as any}
-      {...props.input}
+      rows={rows}
+      {...passedProps}
+      {...input}
     />
   )
 
@@ -180,9 +181,22 @@ const renderSelect = (props: SelectFormField<any> & WrapperProps) => {
 //   type: 'date'
 // }
 
-// interface CheckboxFormField<V> extends FormField<V> {
-//   type: 'checkbox'
-// }
+// checkbox -------------------------------------------------------------------
+interface CheckboxFormField<V> extends FormField<V> {
+  type: 'checkbox'
+  message: FormattedMessage.MessageDescriptor
+}
+
+const renderCheckbox = (props: CheckboxFormField<any> & WrapperProps) => {
+  const { input, meta: { warning, error }, label, message, layout, ...passedProps } = props
+  return (
+    <Wrapper {...props}>
+        <RB.Checkbox {...input} checked={input.value}>
+          <FormattedMessage {...message}/>
+        </RB.Checkbox>
+    </Wrapper>
+  )
+}
 
 // interface AccountFormField<V> extends FormField<V> {
 //   type: 'account'
@@ -196,7 +210,7 @@ type FormFieldType<V> = InputFormField<V>
   | SelectFormField<V>
   | UrlFormField<V>
   // | DateFormField<V>
-  // | CheckboxFormField<V>
+  | CheckboxFormField<V>
   // | AccountFormField<V>
   // | BudgetFormField<V>
 
@@ -293,10 +307,11 @@ const formComponent = <V extends {}>(config: FormConfig<V>) => {
             )
           case 'select':
             return <Field {...baseProps} component={renderSelect} {...fieldProps as any}/>
+          case 'checkbox':
+            return <Field {...baseProps} component={renderCheckbox} {...fieldProps as any}/>
 
-          // case 'select':
-          //   fieldProps.component = renderSelect
-          //   break
+          default:
+            throw new Error(`unknown form field type ${type}`)
         }
       })}
       <RB.FormGroup>
@@ -329,6 +344,14 @@ const testMessages = defineMessages({
     id: 'forms.select',
     defaultMessage: 'select'
   },
+  checkbox: {
+    id: 'forms.checkbox',
+    defaultMessage: 'checkbox'
+  },
+  checkboxmessage: {
+    id: 'forms.checkboxmessage',
+    defaultMessage: 'checkbox message'
+  },
 })
 
 interface Values {
@@ -339,6 +362,7 @@ interface Values {
   select2: string
   url: string
   favicon: string
+  checkbox: boolean
 }
 
 export const Test = formComponent<Values>({
@@ -362,6 +386,11 @@ export const Test = formComponent<Values>({
       label: testMessages.multiline,
       type: 'text',
       rows: 4
+    },
+    { name: 'checkbox',
+      label: testMessages.checkbox,
+      message: testMessages.checkboxmessage,
+      type: 'checkbox'
     },
     { name: 'select',
       label: testMessages.select,
