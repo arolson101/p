@@ -1,10 +1,11 @@
 import * as React from 'react'
 import * as RB from 'react-bootstrap'
-import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
+import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import * as Select from 'react-select'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, mapPropsStream } from 'recompose'
-import { reduxForm, Field, FieldProps, InjectedFieldProps, formValueSelector, change, ErrorsFor, SubmissionError } from 'redux-form'
+import { compose, mapPropsStream } from 'recompose'
+import { reduxForm, ReduxFormProps, Field, InjectedFieldProps,
+  formValueSelector, change, ErrorsFor, SubmissionError } from 'redux-form'
 import * as Rx from 'rxjs/Rx'
 import { getFavicon$ } from '../../../actions/index'
 import { mapDispatchToProps } from '../../../state/index'
@@ -17,6 +18,8 @@ const messages = defineMessages({
   },
 })
 
+export type GetField<V> = (...field: (keyof V)[]) => any
+
 interface FormField<V> {
   name: keyof V
   label: FormattedMessage.MessageDescriptor
@@ -24,6 +27,7 @@ interface FormField<V> {
   initialValue?: any
   required?: boolean
   autoFocus?: boolean
+  visibility?: (getField: GetField<V>) => boolean
 }
 
 interface LayoutProps {
@@ -34,10 +38,10 @@ interface LayoutProps {
   }
 }
 
-type DontCare = { [key: string]: any }
+type DontCareWhatElse = { [key: string]: any }
 
 type WrapperProps = InjectedFieldProps<string> & FormField<any> & LayoutProps & React.Props<any>
-const Wrapper = (props: WrapperProps & DontCare) => {
+const Wrapper = (props: WrapperProps & DontCareWhatElse) => {
   const { input: { name }, meta: { warning, error }, label, help, layout, children } = props
   return (
     <RB.FormGroup
@@ -73,7 +77,7 @@ interface InputFormField<V> extends FormField<V> {
 }
 
 const renderInput = (props: InputFormField<any> & WrapperProps) => {
-  const { input, meta, label, help, layout, rows, password, addonBefore, addonAfter, initialValue, ...passedProps } = props
+  const { input, meta, label, help, layout, rows, password, visibility, addonBefore, addonAfter, initialValue, ...passedProps } = props
   const formControl = (
     <RB.FormControl
       componentClass={rows ? 'textarea' : undefined}
@@ -271,31 +275,44 @@ const formComponent = <V extends {}>(config: FormConfig<V>) => {
     }
   })
 
+  const selector = formValueSelector<V>(config.formName)
+
   const enhance = compose(
     reduxForm({
       form: config.formName,
       onSubmit,
       onChange
-    })
+    }),
+    connect(
+      (state) => {
+        const valueSelector = (...field: (keyof V)[]) => selector(state, ...field)
+        return {
+          visible: config.fields.map(field => field.visibility ? field.visibility(valueSelector) : true)
+        }
+      }
+    )
   )
-  return enhance((props: any) => {
+  return enhance((props: ReduxFormProps<V> & { visible: boolean[] }) => {
     const { handleSubmit } = props
     return <RB.Form horizontal onSubmit={handleSubmit}>
-      {config.fields.map(field => {
+      {config.fields.map((field, index) => {
         const { name, type, required, autoFocus, initialValue, ...fieldProps } = field
         const baseProps = {
-          key: name,
           name,
+          key: field.name,
           ...layoutProps
         }
 
+        let component
         switch (field.type) {
           case 'text':
-            return <Field {...baseProps} component={renderInput} {...fieldProps as any}/>
+            component = <Field {...baseProps} component={renderInput} {...fieldProps as any}/>
+            break
           case 'password':
-            return <Field {...baseProps} component={renderInput} {...fieldProps as any} password/>
+            component = <Field {...baseProps} component={renderInput} {...fieldProps as any} password/>
+            break
           case 'url':
-            return (
+            component = (
               <Field {...baseProps} component={renderUrl} {...fieldProps as any}
                 addonBefore={
                   <Field
@@ -305,14 +322,26 @@ const formComponent = <V extends {}>(config: FormConfig<V>) => {
                 }
               />
             )
+            break
           case 'select':
-            return <Field {...baseProps} component={renderSelect} {...fieldProps as any}/>
+            component = <Field {...baseProps} component={renderSelect} {...fieldProps as any}/>
+            break
           case 'checkbox':
-            return <Field {...baseProps} component={renderCheckbox} {...fieldProps as any}/>
-
+            component = <Field {...baseProps} component={renderCheckbox} {...fieldProps as any}/>
+            break
           default:
-            throw new Error(`unknown form field type ${type}`)
+            component = <div>{`unknown form field type ${type}`}</div>
+            break
         }
+
+        return field.visibility ?
+          (
+            <RB.Collapse in={props.visible[index]} key={field.name}>
+              <div>{component}</div>
+            </RB.Collapse>
+          ) : (
+            component
+          )
       })}
       <RB.FormGroup>
         <RB.Col {...layoutProps.layout.nolabel}>
@@ -365,6 +394,8 @@ interface Values {
   checkbox: boolean
 }
 
+const isChecked = (getField: GetField<Values>) => getField('checkbox')
+
 export const Test = formComponent<Values>({
   formName: 'test',
   fields: [
@@ -375,12 +406,14 @@ export const Test = formComponent<Values>({
     },
     { name: 'password',
       label: testMessages.password,
-      type: 'password'
+      type: 'password',
+      visibility: isChecked
     },
     { name: 'url',
       favicoName: 'favicon',
       label: testMessages.url,
-      type: 'url'
+      type: 'url',
+      visibility: isChecked
     },
     { name: 'multiline',
       label: testMessages.multiline,
