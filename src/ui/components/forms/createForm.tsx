@@ -82,7 +82,6 @@ export interface SelectOption {
   value: any
   label: string
   disabled?: boolean
-  options: SelectOption[]
 }
 
 type SelectFormField<V> = FormField<V> & Select.ReactSelectProps & {
@@ -90,6 +89,7 @@ type SelectFormField<V> = FormField<V> & Select.ReactSelectProps & {
   createable?: boolean
   parse?: (value: any) => any
   format?: (value: any) => string
+  options: SelectOption[]
 }
 
 const noop = () => undefined
@@ -178,14 +178,22 @@ const formComponent = <V extends {}>(config: FormConfig<V>) => {
     switch (field.type) {
       case 'select':
         if (!field.parse) {
-          const valueKey = field.valueKey
-          field.parse = (value: any) => {
-            if (value && field.multi && field.delimiter) {
-              value = (value as string).split(field.delimiter)
+          const valueOf = (value?: SelectOption): string => {
+            if (!value) {
+              return ''
             }
-            const ret = value ? (valueKey ? value[valueKey] : value['value']) : value
-            console.log(`parse: `, value, ' => ', ret)
-            return ret
+            return (value as any)[field.valueKey || 'value']
+          }
+
+          field.parse = (value: any) => {
+            if (value && field.multi) {
+              return (value as SelectOption[])
+                .sort((a, b) => field.options.indexOf(a) - field.options.indexOf(b))
+                .map(valueOf)
+                .join(field.delimiter || ',')
+            } else {
+              return valueOf(value)
+            }
           }
         }
         break
