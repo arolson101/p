@@ -417,7 +417,7 @@ export interface ReduxFormConfig<TOwnProps, TValues> {
      * props : Object
      * The props passed into your decorated component
      */
-    onChange?(values: TValues, dispatch?: Dispatch<any>, props?: TOwnProps): any;
+    onChange?(values: TValues, dispatch: Dispatch<any>, props: TOwnProps): any;
 
     /**
      * The function to call with the form data when the handleSubmit() is fired
@@ -425,7 +425,7 @@ export interface ReduxFormConfig<TOwnProps, TValues> {
      * you must pass it as a parameter to handleSubmit() inside your form
      * component.
      */
-    onSubmit?(values: TValues, dispatch?: Dispatch<any>): any;
+    onSubmit?(values: TValues, dispatch: Dispatch<any>, props: TOwnProps): any;
 
     /**
      * If true, the form values will be overwritten whenever the initialValues

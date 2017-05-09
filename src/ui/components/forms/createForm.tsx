@@ -6,6 +6,7 @@ import * as Select from 'react-select'
 import { compose, mapPropsStream } from 'recompose'
 import { reduxForm, ReduxFormProps, Field, InjectedFieldProps,
   formValueSelector, change, ErrorsFor, SubmissionError } from 'redux-form'
+import { createSelector } from 'reselect'
 import * as Rx from 'rxjs/Rx'
 import { getFavicon$ } from '../../../actions/index'
 import { mapDispatchToProps } from '../../../state/index'
@@ -210,6 +211,9 @@ const renderCheckbox = (props: CheckboxFormField<any> & WrapperProps) => {
 //   type: 'budget'
 // }
 
+// ----------------------------------------------------------------------------
+// formComponent --------------------------------------------------------------
+
 type FormFieldType<V> = InputFormField<V>
   | SelectFormField<V>
   | UrlFormField<V>
@@ -221,15 +225,28 @@ type FormFieldType<V> = InputFormField<V>
 export interface FormConfig<V> {
   formName: string
   fields: FormFieldType<V>[]
-  onSubmit: (values: V, error: (errors: ErrorsFor<V>) => void) => void | Promise<any>
-  onChange?: (values: V, change: (field: string, value: any) => void) => void
+  onChange?: (values: V, change: ChangeField) => void
 }
 
-const formComponent = <V extends {}>(config: FormConfig<V>) => {
-  const onSubmit = (values: V) => {
-    return config.onSubmit(values, errors => {
-      throw new SubmissionError(errors)
-    })
+interface Props<V> {
+  edit?: V
+  onSave: (values: V, error: ErrorCallback<V>, dispatch: any, props: any) => void | Promise<any>
+  onCancel: React.MouseEventHandler<{}>
+}
+
+export type ErrorCallback<V> = (errors: ErrorsFor<V>) => void
+export type ChangeField = (field: string, value: any) => void
+
+export const formComponent = <V extends {}>(config: FormConfig<V>) => {
+  const onSubmit = (values: V, dispatch: any, props: Props<V>) => {
+    return props.onSave(
+      values,
+      errors => {
+        throw new SubmissionError(errors)
+      },
+      dispatch,
+      props
+    )
   }
 
   const onChange = (values: V, dispatch: any) => {
@@ -249,7 +266,13 @@ const formComponent = <V extends {}>(config: FormConfig<V>) => {
     }
   }
 
+  const defaultInitialValues = {} as V
+
   config.fields.forEach(field => {
+    if (field.initialValue) {
+      defaultInitialValues[field.name] = field.initialValue
+    }
+
     switch (field.type) {
       case 'select':
         if (!field.parse) {
@@ -275,80 +298,95 @@ const formComponent = <V extends {}>(config: FormConfig<V>) => {
     }
   })
 
+  const selectInitialValues = createSelector(
+    (props: Props<V>) => props.edit,
+    (edit: V | undefined) => {
+      return edit || defaultInitialValues
+    }
+  )
+
   const selector = formValueSelector<V>(config.formName)
 
-  const enhance = compose(
+  const enhance = compose<ReduxFormProps<V> & Props<V> & { visible: boolean[] }, Props<V>>(
+    connect(
+      (state, props: Props<V>) => {
+        const valueSelector = (...field: (keyof V)[]) => selector(state, ...field)
+        return {
+          visible: config.fields.map(field => field.visibility ? field.visibility(valueSelector) : true),
+          initialValues: selectInitialValues(props)
+        }
+      }
+    ),
     reduxForm({
       form: config.formName,
       onSubmit,
-      onChange
+      onChange,
+      overwriteOnInitialValuesChange: true
     }),
-    connect(
-      (state) => {
-        const valueSelector = (...field: (keyof V)[]) => selector(state, ...field)
-        return {
-          visible: config.fields.map(field => field.visibility ? field.visibility(valueSelector) : true)
-        }
-      }
-    )
   )
-  return enhance((props: ReduxFormProps<V> & { visible: boolean[] }) => {
+  return enhance((props) => {
     const { handleSubmit } = props
-    return <RB.Form horizontal onSubmit={handleSubmit}>
-      {config.fields.map((field, index) => {
-        const { name, type, required, autoFocus, initialValue, ...fieldProps } = field
-        const baseProps = {
-          name,
-          key: field.name,
-          ...layoutProps
-        }
+    return <RB.Grid>
+      <RB.Form horizontal onSubmit={handleSubmit}>
+        {config.fields.map((field, index) => {
+          const { name, type, required, autoFocus, initialValue, ...fieldProps } = field
+          const baseProps = {
+            name,
+            key: field.name,
+            ...layoutProps
+          }
 
-        let component
-        switch (field.type) {
-          case 'text':
-            component = <Field {...baseProps} component={renderInput} {...fieldProps as any}/>
-            break
-          case 'password':
-            component = <Field {...baseProps} component={renderInput} {...fieldProps as any} password/>
-            break
-          case 'url':
-            component = (
-              <Field {...baseProps} component={renderUrl} {...fieldProps as any}
-                addonBefore={
-                  <Field
-                    component={renderFavico}
-                    name={field.favicoName}
-                  />
-                }
-              />
+          let component
+          switch (field.type) {
+            case 'text':
+              component = <Field {...baseProps} component={renderInput} {...fieldProps as any}/>
+              break
+            case 'password':
+              component = <Field {...baseProps} component={renderInput} {...fieldProps as any} password/>
+              break
+            case 'url':
+              component = (
+                <Field {...baseProps} component={renderUrl} {...fieldProps as any}
+                  addonBefore={
+                    <Field
+                      component={renderFavico}
+                      name={field.favicoName}
+                    />
+                  }
+                />
+              )
+              break
+            case 'select':
+              component = <Field {...baseProps} component={renderSelect} {...fieldProps as any}/>
+              break
+            case 'checkbox':
+              component = <Field {...baseProps} component={renderCheckbox} {...fieldProps as any}/>
+              break
+            default:
+              component = <div>{`unknown form field type ${type}`}</div>
+              break
+          }
+
+          return field.visibility ?
+            (
+              <RB.Collapse in={props.visible[index]} key={field.name}>
+                <div>{component}</div>
+              </RB.Collapse>
+            ) : (
+              component
             )
-            break
-          case 'select':
-            component = <Field {...baseProps} component={renderSelect} {...fieldProps as any}/>
-            break
-          case 'checkbox':
-            component = <Field {...baseProps} component={renderCheckbox} {...fieldProps as any}/>
-            break
-          default:
-            component = <div>{`unknown form field type ${type}`}</div>
-            break
-        }
-
-        return field.visibility ?
-          (
-            <RB.Collapse in={props.visible[index]} key={field.name}>
-              <div>{component}</div>
-            </RB.Collapse>
-          ) : (
-            component
-          )
-      })}
-      <RB.FormGroup>
-        <RB.Col {...layoutProps.layout.nolabel}>
-          <RB.Button type='submit'>_submit_</RB.Button>
-        </RB.Col>
-      </RB.FormGroup>
-    </RB.Form>
+        })}
+        <RB.FormGroup>
+          <RB.Col {...layoutProps.layout.nolabel}>
+            <RB.ButtonGroup>
+              <RB.Button type='submit' bsStyle='primary'>_save_</RB.Button>
+              {' '}
+              <RB.Button onClick={props.onCancel}>_cancel_</RB.Button>
+            </RB.ButtonGroup>
+          </RB.Col>
+        </RB.FormGroup>
+      </RB.Form>
+    </RB.Grid>
   })
 }
 
@@ -445,18 +483,32 @@ export const Test = formComponent<Values>({
       ]
     },
   ],
-  onSubmit: (values, error) => {
-    error({
-      text: 'text error',
-      password: 'password error',
-      multiline: 'multiline error'
-    })
-  },
   onChange: (values, change) => {
     change('password', values.text || '')
   }
 })
 
-const renderTest = () => {
-  return <RB.Grid><Test /></RB.Grid>
+export const RenderTest = () => {
+  return <Test
+    edit={{
+      text: 'text',
+      password: 'password',
+      multiline: 'multiline',
+      select: 'value 2',
+      select2: 'value 1,value 3',
+      url: 'http://www.google.com',
+      favicon: '',
+      checkbox: true,
+    }}
+    onSave={(values, error) => {
+      error({
+        text: 'text error',
+        password: 'password error',
+        multiline: 'multiline error'
+      })
+    }}
+    onCancel={() => {
+      console.log('cancel')
+    }}
+  />
 }
