@@ -203,7 +203,23 @@ const enhance = compose<AllProps, Props>(
   }))
 )
 
-export const BankForm = enhance((props) => {
+import { formComponent } from './forms/createForm'
+export const BankForm = formComponent<Values>({
+  formName: 'BankForm',
+  fields: [
+    { name: 'fi',
+      label: messages.fi,
+      help: messages.fiHelp,
+      placeholderMessage: messages.fiPlaceholder,
+      type: 'select',
+      options: [],
+      labelKey: 'name',
+      valueKey: 'id',
+    }
+  ]
+})
+
+export const BankForm2 = enhance((props) => {
   const { handleSubmit, edit, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist, online } = props
   const title = edit ? messages.editTitle : messages.createTitle
   return (
