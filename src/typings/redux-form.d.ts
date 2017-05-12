@@ -327,7 +327,7 @@ interface ComponentDecorator<T> {
 
 export function reduxForm<T, TValues>(
     config: ReduxFormConfig<T, TValues>
-): ComponentDecorator<T & ReduxFormProps<TValues>>;
+): ComponentDecorator<T & Partial<ReduxFormProps<TValues>>>;
 
 type FuncOrSelf<T> = T | (() => T);
 

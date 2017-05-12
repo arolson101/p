@@ -234,6 +234,7 @@ interface Props<V> {
   edit?: V
   onSave: (values: V, error: ErrorCallback<V>, dispatch: any, props: any) => void | Promise<any>
   onCancel: React.MouseEventHandler<{}>
+  onChange?: (values: V, change: ChangeField) => void
 }
 
 export type ErrorCallback<V> = (errors: ErrorsFor<V>) => void
@@ -500,7 +501,7 @@ export const Test = formComponent<Values>({
   }
 })
 
-export const RenderTest = () => {
+const RenderTest2 = () => {
   return <Test
     edit={{
       text: 'text',
@@ -523,4 +524,75 @@ export const RenderTest = () => {
       console.log('cancel')
     }}
   />
+}
+
+interface FormMakerProps<V> extends ReduxFormProps<V>, React.Props<any>, Props<V> {
+}
+
+const formMaker = <V extends {}>(form: string) => {
+  const onSubmit = (values: V, dispatch: any, props: Props<V>) => {
+    return props.onSave(
+      values,
+      errors => {
+        throw new SubmissionError(errors)
+      },
+      dispatch,
+      props
+    )
+  }
+
+  const onChange = (values: V, dispatch: any, props: Props<V>) => {
+    if (props.onChange && props.onChange !== onChange) {
+      const changeField = (field: string, value: any) => {
+        dispatch(change(form, field, value))
+      }
+      props.onChange(values, changeField)
+    }
+  }
+
+  const enhance = compose<FormMakerProps<V> & RB.FormProps, React.Props<any> & Props<V>>(
+    reduxForm({
+      form,
+      onSubmit,
+      onChange,
+      overwriteOnInitialValuesChange: true
+    })
+  )
+  const Form = enhance((props) => {
+    const { handleSubmit, children, ...formProps } = props
+    return (
+      <RB.Form
+        horizontal={props.horizontal}
+        inline={props.inline}
+        onSubmit={handleSubmit}
+      >
+        {children}
+      </RB.Form>
+    )
+  })
+  return { Form }
+}
+
+const { Form } = formMaker<Values>('test')
+
+export const RenderTest = () => {
+  return (
+    <Form
+      onSave={
+        (values: any) => console.log('onSave', values)
+      }
+      onCancel={
+        () => console.log('onCancel')
+      }
+      onChange={
+        (values, change) => {
+          change('password', values.text || '')
+        }
+      }
+    >
+      <Field name='foo' component='input'/>
+      <Field name='password' component='input'/>
+      <button type='submit'>submit</button>
+    </Form>
+  )
 }
