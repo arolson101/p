@@ -117,6 +117,7 @@
     "@types/react-split-pane": "^0.1.7",
     "@types/recompose": "^0.22.0",
     "@types/redux": "^3.6.31",
+    "@types/redux-form": "^6.6.2",
     "@types/redux-thunk": "^2.1.31",
     "@types/shortid": "0.0.29",
     "@types/speakingurl": "^13.0.1",

@@ -1,11 +1,12 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import * as RB from 'react-bootstrap'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import * as Select from 'react-select'
+import * as ReactSelect from 'react-select'
 import { compose, mapPropsStream } from 'recompose'
-import { reduxForm, ReduxFormProps, Field, InjectedFieldProps,
-  formValueSelector, change, ErrorsFor, SubmissionError } from 'redux-form'
+import { reduxForm, Field, formValueSelector, SubmitHandler, FormProps,
+  FormErrors, WrappedFieldProps, change, SubmissionError } from 'redux-form'
 import { createSelector } from 'reselect'
 import * as Rx from 'rxjs/Rx'
 import { getFavicon$ } from '../../../actions/index'
@@ -41,9 +42,9 @@ interface LayoutProps {
 
 type DontCareWhatElse = { [key: string]: any }
 
-type WrapperProps = InjectedFieldProps<string> & FormField<any> & LayoutProps & React.Props<any>
-const Wrapper = (props: WrapperProps & DontCareWhatElse) => {
-  const { input: { name }, meta: { warning, error }, label, help, layout, children } = props
+type WrapperProps = WrappedFieldProps<string> & FormField<any> & React.Props<any>
+const Wrapper = (props: WrapperProps & DontCareWhatElse, { layout }: LayoutProps) => {
+  const { input: { name }, meta: { warning, error }, label, help, children } = props
   return (
     <RB.FormGroup
       controlId={name}
@@ -68,9 +69,10 @@ const Wrapper = (props: WrapperProps & DontCareWhatElse) => {
   )
 }
 
+(Wrapper as any).contextTypes = { layout: PropTypes.object }
+
 // input ----------------------------------------------------------------------
 interface InputFormField<V> extends FormField<V> {
-  type: 'text' | 'password'
   rows?: number
   password?: boolean
   addonBefore?: React.ReactNode
@@ -78,7 +80,7 @@ interface InputFormField<V> extends FormField<V> {
 }
 
 const renderInput = (props: InputFormField<any> & WrapperProps) => {
-  const { input, meta, label, help, layout, rows,
+  const { input, meta, label, help, rows,
     password, visibility, addonBefore, addonAfter, initialValue, ...passedProps } = props
   const formControl = (
     <RB.FormControl
@@ -105,13 +107,22 @@ const renderInput = (props: InputFormField<any> & WrapperProps) => {
   )
 }
 
+type TextFieldProps<V> = InputFormField<V>
+const TextField = <V extends {}>(props: TextFieldProps<V>) => {
+  return <Field {...props as any} component={renderInput}/>
+}
+
+type PasswordFieldProps<V> = InputFormField<V>
+const PasswordField = <V extends {}>(props: PasswordFieldProps<V>) => {
+  return <Field {...props as any} component={renderInput} password/>
+}
+
 // url ------------------------------------------------------------------------
-interface UrlFormField<V> extends FormField<V> {
-  type: 'url'
+interface UrlFieldProps<V> extends FormField<V> {
   favicoName: keyof V
 }
 
-type RenderUrlProps = UrlFormField<any> & WrapperProps & {
+type RenderUrlProps = UrlFieldProps<any> & WrapperProps & {
   change: typeof change
 }
 
@@ -138,15 +149,27 @@ const enhanceUrl = compose(
 )
 
 const renderUrl = enhanceUrl((props: RenderUrlProps) => {
-  const { favicoName, type, change, ...inputProps } = props
-  return renderInput(inputProps as any)
+  const { favicoName, change, ...inputProps } = props
+  return renderInput(inputProps)
 })
 
-const renderFavico = (props: InjectedFieldProps<any>) => {
+const renderFavico = (props: WrappedFieldProps<any>) => {
   const { input: { value, onChange } } = props
   return <RB.InputGroup.Button>
-    <IconPicker value={value} onChange={onChange} />
+     <IconPicker value={value} onChange={onChange} />
   </RB.InputGroup.Button>
+}
+
+const UrlField = <V extends {}>(props: UrlFieldProps<V> & WrappedFieldProps<{}>) => {
+  const { favicoName } = props
+  return <Field {...props} component={renderUrl}
+    addonBefore={
+      <Field
+        component={renderFavico}
+        name={favicoName}
+      />
+    }
+  />
 }
 
 // select ---------------------------------------------------------------------
@@ -156,8 +179,7 @@ export interface SelectOption {
   disabled?: boolean
 }
 
-type SelectFormField<V> = FormField<V> & Select.ReactSelectProps & {
-  type: 'select'
+type SelectFieldProps<V> = FormField<V> & ReactSelect.ReactSelectProps & {
   createable?: boolean
   parse?: (value: any) => any
   format?: (value: any) => string
@@ -167,9 +189,9 @@ type SelectFormField<V> = FormField<V> & Select.ReactSelectProps & {
 
 const noop = () => undefined
 
-const renderSelect = (props: SelectFormField<any> & WrapperProps) => {
-  const { input, meta: { warning, error }, createable, label, layout, ...passedProps } = props
-  const Component = createable ? Select.Creatable : Select
+const renderSelect = (props: SelectFieldProps<any> & WrapperProps) => {
+  const { input, meta: { warning, error }, createable, label, ...passedProps } = props
+  const Component = createable ? ReactSelect.Creatable : ReactSelect
   return (
     <Wrapper {...props}>
       <Component
@@ -182,28 +204,35 @@ const renderSelect = (props: SelectFormField<any> & WrapperProps) => {
   )
 }
 
-// date -----------------------------------------------------------------------
+const SelectField = injectIntl(<V extends {}>(props: SelectFieldProps<V> & InjectedIntlProps) => {
+  const { placeholderMessage, intl: { formatMessage } } = props
+  let { placeholder, parse } = props
+  if (placeholderMessage) {
+    placeholder = formatMessage(placeholderMessage)
+  }
 
-// interface DateFormField<V> extends FormField<V> {
-//   type: 'date'
-// }
+  if (!parse) {
+    const valueOf = (value?: SelectOption): string => {
+      if (!value) {
+        return ''
+      }
+      return (value as any)[props.valueKey || 'value']
+    }
 
-// checkbox -------------------------------------------------------------------
-interface CheckboxFormField<V> extends FormField<V> {
-  type: 'checkbox'
-  message: FormattedMessage.MessageDescriptor
-}
+    parse = (value: any) => {
+      if (value && props.multi) {
+        return (value as SelectOption[])
+          .sort((a, b) => props.options.indexOf(a) - props.options.indexOf(b))
+          .map(valueOf)
+          .join(props.delimiter || ',')
+      } else {
+        return valueOf(value)
+      }
+    }
+  }
 
-const renderCheckbox = (props: CheckboxFormField<any> & WrapperProps) => {
-  const { input, meta: { warning, error }, label, message, layout, ...passedProps } = props
-  return (
-    <Wrapper {...props}>
-        <RB.Checkbox {...input} checked={input.value}>
-          <FormattedMessage {...message}/>
-        </RB.Checkbox>
-    </Wrapper>
-  )
-}
+  return <Field {...props} component={renderSelect} placeholder={placeholder} parse={parse}/>
+}) as any as <V extends {}>(props: SelectFieldProps<V>) => JSX.Element
 
 // interface AccountFormField<V> extends FormField<V> {
 //   type: 'account'
@@ -213,190 +242,64 @@ const renderCheckbox = (props: CheckboxFormField<any> & WrapperProps) => {
 //   type: 'budget'
 // }
 
+// date -----------------------------------------------------------------------
+
+// interface DateFormField<V> extends FormField<V> {
+//   type: 'date'
+// }
+
+// checkbox -------------------------------------------------------------------
+interface CheckboxFieldProps<V> extends FormField<V> {
+  message: FormattedMessage.MessageDescriptor
+}
+
+const renderCheckbox = (props: CheckboxFieldProps<any> & WrapperProps) => {
+  const { input, meta: { warning, error }, label, message, ...passedProps } = props
+  return (
+    <Wrapper {...props}>
+      <RB.Checkbox {...input} checked={input.value}>
+        <FormattedMessage {...message}/>
+      </RB.Checkbox>
+    </Wrapper>
+  )
+}
+
+const CheckboxField = <V extends {}>(props: CheckboxFieldProps<V>) => {
+  return <Field {...props} component={renderCheckbox}/>
+}
+
+// Collapse -------------------------------------------------------------------
+interface CollapseFieldProps<V> extends RB.CollapseProps {
+  name: keyof V
+}
+
+const renderCollapse = (props: CollapseFieldProps<any> & WrappedFieldProps<any>) => {
+  const { input, meta, name, children, ...passedProps } = props
+  return (
+    <RB.Collapse {...passedProps} in={!!input.value}>
+      {props.children}
+    </RB.Collapse>
+  )
+}
+
+const CollapseField = <V extends {}>(props: CollapseFieldProps<V>) => {
+  return <Field {...props} component={renderCollapse}/>
+}
+
 // ----------------------------------------------------------------------------
 // formComponent --------------------------------------------------------------
 
-type FormFieldType<V> = InputFormField<V>
-  | SelectFormField<V>
-  | UrlFormField<V>
-  // | DateFormField<V>
-  | CheckboxFormField<V>
-  // | AccountFormField<V>
-  // | BudgetFormField<V>
-
-export interface FormConfig<V> {
-  formName: string
-  fields: FormFieldType<V>[]
-  onChange?: (values: V, change: ChangeField) => void
-}
-
 interface Props<V> {
-  edit?: V
-  onSave: (values: V, error: ErrorCallback<V>, dispatch: any, props: any) => void | Promise<any>
-  onCancel: React.MouseEventHandler<{}>
-  onChange?: (values: V, change: ChangeField) => void
+  save: (values: V, error: ErrorCallback<V>, dispatch: any, props: any) => void | Promise<any>
+  changed?: (values: V, change: ChangeField<V>) => void
 }
 
-export type ErrorCallback<V> = (errors: ErrorsFor<V>) => void
-export type ChangeField = (field: string, value: any) => void
+export type ErrorCallback<V> = (errors: FormErrors<V>) => void
+export type ChangeField<V> = (field: keyof V, value: any) => void
 
-export const formComponent = <V extends {}>(config: FormConfig<V>) => {
-  const onSubmit = (values: V, dispatch: any, props: Props<V>) => {
-    return props.onSave(
-      values,
-      errors => {
-        throw new SubmissionError(errors)
-      },
-      dispatch,
-      props
-    )
-  }
-
-  const onChange = (values: V, dispatch: any) => {
-    if (config.onChange) {
-      const changeField = (field: string, value: any) => {
-        dispatch(change(config.formName, field, value))
-      }
-      config.onChange(values, changeField)
-    }
-  }
-
-  const layoutProps: LayoutProps = {
-    layout: {
-      label: { sm: 2 },
-      control: { sm: 10 },
-      nolabel: { smOffset: 2, sm: 10 }
-    }
-  }
-
-  const defaultInitialValues = {} as V
-
-  config.fields.forEach(field => {
-    if (field.initialValue) {
-      defaultInitialValues[field.name] = field.initialValue
-    }
-
-    switch (field.type) {
-      case 'select':
-        if (!field.parse) {
-          const valueOf = (value?: SelectOption): string => {
-            if (!value) {
-              return ''
-            }
-            return (value as any)[field.valueKey || 'value']
-          }
-
-          field.parse = (value: any) => {
-            if (value && field.multi) {
-              return (value as SelectOption[])
-                .sort((a, b) => field.options.indexOf(a) - field.options.indexOf(b))
-                .map(valueOf)
-                .join(field.delimiter || ',')
-            } else {
-              return valueOf(value)
-            }
-          }
-        }
-        break
-    }
-  })
-
-  const selectInitialValues = createSelector(
-    (props: Props<V>) => props.edit,
-    (edit: V | undefined) => {
-      return edit || defaultInitialValues
-    }
-  )
-
-  const selector = formValueSelector<V>(config.formName)
-
-  const enhance = compose<ReduxFormProps<V> & Props<V> & InjectedIntlProps & { visible: boolean[] }, Props<V>>(
-    connect(
-      (state, props: Props<V>) => {
-        const valueSelector = (...field: (keyof V)[]) => selector(state, ...field)
-        return {
-          visible: config.fields.map(field => field.visibility ? field.visibility(valueSelector) : true),
-          initialValues: selectInitialValues(props)
-        }
-      }
-    ),
-    reduxForm({
-      form: config.formName,
-      onSubmit,
-      onChange,
-      overwriteOnInitialValuesChange: true
-    }),
-    injectIntl,
-  )
-  return enhance((props) => {
-    const { handleSubmit, intl: { formatMessage } } = props
-    return <RB.Grid>
-      <RB.Form horizontal onSubmit={handleSubmit}>
-        {config.fields.map((field, index) => {
-          const { name, type, required, autoFocus, initialValue, ...fieldProps } = field
-          const baseProps = {
-            name,
-            key: field.name,
-            ...layoutProps
-          }
-
-          let component
-          switch (field.type) {
-            case 'text':
-              component = <Field {...baseProps} component={renderInput} {...fieldProps as any}/>
-              break
-            case 'password':
-              component = <Field {...baseProps} component={renderInput} {...fieldProps as any} password/>
-              break
-            case 'url':
-              component = (
-                <Field {...baseProps} component={renderUrl} {...fieldProps as any}
-                  addonBefore={
-                    <Field
-                      component={renderFavico}
-                      name={field.favicoName}
-                    />
-                  }
-                />
-              )
-              break
-            case 'select':
-              if (field.placeholderMessage) {
-                // hack: convert to a string here so components don't have to worry about intl
-                (fieldProps as any).placeholder = formatMessage(field.placeholderMessage as FormattedMessage.MessageDescriptor)
-              }
-              component = <Field {...baseProps} component={renderSelect} {...fieldProps as any}/>
-              break
-            case 'checkbox':
-              component = <Field {...baseProps} component={renderCheckbox} {...fieldProps as any}/>
-              break
-            default:
-              component = <div>{`unknown form field type ${type}`}</div>
-              break
-          }
-
-          return field.visibility ?
-            (
-              <RB.Collapse in={props.visible[index]} key={field.name}>
-                <div>{component}</div>
-              </RB.Collapse>
-            ) : (
-              component
-            )
-        })}
-        <RB.FormGroup>
-          <RB.Col {...layoutProps.layout.nolabel}>
-            <RB.ButtonGroup>
-              <RB.Button type='submit' bsStyle='primary'>_save_</RB.Button>
-              {' '}
-              <RB.Button onClick={props.onCancel}>_cancel_</RB.Button>
-            </RB.ButtonGroup>
-          </RB.Col>
-        </RB.FormGroup>
-      </RB.Form>
-    </RB.Grid>
-  })
-}
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 const testMessages = defineMessages({
   text: {
@@ -444,154 +347,141 @@ interface Values {
   checkbox: boolean
 }
 
-const isChecked = (getField: GetField<Values>) => getField('checkbox')
-
-export const Test = formComponent<Values>({
-  formName: 'test',
-  fields: [
-    { name: 'text',
-      label: testMessages.text,
-      help: testMessages.text,
-      type: 'text'
-    },
-    { name: 'password',
-      label: testMessages.password,
-      type: 'password',
-      visibility: isChecked
-    },
-    { name: 'url',
-      favicoName: 'favicon',
-      label: testMessages.url,
-      type: 'url',
-      visibility: isChecked
-    },
-    { name: 'multiline',
-      label: testMessages.multiline,
-      type: 'text',
-      rows: 4
-    },
-    { name: 'checkbox',
-      label: testMessages.checkbox,
-      message: testMessages.checkboxmessage,
-      type: 'checkbox'
-    },
-    { name: 'select',
-      label: testMessages.select,
-      placeholderMessage: testMessages.selectPlaceholder,
-      type: 'select',
-      options: [
-        { label: 'option 1', value: 'value 1' },
-        { label: 'option 2', value: 'value 2' },
-        { label: 'option 3', value: 'value 3' },
-      ]
-    },
-    { name: 'select2',
-      label: testMessages.select,
-      type: 'select',
-      multi: true,
-      options: [
-        { label: 'option 1', value: 'value 1' },
-        { label: 'option 2', value: 'value 2' },
-        { label: 'option 3', value: 'value 3' },
-      ]
-    },
-  ],
-  onChange: (values, change) => {
-    change('password', values.text || '')
-  }
-})
-
-const RenderTest2 = () => {
-  return <Test
-    edit={{
-      text: 'text',
-      password: 'password',
-      multiline: 'multiline',
-      select: 'value 2',
-      select2: 'value 1,value 3',
-      url: 'http://www.google.com',
-      favicon: '',
-      checkbox: true,
-    }}
-    onSave={(values, error) => {
-      error({
-        text: 'text error',
-        password: 'password error',
-        multiline: 'multiline error'
-      })
-    }}
-    onCancel={() => {
-      console.log('cancel')
-    }}
-  />
+const normalLayout = {
+  label: {},
+  control: {},
+  nolabel: {}
 }
 
-interface FormMakerProps<V> extends ReduxFormProps<V>, React.Props<any>, Props<V> {
+const horizontalLayout = {
+  label: { sm: 2 },
+  control: { sm: 10 },
+  nolabel: { smOffset: 2, sm: 10 }
+}
+
+const onSubmit = <V extends {}>(values: V, dispatch: any, props: Props<V>) => {
+  return props.save(
+    values,
+    errors => {
+      throw new SubmissionError(errors)
+    },
+    dispatch,
+    props
+  )
+}
+
+// https://github.com/DefinitelyTyped/DefinitelyTyped/issues/16538
+const onChange: any = <V extends {}>(values: V, dispatch: any, props: Props<V> & FormProps<V, any, any>) => {
+  if (props.changed) {
+    const form = props.form!
+    const changeField = (field: string, value: any) => {
+      dispatch(change(form, field, value))
+    }
+    props.changed(values, changeField)
+  }
 }
 
 const formMaker = <V extends {}>(form: string) => {
-  const onSubmit = (values: V, dispatch: any, props: Props<V>) => {
-    return props.onSave(
-      values,
-      errors => {
-        throw new SubmissionError(errors)
-      },
-      dispatch,
-      props
-    )
-  }
-
-  const onChange = (values: V, dispatch: any, props: Props<V>) => {
-    if (props.onChange && props.onChange !== onChange) {
-      const changeField = (field: string, value: any) => {
-        dispatch(change(form, field, value))
+  const Form = reduxForm<V, Props<V>>({
+    form,
+    onSubmit,
+    onChange,
+  })(
+    class extends React.Component<Props<V> & FormProps<V, Props<V>, {}> & RB.FormProps, any> {
+      static childContextTypes = {
+        layout: PropTypes.object
       }
-      props.onChange(values, changeField)
-    }
-  }
 
-  const enhance = compose<FormMakerProps<V> & RB.FormProps, React.Props<any> & Props<V>>(
-    reduxForm({
-      form,
-      onSubmit,
-      onChange,
-      overwriteOnInitialValuesChange: true
-    })
+      getChildContext () {
+        return {
+          layout: (this.props.horizontal ? horizontalLayout : normalLayout)
+        }
+      }
+
+      render () {
+        const { handleSubmit, children, horizontal, inline } = this.props
+        return (
+          <RB.Form
+            horizontal={horizontal}
+            inline={inline}
+            onSubmit={handleSubmit}
+          >
+            {children}
+          </RB.Form>
+        )
+      }
+    }
   )
-  const Form = enhance((props) => {
-    const { handleSubmit, children, ...formProps } = props
-    return (
-      <RB.Form
-        horizontal={props.horizontal}
-        inline={props.inline}
-        onSubmit={handleSubmit}
-      >
-        {children}
-      </RB.Form>
-    )
-  })
-  return { Form }
+
+  return {
+    Form,
+    Text: TextField as React.StatelessComponent<TextFieldProps<V>>,
+    Password: PasswordField as React.StatelessComponent<PasswordFieldProps<V>>,
+    Url: UrlField as React.StatelessComponent<UrlFieldProps<V>>,
+    Select: SelectField as React.StatelessComponent<SelectFieldProps<V>>,
+    Checkbox: CheckboxField as React.StatelessComponent<CheckboxFieldProps<V>>,
+    Collapse: CollapseField as React.StatelessComponent<CollapseFieldProps<V>>,
+  }
 }
 
-const { Form } = formMaker<Values>('test')
+const { Form, Text, Password, Url, Select, Checkbox, Collapse } = formMaker<Values>('test')
 
 export const RenderTest = () => {
   return (
     <Form
-      onSave={
-        (values: any) => console.log('onSave', values)
+      horizontal
+      save={
+        (values: any) => console.log('save', values)
       }
-      onCancel={
-        () => console.log('onCancel')
-      }
-      onChange={
+      changed={
         (values, change) => {
           change('password', values.text || '')
         }
       }
     >
-      <Field name='foo' component='input'/>
-      <Field name='password' component='input'/>
+      <Text name='text'
+        label={testMessages.text}
+        help={testMessages.text}
+      />
+      <Password name='password'
+        label={testMessages.password}
+      />
+      <Text name={'multiline'}
+        label={testMessages.multiline}
+        rows={4}
+      />
+      <Checkbox name='checkbox'
+        label={testMessages.checkbox}
+        message={testMessages.checkboxmessage}
+      />
+      <Url name='url'
+        favicoName='favicon'
+        label={testMessages.url}
+      />
+      <Collapse name='checkbox'>
+        <div>
+          <Select name='select'
+            label={testMessages.select}
+            placeholderMessage={testMessages.selectPlaceholder}
+            options={[
+              { label: 'option 1', value: 'value 1' },
+              { label: 'option 2', value: 'value 2' },
+              { label: 'option 3', value: 'value 3' },
+            ]}
+          />
+          <Select name='select2'
+            multi
+            label={testMessages.select}
+            placeholderMessage={testMessages.selectPlaceholder}
+            options={[
+              { label: 'option 1', value: 'value 1' },
+              { label: 'option 2', value: 'value 2' },
+              { label: 'option 3', value: 'value 3' },
+            ]}
+          />
+        </div>
+      </Collapse>
+
       <button type='submit'>submit</button>
     </Form>
   )
