@@ -1,6 +1,6 @@
 import * as PropTypes from 'prop-types'
 import * as React from 'react'
-import { Collapse, PageHeader, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
+import { PageHeader, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
@@ -12,6 +12,7 @@ import { AppState, FI, emptyfi } from '../../state/index'
 import { withPropChangeCallback } from '../enhancers/index'
 import { formatAddress } from '../../util/index'
 import { typedFields, forms } from './forms/index'
+import { formMaker, SaveCallback, ChangeCallback } from './forms/createForm'
 import { IconPicker } from './forms/IconPicker'
 import { IntlProps } from './props'
 
@@ -89,15 +90,15 @@ interface Props {
 interface ConnectedProps {
   filist: FI[]
   lang: string
-  online: boolean
-  fi: string
-  web: string
-  favicon: string
+  // online: boolean
+  // fi: string
+  // web: string
+  // favicon: string
 }
 
 interface EnhancedProps {
   onChangeFI: (event: any, index: number) => void
-  changeIcon: (favicon?: string) => void
+  // changeIcon: (favicon?: string) => void
 }
 
 type AllProps = IntlProps & EnhancedProps & ConnectedProps & Props & ReduxFormProps<Values>
@@ -121,9 +122,11 @@ export interface Values {
   password: string
 }
 
-const { TextField, SelectField, MultilineTextField, CheckboxField } = typedFields<Values>()
-const formName = 'bankForm'
-const formSelector = formValueSelector<Values>(formName)
+const { Form, Text, Password, Url, Select, Checkbox, Collapse } = formMaker<Values>('BankForm')
+
+// const { Text, SelectField, Text, CheckboxField } = typedFields<Values>()
+// const formName = 'bankForm'
+// const formSelector = formValueSelector<AppState>(formName)
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('BankForm'),
@@ -138,10 +141,10 @@ const enhance = compose<AllProps, Props>(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
       lang: state.i18n.locale,
-      online: formSelector(state, 'online'),
-      fi: formSelector(state, 'fi'),
-      web: formSelector(state, 'web'),
-      favicon: formSelector(state, 'favicon'),
+      // online: formSelector(state, 'online'),
+      // fi: formSelector(state, 'fi'),
+      // web: formSelector(state, 'web'),
+      // favicon: formSelector(state, 'favicon'),
     })
   ),
   withProps<{}, ConnectedProps & Props & IntlProps>(({onSubmit, intl: { formatMessage }}) => ({
@@ -152,143 +155,128 @@ const enhance = compose<AllProps, Props>(
       return onSubmit(values, dispatch, props)
     }
   })),
-  reduxForm<ConnectedProps & Props & IntlProps, Values>({
-    form: formName,
-    initialValues: {
-      online: true
-    }
-  }),
+  // reduxForm<ConnectedProps & Props & IntlProps, Values>({
+  //   form: formName,
+  //   initialValues: {
+  //     online: true
+  //   }
+  // }),
   withPropChangeCallback<ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>('edit', props => {
     const { edit, filist, initialize } = props
     if (edit) {
       const fi = filist.findIndex(fiEntry => fiEntry.name === edit.fi) + 1
       const values = { ...edit, ...edit.login, fi }
-      initialize(values, false)
+      initialize!(values as any)
     }
   }),
-  withPropChangeCallback<EnhancedProps & ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>('web', async (props, prev) => {
-    const { web, favicon, change } = props
-    if (web && (favicon === undefined || prev)) { // avoid re-fetching icon
-      try {
-        console.log('getting favicon')
-        change('favicon', '')
-        const response = await getFavicon(web)
-        change('favicon', response!)
-      } catch (err) {
-        console.log('error getting favicon: ', err.message)
-      }
-    }
-  }),
+  // withPropChangeCallback<EnhancedProps & ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>('web', async (props, prev) => {
+  //   const { web, favicon, change } = props
+  //   if (web && (favicon === undefined || prev)) { // avoid re-fetching icon
+  //     try {
+  //       console.log('getting favicon')
+  //       change!('favicon', '')
+  //       const response = await getFavicon(web)
+  //       change!('favicon', response!)
+  //     } catch (err) {
+  //       console.log('error getting favicon: ', err.message)
+  //     }
+  //   }
+  // }),
   withProps<EnhancedProps, ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>(props => ({
     onChangeFI: (event: any, index: number) => {
       const { filist, change } = props
       const value = index ? filist[index - 1] : emptyfi
-      change('name', value.name)
-      change('web', value.profile.siteURL)
-      change('address', formatAddress(value))
-      change('fid', value.fid)
-      change('org', value.org)
-      change('ofx', value.ofx)
+      change!('name', value.name)
+      change!('web', value.profile.siteURL)
+      change!('address', formatAddress(value))
+      change!('fid', value.fid)
+      change!('org', value.org)
+      change!('ofx', value.ofx)
     },
-    changeIcon: async (favicon?: string) => {
-      if (favicon === undefined) {
-        // re-download
-        props.change('favicon', '')
-        const response = await getFavicon(props.web)
-        props.change('favicon', response!)
-      } else {
-        props.change('favicon', favicon)
-      }
-    }
+    // changeIcon: async (favicon?: string) => {
+    //   if (favicon === undefined) {
+    //     // re-download
+    //     props.change!('favicon', '')
+    //     const response = await getFavicon(props.web)
+    //     props.change!('favicon', response!)
+    //   } else {
+    //     props.change!('favicon', favicon)
+    //   }
+    // }
   }))
 )
 
-import { formComponent } from './forms/createForm'
-export const BankForm = formComponent<Values>({
-  formName: 'BankForm',
-  fields: [
-    { name: 'fi',
-      label: messages.fi,
-      help: messages.fiHelp,
-      placeholderMessage: messages.fiPlaceholder,
-      type: 'select',
-      options: [],
-      labelKey: 'name',
-      valueKey: 'id',
-    }
-  ]
-})
-
-export const BankForm2 = enhance((props) => {
-  const { handleSubmit, edit, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist, online } = props
+export const BankForm = enhance((props) => {
+  const { handleSubmit, edit, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist } = props
   const title = edit ? messages.editTitle : messages.createTitle
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <Form
+      horizontal
+      save={
+        onSubmit as any
+      }
+    >
       <PageHeader>
         <FormattedMessage {...title}/>
       </PageHeader>
 
       <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
-        <SelectField
+        <Select
           autofocus
           name='fi'
-          label={formatMessage(messages.fi)}
+          label={messages.fi}
           options={filist}
           labelKey='name'
           valueKey='id'
           onChange={onChangeFI as any}
-          help={formatMessage(messages.fiHelp)}
-          placeholder={formatMessage(messages.fiPlaceholder)}
+          help={messages.fiHelp}
+          placeholderMessage={messages.fiPlaceholder}
         />
-        <TextField
+        <Text
           name='name'
-          label={formatMessage(messages.name)}
+          label={messages.name}
         />
-        <TextField
+        <Url
           name='web'
-          label={formatMessage(messages.web)}
-          addonBefore={
-            <InputGroup.Button>
-              <IconPicker value={props.favicon} onChange={props.changeIcon}/>
-            </InputGroup.Button>
-          }
+          favicoName='favicon'
+          label={messages.web}
         />
-        <MultilineTextField
+        <Text
           name='address'
           rows={4}
-          label={formatMessage(messages.address)}
+          label={messages.address}
         />
-        <MultilineTextField
+        <Text
           name='notes'
           rows={4}
-          label={formatMessage(messages.notes)}
+          label={messages.notes}
         />
-        <CheckboxField
+        <Checkbox
           name='online'
-          label={formatMessage(messages.online)}
+          label={messages.online}
+          message={messages.online}
         />
-        <Collapse in={online}>
+        <Collapse name='online'>
           <div>
-            <TextField
+            <Text
               name='username'
-              label={formatMessage(messages.username)}
+              label={messages.username}
             />
-            <TextField
+            <Password
               name='password'
-              type='password'
-              label={formatMessage(messages.password)}
+              label={messages.password}
             />
-            <TextField
+            <Text
               name='fid'
-              label={formatMessage(messages.fid)}
+              label={messages.fid}
             />
-            <TextField
+            <Text
               name='org'
-              label={formatMessage(messages.org)}
+              label={messages.org}
             />
-            <TextField
+            <Text
               name='ofx'
-              label={formatMessage(messages.ofx)}
+              label={messages.ofx}
             />
           </div>
         </Collapse>
@@ -313,6 +301,6 @@ export const BankForm2 = enhance((props) => {
           </Button>
         </ButtonToolbar>
       </div>
-    </form>
+    </Form>
   )
 })

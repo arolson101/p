@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Field, FieldProps, FieldComponent, InjectedFieldProps } from 'redux-form'
+import { Field, WrappedFieldProps } from 'redux-form'
 import * as RB from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
 import * as Select from 'react-select'
@@ -70,7 +70,7 @@ interface FieldGroupProps<Name> {
 }
 
 const WrappedControl = <Name extends string, Props>(Component: any, componentProps?: Props) =>
-  (props: FieldGroupProps<Name> & Partial<InjectedFieldProps<string>> & Props) => {
+  (props: FieldGroupProps<Name> & Partial<WrappedFieldProps<string>> & Props) => {
     const { minimal, addonBefore, addonAfter, input, meta, help, ...fieldProps } = props as any
     const { name, label } = fieldProps
     const { error, warning } = meta
@@ -135,7 +135,7 @@ export interface SelectOption {
   disabled?: boolean
 }
 
-const RBCheckbox = (props: RB.CheckboxProps & InjectedFieldProps<any>) =>
+const RBCheckbox = (props: RB.CheckboxProps & WrappedFieldProps<any>) =>
   <RB.Checkbox
     {...props.input}
     checked={props.input.value}
@@ -143,8 +143,8 @@ const RBCheckbox = (props: RB.CheckboxProps & InjectedFieldProps<any>) =>
     {props.label}
   </RB.Checkbox>
 
-const FieldTemplate = <Values, Props>(component: FieldComponent<Props>) =>
-  (props: Props & FieldGroupProps<keyof Values> & Partial<FieldProps<Values, Props>>) => (
+const FieldTemplate = <Values, Props>(component: any) =>
+  (props: Props & FieldGroupProps<keyof Values> & Partial<any>) => (
     <Field component={component} {...props as any} />
   )
 

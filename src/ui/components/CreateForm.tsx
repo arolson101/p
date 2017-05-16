@@ -75,14 +75,14 @@ const enhance = compose<AllProps, Props>(
   }),
   reduxForm<EnhancedProps & ConnectedProps & DispatchProps & Props & IntlProps, Values>({
     form: 'CreateForm',
-    validate: (values: Values, props: AllProps) => {
+    validate: ((values: Values, props: AllProps) => {
       const { files, intl: { formatMessage } } = props
       const v = new Validator(values)
       const names = files.map(info => info.name)
       v.unique('name', names, formatMessage(messages.uniqueName))
       v.equal('confirmPassword', 'password', formatMessage(forms.passwordsMatch))
       return v.errors
-    }
+    }) as any
   })
 )
 

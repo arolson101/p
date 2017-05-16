@@ -183,7 +183,7 @@ type SelectFieldProps<V> = FormField<V> & ReactSelect.ReactSelectProps & {
   createable?: boolean
   parse?: (value: any) => any
   format?: (value: any) => string
-  options: SelectOption[]
+  options: (SelectOption | any)[]
   placeholderMessage?: FormattedMessage.MessageDescriptor
 }
 
@@ -290,10 +290,12 @@ const CollapseField = <V extends {}>(props: CollapseFieldProps<V>) => {
 // formComponent --------------------------------------------------------------
 
 interface Props<V> {
-  save: (values: V, error: ErrorCallback<V>, dispatch: any, props: any) => void | Promise<any>
-  changed?: (values: V, change: ChangeField<V>) => void
+  save: SaveCallback<V>
+  changed?: ChangeCallback<V>
 }
 
+export type SaveCallback<V> = (values: V, error: ErrorCallback<V>, dispatch: any, props: any) => void | Promise<any>
+export type ChangeCallback<V> = (values: V, change: ChangeField<V>, dispatch: any, props: any) => void
 export type ErrorCallback<V> = (errors: FormErrors<V>) => void
 export type ChangeField<V> = (field: keyof V, value: any) => void
 
@@ -377,11 +379,11 @@ const onChange: any = <V extends {}>(values: V, dispatch: any, props: Props<V> &
     const changeField = (field: string, value: any) => {
       dispatch(change(form, field, value))
     }
-    props.changed(values, changeField)
+    props.changed(values, changeField, dispatch, props)
   }
 }
 
-const formMaker = <V extends {}>(form: string) => {
+export const formMaker = <V extends {}>(form: string) => {
   const Form = reduxForm<V, Props<V>>({
     form,
     onSubmit,

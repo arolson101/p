@@ -8,7 +8,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 import { shallowEqual } from 'recompose'
-import { ReduxFormProps, FieldArray, FieldArrayParams, reduxForm, Fields } from 'redux-form'
+import { ReduxFormProps, FieldArray, FieldsProps, reduxForm, Fields } from 'redux-form'
 import { deleteBudget } from '../../actions/index'
 import { Bill, Budget, Category } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
@@ -110,7 +110,7 @@ const { TextField } = typedFields<any>()
 ) as any)
 @(reduxForm<AllProps, Values>({
   form: 'BudgetForm',
-  validate: (values, props) => {
+  validate: (values, props: any) => {
     const v = new Validator(values)
     const { intl: { formatMessage } } = props
     v.arrayUnique('budgets', 'name', formatMessage(messages.uniqueBudget))
@@ -136,7 +136,7 @@ export class Budgets extends React.Component<AllProps, State> {
     const { editing } = this.state
 
     return (
-      <form onSubmit={handleSubmit(this.onSubmit)}>
+      <form onSubmit={handleSubmit!(this.onSubmit)}>
         <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
 
           <PageHeader>
@@ -259,7 +259,7 @@ export class Budgets extends React.Component<AllProps, State> {
           }))
         }))
       }
-      initialize(values, false)
+      initialize!(values)
     }
     this.setState({editing})
   }
@@ -293,7 +293,7 @@ const editBudgetList = (props: any) => {
   )
 }
 
-const SortableBudgetList = SortableContainer(({fields, intl}: {fields: Fields} & IntlProps) =>
+const SortableBudgetList = SortableContainer(({fields, intl}: {fields: FieldsProps<any>} & IntlProps) =>
   <div>
     {fields.map((budget: string, index: number) =>
       <SortableCategoryList
@@ -331,7 +331,7 @@ const SortableCategoryList = SortableElement(({budget, onRemove, intl}: Sortable
   </FieldArray>
 )
 
-const editCategories = (props: FieldArrayParams & IntlProps) => {
+const editCategories = (props: any & IntlProps) => {
   const { fields, children, meta: { error }, intl } = props
   return (
     <Panel header={children}>
@@ -353,7 +353,7 @@ const editCategories = (props: FieldArrayParams & IntlProps) => {
   )
 }
 
-const SortableCategoriesList = SortableContainer(({error, fields, intl}: {error?: string, fields: Fields} & IntlProps) =>
+const SortableCategoriesList = SortableContainer(({error, fields, intl}: {error?: string, fields: FieldsProps<any>} & IntlProps) =>
   <ListGroup fill>
     {fields.map((category: string, index: number) =>
       <SortableCategory

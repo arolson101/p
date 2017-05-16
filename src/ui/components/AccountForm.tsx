@@ -92,7 +92,7 @@ export interface Values {
 
 const { TextField, SelectField } = typedFields<Values>()
 const formName = 'accountForm'
-const formSelector = formValueSelector<Values>(formName)
+const formSelector = formValueSelector<AppState>(formName)
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
@@ -115,7 +115,7 @@ const enhance = compose<AllProps, Props>(
   })),
   reduxForm<Props & IntlProps, Values>({
     form: formName,
-    validate: (values: Values, props: AllProps) => {
+    validate: ((values: Values, props: AllProps) => {
       const v = new Validator(values)
       const { edit, accounts, intl: { formatMessage } } = props
       const otherAccounts = accounts.filter(acct => !edit || edit._id !== acct.doc._id)
@@ -124,18 +124,18 @@ const enhance = compose<AllProps, Props>(
       v.unique('name', otherNames, formatMessage(messages.uniqueName))
       v.unique('number', otherNumbers, formatMessage(messages.uniqueNumber))
       return v.errors
-    }
+    }) as any
   }),
   withPropChangeCallback<ReduxFormProps<Values> & Props & IntlProps>('edit', (props: AllProps) => {
     const { edit, initialize } = props
     if (edit) {
       const values = edit
-      initialize(values, false)
+      initialize!(values)
     } else {
       const values = {
         color: Account.generateColor()
       }
-      initialize(values, false)
+      initialize!(values as any)
     }
   }),
   connect<FormProps, {}, ReduxFormProps<Values> & Props & IntlProps>(
@@ -151,7 +151,7 @@ export const AccountForm = enhance((props) => {
   const { formatMessage } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit!(onSubmit)}>
       <PageHeader>
         <FormattedMessage {...title}/>
       </PageHeader>
@@ -160,7 +160,7 @@ export const AccountForm = enhance((props) => {
         <TextField
           addonBefore={
             <InputGroup.Button>
-              <ColorPicker value={color} onChange={(c) => change('color', c)}/>
+              <ColorPicker value={color} onChange={(c) => change!('color', c)}/>
             </InputGroup.Button>
           }
           name='name'

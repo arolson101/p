@@ -99,7 +99,7 @@ export const SyncStatus = enhance(({ onSubmit, sync, handleSubmit }) => {
         <div>
           {config}<br/>
           <FormattedMessage {... (sync.password ? messages.badPassword : messages.needsPassword)}/>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit!(onSubmit)}>
             <TextField name='password' label='password' />
             <Button type='submit'>submit</Button>
           </form>

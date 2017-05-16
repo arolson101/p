@@ -21,7 +21,7 @@ export interface IconPickerProps {
 
 interface Props extends IconPickerProps {
   value?: string
-  onChange?: (value?: string) => void
+  onChange?: (value: any, newValue: any, previousValue: any) => void
 }
 
 interface EnhancedProps {
@@ -47,11 +47,11 @@ const enhance = compose<AllProps, Props>(
 
       switch (eventKey) {
         case 'redownload':
-          props.onChange(undefined)
+          props.onChange(undefined, undefined, undefined)
           break
 
         case 'remove':
-          props.onChange('')
+          props.onChange('', '', undefined)
           break
       }
     }

@@ -227,7 +227,7 @@ interface Values extends RRuleValues {
 }
 
 const formName = 'BillForm'
-const formSelector = formValueSelector<Values>(formName)
+const formSelector = formValueSelector<AppState>(formName)
 
 const enhance = compose<AllProps, Props>(
   setDisplayName(formName),
@@ -249,13 +249,13 @@ const enhance = compose<AllProps, Props>(
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
-  reduxForm<ConnectedProps & DispatchProps & IntlProps & Props, Values>({
+  reduxForm<Values, ConnectedProps & DispatchProps & IntlProps & Props>({
     form: formName,
-    validate: (values: Values, props) => {
+    validate: (values: Values, props: any) => {
       const v = new Validator(values)
       const { edit, bills, intl: { formatMessage } } = props
-      const otherAccounts = bills.filter(otherBill => !edit || otherBill.doc._id !== edit.doc._id)
-      const otherNames = otherAccounts.map(acct => acct.doc.name)
+      const otherAccounts = bills.filter((otherBill: Bill.View) => !edit || otherBill.doc._id !== edit.doc._id)
+      const otherNames = otherAccounts.map((acct: Account.View) => acct.doc.name)
       v.unique('name', otherNames, formatMessage(messages.uniqueName))
       v.date('start', formatMessage(forms.date))
       v.date('until', formatMessage(forms.date))
@@ -314,7 +314,7 @@ const enhance = compose<AllProps, Props>(
         const doc = Bill.doc(bill, lang)
         docs.push(doc)
         await pushChanges({docs})
-        return onSubmit(doc)
+        return (onSubmit as any)(doc)
       }
     })
   ),
@@ -365,7 +365,7 @@ const enhance = compose<AllProps, Props>(
           values.until = ''
         }
 
-        initialize(values, false)
+        initialize!(values)
       }
     }
   ),
@@ -380,7 +380,7 @@ const enhance = compose<AllProps, Props>(
         .switchMap(getFavicon$)
         .withLatestFrom(props$, (icon, props) => {
           const { change } = props
-          change('favicon', icon!)
+          change!('favicon', icon!)
         })
 
       return props$.merge(changeIcon$.ignoreElements())
@@ -389,10 +389,10 @@ const enhance = compose<AllProps, Props>(
   // tslint:disable-next-line:max-line-length
   withHandlers<Handlers, EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>({
     onFrequencyChange: ({change}) => (eventKey: Frequency) => {
-      change('frequency', eventKey)
+      change!('frequency', eventKey)
     },
     onEndTypeChange: ({change}) => (eventKey: EndType) => {
-      change('end', eventKey)
+      change!('end', eventKey)
     },
     filterEndDate: ({start}) => (date: Date): boolean => {
       if (start) {
@@ -403,11 +403,11 @@ const enhance = compose<AllProps, Props>(
     changeIcon: ({change, web}) => async (favicon?: string) => {
       if (favicon === undefined) {
         // re-download
-        change('favicon', '')
+        change!('favicon', '')
         const response = await getFavicon(web)
-        change('favicon', response!)
+        change!('favicon', response!)
       } else {
-        change('favicon', favicon)
+        change!('favicon', favicon)
       }
     }
   })
@@ -426,7 +426,7 @@ export const BillForm = enhance((props) => {
   const text = rrule ? rrule.toText() : ''
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit!(onSubmit)}>
       <PageHeader>
         <FormattedMessage {...title}/>
       </PageHeader>
@@ -441,7 +441,7 @@ export const BillForm = enhance((props) => {
           name='group'
           options={groups}
           label={formatMessage(messages.group)}
-          promptTextCreator={(label) => 'create group ' + label}
+          promptTextCreator={(label: string) => 'create group ' + label}
           placeholder=''
         />
         <TextField
