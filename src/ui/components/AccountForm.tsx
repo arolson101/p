@@ -86,7 +86,7 @@ export interface Values {
   key: string
 }
 
-const { Form, Text, Select, ColorAddon, formValueSelector } = formMaker<Values>('BankForm')
+const { Form, Text, Select, ColorAddon, formValueSelector } = formMaker<Values>('AccountForm')
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
