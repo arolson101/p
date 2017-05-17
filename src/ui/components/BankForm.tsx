@@ -4,19 +4,17 @@ import { PageHeader, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { reduxForm, formValueSelector, ReduxFormProps, SubmitFunction } from 'redux-form'
+import { reduxForm, formValueSelector } from 'redux-form'
 import { getFavicon } from '../../actions/index'
 import { Bank } from '../../docs/index'
 import { Validator } from '../../util/index'
-import { AppState, FI, emptyfi } from '../../state/index'
+import { AppState, FI, emptyfi, mapDispatchToProps } from '../../state/index'
 import { withPropChangeCallback } from '../enhancers/index'
 import { formatAddress } from '../../util/index'
 import { typedFields, forms } from './forms/index'
 import { formMaker, SaveCallback, ChangeCallback } from './forms/createForm'
 import { IconPicker } from './forms/IconPicker'
 import { IntlProps } from './props'
-
-export { SubmitFunction }
 
 const messages = defineMessages({
   createTitle: {
@@ -83,25 +81,25 @@ const messages = defineMessages({
 
 interface Props {
   edit?: Bank.Doc
-  onSubmit: SubmitFunction<Values>
-  onCancel: () => void
+  save: SaveCallback<Values>
+  cancel: () => void
 }
 
 interface ConnectedProps {
   filist: FI[]
   lang: string
-  // online: boolean
-  // fi: string
-  // web: string
-  // favicon: string
+}
+
+interface DispatchProps {
+  change: typeof change
+  initialize: typeof initialize
 }
 
 interface EnhancedProps {
   onChangeFI: (event: any, index: number) => void
-  // changeIcon: (favicon?: string) => void
 }
 
-type AllProps = IntlProps & EnhancedProps & ConnectedProps & Props & ReduxFormProps<Values>
+type AllProps = IntlProps & EnhancedProps & ConnectedProps & Props
 
 export interface Values {
   fi: number
@@ -122,99 +120,51 @@ export interface Values {
   password: string
 }
 
-const { Form, Text, Password, Url, Select, Checkbox, Collapse } = formMaker<Values>('BankForm')
-
-// const { Text, SelectField, Text, CheckboxField } = typedFields<Values>()
-// const formName = 'bankForm'
-// const formSelector = formValueSelector<AppState>(formName)
+const { Form, Text, Password, Url, Select, Checkbox, Collapse, change, initialize } = formMaker<Values>('BankForm')
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('BankForm'),
   onlyUpdateForPropTypes,
-  setPropTypes({
+  setPropTypes<Props>({
     edit: PropTypes.object,
-    onSubmit: PropTypes.func.isRequired,
-    onCancel: PropTypes.func.isRequired
-  } as PropTypes<Props>),
+    save: PropTypes.func.isRequired,
+    cancel: PropTypes.func.isRequired
+  }),
   injectIntl,
-  connect<ConnectedProps, {}, Props & IntlProps>(
+  connect<ConnectedProps, DispatchProps, Props & IntlProps>(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
       lang: state.i18n.locale,
-      // online: formSelector(state, 'online'),
-      // fi: formSelector(state, 'fi'),
-      // web: formSelector(state, 'web'),
-      // favicon: formSelector(state, 'favicon'),
-    })
+    }),
+    mapDispatchToProps<DispatchProps>({change, initialize})
   ),
-  withProps<{}, ConnectedProps & Props & IntlProps>(({onSubmit, intl: { formatMessage }}) => ({
-    onSubmit: async (values: Values, dispatch: any, props: any) => {
-      const v = new Validator(values)
-      v.required(['name'], formatMessage(forms.required))
-      v.maybeThrowSubmissionError()
-      return onSubmit(values, dispatch, props)
-    }
-  })),
-  // reduxForm<ConnectedProps & Props & IntlProps, Values>({
-  //   form: formName,
-  //   initialValues: {
-  //     online: true
-  //   }
-  // }),
-  withPropChangeCallback<ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>('edit', props => {
-    const { edit, filist, initialize } = props
-    if (edit) {
-      const fi = filist.findIndex(fiEntry => fiEntry.name === edit.fi) + 1
-      const values = { ...edit, ...edit.login, fi }
-      initialize!(values as any)
-    }
-  }),
-  // withPropChangeCallback<EnhancedProps & ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>('web', async (props, prev) => {
-  //   const { web, favicon, change } = props
-  //   if (web && (favicon === undefined || prev)) { // avoid re-fetching icon
-  //     try {
-  //       console.log('getting favicon')
-  //       change!('favicon', '')
-  //       const response = await getFavicon(web)
-  //       change!('favicon', response!)
-  //     } catch (err) {
-  //       console.log('error getting favicon: ', err.message)
-  //     }
-  //   }
-  // }),
-  withProps<EnhancedProps, ReduxFormProps<Values> & ConnectedProps & Props & IntlProps>(props => ({
+  withProps<EnhancedProps, DispatchProps & ConnectedProps & Props & IntlProps>(props => ({
     onChangeFI: (event: any, index: number) => {
       const { filist, change } = props
       const value = index ? filist[index - 1] : emptyfi
-      change!('name', value.name)
-      change!('web', value.profile.siteURL)
-      change!('address', formatAddress(value))
-      change!('fid', value.fid)
-      change!('org', value.org)
-      change!('ofx', value.ofx)
+      change('name', value.name)
+      change('web', value.profile.siteURL)
+      change('favicon', '')
+      change('address', formatAddress(value))
+      change('fid', value.fid)
+      change('org', value.org)
+      change('ofx', value.ofx)
     },
-    // changeIcon: async (favicon?: string) => {
-    //   if (favicon === undefined) {
-    //     // re-download
-    //     props.change!('favicon', '')
-    //     const response = await getFavicon(props.web)
-    //     props.change!('favicon', response!)
-    //   } else {
-    //     props.change!('favicon', favicon)
-    //   }
-    // }
   }))
 )
 
 export const BankForm = enhance((props) => {
-  const { handleSubmit, edit, onSubmit, onCancel, onChangeFI, intl: { formatMessage }, filist } = props
+  const { edit, save, cancel, onChangeFI, intl: { formatMessage }, filist } = props
   const title = edit ? messages.editTitle : messages.createTitle
+
+  const fi = edit ? filist.findIndex(fiEntry => fiEntry.name === edit.fi) + 1 : -1
+  const initialValues = edit ? { ...edit, ...edit.login, fi } : {}
+
   return (
     <Form
+      initialValues={initialValues}
       horizontal
-      save={
-        onSubmit as any
-      }
+      save={save}
     >
       <PageHeader>
         <FormattedMessage {...title}/>
@@ -235,6 +185,7 @@ export const BankForm = enhance((props) => {
         <Text
           name='name'
           label={messages.name}
+          required
         />
         <Url
           name='web'
@@ -284,7 +235,7 @@ export const BankForm = enhance((props) => {
         <ButtonToolbar className='pull-right'>
           <Button
             type='button'
-            onClick={onCancel}
+            onClick={cancel}
           >
             <FormattedMessage {...forms.cancel}/>
           </Button>

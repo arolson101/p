@@ -7,10 +7,12 @@ import * as ReactSelect from 'react-select'
 import { compose, mapPropsStream } from 'recompose'
 import { reduxForm, Field, formValueSelector, SubmitHandler, FormProps,
   FormErrors, WrappedFieldProps, change, SubmissionError } from 'redux-form'
+import * as RF from 'redux-form'
 import { createSelector } from 'reselect'
 import * as Rx from 'rxjs/Rx'
 import { getFavicon$ } from '../../../actions/index'
 import { mapDispatchToProps } from '../../../state/index'
+import { forms } from './index'
 import { IconPicker } from './IconPicker'
 
 const messages = defineMessages({
@@ -44,11 +46,11 @@ type DontCareWhatElse = { [key: string]: any }
 
 type WrapperProps = WrappedFieldProps<string> & FormField<any> & React.Props<any>
 const Wrapper = (props: WrapperProps & DontCareWhatElse, { layout }: LayoutProps) => {
-  const { input: { name }, meta: { warning, error }, label, help, children } = props
+  const { input: { name }, meta: { touched, warning, error }, label, help, children } = props
   return (
     <RB.FormGroup
       controlId={name}
-      validationState={error ? 'error' : warning ? 'warning' : undefined}
+      validationState={touched ? (error ? 'error' : warning ? 'warning' : undefined) : undefined}
     >
       <RB.Col componentClass={RB.ControlLabel} {...layout.label}>
         {label &&
@@ -61,8 +63,8 @@ const Wrapper = (props: WrapperProps & DontCareWhatElse, { layout }: LayoutProps
         {help &&
           <RB.HelpBlock><FormattedMessage {...help}/></RB.HelpBlock>
         }
-        {(error || warning) &&
-          <RB.HelpBlock >{error || warning}</RB.HelpBlock>
+        {touched && (error || warning) &&
+          <RB.HelpBlock>{error || warning}</RB.HelpBlock>
         }
       </RB.Col>
     </RB.FormGroup>
@@ -70,6 +72,19 @@ const Wrapper = (props: WrapperProps & DontCareWhatElse, { layout }: LayoutProps
 }
 
 (Wrapper as any).contextTypes = { layout: PropTypes.object }
+
+const validate = <V extends FormData>(value: any, allValues: V, props: InjectedIntlProps) => {
+  const { intl: { formatMessage } } = props
+  if (!value) {
+    return formatMessage(forms.required)
+  }
+}
+
+const validator = (props: FormField<any>) => {
+  if (props.required) {
+    return validate
+  }
+}
 
 // input ----------------------------------------------------------------------
 interface InputFormField<V> extends FormField<V> {
@@ -109,12 +124,12 @@ const renderInput = (props: InputFormField<any> & WrapperProps) => {
 
 type TextFieldProps<V> = InputFormField<V>
 const TextField = <V extends {}>(props: TextFieldProps<V>) => {
-  return <Field {...props as any} component={renderInput}/>
+  return <Field {...props as any} validate={validator(props)} component={renderInput}/>
 }
 
 type PasswordFieldProps<V> = InputFormField<V>
 const PasswordField = <V extends {}>(props: PasswordFieldProps<V>) => {
-  return <Field {...props as any} component={renderInput} password/>
+  return <Field {...props as any} validate={validator(props)} component={renderInput} password/>
 }
 
 // url ------------------------------------------------------------------------
@@ -137,10 +152,11 @@ const enhanceUrl = compose(
         .pluck<RenderUrlProps, string>('input', 'value')
         .distinctUntilChanged()
         .debounceTime(500)
-        // .do((url) => console.log(`getting favicon for ${url}`))
+        .do((url) => console.log(`getting favicon for ${url}`))
         .switchMap(getFavicon$)
         .withLatestFrom(props$, (icon, props) => {
-          props.change(props.meta.form, props.favicoName, icon!)
+          const { change, meta: { form }, favicoName } = props
+          change(form, favicoName, icon || '')
         })
 
       return props$.merge(changeIcon$.ignoreElements())
@@ -162,7 +178,7 @@ const renderFavico = (props: WrappedFieldProps<any>) => {
 
 const UrlField = <V extends {}>(props: UrlFieldProps<V> & WrappedFieldProps<{}>) => {
   const { favicoName } = props
-  return <Field {...props} component={renderUrl}
+  return <Field {...props} validate={validator(props)} component={renderUrl}
     addonBefore={
       <Field
         component={renderFavico}
@@ -231,7 +247,7 @@ const SelectField = injectIntl(<V extends {}>(props: SelectFieldProps<V> & Injec
     }
   }
 
-  return <Field {...props} component={renderSelect} placeholder={placeholder} parse={parse}/>
+  return <Field {...props} validate={validator(props)} component={renderSelect} placeholder={placeholder} parse={parse}/>
 }) as any as <V extends {}>(props: SelectFieldProps<V>) => JSX.Element
 
 // interface AccountFormField<V> extends FormField<V> {
@@ -265,7 +281,7 @@ const renderCheckbox = (props: CheckboxFieldProps<any> & WrapperProps) => {
 }
 
 const CheckboxField = <V extends {}>(props: CheckboxFieldProps<V>) => {
-  return <Field {...props} component={renderCheckbox}/>
+  return <Field {...props} validate={validator(props)} component={renderCheckbox}/>
 }
 
 // Collapse -------------------------------------------------------------------
@@ -302,6 +318,87 @@ export type ChangeField<V> = (field: keyof V, value: any) => void
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
+
+const normalLayout = {
+  label: {},
+  control: {},
+  nolabel: {}
+}
+
+const horizontalLayout = {
+  label: { sm: 2 },
+  control: { sm: 10 },
+  nolabel: { smOffset: 2, sm: 10 }
+}
+
+const onSubmit = <V extends {}>(values: V, dispatch: any, props: Props<V>) => {
+  return props.save(
+    values,
+    errors => {
+      throw new SubmissionError(errors)
+    },
+    dispatch,
+    props
+  )
+}
+
+// https://github.com/DefinitelyTyped/DefinitelyTyped/issues/16538
+const onChange: any = <V extends {}>(values: V, dispatch: any, props: Props<V> & FormProps<V, any, any>) => {
+  if (props.changed) {
+    const form = props.form!
+    const changeField = (field: string, value: any) => {
+      dispatch(change(form, field, value))
+    }
+    props.changed(values, changeField, dispatch, props)
+  }
+}
+
+export const formMaker = <V extends {}>(form: string) => {
+  const Form = injectIntl(reduxForm<V, Props<V>>({
+    form,
+    onSubmit,
+    onChange,
+  })(
+    class extends React.Component<Props<V> & FormProps<V, Props<V>, {}> & RB.FormProps, any> {
+      static childContextTypes = {
+        layout: PropTypes.object
+      }
+
+      getChildContext () {
+        return {
+          layout: (this.props.horizontal ? horizontalLayout : normalLayout)
+        }
+      }
+
+      render () {
+        const { handleSubmit, children, horizontal, inline } = this.props
+        return (
+          <RB.Form
+            horizontal={horizontal}
+            inline={inline}
+            onSubmit={handleSubmit}
+          >
+            {children}
+          </RB.Form>
+        )
+      }
+    }
+  ) as any) as any as React.ComponentClass<Props<V> & FormProps<V, Props<V>, {}> & RB.FormProps>
+
+  return {
+    Form,
+    formValueSelector: formValueSelector(form),
+    change: (field: string, value: any) => RF.change(form, field, value),
+    initialize: (data: any, keepDirty?: boolean | RF.InitializeOptions, options?: RF.InitializeOptions) => RF.initialize(form, data, keepDirty, options),
+    Text: TextField as React.StatelessComponent<TextFieldProps<V>>,
+    Password: PasswordField as React.StatelessComponent<PasswordFieldProps<V>>,
+    Url: UrlField as React.StatelessComponent<UrlFieldProps<V>>,
+    Select: SelectField as React.StatelessComponent<SelectFieldProps<V>>,
+    Checkbox: CheckboxField as React.StatelessComponent<CheckboxFieldProps<V>>,
+    Collapse: CollapseField as React.StatelessComponent<CollapseFieldProps<V>>,
+  }
+}
+
 
 const testMessages = defineMessages({
   text: {
@@ -349,83 +446,6 @@ interface Values {
   checkbox: boolean
 }
 
-const normalLayout = {
-  label: {},
-  control: {},
-  nolabel: {}
-}
-
-const horizontalLayout = {
-  label: { sm: 2 },
-  control: { sm: 10 },
-  nolabel: { smOffset: 2, sm: 10 }
-}
-
-const onSubmit = <V extends {}>(values: V, dispatch: any, props: Props<V>) => {
-  return props.save(
-    values,
-    errors => {
-      throw new SubmissionError(errors)
-    },
-    dispatch,
-    props
-  )
-}
-
-// https://github.com/DefinitelyTyped/DefinitelyTyped/issues/16538
-const onChange: any = <V extends {}>(values: V, dispatch: any, props: Props<V> & FormProps<V, any, any>) => {
-  if (props.changed) {
-    const form = props.form!
-    const changeField = (field: string, value: any) => {
-      dispatch(change(form, field, value))
-    }
-    props.changed(values, changeField, dispatch, props)
-  }
-}
-
-export const formMaker = <V extends {}>(form: string) => {
-  const Form = reduxForm<V, Props<V>>({
-    form,
-    onSubmit,
-    onChange,
-  })(
-    class extends React.Component<Props<V> & FormProps<V, Props<V>, {}> & RB.FormProps, any> {
-      static childContextTypes = {
-        layout: PropTypes.object
-      }
-
-      getChildContext () {
-        return {
-          layout: (this.props.horizontal ? horizontalLayout : normalLayout)
-        }
-      }
-
-      render () {
-        const { handleSubmit, children, horizontal, inline } = this.props
-        return (
-          <RB.Form
-            horizontal={horizontal}
-            inline={inline}
-            onSubmit={handleSubmit}
-          >
-            {children}
-          </RB.Form>
-        )
-      }
-    }
-  )
-
-  return {
-    Form,
-    Text: TextField as React.StatelessComponent<TextFieldProps<V>>,
-    Password: PasswordField as React.StatelessComponent<PasswordFieldProps<V>>,
-    Url: UrlField as React.StatelessComponent<UrlFieldProps<V>>,
-    Select: SelectField as React.StatelessComponent<SelectFieldProps<V>>,
-    Checkbox: CheckboxField as React.StatelessComponent<CheckboxFieldProps<V>>,
-    Collapse: CollapseField as React.StatelessComponent<CollapseFieldProps<V>>,
-  }
-}
-
 const { Form, Text, Password, Url, Select, Checkbox, Collapse } = formMaker<Values>('test')
 
 export const RenderTest = () => {
@@ -444,6 +464,7 @@ export const RenderTest = () => {
       <Text name='text'
         label={testMessages.text}
         help={testMessages.text}
+        required
       />
       <Password name='password'
         label={testMessages.password}
