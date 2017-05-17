@@ -103,7 +103,7 @@ const enhance = compose<AllProps, Props>(
   injectIntl,
   withProps<{}, Props & IntlProps>((props) => ({
     initialValues: ({
-      color: '#ffaa00',
+      color: Account.generateColor(),
     }),
     onSubmit: async (values: Values, dispatch: any) => {
       const { onSubmit, intl: { formatMessage } } = props
