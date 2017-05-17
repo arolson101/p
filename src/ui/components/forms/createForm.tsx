@@ -71,7 +71,8 @@ const Wrapper = (props: WrapperProps & DontCareWhatElse, { layout }: LayoutProps
 (Wrapper as any).contextTypes = { layout: PropTypes.object }
 
 // input ----------------------------------------------------------------------
-interface InputFormField<V> extends FormField<V> {
+interface InputFormField<V> extends FormField<V> /*, RB.FormControlProps*/ {
+  autoFocus?: boolean
   rows?: number
   password?: boolean
   addonBefore?: React.ReactNode
@@ -291,11 +292,9 @@ interface CollapseFieldProps<V> extends RB.CollapseProps {
 
 const renderCollapse = (props: CollapseFieldProps<any> & RF.WrappedFieldProps<any>) => {
   const { input, meta, name, children, ...passedProps } = props
-  return (
-    <RB.Collapse {...passedProps} in={!!input.value}>
-      {props.children}
-    </RB.Collapse>
-  )
+  return <RB.Collapse {...passedProps} in={!!input.value}>
+    {props.children}
+  </RB.Collapse>
 }
 
 const CollapseField = <V extends {}>(props: CollapseFieldProps<V>) => {
@@ -305,10 +304,11 @@ const CollapseField = <V extends {}>(props: CollapseFieldProps<V>) => {
 // ----------------------------------------------------------------------------
 // formComponent --------------------------------------------------------------
 
-interface Props<V> {
-  horizontal: boolean
+interface Props<V> extends RF.FormProps<V, Props<V>, {}> {
+  horizontal?: boolean
   onSubmit: SubmitHandler<V>
   onChanged?: ChangeCallback<V>
+  validate?: (values: V) => RF.FormErrors<V>
 }
 
 export type SubmitHandler<V> = RF.SubmitHandler<V, any, any>
@@ -468,6 +468,7 @@ export const RenderTest = () => {
       <Text name='text'
         label={testMessages.text}
         help={testMessages.text}
+        autoFocus
         addonBefore={
           <ColorAddon name='color'/>
         }

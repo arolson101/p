@@ -6,7 +6,7 @@ import { Bank, Account } from '../../docs/index'
 import { AppState, pushChanges, mapDispatchToProps } from '../../state/index'
 import { RouteProps } from './props'
 import { selectBank, selectAccount } from './selectors'
-import { Values, AccountForm, SubmitFunction } from './AccountForm'
+import { Values, AccountForm, SubmitHandler } from './AccountForm'
 
 interface ConnectedProps {
   bank: Bank.View
@@ -19,7 +19,7 @@ interface DispatchProps {
 
 interface EnhancedProps {
   onCancel: () => void
-  onSubmit: SubmitFunction<Values>
+  onSubmit: SubmitHandler<Values>
 }
 
 type AllProps = EnhancedProps & ConnectedProps & DispatchProps & RouteProps<Account.Params>

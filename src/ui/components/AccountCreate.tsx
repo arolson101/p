@@ -4,7 +4,7 @@ import { withRouter } from 'react-router'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from '../../docs/index'
 import { AppState, pushChanges, mapDispatchToProps } from '../../state/index'
-import { Values, AccountForm, SubmitFunction } from './AccountForm'
+import { Values, AccountForm, SubmitHandler } from './AccountForm'
 import { RouteProps } from './props'
 import { selectBank } from './selectors'
 
@@ -20,7 +20,7 @@ interface DispatchProps {
 
 interface EnhancedProps {
   onCancel: () => void
-  onSubmit: SubmitFunction<Values>
+  onSubmit: SubmitHandler<Values>
 }
 
 type AllProps = EnhancedProps & ConnectedProps & RouteProps<Account.Params>
