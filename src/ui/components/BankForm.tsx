@@ -1,7 +1,7 @@
 import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { PageHeader, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
-import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
+import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, formValueSelector } from 'redux-form'
@@ -12,9 +12,8 @@ import { AppState, FI, emptyfi, mapDispatchToProps } from '../../state/index'
 import { withPropChangeCallback } from '../enhancers/index'
 import { formatAddress } from '../../util/index'
 import { typedFields, forms } from './forms/index'
-import { formMaker, SaveCallback, ChangeCallback } from './forms/createForm'
+import { formMaker, SubmitHandler, ChangeCallback } from './forms/createForm'
 import { IconPicker } from './forms/IconPicker'
-import { IntlProps } from './props'
 
 const messages = defineMessages({
   createTitle: {
@@ -81,8 +80,8 @@ const messages = defineMessages({
 
 interface Props {
   edit?: Bank.Doc
-  save: SaveCallback<Values>
-  cancel: () => void
+  onSubmit: SubmitHandler<Values>
+  onCancel: () => void
 }
 
 interface ConnectedProps {
@@ -91,15 +90,17 @@ interface ConnectedProps {
 }
 
 interface DispatchProps {
-  change: typeof change
-  initialize: typeof initialize
+  change: typeof actions.change
+  initialize: typeof actions.initialize
 }
 
 interface EnhancedProps {
   onChangeFI: (event: any, index: number) => void
 }
 
-type AllProps = IntlProps & EnhancedProps & ConnectedProps & Props
+type AllProps = EnhancedProps & ConnectedProps & Props
+
+export type SubmitFunction<V> = SubmitHandler<V>
 
 export interface Values {
   fi: number
@@ -120,25 +121,27 @@ export interface Values {
   password: string
 }
 
-const { Form, Text, Password, Url, Select, Checkbox, Collapse, change, initialize } = formMaker<Values>('BankForm')
+const { Form, Text, Password, Url, Select, Checkbox, Collapse, actions } = formMaker<Values>('BankForm')
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('BankForm'),
   onlyUpdateForPropTypes,
   setPropTypes<Props>({
     edit: PropTypes.object,
-    save: PropTypes.func.isRequired,
-    cancel: PropTypes.func.isRequired
+    onSubmit: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired
   }),
-  injectIntl,
-  connect<ConnectedProps, DispatchProps, Props & IntlProps>(
+  connect<ConnectedProps, DispatchProps, Props>(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
       lang: state.i18n.locale,
     }),
-    mapDispatchToProps<DispatchProps>({change, initialize})
+    mapDispatchToProps<DispatchProps>({
+      change: actions.change,
+      initialize: actions.initialize
+    })
   ),
-  withProps<EnhancedProps, DispatchProps & ConnectedProps & Props & IntlProps>(props => ({
+  withProps<EnhancedProps, DispatchProps & ConnectedProps & Props>(props => ({
     onChangeFI: (event: any, index: number) => {
       const { filist, change } = props
       const value = index ? filist[index - 1] : emptyfi
@@ -154,7 +157,7 @@ const enhance = compose<AllProps, Props>(
 )
 
 export const BankForm = enhance((props) => {
-  const { edit, save, cancel, onChangeFI, intl: { formatMessage }, filist } = props
+  const { edit, onSubmit, onCancel, onChangeFI, filist } = props
   const title = edit ? messages.editTitle : messages.createTitle
 
   const fi = edit ? filist.findIndex(fiEntry => fiEntry.name === edit.fi) + 1 : -1
@@ -164,7 +167,7 @@ export const BankForm = enhance((props) => {
     <Form
       initialValues={initialValues}
       horizontal
-      save={save}
+      onSubmit={onSubmit}
     >
       <PageHeader>
         <FormattedMessage {...title}/>
@@ -185,7 +188,6 @@ export const BankForm = enhance((props) => {
         <Text
           name='name'
           label={messages.name}
-          required
         />
         <Url
           name='web'
@@ -235,7 +237,7 @@ export const BankForm = enhance((props) => {
         <ButtonToolbar className='pull-right'>
           <Button
             type='button'
-            onClick={cancel}
+            onClick={onCancel}
           >
             <FormattedMessage {...forms.cancel}/>
           </Button>

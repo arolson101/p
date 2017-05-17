@@ -5,8 +5,6 @@ import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 
 import { connect } from 'react-redux'
 import * as ReactSelect from 'react-select'
 import { compose, mapPropsStream } from 'recompose'
-import { reduxForm, Field, formValueSelector, SubmitHandler, FormProps,
-  FormErrors, WrappedFieldProps, change, SubmissionError } from 'redux-form'
 import * as RF from 'redux-form'
 import { createSelector } from 'reselect'
 import * as Rx from 'rxjs/Rx'
@@ -28,29 +26,27 @@ interface FormField<V> {
   name: keyof V
   label: FormattedMessage.MessageDescriptor
   help?: FormattedMessage.MessageDescriptor
-  initialValue?: any
-  required?: boolean
-  autoFocus?: boolean
-  visibility?: (getField: GetField<V>) => boolean
 }
 
 interface LayoutProps {
-  layout: {
-    control: RB.ColProps
-    label: RB.ColProps
-    nolabel: RB.ColProps
-  }
+  layout: LayoutConfig
+}
+
+interface LayoutConfig {
+  control: RB.ColProps
+  label: RB.ColProps
+  nolabel: RB.ColProps
 }
 
 type DontCareWhatElse = { [key: string]: any }
 
-type WrapperProps = WrappedFieldProps<string> & FormField<any> & React.Props<any>
+type WrapperProps = RF.WrappedFieldProps<string> & FormField<any> & React.Props<any>
 const Wrapper = (props: WrapperProps & DontCareWhatElse, { layout }: LayoutProps) => {
-  const { input: { name }, meta: { touched, warning, error }, label, help, children } = props
+  const { input: { name }, meta: { warning, error }, label, help, children } = props
   return (
     <RB.FormGroup
       controlId={name}
-      validationState={touched ? (error ? 'error' : warning ? 'warning' : undefined) : undefined}
+      validationState={error ? 'error' : warning ? 'warning' : undefined}
     >
       <RB.Col componentClass={RB.ControlLabel} {...layout.label}>
         {label &&
@@ -63,7 +59,7 @@ const Wrapper = (props: WrapperProps & DontCareWhatElse, { layout }: LayoutProps
         {help &&
           <RB.HelpBlock><FormattedMessage {...help}/></RB.HelpBlock>
         }
-        {touched && (error || warning) &&
+        {(error || warning) &&
           <RB.HelpBlock>{error || warning}</RB.HelpBlock>
         }
       </RB.Col>
@@ -72,19 +68,6 @@ const Wrapper = (props: WrapperProps & DontCareWhatElse, { layout }: LayoutProps
 }
 
 (Wrapper as any).contextTypes = { layout: PropTypes.object }
-
-const validate = <V extends FormData>(value: any, allValues: V, props: InjectedIntlProps) => {
-  const { intl: { formatMessage } } = props
-  if (!value) {
-    return formatMessage(forms.required)
-  }
-}
-
-const validator = (props: FormField<any>) => {
-  if (props.required) {
-    return validate
-  }
-}
 
 // input ----------------------------------------------------------------------
 interface InputFormField<V> extends FormField<V> {
@@ -96,7 +79,7 @@ interface InputFormField<V> extends FormField<V> {
 
 const renderInput = (props: InputFormField<any> & WrapperProps) => {
   const { input, meta, label, help, rows,
-    password, visibility, addonBefore, addonAfter, initialValue, ...passedProps } = props
+    password, addonBefore, addonAfter, ...passedProps } = props
   const formControl = (
     <RB.FormControl
       componentClass={rows ? 'textarea' : undefined}
@@ -124,12 +107,12 @@ const renderInput = (props: InputFormField<any> & WrapperProps) => {
 
 type TextFieldProps<V> = InputFormField<V>
 const TextField = <V extends {}>(props: TextFieldProps<V>) => {
-  return <Field {...props as any} validate={validator(props)} component={renderInput}/>
+  return <RF.Field {...props} component={renderInput}/>
 }
 
 type PasswordFieldProps<V> = InputFormField<V>
 const PasswordField = <V extends {}>(props: PasswordFieldProps<V>) => {
-  return <Field {...props as any} validate={validator(props)} component={renderInput} password/>
+  return <RF.Field {...props} component={renderInput} password/>
 }
 
 // url ------------------------------------------------------------------------
@@ -138,13 +121,13 @@ interface UrlFieldProps<V> extends FormField<V> {
 }
 
 type RenderUrlProps = UrlFieldProps<any> & WrapperProps & {
-  change: typeof change
+  change: typeof RF.change
 }
 
 const enhanceUrl = compose(
   connect(
     undefined,
-    mapDispatchToProps({ change })
+    mapDispatchToProps({ change: RF.change })
   ),
   mapPropsStream(
     (props$: Rx.Observable<RenderUrlProps>) => {
@@ -152,7 +135,7 @@ const enhanceUrl = compose(
         .pluck<RenderUrlProps, string>('input', 'value')
         .distinctUntilChanged()
         .debounceTime(500)
-        .do((url) => console.log(`getting favicon for ${url}`))
+        // .do((url) => console.log(`getting favicon for ${url}`))
         .switchMap(getFavicon$)
         .withLatestFrom(props$, (icon, props) => {
           const { change, meta: { form }, favicoName } = props
@@ -169,18 +152,18 @@ const renderUrl = enhanceUrl((props: RenderUrlProps) => {
   return renderInput(inputProps)
 })
 
-const renderFavico = (props: WrappedFieldProps<any>) => {
+const renderFavico = (props: RF.WrappedFieldProps<any>) => {
   const { input: { value, onChange } } = props
   return <RB.InputGroup.Button>
      <IconPicker value={value} onChange={onChange} />
   </RB.InputGroup.Button>
 }
 
-const UrlField = <V extends {}>(props: UrlFieldProps<V> & WrappedFieldProps<{}>) => {
+const UrlField = <V extends {}>(props: UrlFieldProps<V> & RF.WrappedFieldProps<{}>) => {
   const { favicoName } = props
-  return <Field {...props} validate={validator(props)} component={renderUrl}
+  return <RF.Field {...props} component={renderUrl}
     addonBefore={
-      <Field
+      <RF.Field
         component={renderFavico}
         name={favicoName}
       />
@@ -247,7 +230,7 @@ const SelectField = injectIntl(<V extends {}>(props: SelectFieldProps<V> & Injec
     }
   }
 
-  return <Field {...props} validate={validator(props)} component={renderSelect} placeholder={placeholder} parse={parse}/>
+  return <RF.Field {...props} component={renderSelect} placeholder={placeholder} parse={parse}/>
 }) as any as <V extends {}>(props: SelectFieldProps<V>) => JSX.Element
 
 // interface AccountFormField<V> extends FormField<V> {
@@ -281,7 +264,7 @@ const renderCheckbox = (props: CheckboxFieldProps<any> & WrapperProps) => {
 }
 
 const CheckboxField = <V extends {}>(props: CheckboxFieldProps<V>) => {
-  return <Field {...props} validate={validator(props)} component={renderCheckbox}/>
+  return <RF.Field {...props} component={renderCheckbox}/>
 }
 
 // Collapse -------------------------------------------------------------------
@@ -289,7 +272,7 @@ interface CollapseFieldProps<V> extends RB.CollapseProps {
   name: keyof V
 }
 
-const renderCollapse = (props: CollapseFieldProps<any> & WrappedFieldProps<any>) => {
+const renderCollapse = (props: CollapseFieldProps<any> & RF.WrappedFieldProps<any>) => {
   const { input, meta, name, children, ...passedProps } = props
   return (
     <RB.Collapse {...passedProps} in={!!input.value}>
@@ -299,67 +282,52 @@ const renderCollapse = (props: CollapseFieldProps<any> & WrappedFieldProps<any>)
 }
 
 const CollapseField = <V extends {}>(props: CollapseFieldProps<V>) => {
-  return <Field {...props} component={renderCollapse}/>
+  return <RF.Field {...props} component={renderCollapse}/>
 }
 
 // ----------------------------------------------------------------------------
 // formComponent --------------------------------------------------------------
 
 interface Props<V> {
-  save: SaveCallback<V>
-  changed?: ChangeCallback<V>
+  horizontal: boolean
+  onSubmit: SubmitHandler<V>
+  onChanged?: ChangeCallback<V>
 }
 
-export type SaveCallback<V> = (values: V, error: ErrorCallback<V>, dispatch: any, props: any) => void | Promise<any>
+export type SubmitHandler<V> = RF.SubmitHandler<V, any, any>
 export type ChangeCallback<V> = (values: V, change: ChangeField<V>, dispatch: any, props: any) => void
-export type ErrorCallback<V> = (errors: FormErrors<V>) => void
+export type ErrorCallback<V> = (errors: RF.FormErrors<V>) => void
 export type ChangeField<V> = (field: keyof V, value: any) => void
 
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-// ----------------------------------------------------------------------------
-
-const normalLayout = {
+const normalLayout: LayoutConfig = {
   label: {},
   control: {},
   nolabel: {}
 }
 
-const horizontalLayout = {
+const horizontalLayout: LayoutConfig = {
   label: { sm: 2 },
   control: { sm: 10 },
   nolabel: { smOffset: 2, sm: 10 }
 }
 
-const onSubmit = <V extends {}>(values: V, dispatch: any, props: Props<V>) => {
-  return props.save(
-    values,
-    errors => {
-      throw new SubmissionError(errors)
-    },
-    dispatch,
-    props
-  )
-}
-
 // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/16538
-const onChange: any = <V extends {}>(values: V, dispatch: any, props: Props<V> & FormProps<V, any, any>) => {
-  if (props.changed) {
+const onChange: any = <V extends {}>(values: V, dispatch: any, props: Props<V> & RF.FormProps<V, any, any>) => {
+  if (props.onChanged && props.onChanged !== onChange) {
     const form = props.form!
     const changeField = (field: string, value: any) => {
-      dispatch(change(form, field, value))
+      dispatch(RF.change(form, field, value))
     }
-    props.changed(values, changeField, dispatch, props)
+    props.onChanged(values, changeField, dispatch, props)
   }
 }
 
 export const formMaker = <V extends {}>(form: string) => {
-  const Form = injectIntl(reduxForm<V, Props<V>>({
+  const Form = injectIntl(RF.reduxForm<V, Props<V>>({
     form,
-    onSubmit,
     onChange,
   })(
-    class extends React.Component<Props<V> & FormProps<V, Props<V>, {}> & RB.FormProps, any> {
+    class extends React.Component<Props<V> & RF.FormProps<V, Props<V>, {}> & RB.FormProps, any> {
       static childContextTypes = {
         layout: PropTypes.object
       }
@@ -383,13 +351,21 @@ export const formMaker = <V extends {}>(form: string) => {
         )
       }
     }
-  ) as any) as any as React.ComponentClass<Props<V> & FormProps<V, Props<V>, {}> & RB.FormProps>
+  ) as any) as any as React.ComponentClass<Props<V> & RF.FormProps<V, Props<V>, {}>>
+
+  const formValueSelector = RF.formValueSelector(form)
+  const change = (field: string, value: any) => RF.change(form, field, value)
+  const initialize = (data: any, keepDirty?: boolean | RF.InitializeOptions, options?: RF.InitializeOptions) => {
+    return RF.initialize(form, data, keepDirty, options)
+  }
 
   return {
     Form,
-    formValueSelector: formValueSelector(form),
-    change: (field: string, value: any) => RF.change(form, field, value),
-    initialize: (data: any, keepDirty?: boolean | RF.InitializeOptions, options?: RF.InitializeOptions) => RF.initialize(form, data, keepDirty, options),
+    formValueSelector,
+    actions: {
+      change,
+      initialize,
+    },
     Text: TextField as React.StatelessComponent<TextFieldProps<V>>,
     Password: PasswordField as React.StatelessComponent<PasswordFieldProps<V>>,
     Url: UrlField as React.StatelessComponent<UrlFieldProps<V>>,
@@ -399,6 +375,9 @@ export const formMaker = <V extends {}>(form: string) => {
   }
 }
 
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 
 const testMessages = defineMessages({
   text: {
@@ -447,15 +426,21 @@ interface Values {
 }
 
 const { Form, Text, Password, Url, Select, Checkbox, Collapse } = formMaker<Values>('test')
+import { Validator2 } from '../../../util/index'
 
 export const RenderTest = () => {
   return (
     <Form
       horizontal
-      save={
-        (values: any) => console.log('save', values)
+      onSubmit={
+        (values, dispatch, props: any) => {
+          const validator = new Validator2(values, props.intl.formatMessage)
+          validator.required('text', 'password')
+          validator.maybeThrowSubmissionError()
+          console.log('onSubmit', values)
+        }
       }
-      changed={
+      onChanged={
         (values, change) => {
           change('password', values.text || '')
         }
@@ -464,7 +449,6 @@ export const RenderTest = () => {
       <Text name='text'
         label={testMessages.text}
         help={testMessages.text}
-        required
       />
       <Password name='password'
         label={testMessages.password}
