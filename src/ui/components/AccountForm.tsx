@@ -5,11 +5,8 @@ import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
 import { Account } from '../../docs/index'
-import { Validator } from '../../util/index'
+import { Validator2 } from '../../util/index'
 import { AppState } from '../../state/index'
-import { ColorPicker } from './forms/ColorPicker'
-import { withPropChangeCallback } from '../enhancers/index'
-import { typedFields, forms } from './forms/index'
 import { formMaker, SubmitHandler, ChangeCallback } from './forms/createForm'
 import { IntlProps } from './props'
 
@@ -89,7 +86,7 @@ export interface Values {
   key: string
 }
 
-const { Form, Text, Password, Url, Select, Checkbox, Collapse, ColorAddon, formValueSelector, actions } = formMaker<Values>('BankForm')
+const { Form, Text, Select, ColorAddon, formValueSelector } = formMaker<Values>('BankForm')
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
@@ -107,19 +104,19 @@ const enhance = compose<AllProps, Props>(
     }),
     onSubmit: async (values: Values, dispatch: any) => {
       const { onSubmit, intl: { formatMessage } } = props
-      const v = new Validator(values)
-      v.required(['name', 'number', 'type'], formatMessage(forms.required))
+      const v = new Validator2(values, formatMessage)
+      v.required('name', 'number', 'type')
       v.maybeThrowSubmissionError()
       return onSubmit(values, dispatch, props)
     },
     validate: ((values: Values) => {
-      const v = new Validator(values)
       const { edit, accounts, intl: { formatMessage } } = props
+      const v = new Validator2(values, formatMessage)
       const otherAccounts = accounts.filter(acct => !edit || edit._id !== acct.doc._id)
       const otherNames = otherAccounts.map(acct => acct.doc.name)
       const otherNumbers = otherAccounts.filter(acct => acct.doc.type === v.values.type).map(acct => acct.doc.number)
-      v.unique('name', otherNames, formatMessage(messages.uniqueName))
-      v.unique('number', otherNumbers, formatMessage(messages.uniqueNumber))
+      v.unique('name', otherNames, messages.uniqueName)
+      v.unique('number', otherNumbers, messages.uniqueNumber)
       return v.errors
     }) as any
   })),
