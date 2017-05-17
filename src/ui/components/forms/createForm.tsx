@@ -11,6 +11,7 @@ import * as Rx from 'rxjs/Rx'
 import { getFavicon$ } from '../../../actions/index'
 import { mapDispatchToProps } from '../../../state/index'
 import { forms } from './index'
+import { ColorPicker } from './ColorPicker'
 import { IconPicker } from './IconPicker'
 
 const messages = defineMessages({
@@ -169,6 +170,22 @@ const UrlField = <V extends {}>(props: UrlFieldProps<V> & RF.WrappedFieldProps<{
       />
     }
   />
+}
+
+// color ----------------------------------------------------------------------
+const renderColor = (props: RF.WrappedFieldProps<any>) => {
+  const { input: { value, onChange } } = props
+  return <ColorPicker value={value} onChange={onChange as any} />
+}
+
+interface ColorAddonFieldProps<V> {
+  name: keyof V
+}
+
+const ColorAddonField = <V extends {}>(props: ColorAddonFieldProps<V> & RF.WrappedFieldProps<{}>) => {
+  return <RB.InputGroup.Button>
+    <RF.Field {...props} component={renderColor}/>
+  </RB.InputGroup.Button>
 }
 
 // select ---------------------------------------------------------------------
@@ -372,6 +389,7 @@ export const formMaker = <V extends {}>(form: string) => {
     Select: SelectField as React.StatelessComponent<SelectFieldProps<V>>,
     Checkbox: CheckboxField as React.StatelessComponent<CheckboxFieldProps<V>>,
     Collapse: CollapseField as React.StatelessComponent<CollapseFieldProps<V>>,
+    ColorAddon: ColorAddonField as React.StatelessComponent<ColorAddonFieldProps<V>>,
   }
 }
 
@@ -416,6 +434,7 @@ const testMessages = defineMessages({
 
 interface Values {
   text: string
+  color: string
   password: string
   multiline: string
   select: string
@@ -425,7 +444,7 @@ interface Values {
   checkbox: boolean
 }
 
-const { Form, Text, Password, Url, Select, Checkbox, Collapse } = formMaker<Values>('test')
+const { Form, Text, Password, Url, Select, Checkbox, Collapse, ColorAddon } = formMaker<Values>('test')
 import { Validator2 } from '../../../util/index'
 
 export const RenderTest = () => {
@@ -449,6 +468,9 @@ export const RenderTest = () => {
       <Text name='text'
         label={testMessages.text}
         help={testMessages.text}
+        addonBefore={
+          <ColorAddon name='color'/>
+        }
       />
       <Password name='password'
         label={testMessages.password}
