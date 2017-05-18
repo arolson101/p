@@ -375,7 +375,7 @@ const enhance = compose<AllProps, Props>(
     },
     filterEndDate: ({start}) => (date: Date): boolean => {
       if (start) {
-        return moment(start).isBefore(date)
+        return moment(start, 'L').isBefore(date)
       }
       return false
     },
