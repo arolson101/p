@@ -8,8 +8,7 @@ import { reduxForm, formValueSelector, FormProps } from 'redux-form'
 import { Account } from '../../docs/index'
 import { Validator } from '../../util/index'
 import { AppState } from '../../state/index'
-import { forms } from './forms/index'
-import { formMaker, SubmitHandler, ChangeCallback } from './forms/createForm'
+import { typedFields, forms, SubmitHandler } from './forms/index'
 import { IntlProps } from './props'
 
 export { SubmitHandler }
@@ -89,7 +88,7 @@ export interface Values {
 }
 
 const form = 'AccountForm'
-const { Form, TextField, SelectField, ColorAddon } = formMaker<Values>()
+const { Form, TextField, SelectField, ColorAddon } = typedFields<Values>()
 const valueSelector = formValueSelector(form)
 
 const enhance = compose<AllProps, Props>(

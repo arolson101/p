@@ -19,8 +19,7 @@ import { Account, Budget, Bill } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { Validator } from '../../util/index'
 import { withPropChangeCallback } from '../enhancers/index'
-import { typedFields, forms, SelectOption } from './forms/index'
-import { formMaker, SubmitHandler, ChangeCallback } from './forms/createForm'
+import { typedFields, forms, SubmitHandler, SelectOption } from './forms/index'
 import { IconPicker } from './forms/IconPicker'
 import { IntlProps } from './props'
 
@@ -383,11 +382,12 @@ const enhance = compose<AllProps, Props>(
   })
 )
 
-const { Form, TextField, UrlField, SelectField, DateField, CollapseField, CheckboxField, AccountField, BudgetField } = formMaker<Values>()
+const { Form, TextField, UrlField, SelectField, DateField, CollapseField,
+  CheckboxField, AccountField, BudgetField } = typedFields<Values>()
 
 export const BillForm = enhance((props) => {
-  const { edit, title, onCancel, ui: { groups }, monthOptions,
-    weekdayOptions, handleSubmit, frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule } = props
+  const { edit, title, onCancel, ui: { groups }, monthOptions, weekdayOptions, handleSubmit,
+    frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule } = props
   const { formatMessage } = props.intl
 
   const endDate = moment().add(2, 'year')

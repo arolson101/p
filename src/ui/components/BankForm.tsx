@@ -10,8 +10,7 @@ import { Bank } from '../../docs/index'
 import { AppState, FI, emptyfi, mapDispatchToProps } from '../../state/index'
 import { withPropChangeCallback } from '../enhancers/index'
 import { formatAddress } from '../../util/index'
-import { typedFields, forms } from './forms/index'
-import { formMaker, SubmitHandler, ChangeCallback } from './forms/createForm'
+import { typedFields, forms, SubmitHandler } from './forms/index'
 import { IconPicker } from './forms/IconPicker'
 
 const messages = defineMessages({
@@ -115,7 +114,7 @@ export interface Values {
   password: string
 }
 
-const { Form, TextField, PasswordField, UrlField, SelectField, CheckboxField, CollapseField } = formMaker<Values>()
+const { Form, TextField, PasswordField, UrlField, SelectField, CheckboxField, CollapseField } = typedFields<Values>()
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('BankForm'),

@@ -19,7 +19,6 @@ interface Props {
 }
 
 interface EnhancedProps {
-  onSubmit: (values: Values, dispatch: Dispatch<AppState>) => Promise<any>
   onDelete: () => void
 }
 
@@ -49,7 +48,7 @@ const messages = defineMessages({
   }
 })
 
-const { PasswordField } = typedFields<Values>()
+const { Form, PasswordField } = typedFields<Values>()
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('LoginForm'),
@@ -59,7 +58,14 @@ const enhance = compose<AllProps, Props>(
     mapDispatchToProps<DispatchProps>({ loadDb, deleteDb })
   ),
   withProps<EnhancedProps, DispatchProps & Props & IntlProps>((props) => ({
-    onSubmit: async (values, dispatch) => {
+    onDelete: () => {
+      const { deleteDb, info } = props
+      deleteDb({info})
+    }
+  })),
+  reduxForm<Values, EnhancedProps & DispatchProps & Props & IntlProps>({
+    form: 'Password',
+    onSubmit: async (values, dispatch, props) => {
       const { loadDb, intl: { formatMessage }, info, onLogin } = props
       const v = new Validator(values, formatMessage)
       v.required('password')
@@ -73,13 +79,6 @@ const enhance = compose<AllProps, Props>(
         throw new SubmissionError<Values>({password: error.message})
       }
     },
-    onDelete: () => {
-      const { deleteDb, info } = props
-      deleteDb({info})
-    }
-  })),
-  reduxForm<EnhancedProps & DispatchProps & Props & IntlProps, Values>({
-    form: 'Password'
   })
 )
 
@@ -89,11 +88,11 @@ export const LoginForm = enhance((props) => {
   }
   const { handleSubmit, onDelete, onCancel, intl: { formatMessage }, submitting } = props
   return (
-    <form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit}>
       <PasswordField
         autoFocus
         name='password'
-        label={formatMessage(forms.password)}
+        label={forms.password}
         disabled={submitting}
       />
       <ButtonToolbar>
@@ -124,6 +123,6 @@ export const LoginForm = enhance((props) => {
           </ConfirmDelete>
         </SplitButton>
       </ButtonToolbar>
-    </form>
+    </Form>
   )
 })

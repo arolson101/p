@@ -86,29 +86,29 @@ const enhance = compose<AllProps, Props>(
   })
 )
 
-const { TextField, PasswordField } = typedFields<Values>()
+const { Form, TextField, PasswordField } = typedFields<Values>()
 
 export const CreateForm = enhance((props) => {
   const { handleSubmit, onCancel, intl: { formatMessage } } = props
   return (
-    <form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit}>
       <Row>
         <TextField
           name='name'
           autoFocus
-          label={formatMessage(messages.name)}
+          label={messages.name}
         />
       </Row>
       <Row>
         <PasswordField
           name='password'
-          label={formatMessage(forms.password)}
+          label={forms.password}
         />
       </Row>
       <Row>
         <PasswordField
           name='confirmPassword'
-          label={formatMessage(forms.confirmPassword)}
+          label={forms.confirmPassword}
         />
       </Row>
       <ButtonToolbar>
@@ -125,6 +125,6 @@ export const CreateForm = enhance((props) => {
           {formatMessage(forms.create)}
         </Button>
       </ButtonToolbar>
-    </form>
+    </Form>
   )
 })

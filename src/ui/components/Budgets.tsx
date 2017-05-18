@@ -98,7 +98,7 @@ interface Values {
   budgets: BudgetValues[]
 }
 
-const { TextField } = typedFields<any>()
+const { Form, TextField } = typedFields<any>()
 
 @(injectIntl as any)
 @(connect<ConnectedProps, DispatchProps, IntlProps>(
@@ -136,7 +136,7 @@ export class Budgets extends React.Component<AllProps, State> {
     const { editing } = this.state
 
     return (
-      <form onSubmit={handleSubmit!(this.onSubmit)}>
+      <Form onSubmit={handleSubmit!(this.onSubmit)}>
         <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
 
           <PageHeader>
@@ -166,7 +166,7 @@ export class Budgets extends React.Component<AllProps, State> {
             <BudgetDisplay key={budget.doc._id} budget={budget}/>
           )}
         </div>
-      </form>
+      </Form>
     )
   }
 
@@ -319,7 +319,7 @@ const SortableCategoryList = SortableElement(({budget, onRemove, intl}: Sortable
   >
     <TextField
       name={`${budget}.name`}
-      label={intl.formatMessage(messages.budget)}
+      label={messages.budget}
       addonAfter={
         <InputGroup.Button>
           <Button bsStyle='danger' onClick={onRemove}>
@@ -380,7 +380,7 @@ const SortableCategory = SortableElement(({category, onRemove, intl: { formatMes
   <ListGroupItem key={category}>
     <TextField
       name={`${category}.name`}
-      label={formatMessage(messages.category)}
+      label={messages.category}
       addonAfter={
         <InputGroup.Button>
           <Button bsStyle='danger' onClick={onRemove}>
@@ -391,7 +391,7 @@ const SortableCategory = SortableElement(({category, onRemove, intl: { formatMes
     />
     <TextField
       name={`${category}.amount`}
-      label={formatMessage(messages.targetAmount)}
+      label={messages.targetAmount}
     />
   </ListGroupItem>
 )

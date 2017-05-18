@@ -14,6 +14,10 @@ import { typedFields, forms } from './forms/index'
 import { IntlProps } from './props'
 
 const messages = defineMessages({
+  password: {
+    id: 'SyncStatus.password',
+    defaultMessage: 'Password'
+  },
   needsPassword: {
     id: 'SyncStatus.needsPassword',
     defaultMessage: 'Please enter password'
@@ -47,7 +51,7 @@ interface Values {
   password: string
 }
 
-const { TextField } = typedFields<any>()
+const { Form, TextField } = typedFields<any>()
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
@@ -99,10 +103,10 @@ export const SyncStatus = enhance(({ onSubmit, sync, handleSubmit }) => {
         <div>
           {config}<br/>
           <FormattedMessage {... (sync.password ? messages.badPassword : messages.needsPassword)}/>
-          <form onSubmit={handleSubmit!(onSubmit)}>
-            <TextField name='password' label='password' />
+          <Form onSubmit={handleSubmit!(onSubmit)}>
+            <TextField name='password' label={messages.password} />
             <Button type='submit'>submit</Button>
-          </form>
+          </Form>
         </div>
       )
     case 'ERROR':
