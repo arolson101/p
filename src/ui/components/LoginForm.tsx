@@ -4,7 +4,7 @@ import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps } from 'recompose'
 import { Dispatch } from 'redux'
-import { reduxForm, ReduxFormProps, SubmissionError } from 'redux-form'
+import { reduxForm, FormProps, SubmissionError } from 'redux-form'
 import { DbInfo } from '../../docs/index'
 import { AppState, loadDb, deleteDb, mapDispatchToProps } from '../../state/index'
 import { Validator } from '../../util/index'
@@ -28,7 +28,7 @@ type DispatchProps = {
   deleteDb: deleteDb.Fcn
 }
 
-type AllProps = Props & EnhancedProps & DispatchProps & IntlProps & ReduxFormProps<Values>
+type AllProps = Props & EnhancedProps & DispatchProps & IntlProps & FormProps<Values, {}, {}>
 
 interface Values {
   password: string
@@ -61,8 +61,8 @@ const enhance = compose<AllProps, Props>(
   withProps<EnhancedProps, DispatchProps & Props & IntlProps>((props) => ({
     onSubmit: async (values, dispatch) => {
       const { loadDb, intl: { formatMessage }, info, onLogin } = props
-      const v = new Validator(values)
-      v.required(['password'], formatMessage(forms.required))
+      const v = new Validator(values, formatMessage)
+      v.required('password')
       v.maybeThrowSubmissionError()
 
       try {

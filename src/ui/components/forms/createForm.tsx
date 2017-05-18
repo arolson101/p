@@ -11,7 +11,10 @@ import * as Rx from 'rxjs/Rx'
 import { getFavicon$ } from '../../../actions/index'
 import { mapDispatchToProps } from '../../../state/index'
 import { forms } from './index'
+import { AccountPicker } from './AccountPicker'
+import { BudgetPicker } from './BudgetPicker'
 import { ColorPicker } from './ColorPicker'
+import { DatePicker, DatePickerProps } from './DatePicker'
 import { IconPicker } from './IconPicker'
 
 const messages = defineMessages({
@@ -77,6 +80,9 @@ interface InputFormField<V> extends FormField<V> /*, RB.FormControlProps*/ {
   password?: boolean
   addonBefore?: React.ReactNode
   addonAfter?: React.ReactNode
+  type?: string
+  min?: number
+  max?: number
 }
 
 const renderInput = (props: InputFormField<any> & WrapperProps) => {
@@ -196,7 +202,7 @@ export interface SelectOption {
   disabled?: boolean
 }
 
-type SelectFieldProps<V> = FormField<V> & ReactSelect.ReactSelectProps & {
+type SelectFieldProps<V> = FormField<V> & ReactSelect.ReactCreatableSelectProps & {
   createable?: boolean
   parse?: (value: any) => any
   format?: (value: any) => string
@@ -205,6 +211,10 @@ type SelectFieldProps<V> = FormField<V> & ReactSelect.ReactSelectProps & {
 }
 
 const noop = () => undefined
+const fixSelectProps = {
+  menuContainerStyle: { zIndex: 5 }, // https://github.com/JedWatson/react-select/issues/1076
+  onBlur: noop, // https://github.com/erikras/redux-form/issues/1185
+}
 
 const renderSelect = (props: SelectFieldProps<any> & WrapperProps) => {
   const { input, meta: { warning, error }, createable, label, ...passedProps } = props
@@ -214,8 +224,7 @@ const renderSelect = (props: SelectFieldProps<any> & WrapperProps) => {
       <Component
         {...passedProps as any}
         {...input}
-        menuContainerStyle={{ zIndex: 5 }} // https://github.com/JedWatson/react-select/issues/1076
-        onBlur={noop} // https://github.com/erikras/redux-form/issues/1185
+        {...fixSelectProps}
       />
     </Wrapper>
   )
@@ -251,19 +260,57 @@ const SelectField = injectIntl(<V extends {}>(props: SelectFieldProps<V> & Injec
   return <RF.Field {...props} component={renderSelect} placeholder={placeholder} parse={parse}/>
 }) as any as <V extends {}>(props: SelectFieldProps<V>) => JSX.Element
 
-// interface AccountFormField<V> extends FormField<V> {
-//   type: 'account'
-// }
+// account --------------------------------------------------------------------
+type AccountFieldProps<V> = FormField<V>
+const renderAccount = (props: AccountFieldProps<any> & RF.WrappedFieldProps<any>) => {
+  const { input } = props
+  return <Wrapper {...props}>
+    <AccountPicker
+      {...props as any}
+      {...input}
+      {...fixSelectProps}
+    />
+  </Wrapper>
+}
 
-// interface BudgetFormField<V> extends FormField<V> {
-//   type: 'budget'
-// }
+const AccountField = <V extends {}>(props: AccountFieldProps<V>) => {
+  return <RF.Field component={renderAccount} {...props as any}/>
+}
+
+// budget ---------------------------------------------------------------------
+type BudgetFieldProps<V> = FormField<V>
+const renderBudget = (props: BudgetFieldProps<any> & RF.WrappedFieldProps<any>) => {
+  const { input } = props
+  return <Wrapper {...props}>
+    <BudgetPicker
+      {...props as any}
+      {...input}
+      {...fixSelectProps}
+    />
+  </Wrapper>
+}
+
+const BudgetField = <V extends {}>(props: BudgetFieldProps<V>) => {
+  return <RF.Field component={renderBudget} {...props as any}/>
+}
 
 // date -----------------------------------------------------------------------
 
-// interface DateFormField<V> extends FormField<V> {
-//   type: 'date'
-// }
+interface DateFieldProps<V> extends FormField<V>, DatePickerProps {
+}
+
+const renderDate = (props: DateFieldProps<any> & WrapperProps) => {
+  const { input, meta: { warning, error }, name, help, label, ...passedProps } = props
+  return (
+    <Wrapper {...props}>
+      <DatePicker {...input as any} {...passedProps} />
+    </Wrapper>
+  )
+}
+
+const DateField = <V extends {}>(props: DateFieldProps<V>) => {
+  return <RF.Field {...props} component={renderDate}/>
+}
 
 // checkbox -------------------------------------------------------------------
 interface CheckboxFieldProps<V> extends FormField<V> {
@@ -328,67 +375,41 @@ const horizontalLayout: LayoutConfig = {
   nolabel: { smOffset: 2, sm: 10 }
 }
 
-// https://github.com/DefinitelyTyped/DefinitelyTyped/issues/16538
-const onChange: any = <V extends {}>(values: V, dispatch: any, props: Props<V> & RF.FormProps<V, any, any>) => {
-  if (props.onChanged && props.onChanged !== onChange) {
-    const form = props.form!
-    const changeField = (field: string, value: any) => {
-      dispatch(RF.change(form, field, value))
+export class FormLayout extends React.Component<RB.FormProps, any> {
+  static childContextTypes = {
+    layout: PropTypes.object
+  }
+
+  getChildContext () {
+    return {
+      layout: (this.props.horizontal ? horizontalLayout : normalLayout)
     }
-    props.onChanged(values, changeField, dispatch, props)
+  }
+
+  render () {
+    const { children, ...otherProps } = this.props
+    return (
+      <RB.Form
+        {...otherProps}
+      >
+        {children}
+      </RB.Form>
+    )
   }
 }
 
-export const formMaker = <V extends {}>(form: string) => {
-  const Form = injectIntl(RF.reduxForm<V, Props<V>>({
-    form,
-    onChange,
-  })(
-    class extends React.Component<Props<V> & RF.FormProps<V, Props<V>, {}> & RB.FormProps, any> {
-      static childContextTypes = {
-        layout: PropTypes.object
-      }
-
-      getChildContext () {
-        return {
-          layout: (this.props.horizontal ? horizontalLayout : normalLayout)
-        }
-      }
-
-      render () {
-        const { handleSubmit, children, horizontal, inline } = this.props
-        return (
-          <RB.Form
-            horizontal={horizontal}
-            inline={inline}
-            onSubmit={handleSubmit}
-          >
-            {children}
-          </RB.Form>
-        )
-      }
-    }
-  ) as any) as any as React.ComponentClass<Props<V> & RF.FormProps<V, Props<V>, {}>>
-
-  const formValueSelector = RF.formValueSelector(form)
-  const change = (field: string, value: any) => RF.change(form, field, value)
-  const initialize = (data: any, keepDirty?: boolean | RF.InitializeOptions, options?: RF.InitializeOptions) => {
-    return RF.initialize(form, data, keepDirty, options)
-  }
-
+export const formMaker = <V extends {}>() => {
   return {
-    Form,
-    formValueSelector,
-    actions: {
-      change,
-      initialize,
-    },
-    Text: TextField as React.StatelessComponent<TextFieldProps<V>>,
-    Password: PasswordField as React.StatelessComponent<PasswordFieldProps<V>>,
-    Url: UrlField as React.StatelessComponent<UrlFieldProps<V>>,
-    Select: SelectField as React.StatelessComponent<SelectFieldProps<V>>,
-    Checkbox: CheckboxField as React.StatelessComponent<CheckboxFieldProps<V>>,
-    Collapse: CollapseField as React.StatelessComponent<CollapseFieldProps<V>>,
+    Form: FormLayout,
+    TextField: TextField as React.StatelessComponent<TextFieldProps<V>>,
+    PasswordField: PasswordField as React.StatelessComponent<PasswordFieldProps<V>>,
+    UrlField: UrlField as React.StatelessComponent<UrlFieldProps<V>>,
+    SelectField: SelectField as React.StatelessComponent<SelectFieldProps<V>>,
+    CheckboxField: CheckboxField as React.StatelessComponent<CheckboxFieldProps<V>>,
+    DateField: DateField as React.StatelessComponent<DateFieldProps<V>>,
+    AccountField: AccountField as React.StatelessComponent<AccountFieldProps<V>>,
+    BudgetField: BudgetField as React.StatelessComponent<BudgetFieldProps<V>>,
+    CollapseField: CollapseField as React.StatelessComponent<CollapseFieldProps<V>>,
     ColorAddon: ColorAddonField as React.StatelessComponent<ColorAddonFieldProps<V>>,
   }
 }
@@ -414,6 +435,10 @@ const testMessages = defineMessages({
     id: 'forms.multiline',
     defaultMessage: 'multiline'
   },
+  account: {
+    id: 'forms.account',
+    defaultMessage: 'account'
+  },
   select: {
     id: 'forms.select',
     defaultMessage: 'select'
@@ -430,6 +455,10 @@ const testMessages = defineMessages({
     id: 'forms.checkboxmessage',
     defaultMessage: 'checkbox message'
   },
+  date: {
+    id: 'forms.date',
+    defaultMessage: 'date'
+  },
 })
 
 interface Values {
@@ -442,29 +471,40 @@ interface Values {
   url: string
   favicon: string
   checkbox: boolean
+  account: string
+  date: string
 }
 
-const { Form, Text, Password, Url, Select, Checkbox, Collapse, ColorAddon } = formMaker<Values>('test')
-import { Validator2 } from '../../../util/index'
+const {
+  Form,
+  TextField: Text,
+  PasswordField: Password,
+  UrlField: Url,
+  SelectField: Select,
+  CheckboxField: Checkbox,
+  DateField: Date,
+  CollapseField: Collapse,
+  ColorAddon,
+  AccountField: Account
+} = formMaker<Values>()
+import { Validator } from '../../../util/index'
 
-export const RenderTest = () => {
+const enhance = compose<InjectedIntlProps & RF.FormProps<Values, any, any>, {}>(
+  injectIntl,
+  RF.reduxForm<Values, InjectedIntlProps, any>({
+    form: 'test',
+    onSubmit: (values, dispatch, props) => {
+      const validator = new Validator(values, props.intl.formatMessage)
+      validator.required('text', 'password')
+      validator.maybeThrowSubmissionError()
+      console.log('onSubmit', values)
+    }
+  }),
+)
+
+export const RenderTest = enhance(({handleSubmit}) => {
   return (
-    <Form
-      horizontal
-      onSubmit={
-        (values, dispatch, props: any) => {
-          const validator = new Validator2(values, props.intl.formatMessage)
-          validator.required('text', 'password')
-          validator.maybeThrowSubmissionError()
-          console.log('onSubmit', values)
-        }
-      }
-      onChanged={
-        (values, change) => {
-          change('password', values.text || '')
-        }
-      }
-    >
+    <Form horizontal onSubmit={handleSubmit}>
       <Text name='text'
         label={testMessages.text}
         help={testMessages.text}
@@ -480,9 +520,15 @@ export const RenderTest = () => {
         label={testMessages.multiline}
         rows={4}
       />
+      <Account name='account'
+        label={testMessages.account}
+      />
       <Checkbox name='checkbox'
         label={testMessages.checkbox}
         message={testMessages.checkboxmessage}
+      />
+      <Date name='date'
+        label={testMessages.date}
       />
       <Url name='url'
         favicoName='favicon'
@@ -515,4 +561,4 @@ export const RenderTest = () => {
       <button type='submit'>submit</button>
     </Form>
   )
-}
+})

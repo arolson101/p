@@ -3,11 +3,10 @@ import * as React from 'react'
 import { PageHeader, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { reduxForm, formValueSelector } from 'redux-form'
+import { compose, setDisplayName, withPropsOnChange, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { reduxForm, FormProps, formValueSelector } from 'redux-form'
 import { getFavicon } from '../../actions/index'
 import { Bank } from '../../docs/index'
-import { Validator } from '../../util/index'
 import { AppState, FI, emptyfi, mapDispatchToProps } from '../../state/index'
 import { withPropChangeCallback } from '../enhancers/index'
 import { formatAddress } from '../../util/index'
@@ -89,16 +88,11 @@ interface ConnectedProps {
   lang: string
 }
 
-interface DispatchProps {
-  change: typeof actions.change
-  initialize: typeof actions.initialize
-}
-
 interface EnhancedProps {
   onChangeFI: (event: any, index: number) => void
 }
 
-type AllProps = EnhancedProps & ConnectedProps & Props
+type AllProps = EnhancedProps & FormProps<Values, any, any> & ConnectedProps & Props
 
 export type SubmitFunction<V> = SubmitHandler<V>
 
@@ -121,7 +115,7 @@ export interface Values {
   password: string
 }
 
-const { Form, Text, Password, Url, Select, Checkbox, Collapse, actions } = formMaker<Values>('BankForm')
+const { Form, TextField, PasswordField, UrlField, SelectField, CheckboxField, CollapseField } = formMaker<Values>()
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('BankForm'),
@@ -131,50 +125,61 @@ const enhance = compose<AllProps, Props>(
     onSubmit: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired
   }),
-  connect<ConnectedProps, DispatchProps, Props>(
+  connect<ConnectedProps, {}, Props>(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
       lang: state.i18n.locale,
     }),
-    mapDispatchToProps<DispatchProps>({
-      change: actions.change,
-      initialize: actions.initialize
-    })
   ),
-  withProps<EnhancedProps, DispatchProps & ConnectedProps & Props>(props => ({
-    onChangeFI: (event: any, index: number) => {
-      const { filist, change } = props
-      const value = index ? filist[index - 1] : emptyfi
-      change('name', value.name)
-      change('web', value.profile.siteURL)
-      change('favicon', '')
-      change('address', formatAddress(value))
-      change('fid', value.fid)
-      change('org', value.org)
-      change('ofx', value.ofx)
-    },
-  }))
+  withPropsOnChange<any, ConnectedProps & Props>(
+    ['edit', 'filist'],
+    ({ edit, filist }) => {
+      if (edit) {
+        const fi = filist.findIndex(fiEntry => fiEntry.name === edit.fi) + 1
+        const initialValues = { ...edit, ...edit.login, fi }
+        return { initialValues }
+      }
+    }
+  ),
+  reduxForm<Values, ConnectedProps & Props, AppState>({
+    form: 'BankForm',
+    enableReinitialize: true,
+  }),
+  withPropsOnChange<EnhancedProps, FormProps<Values, any, any> & ConnectedProps & Props>(
+    ['filist', 'change'],
+    ({ filist, change }) => {
+      return ({
+        onChangeFI: (event: any, index: number) => {
+          if (!change) { throw new Error('change is undefined') }
+          const value = index ? filist[index - 1] : emptyfi
+          change('name', value.name)
+          change('web', value.profile.siteURL)
+          change('favicon', '')
+          change('address', formatAddress(value))
+          change('fid', value.fid)
+          change('org', value.org)
+          change('ofx', value.ofx)
+        },
+      })
+    }
+  ),
 )
 
 export const BankForm = enhance((props) => {
-  const { edit, onSubmit, onCancel, onChangeFI, filist } = props
+  const { edit, handleSubmit, onCancel, onChangeFI, filist } = props
   const title = edit ? messages.editTitle : messages.createTitle
-
-  const fi = edit ? filist.findIndex(fiEntry => fiEntry.name === edit.fi) + 1 : -1
-  const initialValues = edit ? { ...edit, ...edit.login, fi } : {}
 
   return (
     <Form
-      initialValues={initialValues}
       horizontal
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
     >
       <PageHeader>
         <FormattedMessage {...title}/>
       </PageHeader>
 
       <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
-        <Select
+        <SelectField
           autofocus
           name='fi'
           label={messages.fi}
@@ -185,54 +190,54 @@ export const BankForm = enhance((props) => {
           help={messages.fiHelp}
           placeholderMessage={messages.fiPlaceholder}
         />
-        <Text
+        <TextField
           name='name'
           label={messages.name}
         />
-        <Url
+        <UrlField
           name='web'
           favicoName='favicon'
           label={messages.web}
         />
-        <Text
+        <TextField
           name='address'
           rows={4}
           label={messages.address}
         />
-        <Text
+        <TextField
           name='notes'
           rows={4}
           label={messages.notes}
         />
-        <Checkbox
+        <CheckboxField
           name='online'
           label={messages.online}
           message={messages.online}
         />
-        <Collapse name='online'>
+        <CollapseField name='online'>
           <div>
-            <Text
+            <TextField
               name='username'
               label={messages.username}
             />
-            <Password
+            <PasswordField
               name='password'
               label={messages.password}
             />
-            <Text
+            <TextField
               name='fid'
               label={messages.fid}
             />
-            <Text
+            <TextField
               name='org'
               label={messages.org}
             />
-            <Text
+            <TextField
               name='ofx'
               label={messages.ofx}
             />
           </div>
-        </Collapse>
+        </CollapseField>
 
         <ButtonToolbar className='pull-right'>
           <Button

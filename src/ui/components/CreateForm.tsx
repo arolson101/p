@@ -3,7 +3,7 @@ import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { reduxForm, ReduxFormProps } from 'redux-form'
+import { reduxForm, FormProps } from 'redux-form'
 import { DbInfo } from '../../docs/index'
 import { AppState, createDb, mapDispatchToProps } from '../../state/index'
 import { Validator } from '../../util/index'
@@ -42,7 +42,7 @@ interface EnhancedProps {
   onSubmit: (values: Values, dispatch: any, props: AllProps) => Promise<any>
 }
 
-type AllProps = IntlProps & Props & EnhancedProps & ConnectedProps & DispatchProps & ReduxFormProps<Values>
+type AllProps = IntlProps & Props & EnhancedProps & ConnectedProps & DispatchProps & FormProps<Values, {}, {}>
 
 interface Values {
   name: string
@@ -64,8 +64,8 @@ const enhance = compose<AllProps, Props>(
   withProps<EnhancedProps, ConnectedProps & DispatchProps & Props & IntlProps>({
     onSubmit: async (values, dispatch, props) => {
       const { createDb, onCreate, intl: { formatMessage } } = props
-      const v = new Validator(values)
-      v.required(['name', 'password', 'confirmPassword'], formatMessage(forms.required))
+      const v = new Validator(values, formatMessage)
+      v.required('name', 'password', 'confirmPassword')
       v.maybeThrowSubmissionError()
 
       const { name, password } = values
@@ -77,10 +77,10 @@ const enhance = compose<AllProps, Props>(
     form: 'CreateForm',
     validate: ((values: Values, props: AllProps) => {
       const { files, intl: { formatMessage } } = props
-      const v = new Validator(values)
+      const v = new Validator(values, formatMessage)
       const names = files.map(info => info.name)
-      v.unique('name', names, formatMessage(messages.uniqueName))
-      v.equal('confirmPassword', 'password', formatMessage(forms.passwordsMatch))
+      v.unique('name', names, messages.uniqueName)
+      v.equal('confirmPassword', 'password', forms.passwordsMatch)
       return v.errors
     }) as any
   })

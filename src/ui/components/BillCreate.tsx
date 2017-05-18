@@ -15,7 +15,7 @@ const messages = defineMessages({
 
 interface EnhancedProps {
   onCancel: () => void
-  onSubmit: SubmitFunction<Bill.Doc>
+  onSave: (doc: Bill.Doc) => void
 }
 
 type AllProps = EnhancedProps & RouteProps<Bill.Params>
@@ -36,8 +36,8 @@ const enhance = compose<AllProps, RouteProps<Bill.Params>>(
 )
 
 export const BillCreate = enhance((props) => {
-  const { onSubmit, onCancel } = props
+  const { onSave, onCancel } = props
   return (
-    <BillForm title={messages.page} onSubmit={onSubmit} onCancel={onCancel} />
+    <BillForm title={messages.page} onSave={onSave} onCancel={onCancel} />
   )
 })

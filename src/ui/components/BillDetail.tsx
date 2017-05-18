@@ -37,7 +37,7 @@ interface EnhancedProps {
   startEdit: () => void
   cancelEdit: () => void
   deleteMe: () => void
-  saveEdit: SubmitFunction<Bill.Doc>
+  saveEdit: (doc: Bill.Doc) => void
 }
 
 type AllProps = Props & ReduxUIProps<UIState> & DispatchProps & EnhancedProps
@@ -90,7 +90,7 @@ export const BillDetail = enhance(({ui: { editing }, item, startEdit, saveEdit, 
   const date = Bill.getDate(item)
 
   if (editing) {
-    return <BillForm title={messages.page} edit={item} onSubmit={saveEdit} onCancel={cancelEdit} />
+    return <BillForm title={messages.page} edit={item} onSave={saveEdit} onCancel={cancelEdit} />
   } else {
     return <div>
       name: {item.doc.name}<br/>

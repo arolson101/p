@@ -22,7 +22,7 @@ interface ConnectedProps {
 
 interface EnhancedProps {
   onCancel: () => void
-  onSubmit: SubmitFunction<Bill.Doc>
+  onSave: (doc: Bill.Doc) => void
 }
 
 type AllProps = EnhancedProps & ConnectedProps & RouteProps<Bill.Params>
@@ -41,15 +41,15 @@ const enhance = compose<AllProps, RouteProps<Bill.Params>>(
     onCancel: ({history}) => () => {
       history.goBack()
     },
-    onSubmit: ({history}) => async (doc: Bill.Doc) => {
+    onSave: ({history}) => async (doc: Bill.Doc) => {
       history.replace(Bill.to.all())
     }
   })
 )
 
 export const BillEdit = enhance((props) => {
-  const { onSubmit, onCancel } = props
+  const { onSave, onCancel } = props
   return (
-    <BillForm edit={props.bill} title={messages.page} onSubmit={onSubmit} onCancel={onCancel} />
+    <BillForm edit={props.bill} title={messages.page} onSave={onSave} onCancel={onCancel} />
   )
 })

@@ -4,22 +4,23 @@ import * as PropTypes from 'prop-types'
 import * as R from 'ramda'
 import * as React from 'react'
 import * as Rx from 'rxjs/Rx'
-import { Collapse, DropdownButton, MenuItem, SelectCallback,
+import { DropdownButton, MenuItem, SelectCallback,
          InputGroup, PageHeader, ButtonToolbar, Button, Alert } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps, withHandlers, mapPropsStream } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps,
+  withPropsOnChange, withHandlers, mapPropsStream } from 'recompose'
 import { Dispatch } from 'redux'
-import { reduxForm, ReduxFormProps, SubmitFunction, formValueSelector } from 'redux-form'
+import { reduxForm, formValueSelector, FormProps, SubmitFunction } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'
 import * as RRule from 'rrule-alt'
-import { getFavicon, getFavicon$ } from '../../actions/index'
 import { Account, Budget, Bill } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { Validator } from '../../util/index'
 import { withPropChangeCallback } from '../enhancers/index'
 import { typedFields, forms, SelectOption } from './forms/index'
+import { formMaker, SubmitHandler, ChangeCallback } from './forms/createForm'
 import { IconPicker } from './forms/IconPicker'
 import { IntlProps } from './props'
 
@@ -69,6 +70,14 @@ const messages = defineMessages({
   uniqueName: {
     id: 'BillForm.uniqueName',
     defaultMessage: 'This name is already used'
+  },
+  advanced: {
+    id: 'BillForm.advanced',
+    defaultMessage: 'Advanced'
+  },
+  advancedMessage: {
+    id: 'BillForm.advancedMessage',
+    defaultMessage: 'Advanced options'
   },
   frequencyHeader: {
     id: 'BillForm.frequencyHeader',
@@ -147,7 +156,7 @@ const messages = defineMessages({
 interface Props {
   title: FormattedMessage.MessageDescriptor
   edit?: Bill.View
-  onSubmit: SubmitFunction<Bill.Doc>
+  onSave: (doc: Bill.Doc) => void
   onCancel: () => void
 }
 
@@ -163,16 +172,13 @@ interface DispatchProps {
   pushChanges: pushChanges.Fcn
 }
 
-interface FormProps {
+interface ConnectedFormProps {
   start: Date
   interval: number
   count: number
   frequency: Frequency
   end: EndType
-  showAdvanced: boolean
   rrule?: RRule
-  web: string
-  favicon: string
 }
 
 interface UIState {
@@ -180,21 +186,20 @@ interface UIState {
 }
 
 interface EnhancedProps {
-  onSubmit: (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => void
+  onSave: (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => void
 }
 
 interface Handlers {
   onFrequencyChange: SelectCallback
   onEndTypeChange: SelectCallback
   filterEndDate: (date: Date) => boolean
-  changeIcon: (favicon?: string) => void
 }
 
 type AllProps = Handlers
   & EnhancedProps
   & ReduxUIProps<UIState>
-  & FormProps
-  & ReduxFormProps<Values>
+  & ConnectedFormProps
+  & FormProps<Values, {}, {}>
   & ConnectedProps
   & DispatchProps
   & IntlProps
@@ -226,19 +231,68 @@ interface Values extends RRuleValues {
   showAdvanced: boolean
 }
 
-const formName = 'BillForm'
-const formSelector = formValueSelector<AppState>(formName)
+const form = 'BillForm'
+const valueSelector = formValueSelector(form)
 
 const enhance = compose<AllProps, Props>(
-  setDisplayName(formName),
+  setDisplayName(form),
   onlyUpdateForPropTypes,
   setPropTypes({
     title: PropTypes.object.isRequired,
     edit: PropTypes.object,
     onCancel: PropTypes.func.isRequired,
-    onSubmit: PropTypes.func.isRequired
+    onSave: PropTypes.func.isRequired
   } as PropTypes<Props>),
   injectIntl,
+  withPropsOnChange<any, IntlProps & Props>(
+    ['edit', 'intl'],
+    ({edit, intl: { formatNumber }}) => {
+      if (edit) {
+        const rrule = edit.rrule
+        const initialValues: Values = {
+          ...edit.doc,
+          start: moment(rrule.options.dtstart).format('L'),
+        } as any
+
+        initialValues.amount = formatNumber(edit.doc.amount, {style: 'currency', currency: 'USD'})
+
+        const opts = rrule.origOptions
+        if (opts.freq === RRule.MONTHLY) {
+          initialValues.frequency = 'months'
+        } else if (opts.freq === RRule.WEEKLY) {
+          initialValues.frequency = 'weeks'
+        } else if (opts.freq === RRule.MONTHLY) {
+          initialValues.frequency = 'months'
+        } else if (opts.freq === RRule.YEARLY) {
+          initialValues.frequency = 'years'
+        }
+
+        if (opts.interval) {
+          initialValues.interval = opts.interval
+        }
+        if (Array.isArray(opts.byweekday)) {
+          initialValues.byweekday = opts.byweekday.map((str: RRule.WeekdayStr) => dayMap[str]).join(',')
+          initialValues.showAdvanced = true
+        }
+        if (Array.isArray(opts.bymonth)) {
+          initialValues.bymonth = opts.bymonth.join(',')
+          initialValues.showAdvanced = true
+        }
+
+        initialValues.end = 'endCount'
+        if (opts.until) {
+          initialValues.until = moment(opts.until).format('L')
+          initialValues.count = 0
+          initialValues.end = 'endDate'
+        } else if (typeof opts.count === 'number') {
+          initialValues.count = opts.count
+          initialValues.until = ''
+        }
+
+        return { initialValues }
+      }
+    }
+  ),
   connect<ConnectedProps, DispatchProps, IntlProps & Props>(
     (state: AppState): ConnectedProps => ({
       lang: state.i18n.lang,
@@ -250,144 +304,70 @@ const enhance = compose<AllProps, Props>(
     mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
   reduxForm<Values, ConnectedProps & DispatchProps & IntlProps & Props>({
-    form: formName,
-    validate: (values: Values, props: any) => {
-      const v = new Validator(values)
-      const { edit, bills, intl: { formatMessage } } = props
-      const otherAccounts = bills.filter((otherBill: Bill.View) => !edit || otherBill.doc._id !== edit.doc._id)
-      const otherNames = otherAccounts.map((acct: Account.View) => acct.doc.name)
-      v.unique('name', otherNames, formatMessage(messages.uniqueName))
-      v.date('start', formatMessage(forms.date))
-      v.date('until', formatMessage(forms.date))
-      v.numeral('amount', formatMessage(forms.number))
-      return v.errors
-    },
+    form,
+    enableReinitialize: true,
     initialValues: {
       start: moment().format('L'),
       frequency: 'months',
       interval: 1,
       end: 'endCount'
+    },
+    validate: (values, props) => {
+      const v = new Validator(values, props.intl.formatMessage)
+      const { edit, bills, intl: { formatMessage } } = props
+      const otherBills = bills.filter((otherBill: Bill.View) => !edit || otherBill.doc._id !== edit.doc._id)
+      const otherNames = otherBills.map((acct) => acct.doc.name)
+      v.unique('name', otherNames, messages.uniqueName)
+      v.date('start')
+      v.date('until')
+      v.numeral('amount')
+      return v.errors
+    },
+    onSubmit: async (values, dispatch, props) => {
+      const { edit, lang, onSave, pushChanges, intl: { formatMessage } } = props
+      const v = new Validator(values, formatMessage)
+      v.required('group', 'name', 'amount', 'start')
+
+      const rrule = toRRule(values)
+      if (rrule instanceof ErrorMessage) {
+        v.errors[rrule.field] = formatMessage(rrule.message)
+      }
+
+      v.maybeThrowSubmissionError()
+
+      const { amount, frequency, start, end, until, count, interval, byweekday, bymonth, category, ...rest } = values
+      const docs: AnyDocument[] = []
+
+      const bill: Bill = {
+        ...(edit ? edit.doc : {}),
+        ...rest,
+        amount: numeral(amount).value(),
+        category: Budget.maybeCreateCategory(category, props.budgets, lang, docs),
+        rruleString: rrule.toString()
+      }
+      const doc = Bill.doc(bill, lang)
+      docs.push(doc)
+      await pushChanges({docs})
+      return onSave(doc)
     }
   }),
-  connect<FormProps, {}, ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>(
-    (state: AppState, props): FormProps => ({
-      start: formSelector(state, 'start'),
-      interval: formSelector(state, 'interval'),
-      count: formSelector(state, 'count'),
-      frequency: formSelector(state, 'frequency'),
-      end: formSelector(state, 'end'),
-      showAdvanced: formSelector(state, 'showAdvanced'),
+  connect<ConnectedFormProps, {}, FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps & Props>(
+    (state: AppState, props): ConnectedFormProps => ({
+      start: valueSelector(state, 'start'),
+      interval: valueSelector(state, 'interval'),
+      count: valueSelector(state, 'count'),
+      frequency: valueSelector(state, 'frequency'),
+      end: valueSelector(state, 'end'),
       rrule: rruleSelector(state),
-      web: formSelector(state, 'web'),
-      favicon: formSelector(state, 'favicon'),
     })
   ),
-  ui<UIState, FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props, {}>({
+  ui<UIState, ConnectedFormProps & FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps & Props, {}>({
     state: {
       groups: (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)
     }
   }),
-  withProps<EnhancedProps, ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>(
-    ({onSubmit, pushChanges, lang, edit}) => ({
-      onSubmit: async (values: Values, dispatch: any, props: AllProps) => {
-        const { intl: { formatMessage } } = props
-        const v = new Validator(values)
-        v.required(['group', 'name', 'amount', 'start'], formatMessage(forms.required))
-
-        const rrule = toRRule(values)
-        if (rrule instanceof ErrorMessage) {
-          v.errors[rrule.field] = formatMessage(rrule.message)
-        }
-
-        v.maybeThrowSubmissionError()
-
-        const { amount, frequency, start, end, until, count, interval, byweekday, bymonth, category, ...rest } = values
-        const docs: AnyDocument[] = []
-
-        const bill: Bill = {
-          ...(edit ? edit!.doc : {}),
-          ...rest,
-          amount: numeral(amount).value(),
-          category: Budget.maybeCreateCategory(category, props.budgets, lang, docs),
-          rruleString: rrule.toString()
-        }
-        const doc = Bill.doc(bill, lang)
-        docs.push(doc)
-        await pushChanges({docs})
-        return (onSubmit as any)(doc)
-      }
-    })
-  ),
   // tslint:disable-next-line:max-line-length
-  withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>(
-    'edit',
-    (props) => {
-      const { edit, initialize, intl: { formatNumber } } = props
-      if (edit) {
-        const rrule = edit.rrule
-        const values: Values = {
-          ...edit.doc,
-          start: moment(rrule.options.dtstart).format('L'),
-        } as any
-
-        values.amount = formatNumber(edit.doc.amount, {style: 'currency', currency: 'USD'})
-
-        const opts = rrule.origOptions
-        if (opts.freq === RRule.MONTHLY) {
-          values.frequency = 'months'
-        } else if (opts.freq === RRule.WEEKLY) {
-          values.frequency = 'weeks'
-        } else if (opts.freq === RRule.MONTHLY) {
-          values.frequency = 'months'
-        } else if (opts.freq === RRule.YEARLY) {
-          values.frequency = 'years'
-        }
-
-        if (opts.interval) {
-          values.interval = opts.interval
-        }
-        if (Array.isArray(opts.byweekday)) {
-          values.byweekday = opts.byweekday.map((str: RRule.WeekdayStr) => dayMap[str]).join(',')
-          values.showAdvanced = true
-        }
-        if (Array.isArray(opts.bymonth)) {
-          values.bymonth = opts.bymonth.join(',')
-          values.showAdvanced = true
-        }
-
-        values.end = 'endCount'
-        if (opts.until) {
-          values.until = moment(opts.until).format('L')
-          values.count = 0
-          values.end = 'endDate'
-        } else if (typeof opts.count === 'number') {
-          values.count = opts.count
-          values.until = ''
-        }
-
-        initialize!(values)
-      }
-    }
-  ),
-  mapPropsStream(
-    // tslint:disable-next-line:max-line-length
-    (props$: Rx.Observable<EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>) => {
-      const changeIcon$ = props$
-        .pluck<any, string>('web')
-        .distinctUntilChanged()
-        .debounceTime(500)
-        .do((web) => console.log(`getting favicon for ${web}`))
-        .switchMap(getFavicon$)
-        .withLatestFrom(props$, (icon, props) => {
-          const { change } = props
-          change!('favicon', icon!)
-        })
-
-      return props$.merge(changeIcon$.ignoreElements())
-    }
-  ),
-  // tslint:disable-next-line:max-line-length
-  withHandlers<Handlers, EnhancedProps & ReduxUIProps<UIState> & FormProps & ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps & Props>({
+  withHandlers<Handlers, EnhancedProps & ReduxUIProps<UIState> & ConnectedFormProps & FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps & Props>({
     onFrequencyChange: ({change}) => (eventKey: Frequency) => {
       change!('frequency', eventKey)
     },
@@ -400,23 +380,13 @@ const enhance = compose<AllProps, Props>(
       }
       return false
     },
-    changeIcon: ({change, web}) => async (favicon?: string) => {
-      if (favicon === undefined) {
-        // re-download
-        change!('favicon', '')
-        const response = await getFavicon(web)
-        change!('favicon', response!)
-      } else {
-        change!('favicon', favicon)
-      }
-    }
   })
 )
 
-const { TextField, DateField, SelectField, SelectCreateableField, CheckboxField, AccountField, BudgetField } = typedFields<Values>()
+const { Form, TextField, UrlField, SelectField, DateField, CollapseField, CheckboxField, AccountField, BudgetField } = formMaker<Values>()
 
 export const BillForm = enhance((props) => {
-  const { edit, title, onSubmit, onCancel, showAdvanced, ui: { groups }, monthOptions,
+  const { edit, title, onCancel, ui: { groups }, monthOptions,
     weekdayOptions, handleSubmit, frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule } = props
   const { formatMessage } = props.intl
 
@@ -426,7 +396,7 @@ export const BillForm = enhance((props) => {
   const text = rrule ? rrule.toText() : ''
 
   return (
-    <form onSubmit={handleSubmit!(onSubmit)}>
+    <Form horizontal onSubmit={handleSubmit}>
       <PageHeader>
         <FormattedMessage {...title}/>
       </PageHeader>
@@ -435,48 +405,45 @@ export const BillForm = enhance((props) => {
         <TextField
           autoFocus
           name='name'
-          label={formatMessage(messages.name)}
+          label={messages.name}
         />
-        <SelectCreateableField
+        <SelectField
+          createable
           name='group'
           options={groups}
-          label={formatMessage(messages.group)}
+          label={messages.group}
           promptTextCreator={(label: string) => 'create group ' + label}
           placeholder=''
         />
-        <TextField
+        <UrlField
           name='web'
-          label={formatMessage(messages.web)}
-          addonBefore={
-            <InputGroup.Button>
-              <IconPicker value={props.favicon} onChange={props.changeIcon}/>
-            </InputGroup.Button>
-          }
+          favicoName='favicon'
+          label={messages.web}
         />
         <TextField
           name='notes'
-          label={formatMessage(messages.notes)}
+          label={messages.notes}
         />
 
         <hr/>
         <TextField
           name='amount'
-          label={formatMessage(messages.amount)}
+          label={messages.amount}
         />
         <AccountField
           name='account'
-          label={formatMessage(messages.account)}
+          label={messages.account}
         />
         <BudgetField
           name='category'
-          label={formatMessage(messages.budget)}
+          label={messages.budget}
         />
 
         <hr/>
         <p><em><FormattedMessage {...messages.frequencyHeader} values={{rule: text}}/></em></p>
         <DateField
           name='start'
-          label={formatMessage(messages.start)}
+          label={messages.start}
           highlightDates={generatedValues}
         />
         {end !== 'endDate' &&
@@ -484,7 +451,7 @@ export const BillForm = enhance((props) => {
             name='count'
             type='number'
             min={0}
-            label={formatMessage(messages.end)}
+            label={messages.end}
             addonBefore={
               <DropdownButton
                 componentClass={InputGroup.Button}
@@ -508,7 +475,7 @@ export const BillForm = enhance((props) => {
         {end === 'endDate' &&
           <DateField
             name='until'
-            label={formatMessage(messages.end)}
+            label={messages.end}
             addonBefore={
               <DropdownButton
                 componentClass={InputGroup.Button}
@@ -528,7 +495,7 @@ export const BillForm = enhance((props) => {
         }
         <TextField
           name='interval'
-          label={formatMessage(messages.interval)}
+          label={messages.interval}
           type='number'
           min={0}
           addonBefore={
@@ -552,12 +519,12 @@ export const BillForm = enhance((props) => {
           }
         />
 
-        <CheckboxField name='showAdvanced' label='advanced'/>
-        <Collapse in={showAdvanced}>
+        <CheckboxField name='showAdvanced' label={messages.advanced} message={messages.advancedMessage}/>
+        <CollapseField name='showAdvanced'>
           <div>
             <SelectField
               name='byweekday'
-              label={formatMessage(messages.byweekday)}
+              label={messages.byweekday}
               multi
               joinValues
               delimiter=','
@@ -567,7 +534,7 @@ export const BillForm = enhance((props) => {
 
             <SelectField
               name='bymonth'
-              label={formatMessage(messages.bymonth)}
+              label={messages.bymonth}
               multi
               joinValues
               delimiter=','
@@ -575,7 +542,7 @@ export const BillForm = enhance((props) => {
               options={monthOptions}
             />
           </div>
-        </Collapse>
+        </CollapseField>
 
         {/*__DEVELOPMENT__ &&
           <div>{rrule ? rrule.toString() : ''}</div>
@@ -605,7 +572,7 @@ export const BillForm = enhance((props) => {
           </Button>
         </ButtonToolbar>
       </div>
-    </form>
+    </Form>
   )
 })
 
@@ -654,14 +621,14 @@ const getGroupNames = R.pipe(
 )
 
 const rruleSelector = createSelector(
-  (state: AppState) => formSelector(state, 'frequency') as Frequency,
-  (state: AppState) => formSelector(state, 'start') as string,
-  (state: AppState) => formSelector(state, 'end') as EndType,
-  (state: AppState) => formSelector(state, 'until') as string,
-  (state: AppState) => formSelector(state, 'count') as number,
-  (state: AppState) => formSelector(state, 'interval') as number,
-  (state: AppState) => formSelector(state, 'byweekday') as string,
-  (state: AppState) => formSelector(state, 'bymonth') as string,
+  (state: AppState) => valueSelector(state, 'frequency') as Frequency,
+  (state: AppState) => valueSelector(state, 'start') as string,
+  (state: AppState) => valueSelector(state, 'end') as EndType,
+  (state: AppState) => valueSelector(state, 'until') as string,
+  (state: AppState) => valueSelector(state, 'count') as number,
+  (state: AppState) => valueSelector(state, 'interval') as number,
+  (state: AppState) => valueSelector(state, 'byweekday') as string,
+  (state: AppState) => valueSelector(state, 'bymonth') as string,
   (frequency, start, end, until, count, interval, byweekday, bymonth): RRule | undefined => {
     const rrule = toRRule({frequency, start, end, until, count, interval, byweekday, bymonth})
     if (rrule instanceof ErrorMessage) {

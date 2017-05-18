@@ -4,7 +4,7 @@ import { Button } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
-import { ReduxFormProps, SubmitFunction, reduxForm } from 'redux-form'
+import { FormProps, SubmitFunction, reduxForm } from 'redux-form'
 import { SyncConnection } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { runSync } from '../../state/db/sync'
@@ -41,7 +41,7 @@ interface EnhancedProps {
   onSubmit: SubmitFunction<Values>
 }
 
-type AllProps = ReduxFormProps<Values> & EnhancedProps & ConnectedProps & DispatchProps & IntlProps & Props
+type AllProps = FormProps<Values, {}, {}> & EnhancedProps & ConnectedProps & DispatchProps & IntlProps & Props
 
 interface Values {
   password: string
@@ -65,8 +65,8 @@ const enhance = compose<AllProps, Props>(
   withProps<EnhancedProps, ConnectedProps & DispatchProps & Props & IntlProps>(
     ({ sync, pushChanges, runSync, intl: { formatMessage } }) => ({
       onSubmit: async (values: Values) => {
-        const v = new Validator(values)
-        v.required(['password'], formatMessage(forms.required))
+        const v = new Validator(values, formatMessage)
+        v.required('password')
         v.maybeThrowSubmissionError()
         const nextSync = SyncConnection.inputPassword(sync, values.password)
         await pushChanges({docs: [nextSync]})

@@ -1,12 +1,14 @@
 import * as PropTypes from 'prop-types'
 import { PageHeader, InputGroup, Button, ButtonToolbar } from 'react-bootstrap'
 import * as React from 'react'
-import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
+import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps, withPropsOnChange } from 'recompose'
+import { reduxForm, formValueSelector, FormProps } from 'redux-form'
 import { Account } from '../../docs/index'
-import { Validator2 } from '../../util/index'
+import { Validator } from '../../util/index'
 import { AppState } from '../../state/index'
+import { forms } from './forms/index'
 import { formMaker, SubmitHandler, ChangeCallback } from './forms/createForm'
 import { IntlProps } from './props'
 
@@ -71,11 +73,11 @@ interface Props {
   onCancel: () => void
 }
 
-interface FormProps {
+interface ConnectedFormProps {
   type?: Account.Type
 }
 
-type AllProps = FormProps & Props & IntlProps
+type AllProps = FormProps<Values, any, any> & ConnectedFormProps & Props & IntlProps
 
 export interface Values {
   color: string
@@ -86,7 +88,9 @@ export interface Values {
   key: string
 }
 
-const { Form, Text, Select, ColorAddon, formValueSelector } = formMaker<Values>('AccountForm')
+const form = 'AccountForm'
+const { Form, TextField, SelectField, ColorAddon } = formMaker<Values>()
+const valueSelector = formValueSelector(form)
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('AccountForm'),
@@ -98,53 +102,61 @@ const enhance = compose<AllProps, Props>(
     onCancel: PropTypes.func.isRequired
   } as PropTypes<Props>),
   injectIntl,
-  withProps<{}, Props & IntlProps>((props) => ({
-    initialValues: ({
-      color: Account.generateColor(),
-    }),
-    onSubmit: async (values: Values, dispatch: any) => {
+  withPropsOnChange<any, FormProps<Values, any, any> & Props>(
+    ['edit'],
+    ({ edit }) => {
+      const initialValues = edit || ({
+        color: Account.generateColor(),
+      })
+      return { initialValues }
+    }
+  ),
+  reduxForm<Values, Props & InjectedIntlProps, AppState>({
+    form,
+    enableReinitialize: true,
+    onSubmit: async (values, dispatch, props) => {
       const { onSubmit, intl: { formatMessage } } = props
-      const v = new Validator2(values, formatMessage)
+      const v = new Validator(values, formatMessage)
       v.required('name', 'number', 'type')
       v.maybeThrowSubmissionError()
       return onSubmit(values, dispatch, props)
     },
-    validate: ((values: Values) => {
+    validate: ((values, props) => {
       const { edit, accounts, intl: { formatMessage } } = props
-      const v = new Validator2(values, formatMessage)
+      const v = new Validator(values, formatMessage)
       const otherAccounts = accounts.filter(acct => !edit || edit._id !== acct.doc._id)
       const otherNames = otherAccounts.map(acct => acct.doc.name)
       const otherNumbers = otherAccounts.filter(acct => acct.doc.type === v.values.type).map(acct => acct.doc.number)
       v.unique('name', otherNames, messages.uniqueName)
       v.unique('number', otherNumbers, messages.uniqueNumber)
       return v.errors
-    }) as any
-  })),
-  connect<FormProps, {}, Props & IntlProps>(
-    (state: AppState): FormProps => ({
-      type: formValueSelector(state, 'type')
+    })
+  }),
+  connect<ConnectedFormProps, {}, Props & IntlProps>(
+    (state: AppState): ConnectedFormProps => ({
+      type: valueSelector(state, 'type')
     })
   )
 )
 
 export const AccountForm = enhance((props) => {
-  const { edit, type, onSubmit, onCancel } = props
+  const { edit, type, handleSubmit, onCancel } = props
   const { formatMessage } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle
   return (
-    <Form onSubmit={onSubmit} validate={(props as any).validate} initialValues={(props as any).initialValues}>
+    <Form onSubmit={handleSubmit}>
       <PageHeader>
         <FormattedMessage {...title}/>
       </PageHeader>
 
       <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
-        <Text
+        <TextField
           name='name'
           label={messages.name}
           addonBefore={<ColorAddon name='color'/>}
           autoFocus
         />
-        <Select
+        <SelectField
           name='type'
           options={typeOptions}
           clearable={false}
@@ -152,18 +164,18 @@ export const AccountForm = enhance((props) => {
           valueRenderer={accountTypeRenderer}
           label={messages.type}
         />
-        <Text
+        <TextField
           name='number'
           label={messages.number}
         />
         {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
-          <Text
+          <TextField
             name='bankid'
             label={messages.bankid}
           />
         }
         {(type === Account.Type.CREDITCARD) &&
-          <Text
+          <TextField
             name='key'
             label={messages.key}
           />

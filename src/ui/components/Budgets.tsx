@@ -8,7 +8,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 import { shallowEqual } from 'recompose'
-import { ReduxFormProps, FieldArray, FieldsProps, reduxForm, Fields } from 'redux-form'
+import { FormProps, FieldArray, FieldsProps, reduxForm, Fields } from 'redux-form'
 import { deleteBudget } from '../../actions/index'
 import { Bill, Budget, Category } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
@@ -80,7 +80,7 @@ interface State {
   editing: boolean
 }
 
-type AllProps = ReduxFormProps<Values> & ConnectedProps & DispatchProps & IntlProps
+type AllProps = FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps
 
 interface CategoryValues {
   _id: string
@@ -111,16 +111,16 @@ const { TextField } = typedFields<any>()
 @(reduxForm<AllProps, Values>({
   form: 'BudgetForm',
   validate: (values, props: any) => {
-    const v = new Validator(values)
     const { intl: { formatMessage } } = props
-    v.arrayUnique('budgets', 'name', formatMessage(messages.uniqueBudget))
+    const v = new Validator(values, formatMessage)
+    v.arrayUnique('budgets', 'name', messages.uniqueBudget)
     for (let i = 0; values.budgets && i < values.budgets.length; i++) {
-      const vi = v.arraySubvalidator('budgets', i) as Validator<BudgetValues>
+      const vi = v.arraySubvalidator<BudgetValues>('budgets', i)
       vi.arrayUnique('categories', 'name', formatMessage(messages.uniqueCategory))
       const budget = values.budgets[i]
       for (let j = 0; budget && budget.categories && j < budget.categories.length; j++) {
-        const ci = vi.arraySubvalidator('categories', j)
-        ci.numeral('amount', formatMessage(forms.number))
+        const ci = vi.arraySubvalidator<Category>('categories', j)
+        ci.numeral('amount')
       }
     }
     return v.errors
@@ -172,15 +172,15 @@ export class Budgets extends React.Component<AllProps, State> {
 
   @autobind
   async onSubmit (values: Values) {
-    const v = new Validator(values)
     const { budgets, pushChanges, intl: { formatMessage }, lang } = this.props
+    const v = new Validator(values, formatMessage)
     const changes: AnyDocument[] = []
 
     // TODO: delete removed category/budget docs
 
     for (let i = 0; values.budgets && i < values.budgets.length; i++) {
-      const bv = v.arraySubvalidator('budgets', i) as Validator<BudgetValues>
-      bv.required(['name'], formatMessage(forms.required))
+      const bv = v.arraySubvalidator<BudgetValues>('budgets', i)
+      bv.required('name')
       const bvalues = values.budgets[i]
       if (bvalues) {
         const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
@@ -230,8 +230,8 @@ export class Budgets extends React.Component<AllProps, State> {
       }
       const categories = values.budgets[i].categories
       for (let c = 0; categories && c < categories.length; c++) {
-        const cv = bv.arraySubvalidator('categories', c)
-        cv.required(['name'], formatMessage(forms.required))
+        const cv = bv.arraySubvalidator<Category>('categories', c)
+        cv.required('name')
       }
     }
     v.maybeThrowSubmissionError()
