@@ -91,6 +91,11 @@ export namespace Account {
     balance: number
   }
 
+  export const allDocs = {
+    startkey: 'account/',
+    endkey: 'account/\uffff',
+  }
+
   export const buildView = (doc: Doc, cache: DocCache): View => {
     const startkey = Transaction.startkeyForAccount(doc)
     const endkey = Transaction.endkeyForAccount(doc)

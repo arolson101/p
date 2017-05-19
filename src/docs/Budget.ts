@@ -24,6 +24,11 @@ export namespace Budget {
     categories: Category.View[]
   }
 
+  export const allDocs = {
+    startkey: 'budget/',
+    endkey: 'budget/\uffff',
+  }
+
   export const buildView = (doc: Doc, cache: DocCache): View => {
     const categories = (doc.categories || [])
       .map(category => cache.categories.get(category)!)

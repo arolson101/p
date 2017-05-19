@@ -254,8 +254,15 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
         localDocs.push(doc)
       }
     }
-    const allDocs = await db.allDocs({include_docs: true, conflicts: true})
-    const docs: AnyDocument[] = allDocs.rows.map(row => row.doc!).concat(localDocs).concat(local)
+    let docs: AnyDocument[] = []
+    for (let opts of DocCache.allDocs) {
+      const allDocs = await db.allDocs({include_docs: true, conflicts: true, ...opts})
+      docs.push(...allDocs.rows.map(row => row.doc!))
+    }
+    docs.push(local)
+    docs.push(...localDocs)
+    // const allDocs = await db.allDocs({include_docs: true, conflicts: true})
+    // const docs: AnyDocument[] = allDocs.rows.map(row => row.doc!).concat(localDocs).concat(local)
     resolveConflicts(db, ...docs)
 
     const cache = DocCache.addDocsToCache(docs)

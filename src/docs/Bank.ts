@@ -50,6 +50,11 @@ export namespace Bank {
     })
   }
 
+  export const allDocs = {
+    startkey: 'bank/',
+    endkey: 'bank/\uffff',
+  }
+
   export namespace routes {
     export const all = 'banks'
     export const create = 'bank/create'

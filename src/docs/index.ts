@@ -33,6 +33,14 @@ export interface DocCache {
 }
 
 export namespace DocCache {
+  export const allDocs = [
+    Bank.allDocs,
+    Account.allDocs,
+    Category.allDocs,
+    Bill.allDocs,
+    Budget.allDocs,
+  ]
+
   export const create = (): DocCache => ({
     local: LocalDoc.create(),
     banks: Bank.createCache(),

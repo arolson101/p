@@ -21,6 +21,11 @@ export namespace Category {
     bills: Bill.View[]
   }
 
+  export const allDocs = {
+    startkey: 'category/',
+    endkey: 'category/\uffff',
+  }
+
   export const buildView = (doc: Doc, cache: DocCache): View => {
     return ({
       doc,

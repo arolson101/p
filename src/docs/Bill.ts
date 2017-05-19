@@ -33,6 +33,11 @@ export namespace Bill {
     category?: Category.Doc
   }
 
+  export const allDocs = {
+    startkey: 'bill/',
+    endkey: 'bill/\uffff',
+  }
+
   export const buildView = (doc: Doc, docCache: DocCache): View => {
     return ({
       doc,
