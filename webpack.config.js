@@ -121,8 +121,9 @@ module.exports = {
 
 
 if (__DEVELOPMENT__) {
-  module.exports.entry.p.push('webpack/hot/only-dev-server')
-  module.exports.entry.p.push('react-hot-loader/patch')
+  // module.exports.entry.p.push('webpack/hot/only-dev-server')
+  // module.exports.entry.p.push('react-hot-loader/patch')
+  module.exports.entry.p.push('react-dev-utils/webpackHotDevClient')
 	module.exports.plugins.push(new webpack.NamedModulesPlugin())
 } else {
   module.exports.devtool = "sourcemaps"
