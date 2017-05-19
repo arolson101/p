@@ -197,7 +197,7 @@ const renderUrl = enhanceUrl((props: RenderUrlProps) => {
 const renderFavico = (props: RF.WrappedFieldProps<any>) => {
   const { input: { value, onChange } } = props
   return <RB.InputGroup.Button>
-     <IconPicker value={value} onChange={onChange} />
+    <IconPicker value={value} onChange={onChange} />
   </RB.InputGroup.Button>
 }
 

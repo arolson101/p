@@ -30,7 +30,7 @@ export interface CurrentDb {
   info: DbInfo
   localInfo: LocalDbInfo
   db: PouchDB.Database<any>
-  rx: Rx.Subject<DbChangeInfo>
+  change$: Rx.Subject<DbChangeInfo>
   changeProcessed$: Rx.Subject<string>
   view: DbView
   cache: DocCache
@@ -142,7 +142,7 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
     }
 
     for (let local of locals) {
-      current.rx.next({
+      current.change$.next({
         id: local._id,
         changes: [local],
         doc: local,
@@ -224,12 +224,12 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       }
     })
 
-    const rx = new Rx.Subject<DbChangeInfo>()
-    observable.subscribe(rx)
+    const change$ = new Rx.Subject<DbChangeInfo>()
+    observable.subscribe(change$)
     const changeProcessed$ = new Rx.Subject<string>()
 
-    rx
-    .buffer(rx.debounceTime(10))
+    change$
+    .buffer(change$.debounceTime(10))
     .forEach((changeInfos) => {
       const { db: { current } } = getState()
       console.log(`processChanges: ${changeInfos.length}`, changeInfos)
@@ -264,7 +264,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     console.timeEnd('load')
     console.log(`${cache.transactions.size} transactions`)
 
-    const current = { info, db, localInfo, rx, changeProcessed$, view, cache }
+    const current = { info, db, localInfo, change$, changeProcessed$, view, cache }
     dispatch(setDb(current))
     // dumpNextSequence(current)
   }

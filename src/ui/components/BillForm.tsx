@@ -10,7 +10,7 @@ import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps,
-  withPropsOnChange, withHandlers, mapPropsStream } from 'recompose'
+  withPropsOnChange, withHandlers } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, formValueSelector, FormProps, SubmitHandler } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'

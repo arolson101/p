@@ -26,10 +26,13 @@ export namespace Transaction {
   export type Cache = Lookup<DocId, Doc>
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
-  export const startkeyForAccount = (account: Account.Doc, time?: Date) =>
-    docId({ ...accountParts(account), txId: time ? timeKey(time) : ''})
-  export const endkeyForAccount = (account: Account.Doc, time?: Date) =>
-    docId({ ...accountParts(account), txId: time ? timeKey(time) : ''}) + '\uffff'
+  export const startkeyForAccountId = (accountId: Account.DocId, time?: Date) =>
+    docId({ ...accountIdParts(accountId), txId: time ? timeKey(time) : ''})
+  export const endkeyForAccountId = (accountId: Account.DocId, time?: Date) =>
+    docId({ ...accountIdParts(accountId), txId: time ? timeKey(time) : ''}) + '\uffff'
+
+  export const startkeyForAccount = (account: Account.Doc, time?: Date) => startkeyForAccountId(account._id, time)
+  export const endkeyForAccount = (account: Account.Doc, time?: Date) => endkeyForAccountId(account._id, time)
 
   export type View = {
     doc: Doc
@@ -58,12 +61,16 @@ export namespace Transaction {
     }
   }
 
-  const accountParts = (account: Account.Doc) => {
-    const aparts = Account.docId(account._id)
+  const accountIdParts = (accountId: Account.DocId) => {
+    const aparts = Account.docId(accountId)
     if (!aparts) {
-      throw new Error('invalid accountId: ' + account._id)
+      throw new Error('invalid accountId: ' + accountId)
     }
     return aparts
+  }
+
+  const accountParts = (account: Account.Doc) => {
+    return accountIdParts(account._id)
   }
 
   export const isDocId = (id: string): boolean => {

@@ -1,10 +1,12 @@
 import * as R from 'ramda'
 import * as React from 'react'
+import * as shallowCompare from 'react-addons-shallow-compare'
 import { PageHeader } from 'react-bootstrap'
 import { defineMessages, injectIntl } from 'react-intl'
 import { connect } from 'react-redux'
 import { Column } from 'react-virtualized'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, mapPropsStream } from 'recompose'
+import * as Rx from 'rxjs/Rx'
 import { getTransactions, deleteAllTransactions } from '../../actions/index'
 import { Bank, Account, Transaction } from '../../docs/index'
 import { AppState, pushChanges, mapDispatchToProps } from '../../state/index'
@@ -44,6 +46,7 @@ const messages = defineMessages({
 interface ConnectedProps {
   bank: Bank.View
   account: Account.View
+  db: PouchDB.Database<Transaction.Doc>
 }
 
 interface DispatchProps {
@@ -52,6 +55,7 @@ interface DispatchProps {
   deleteAllTransactions: deleteAllTransactions.Fcn
 }
 
+type StreamProps = ConnectedProps & RouteProps<Account.Params>
 type AllProps = IntlProps & ConnectedProps & HandlerProps & DispatchProps
 
 interface HandlerProps {
@@ -62,17 +66,50 @@ interface HandlerProps {
 
 const enhance = compose<AllProps, RouteProps<Account.Params>>(
   setDisplayName('AccountViewComponent'),
-  onlyUpdateForPropTypes,
-  setPropTypes({}),
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps & RouteProps<Account.Params>>(
-    (state: AppState, props) => ({
+    (state: AppState, props): ConnectedProps => ({
       bank: selectBank(state, props!),
       account: selectAccount(state, props!),
-      current: state.db.current!
+      db: state.db.current!.db
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions })
   ),
+  // mapPropsStream(
+  //   (props$: Rx.Observable<StreamProps>) => {
+  //     const transactions$ = props$
+  //       .map(({ db, match: { params } }) => ({ db, params }))
+  //       .distinctUntilChanged(R.equals as any)
+  //       .switchMap(({ db, params }) => {
+  //         console.log('params: ', params)
+  //         const accountId = Account.docId(params)
+  //         console.log('query for transactions: ', accountId)
+  //         console.time('query')
+  //         return db.allDocs({
+  //           startkey: Transaction.startkeyForAccountId(accountId),
+  //           endkey: Transaction.endkeyForAccountId(accountId),
+  //           include_docs: true,
+  //           // limit: 300,
+  //           // skip: 8000
+  //         })
+  //       })
+  //       .map(response => {
+  //         console.timeEnd('query')
+  //         console.log(`${response.rows.length} transactions`)
+  //         let balance = 0
+  //         const transactions = response.rows
+  //           .map(row => row.doc!)
+  //           .filter(doc => doc)
+  //           .map(doc => {
+  //             balance += doc.amount
+  //             return Transaction.buildView(doc, balance)
+  //           })
+  //         return { transactions }
+  //       })
+  //       .startWith({ transactions: [] })
+  //     return props$.combineLatest(transactions$, (props, transactions) => ({ ...props, ...transactions }))
+  //   }
+  // ),
   withHandlers<HandlerProps, ConnectedProps & DispatchProps & IntlProps & RouteProps<Account.Params>>({
     addTransactions: (props) => () => {
       const { pushChanges, account } = props
@@ -114,6 +151,8 @@ const enhance = compose<AllProps, RouteProps<Account.Params>>(
 export const AccountView = enhance((props) => {
   const { account } = props
   const { downloadTransactions, addTransactions, deleteTransactions } = props
+  // const transactions = (props as any).transactions
+  const transactions = account.transactions
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
       <PageHeader>
@@ -160,7 +199,7 @@ export const AccountView = enhance((props) => {
 
       <div style={{flex: 1}}>
         <ListWithDetails
-          items={account.transactions}
+          items={transactions}
           columns={[
             {
               label: 'Date',
