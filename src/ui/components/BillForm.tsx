@@ -12,18 +12,18 @@ import { createSelector } from 'reselect'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps,
   withPropsOnChange, withHandlers, mapPropsStream } from 'recompose'
 import { Dispatch } from 'redux'
-import { reduxForm, formValueSelector, FormProps, SubmitFunction } from 'redux-form'
+import { reduxForm, formValueSelector, FormProps, SubmitHandler } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'
 import * as RRule from 'rrule-alt'
 import { Account, Budget, Bill } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { Validator } from '../../util/index'
 import { withPropChangeCallback } from '../enhancers/index'
-import { typedFields, forms, SubmitHandler, SelectOption } from './forms/index'
+import { typedFields, forms, SelectOption } from './forms/index'
 import { IconPicker } from './forms/IconPicker'
 import { IntlProps } from './props'
 
-export { SubmitFunction }
+export { SubmitHandler }
 
 const messages = defineMessages({
   group: {

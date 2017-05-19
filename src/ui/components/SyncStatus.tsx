@@ -4,7 +4,7 @@ import { Button } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
-import { FormProps, SubmitFunction, reduxForm } from 'redux-form'
+import { FormProps, SubmitHandler, reduxForm } from 'redux-form'
 import { SyncConnection } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { runSync } from '../../state/db/sync'
@@ -24,7 +24,7 @@ const messages = defineMessages({
   },
   badPassword: {
     id: 'SyncStatus.badPassword',
-    defaultMessage: 'Incorrect password.  Please enter password'
+    defaultMessage: 'Incorrect password.  Please re-enter password'
   },
 })
 
@@ -42,7 +42,7 @@ interface DispatchProps {
 }
 
 interface EnhancedProps {
-  onSubmit: SubmitFunction<Values>
+  onSubmit: SubmitHandler<Values, {}, {}>
 }
 
 type AllProps = FormProps<Values, {}, {}> & EnhancedProps & ConnectedProps & DispatchProps & IntlProps & Props

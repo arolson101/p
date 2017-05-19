@@ -8,7 +8,7 @@ import ui, { ReduxUIProps } from 'redux-ui'
 import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from '../../state/index'
 import { Bill } from '../../docs/index'
 import { withPropChangeCallback } from '../enhancers/index'
-import { BillForm, SubmitFunction } from './BillForm'
+import { BillForm } from './BillForm'
 
 const messages = defineMessages({
   page: {

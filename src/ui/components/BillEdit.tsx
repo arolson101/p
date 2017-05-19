@@ -5,7 +5,7 @@ import { withRouter } from 'react-router'
 import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bill } from '../../docs/index'
 import { AppState } from '../../state/index'
-import { BillForm, SubmitFunction } from './BillForm'
+import { BillForm } from './BillForm'
 import { RouteProps } from './props'
 import { selectBill } from './selectors'
 
