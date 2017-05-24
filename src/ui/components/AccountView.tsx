@@ -74,41 +74,41 @@ const enhance = compose<AllProps, RouteProps<Account.Params>>(
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions })
   ),
-  mapPropsStream(
-    (props$: Rx.Observable<StreamProps>) => {
-      const transactions$ = props$
-        .map(({ db, match: { params } }) => ({ db, params }))
-        .distinctUntilChanged(R.equals as any)
-        .switchMap(({ db, params }) => {
-          console.log('params: ', params)
-          const accountId = Account.docId(params)
-          console.log('query for transactions: ', accountId)
-          console.time('query')
-          return db.allDocs({
-            startkey: Transaction.startkeyForAccountId(accountId),
-            endkey: Transaction.endkeyForAccountId(accountId),
-            include_docs: true,
-            // limit: 300,
-            // skip: 8000
-          })
-        })
-        .map(response => {
-          console.timeEnd('query')
-          console.log(`${response.rows.length} transactions`)
-          let balance = 0
-          const transactions = response.rows
-            .map(row => row.doc!)
-            .filter(doc => doc)
-            .map(doc => {
-              balance += doc.amount
-              return Transaction.buildView(doc, balance)
-            })
-          return { transactions }
-        })
-        .startWith({ transactions: [] })
-      return props$.combineLatest(transactions$, (props, transactions) => ({ ...props, ...transactions }))
-    }
-  ),
+  // mapPropsStream(
+  //   (props$: Rx.Observable<StreamProps>) => {
+  //     const transactions$ = props$
+  //       .map(({ db, match: { params } }) => ({ db, params }))
+  //       .distinctUntilChanged(R.equals as any)
+  //       .switchMap(({ db, params }) => {
+  //         console.log('params: ', params)
+  //         const accountId = Account.docId(params)
+  //         console.log('query for transactions: ', accountId)
+  //         console.time('query')
+  //         return db.allDocs({
+  //           startkey: Transaction.startkeyForAccountId(accountId),
+  //           endkey: Transaction.endkeyForAccountId(accountId),
+  //           include_docs: true,
+  //           // limit: 300,
+  //           // skip: 8000
+  //         })
+  //       })
+  //       .map(response => {
+  //         console.timeEnd('query')
+  //         console.log(`${response.rows.length} transactions`)
+  //         let balance = 0
+  //         const transactions = response.rows
+  //           .map(row => row.doc!)
+  //           .filter(doc => doc)
+  //           .map(doc => {
+  //             balance += doc.amount
+  //             return Transaction.buildView(doc, balance)
+  //           })
+  //         return { transactions }
+  //       })
+  //       .startWith({ transactions: [] })
+  //     return props$.combineLatest(transactions$, (props, transactions) => ({ ...props, ...transactions }))
+  //   }
+  // ),
   withHandlers<HandlerProps, ConnectedProps & DispatchProps & IntlProps & RouteProps<Account.Params>>({
     addTransactions: (props) => () => {
       const { pushChanges, account } = props
@@ -150,8 +150,8 @@ const enhance = compose<AllProps, RouteProps<Account.Params>>(
 export const AccountView = enhance((props) => {
   const { account } = props
   const { downloadTransactions, addTransactions, deleteTransactions } = props
-  const transactions = (props as any).transactions
-  // const transactions = account.transactions
+  // const transactions = (props as any).transactions
+  const transactions = account.transactions
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
       <PageHeader>
