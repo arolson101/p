@@ -43,11 +43,11 @@ export const selectAccount = (state: AppState, props?: RouteProps<Account.Params
 
 export const selectTransaction = (state: AppState, props?: RouteProps<Transaction.Params>) => {
   const account = selectAccount(state, props)
-  const txId = props && props.match.params.txId
-  if (!txId) {
-    throw new Error('no txId!')
+  const txDocId = props && Transaction.docId(props.match.params)
+  if (!txDocId) {
+    throw new Error('no txDocId')
   }
-  const transaction = account.transactions.find(tx => tx.doc._id === txId)
+  const transaction = account.transactions.find(tx => tx.doc._id === txDocId)
   if (!transaction) {
     throw new Error('transaction not found!')
   }
