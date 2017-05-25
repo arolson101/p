@@ -49,6 +49,15 @@ Resizer.disabled:hover {
     overflow-y: initial !important
 }
 .modal-body{
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 300px);
     overflow-y: auto;
+}
+
+/* https://react-bootstrap.github.io/components.html#modals-contained */
+.modal-container {
+  position: relative;
+}
+
+.modal-container .modal, .modal-container .modal-backdrop {
+  position: absolute;
 }

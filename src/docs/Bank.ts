@@ -43,7 +43,7 @@ export namespace Bank {
   export const buildView = (doc: Doc, cache: DocCache): View => {
     return ({
       doc,
-      accounts: doc.accounts
+      accounts: (doc.accounts || [])
         .map(accountId => cache.accounts.get(accountId))
         .filter((account?: Account.Doc) => account !== undefined)
         .map((account: Account.Doc) => Account.buildView(account, cache))
@@ -57,9 +57,7 @@ export namespace Bank {
 
   export namespace routes {
     export const all = 'banks'
-    export const create = 'bank/create'
     export const view = 'bank/:bankId'
-    export const edit = 'bank/:bankId/edit'
     export const del = 'bank/:bankId/delete'
   }
 
@@ -68,16 +66,8 @@ export namespace Bank {
       return '/' + routes.all
     }
 
-    export const create = () => {
-      return '/' + routes.create
-    }
-
     export const view = (bank: Doc): string => {
       return '/' + bank._id
-    }
-
-    export const edit = (bank: Doc): string => {
-      return '/' + bank._id + '/edit'
     }
 
     export const del = (bank: Doc): string => {

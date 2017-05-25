@@ -1,7 +1,7 @@
 import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { Modal, ModalProps, PageHeader, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
-import { defineMessages, FormattedMessage } from 'react-intl'
+import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withPropsOnChange, withHandlers, onlyUpdateForPropTypes, setPropTypes, getContext } from 'recompose'
 import { reduxForm, FormProps, formValueSelector } from 'redux-form'
@@ -10,69 +10,70 @@ import { Bank } from '../../docs/index'
 import { AppState, FI, emptyfi, pushChanges, mapDispatchToProps } from '../../state/index'
 import { withPropChangeCallback } from '../enhancers/index'
 import { formatAddress } from '../../util/index'
+import { Validator } from '../../util/index'
 import { typedFields, forms, SubmitHandler } from './forms/index'
 import { IconPicker } from './forms/IconPicker'
 import { AppContentContext, AppContentContextTypes } from './AppContent'
 
 const messages = defineMessages({
   createTitle: {
-    id: 'BankForm.createTitle',
+    id: 'BankDialog.createTitle',
     defaultMessage: 'Add Institution'
   },
   editTitle: {
-    id: 'BankForm.editTitle',
+    id: 'BankDialog.editTitle',
     defaultMessage: 'Edit Institution'
   },
   fi: {
-    id: 'BankForm.fi',
+    id: 'BankDialog.fi',
     defaultMessage: 'Institution'
   },
   fiHelp: {
-    id: 'BankForm.fiHelp',
+    id: 'BankDialog.fiHelp',
     defaultMessage: 'Choose a financial institution from the list or fill in the details below'
   },
   fiPlaceholder: {
-    id: 'BankForm.fiPlaceholder',
+    id: 'BankDialog.fiPlaceholder',
     defaultMessage: 'Select financial institution...'
   },
   name: {
-    id: 'BankForm.name',
+    id: 'BankDialog.name',
     defaultMessage: 'Name'
   },
   web: {
-    id: 'BankForm.web',
+    id: 'BankDialog.web',
     defaultMessage: 'Website'
   },
   address: {
-    id: 'BankForm.address',
+    id: 'BankDialog.address',
     defaultMessage: 'Address'
   },
   notes: {
-    id: 'BankForm.notes',
+    id: 'BankDialog.notes',
     defaultMessage: 'Notes'
   },
   online: {
-    id: 'BankForm.online',
+    id: 'BankDialog.online',
     defaultMessage: 'Online'
   },
   fid: {
-    id: 'BankForm.fid',
+    id: 'BankDialog.fid',
     defaultMessage: 'Fid'
   },
   org: {
-    id: 'BankForm.org',
+    id: 'BankDialog.org',
     defaultMessage: 'Org'
   },
   ofx: {
-    id: 'BankForm.ofx',
+    id: 'BankDialog.ofx',
     defaultMessage: 'OFX Server'
   },
   username: {
-    id: 'BankForm.username',
+    id: 'BankDialog.username',
     defaultMessage: 'Username'
   },
   password: {
-    id: 'BankForm.password',
+    id: 'BankDialog.password',
     defaultMessage: 'Password'
   }
 })
@@ -97,7 +98,7 @@ interface EnhancedProps {
   onChangeFI: (event: any, index: number) => void
 }
 
-type AllProps = AppContentContext & EnhancedProps & FormProps<Values, any, any> & ConnectedProps & Props
+type AllProps = AppContentContext & EnhancedProps & FormProps<Values, any, any> & ConnectedProps & Props & InjectedIntlProps
 
 export type SubmitFunction<V> = SubmitHandler<V>
 
@@ -124,9 +125,12 @@ const { Form, TextField, PasswordField, UrlField, SelectField, CheckboxField, Co
 
 const enhance = compose<AllProps, Props>(
   setDisplayName('BankDialog'),
+  injectIntl,
   onlyUpdateForPropTypes,
   setPropTypes<Props>({
     edit: PropTypes.object,
+    show: PropTypes.bool.isRequired,
+    onHide: PropTypes.func.isRequired
   }),
   getContext<AppContentContext, Props>(
     AppContentContextTypes
@@ -136,6 +140,7 @@ const enhance = compose<AllProps, Props>(
       filist: state.fi.list,
       lang: state.i18n.locale,
     }),
+    mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
   withPropsOnChange<any, ConnectedProps & Props>(
     ['edit', 'filist'],
@@ -147,10 +152,16 @@ const enhance = compose<AllProps, Props>(
       }
     }
   ),
-  withHandlers<EnhancedProps, ConnectedProps & DispatchProps & Props>({
-    onSubmit: ({edit, filist, onHide, pushChanges}) => async (values: Values) => {
+  withHandlers<EnhancedProps, ConnectedProps & DispatchProps & InjectedIntlProps & Props>({
+    onSubmit: ({edit, filist, onHide, pushChanges, lang, intl: { formatMessage }}) => async (values: Values) => {
+      const v = new Validator(values, formatMessage)
+      v.required('name')
+      v.maybeThrowSubmissionError()
+
       const { fi, username, password, ...newValues } = values
-      const doc: Bank.Doc = {
+      const doc: Bank.Doc = Bank.doc({
+        accounts: [],
+
         ...edit,
         ...newValues,
 
@@ -159,14 +170,14 @@ const enhance = compose<AllProps, Props>(
           username: username,
           password: password
         }
-      }
+      }, lang)
       await pushChanges({docs: [doc]})
 
       onHide()
-    }
+    },
   }),
   reduxForm<Values, ConnectedProps & Props, AppState>({
-    form: 'BankForm',
+    form: 'BankDialog',
     enableReinitialize: true,
   }),
   withPropsOnChange<Partial<EnhancedProps>, FormProps<Values, any, any> & ConnectedProps & Props>(
@@ -190,13 +201,20 @@ const enhance = compose<AllProps, Props>(
 )
 
 export const BankDialog = enhance((props) => {
-  const { edit, handleSubmit, onChangeFI, filist } = props
+  const { edit, handleSubmit, onChangeFI, filist, reset } = props
   const { show, onHide, onSubmit, container } = props
   const title = edit ? messages.editTitle : messages.createTitle
 
   return (
-    <Modal container={container} show={show} onHide={onHide}>
-      <Modal.Header>
+    <Modal
+      container={container}
+      show={show}
+      onHide={onHide}
+      onExited={reset}
+      backdrop='static'
+      bsSize='large'
+    >
+      <Modal.Header closeButton>
         <Modal.Title>
           <FormattedMessage {...title}/>
         </Modal.Title>

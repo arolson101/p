@@ -43,9 +43,7 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
                   <Switch>
                     <Route exact path={'/' + DbInfo.routes.home} component={Components.Home as any} />
                     <Route exact path={'/' + Bank.routes.all} component={Components.Accounts} />
-                    <Route exact path={'/' + Bank.routes.create} component={Components.BankCreate}/>
                     <Route exact path={'/' + Bank.routes.view} component={Components.BankView}/>
-                    <Route exact path={'/' + Bank.routes.edit} component={Components.BankEdit}/>
                     <Route exact path={'/' + Bank.routes.del} component={Components.BankDelete}/>
                     <Route exact path={'/' + Account.routes.create} component={Components.AccountCreate}/>
                     <Route exact path={'/' + Account.routes.view} component={Components.AccountView}/>
