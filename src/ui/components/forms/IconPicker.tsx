@@ -24,22 +24,22 @@ interface Props extends IconPickerProps {
   onChange?: (value: any, newValue: any, previousValue: any) => void
 }
 
-interface EnhancedProps {
+interface Handlers {
   onMenuItem: (eventKey: any) => void
 }
 
-type AllProps = EnhancedProps & Props
+type EnhancedProps = Handlers & Props
 
 type EventKey = 'redownload' | 'remove'
 
-const enhance = compose<AllProps, Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('IconPicker'),
   onlyUpdateForPropTypes,
   setPropTypes({
     value: PropTypes.string,
     onChange: PropTypes.func
   } as PropTypes<IconPickerProps>),
-  withHandlers<EnhancedProps, Props>({
+  withHandlers<Handlers, Props>({
     onMenuItem: (props) => (eventKey: EventKey) => {
       if (!props.onChange) {
         return

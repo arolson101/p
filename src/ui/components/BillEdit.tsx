@@ -20,14 +20,14 @@ interface ConnectedProps {
   bill: Bill.View
 }
 
-interface EnhancedProps {
+interface Handlers {
   onCancel: () => void
   onSave: (doc: Bill.Doc) => void
 }
 
-type AllProps = EnhancedProps & ConnectedProps & RouteProps<Bill.Params>
+type EnhancedProps = Handlers & ConnectedProps & RouteProps<Bill.Params>
 
-const enhance = compose<AllProps, RouteProps<Bill.Params>>(
+const enhance = compose<EnhancedProps, RouteProps<Bill.Params>>(
   setDisplayName('BillEdit'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
@@ -37,7 +37,7 @@ const enhance = compose<AllProps, RouteProps<Bill.Params>>(
       bill: selectBill(state, props)
     }),
   ),
-  withHandlers<EnhancedProps, ConnectedProps & RouteProps<Bill.Params>>({
+  withHandlers<Handlers, ConnectedProps & RouteProps<Bill.Params>>({
     onCancel: ({history}) => () => {
       history.goBack()
     },

@@ -44,9 +44,9 @@ interface ConnectedProps {
   groups: BillDisplayGroup[]
 }
 
-type AllProps = ConnectedProps & RouteProps<any> & IntlProps
+type EnhancedProps = ConnectedProps & RouteProps<any> & IntlProps
 
-const enhance = compose<AllProps, void>(
+const enhance = compose<EnhancedProps, void>(
   setDisplayName('Bills'),
   onlyUpdateForPropTypes,
   setPropTypes({}),

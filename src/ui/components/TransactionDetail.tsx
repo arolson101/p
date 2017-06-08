@@ -3,13 +3,11 @@ import { Link } from 'react-router-dom'
 import 'react-virtualized/styles.css'
 import { Transaction } from '../../docs/index'
 
-interface ConnectedProps {
+interface Props {
   item: Transaction.View
 }
 
-type AllProps = ConnectedProps
-
-export class TransactionDetail extends React.Component<AllProps, any> {
+export class TransactionDetail extends React.Component<Props, any> {
   render () {
     const { item } = this.props
     return (

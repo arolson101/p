@@ -7,9 +7,9 @@ import { NavProps } from '../components/AppContent'
 import { RouteProps } from '../components/props'
 import './AppNav.css'
 
-type AllProps = RouteProps<any> & NavProps
+type EnhancedProps = RouteProps<any> & NavProps
 
-const enhance = compose<AllProps, NavProps>(
+const enhance = compose<EnhancedProps, NavProps>(
   withRouter,
 )
 

@@ -92,12 +92,11 @@ interface DispatchProps {
   pushChanges: pushChanges.Fcn
 }
 
-interface EnhancedProps {
-  onSubmit: SubmitFunction<Values>
+interface Handlers {
   onChangeFI: (event: any, index: number) => void
 }
 
-type AllProps = AppContentContext & EnhancedProps & FormProps<Values, any, any> & ConnectedProps & Props
+type EnhancedProps = AppContentContext & Handlers & FormProps<Values, any, any> & ConnectedProps & Props
 
 export type SubmitFunction<V> = SubmitHandler<V>
 
@@ -122,7 +121,7 @@ export interface Values {
 
 const { Form, TextField, PasswordField, UrlField, SelectField, CheckboxField, CollapseField } = typedFields<Values>()
 
-const enhance = compose<AllProps, Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('BankDialog'),
   onlyUpdateForPropTypes,
   setPropTypes<Props>({
@@ -147,8 +146,11 @@ const enhance = compose<AllProps, Props>(
       }
     }
   ),
-  withHandlers<EnhancedProps, ConnectedProps & DispatchProps & Props>({
-    onSubmit: ({edit, filist, onHide, pushChanges}) => async (values: Values) => {
+  reduxForm<Values, ConnectedProps & DispatchProps & Props, AppState>({
+    form: 'BankForm',
+    enableReinitialize: true,
+    onSubmit: async (values, dispatch, props) => {
+      const {edit, filist, onHide, pushChanges} = props
       const { fi, username, password, ...newValues } = values
       const doc: Bank.Doc = {
         ...edit,
@@ -163,35 +165,26 @@ const enhance = compose<AllProps, Props>(
       await pushChanges({docs: [doc]})
 
       onHide()
-    }
+    },
   }),
-  reduxForm<Values, ConnectedProps & Props, AppState>({
-    form: 'BankForm',
-    enableReinitialize: true,
+  withHandlers<Handlers, FormProps<Values, any, any> & ConnectedProps & DispatchProps & Props>({
+    onChangeFI: ({ filist, change }) => (event: any, index: number) => {
+      if (!change) { throw new Error('change is undefined') }
+      const value = index ? filist[index - 1] : emptyfi
+      change('name', value.name)
+      change('web', value.profile.siteURL)
+      change('favicon', '')
+      change('address', formatAddress(value))
+      change('fid', value.fid)
+      change('org', value.org)
+      change('ofx', value.ofx)
+    },
   }),
-  withPropsOnChange<Partial<EnhancedProps>, FormProps<Values, any, any> & ConnectedProps & Props>(
-    ['filist', 'change'],
-    ({ filist, change }) => {
-      return ({
-        onChangeFI: (event: any, index: number) => {
-          if (!change) { throw new Error('change is undefined') }
-          const value = index ? filist[index - 1] : emptyfi
-          change('name', value.name)
-          change('web', value.profile.siteURL)
-          change('favicon', '')
-          change('address', formatAddress(value))
-          change('fid', value.fid)
-          change('org', value.org)
-          change('ofx', value.ofx)
-        },
-      })
-    }
-  ),
 )
 
 export const BankDialog = enhance((props) => {
   const { edit, handleSubmit, onChangeFI, filist } = props
-  const { show, onHide, onSubmit, container } = props
+  const { show, onHide, container } = props
   const title = edit ? messages.editTitle : messages.createTitle
 
   return (

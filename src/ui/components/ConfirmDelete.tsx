@@ -25,9 +25,9 @@ interface Handlers {
   onConfirm: (e: React.SyntheticEvent<any>) => void
 }
 
-type AllProps = Handlers & ReduxUIProps<UIState> & Props
+type EnhancedProps = Handlers & ReduxUIProps<UIState> & Props
 
-const enhance = compose<AllProps, Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('ConfirmDelete'),
   onlyUpdateForPropTypes,
   setPropTypes({

@@ -14,20 +14,20 @@ interface Props extends ColorPickerProps {
   onChange?: (value: string) => void
 }
 
-interface EnhancedProps {
+interface Handlers {
   handleChange: (color: ColorResult) => void
 }
 
-type AllProps = EnhancedProps & Props
+type EnhancedProps = Handlers & Props
 
-const enhance = compose<AllProps, Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('ColorPicker'),
   onlyUpdateForPropTypes,
   setPropTypes({
     value: PropTypes.string,
     onChange: PropTypes.func
   } as PropTypes<ColorPickerProps>),
-  withHandlers<AllProps, AllProps>({
+  withHandlers<EnhancedProps, EnhancedProps>({
     handleChange: ({onChange}) => (color: ColorResult) => {
       if (onChange) {
         onChange(color.hex)

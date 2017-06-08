@@ -3,7 +3,7 @@ import * as React from 'react'
 import Helmet from 'react-helmet'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import { AppState } from '../../state/index'
 import * as Mac from '../macOS/index'
 import * as Win from '../windows/index'
@@ -19,14 +19,14 @@ interface ConnectedProps {
   ThemeWindow: any
 }
 
-interface EnhancedProps {
+interface Handlers {
   onBack: () => void
   onForward: () => void
 }
 
-type AllProps = EnhancedProps & ConnectedProps & RouteProps<any> & React.Props<any>
+type EnhancedProps = Handlers & ConnectedProps & RouteProps<any> & React.Props<any>
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<EnhancedProps, {}>(
   setDisplayName('AppWindow'),
   withRouter,
   onlyUpdateForPropTypes,
@@ -38,17 +38,14 @@ const enhance = compose<AllProps, {}>(
       ThemeWindow: state.sys.theme === 'macOS' ? Mac.AppWindow : Win.AppWindow
     })
   ),
-  withProps<EnhancedProps, ConnectedProps & RouteProps<any>>(
-    ({history}) => ({
-      onBack: () => {
-        history.goBack()
-      },
-
-      onForward: () => {
-        history.goForward()
-      }
-    })
-  )
+  withHandlers<Handlers, ConnectedProps & RouteProps<any>>({
+    onBack: ({history}) => () => {
+      history.goBack()
+    },
+    onForward: ({history}) => () => {
+      history.goForward()
+    }
+  })
 )
 
 export const AppWindow = enhance((props) => {

@@ -329,7 +329,6 @@ const BudgetField = <V extends RF.DataShape>(props: BudgetFieldProps<V>) => {
 }
 
 // date -----------------------------------------------------------------------
-
 interface DateFieldProps<V> extends FormField<V>, DatePickerProps {
 }
 
@@ -385,17 +384,7 @@ const CollapseField = <V extends RF.DataShape>(props: CollapseFieldProps<V>) => 
 // ----------------------------------------------------------------------------
 // formComponent --------------------------------------------------------------
 
-interface Props<V> extends RF.FormProps<V, Props<V>, {}> {
-  horizontal?: boolean
-  onSubmit: SubmitHandler<V>
-  onChanged?: ChangeCallback<V>
-  validate?: (values: V) => RF.FormErrors<V>
-}
-
 export type SubmitHandler<V> = RF.SubmitHandler<V, any, any>
-export type ChangeCallback<V> = (values: V, change: ChangeField<V>, dispatch: any, props: any) => void
-export type ErrorCallback<V> = (errors: RF.FormErrors<V>) => void
-export type ChangeField<V> = (field: keyof V, value: any) => void
 
 const normalLayout: LayoutConfig = {
   label: {},

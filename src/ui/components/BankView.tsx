@@ -78,21 +78,21 @@ interface UIState {
   message?: string
 }
 
-interface EnhancedProps {
+interface Handlers {
   toggleEdit: () => void
   toggleShowAll: () => void
   getAccountList: () => void
   hideModal: () => void
 }
 
-type AllProps = EnhancedProps
+type EnhancedProps = Handlers
   & ReduxUIProps<UIState>
   & ConnectedProps
   & DispatchProps
   & IntlProps
   & RouteProps<Bank.Params>
 
-const enhance = compose<AllProps, void>(
+const enhance = compose<EnhancedProps, void>(
   setDisplayName('BankView'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
@@ -114,7 +114,7 @@ const enhance = compose<AllProps, void>(
       error: undefined
     } as UIState
   }),
-  withHandlers<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>>({
+  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>>({
     toggleEdit: ({ ui: { editing }, updateUI }) => () => {
       updateUI({editing: !editing})
     },

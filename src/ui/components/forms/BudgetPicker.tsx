@@ -18,9 +18,9 @@ interface Handlers {
   promptTextCreator: (label: string) => string
 }
 
-type AllProps = Handlers & ConnectedProps
+type EnhancedProps = Handlers & ConnectedProps
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<EnhancedProps, {}>(
   setDisplayName('BudgetPicker'),
   connect<ConnectedProps, {}, {}>(
     (state: AppState): ConnectedProps => ({

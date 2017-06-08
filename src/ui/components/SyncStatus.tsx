@@ -3,7 +3,7 @@ import * as React from 'react'
 import { Button } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { FormProps, SubmitHandler, reduxForm } from 'redux-form'
 import { SyncConnection } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
@@ -41,11 +41,7 @@ interface DispatchProps {
   runSync: runSync.Fcn
 }
 
-interface EnhancedProps {
-  onSubmit: SubmitHandler<Values, {}, {}>
-}
-
-type AllProps = FormProps<Values, {}, {}> & EnhancedProps & ConnectedProps & DispatchProps & IntlProps & Props
+type EnhancedProps = FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps & Props
 
 interface Values {
   password: string
@@ -53,7 +49,7 @@ interface Values {
 
 const { Form, TextField } = typedFields<any>()
 
-const enhance = compose<AllProps, Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('AccountForm'),
   onlyUpdateForPropTypes,
   setPropTypes({
@@ -66,19 +62,7 @@ const enhance = compose<AllProps, Props>(
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, runSync })
   ),
-  withProps<EnhancedProps, ConnectedProps & DispatchProps & Props & IntlProps>(
-    ({ sync, pushChanges, runSync, intl: { formatMessage } }) => ({
-      onSubmit: async (values: Values) => {
-        const v = new Validator(values, formatMessage)
-        v.required('password')
-        v.maybeThrowSubmissionError()
-        const nextSync = SyncConnection.inputPassword(sync, values.password)
-        await pushChanges({docs: [nextSync]})
-        await runSync({config: nextSync})
-      }
-    })
-  ),
-  reduxForm<EnhancedProps & ConnectedProps & DispatchProps & Props & IntlProps, Values>({
+  reduxForm<Values, ConnectedProps & DispatchProps & Props & IntlProps>({
     form: 'SyncStatus',
     // validate: (values: Values, props) => {
     //   const v = new Validator(values)
@@ -86,10 +70,19 @@ const enhance = compose<AllProps, Props>(
     //   v.required(['password'], formatMessage(forms.required))
     //   return v.errors
     // }
+    onSubmit: async (values, dispatch, props) => {
+      const { sync, pushChanges, runSync, intl: { formatMessage } } = props
+      const v = new Validator(values, formatMessage)
+      v.required('password')
+      v.maybeThrowSubmissionError()
+      const nextSync = SyncConnection.inputPassword(sync, values.password)
+      await pushChanges({docs: [nextSync]})
+      await runSync({config: nextSync})
+    }
   })
 )
 
-export const SyncStatus = enhance(({ onSubmit, sync, handleSubmit }) => {
+export const SyncStatus = enhance(({ sync, handleSubmit }) => {
   const provider = syncProviders.find(p => p.id === sync.provider)
   if (!provider) {
     return <div>no provider</div>
@@ -103,7 +96,7 @@ export const SyncStatus = enhance(({ onSubmit, sync, handleSubmit }) => {
         <div>
           {config}<br/>
           <FormattedMessage {... (sync.password ? messages.badPassword : messages.needsPassword)}/>
-          <Form onSubmit={handleSubmit!(onSubmit)}>
+          <Form onSubmit={handleSubmit}>
             <TextField name='password' label={messages.password} />
             <Button type='submit'>submit</Button>
           </Form>

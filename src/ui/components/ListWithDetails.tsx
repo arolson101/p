@@ -28,16 +28,16 @@ interface State {
   setSelectedIndex: (selectedIndex: number) => void
 }
 
-interface EnhancedProps {
+interface Handlers {
   onScroll: Table.OnScroll
   rowGetter: Table.RowGetter
   rowClassNameWithSelection: Table.RowClassName
   onRowClick: Table.OnRowClick
 }
 
-type AllProps = EnhancedProps & State & ConnectedProps & RouteProps<any> & Props<any>
+type EnhancedProps = Handlers & State & ConnectedProps & RouteProps<any> & Props<any>
 
-const enhance = compose<AllProps, Props<any>>(
+const enhance = compose<EnhancedProps, Props<any>>(
   setDisplayName('ListWithDetails'),
   withRouter,
   onlyUpdateForPropTypes,
@@ -55,7 +55,7 @@ const enhance = compose<AllProps, Props<any>>(
   ),
   withQuerySyncedState('scrollTop', 'setScrollTop', 0, parseFloat),
   withQuerySyncedState('selectedIndex', 'setSelectedIndex', -1, parseFloat),
-  withHandlers<EnhancedProps, State & ConnectedProps & RouteProps<any> & Props<any>>({
+  withHandlers<Handlers, State & ConnectedProps & RouteProps<any> & Props<any>>({
     onScroll: ({setScrollTop}) => (e: Table.OnScrollProps) => {
       setScrollTop(e.scrollTop)
     },

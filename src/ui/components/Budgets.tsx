@@ -80,7 +80,7 @@ interface State {
   editing: boolean
 }
 
-type AllProps = FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps
+type EnhancedProps = FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps
 
 interface CategoryValues {
   _id: string
@@ -108,7 +108,7 @@ const { Form, TextField } = typedFields<any>()
   }),
   mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget })
 ) as any)
-@(reduxForm<AllProps, Values>({
+@(reduxForm<EnhancedProps, Values>({
   form: 'BudgetForm',
   validate: (values, props: any) => {
     const { intl: { formatMessage } } = props
@@ -126,7 +126,7 @@ const { Form, TextField } = typedFields<any>()
     return v.errors
   }
 }) as any)
-export class Budgets extends React.Component<AllProps, State> {
+export class Budgets extends React.Component<EnhancedProps, State> {
   state: State = {
     editing: false
   }

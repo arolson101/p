@@ -15,7 +15,7 @@ interface ConnectedProps {
   transaction: Transaction.View
 }
 
-type AllProps = RouteProps<Transaction.Params> & ConnectedProps
+type EnhancedProps = RouteProps<Transaction.Params> & ConnectedProps
 
 const enhance = compose(
   connect(

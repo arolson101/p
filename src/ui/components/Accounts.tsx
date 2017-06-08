@@ -34,9 +34,9 @@ interface Handlers {
   toggleCreate: () => void
 }
 
-type AllProps = React.Props<any> & ConnectedProps & State & Handlers
+type EnhancedProps = React.Props<any> & ConnectedProps & State & Handlers
 
-const enhance = compose<AllProps, void>(
+const enhance = compose<EnhancedProps, void>(
   setDisplayName('Accounts'),
   onlyUpdateForPropTypes,
   setPropTypes({}),

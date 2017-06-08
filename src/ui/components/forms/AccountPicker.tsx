@@ -12,9 +12,9 @@ interface ConnectedProps {
   options: SelectOption[]
 }
 
-type AllProps = ConnectedProps
+type EnhancedProps = ConnectedProps
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<EnhancedProps, {}>(
   setDisplayName('AccountPicker'),
   connect<ConnectedProps, {}, {}>(
     (state: AppState): ConnectedProps => ({

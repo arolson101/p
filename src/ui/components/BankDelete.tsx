@@ -3,7 +3,7 @@ import { Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteBank } from '../../actions/index'
 import { DbInfo, Bank } from '../../docs/index'
@@ -40,13 +40,13 @@ interface UIState {
   deleting?: boolean
 }
 
-interface EnhancedProps {
+interface Handlers {
   confirmDelete: () => void
 }
 
-type AllProps = EnhancedProps & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
+type EnhancedProps = Handlers & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
 
-const enhance = compose<AllProps, RouteProps<Bank.Params>>(
+const enhance = compose<EnhancedProps, RouteProps<Bank.Params>>(
   setDisplayName('BankDelete'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
@@ -63,20 +63,18 @@ const enhance = compose<AllProps, RouteProps<Bank.Params>>(
       deleting: false
     } as UIState
   }),
-  withProps<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Bank.Params>>(
-    ({updateUI, bank, deleteBank, history}) => ({
-      confirmDelete: async () => {
-        try {
-          updateUI({error: undefined, deleting: true})
-          await deleteBank({bank})
-          updateUI({deleting: false})
-          history.replace(DbInfo.to.home())
-        } catch (err) {
-          updateUI({error: err.message, deleting: false})
-        }
+  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Bank.Params>>({
+    confirmDelete: ({updateUI, bank, deleteBank, history}) => async () => {
+      try {
+        updateUI({error: undefined, deleting: true})
+        await deleteBank({bank})
+        updateUI({deleting: false})
+        history.replace(DbInfo.to.home())
+      } catch (err) {
+        updateUI({error: err.message, deleting: false})
       }
-    })
-  )
+    }
+  })
 )
 
 export const BankDelete = enhance(props => {

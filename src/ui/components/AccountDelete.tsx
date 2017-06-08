@@ -3,7 +3,7 @@ import { Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteAccount } from '../../actions/index'
 import { DbInfo, Bank, Account } from '../../docs/index'
@@ -41,13 +41,13 @@ interface UIState {
   deleting?: boolean
 }
 
-interface EnhancedProps {
+interface Handlers {
   confirmDelete: () => void
 }
 
-type AllProps = EnhancedProps & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Account.Params>
+type EnhancedProps = Handlers & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Account.Params>
 
-const enhance = compose<AllProps, RouteProps<Account.Params>>(
+const enhance = compose<EnhancedProps, RouteProps<Account.Params>>(
   setDisplayName('AccountDelete'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
@@ -65,20 +65,18 @@ const enhance = compose<AllProps, RouteProps<Account.Params>>(
       deleting: false
     } as UIState
   }),
-  withProps<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Account.Params>>(
-    ({updateUI, bank, account, deleteAccount, history}) => ({
-      confirmDelete: async () => {
-        try {
-          updateUI({error: undefined, deleting: true})
-          await deleteAccount({bank, account})
-          updateUI({deleting: false})
-          history.replace(DbInfo.to.home())
-        } catch (err) {
-          updateUI({error: err.message, deleting: false})
-        }
+  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Account.Params>>({
+    confirmDelete: ({updateUI, bank, account, deleteAccount, history}: any) => async () => {
+      try {
+        updateUI({error: undefined, deleting: true})
+        await deleteAccount({bank, account})
+        updateUI({deleting: false})
+        history.replace(DbInfo.to.home())
+      } catch (err) {
+        updateUI({error: err.message, deleting: false})
       }
-    })
-  )
+    }
+  })
 )
 
 export const AccountDelete = enhance(props => {

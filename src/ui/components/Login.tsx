@@ -39,14 +39,14 @@ interface UIState {
   activeId: string
 }
 
-interface EnhancedProps {
+interface Handlers {
   deselect: () => void
   onLogin: (dbInfo: DbInfo) => void
 }
 
-type AllProps = EnhancedProps & ReduxUIProps<UIState> & RouteProps<any> & ConnectedProps
+type EnhancedProps = Handlers & ReduxUIProps<UIState> & RouteProps<any> & ConnectedProps
 
-const enhance = compose<AllProps, RouteProps<any>>(
+const enhance = compose<EnhancedProps, {}>(
   setDisplayName('Login'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
@@ -56,16 +56,16 @@ const enhance = compose<AllProps, RouteProps<any>>(
       files: state.db.files
     })
   ),
-  ui<UIState, ConnectedProps & RouteProps<any>, {}>({
+  ui<UIState, {}, {}>({
     key: 'Login',
     persist: true,
     state: {
       activeId: ''
     } as UIState
   }),
-  withHandlers<EnhancedProps, ReduxUIProps<UIState> & ConnectedProps & RouteProps<any>>({
+  withHandlers<Handlers, ReduxUIProps<UIState> & RouteProps<any>>({
     deselect: ({ updateUI }) => () => {
-      updateUI({activeId: ''} as UIState)
+      updateUI({activeId: ''})
     },
     onLogin: ({history}) => (dbInfo: DbInfo) => {
       history.push(DbInfo.to.home())

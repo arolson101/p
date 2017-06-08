@@ -85,7 +85,7 @@ interface State {
   month?: Date
 }
 
-type AllProps = ConnectedProps & DispatchProps & IntlProps
+type EnhancedProps = ConnectedProps & DispatchProps & IntlProps
 
 // interface CategoryValues {
 //   _id: string
@@ -112,7 +112,7 @@ type AllProps = ConnectedProps & DispatchProps & IntlProps
   }),
   mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget })
 ) as any)
-export class Home extends React.Component<AllProps, State> {
+export class Home extends React.Component<EnhancedProps, State> {
   state: State = {
     month: new Date()
   }

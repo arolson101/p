@@ -9,8 +9,7 @@ import { DropdownButton, MenuItem, SelectCallback,
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps,
-  withPropsOnChange, withHandlers } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, formValueSelector, FormProps, SubmitHandler } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'
@@ -159,7 +158,7 @@ interface Props {
   onCancel: () => void
 }
 
-interface ConnectedProps {
+interface StateProps {
   lang: string
   monthOptions: SelectOption[]
   weekdayOptions: SelectOption[]
@@ -170,6 +169,8 @@ interface ConnectedProps {
 interface DispatchProps {
   pushChanges: pushChanges.Fcn
 }
+
+type ConnectedProps = StateProps & DispatchProps
 
 interface ConnectedFormProps {
   start: Date
@@ -184,23 +185,17 @@ interface UIState {
   groups: SelectOption[]
 }
 
-interface EnhancedProps {
-  onSave: (values: Values, dispatch: Dispatch<AppState>, props: AllProps) => void
-}
-
 interface Handlers {
   onFrequencyChange: SelectCallback
   onEndTypeChange: SelectCallback
   filterEndDate: (date: Date) => boolean
 }
 
-type AllProps = Handlers
-  & EnhancedProps
+type EnhancedProps = Handlers
   & ReduxUIProps<UIState>
   & ConnectedFormProps
-  & FormProps<Values, {}, {}>
+  & FormValues
   & ConnectedProps
-  & DispatchProps
   & IntlProps
   & Props
 
@@ -230,10 +225,12 @@ interface Values extends RRuleValues {
   showAdvanced: boolean
 }
 
+type FormValues = FormProps<Values, {}, {}>
+
 const form = 'BillForm'
 const valueSelector = formValueSelector(form)
 
-const enhance = compose<AllProps, Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName(form),
   onlyUpdateForPropTypes,
   setPropTypes({
@@ -292,8 +289,8 @@ const enhance = compose<AllProps, Props>(
       }
     }
   ),
-  connect<ConnectedProps, DispatchProps, IntlProps & Props>(
-    (state: AppState): ConnectedProps => ({
+  connect<StateProps, DispatchProps, IntlProps & Props>(
+    (state: AppState): StateProps => ({
       lang: state.i18n.lang,
       bills: state.db.current!.view.bills,
       budgets: state.db.current!.view.budgets,
@@ -350,7 +347,7 @@ const enhance = compose<AllProps, Props>(
       return onSave(doc)
     }
   }),
-  connect<ConnectedFormProps, {}, FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps & Props>(
+  connect<ConnectedFormProps, {}, FormValues & ConnectedProps & DispatchProps & IntlProps & Props>(
     (state: AppState, props): ConnectedFormProps => ({
       start: valueSelector(state, 'start'),
       interval: valueSelector(state, 'interval'),
@@ -360,13 +357,12 @@ const enhance = compose<AllProps, Props>(
       rrule: rruleSelector(state),
     })
   ),
-  ui<UIState, ConnectedFormProps & FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps & Props, {}>({
+  ui<UIState, ConnectedFormProps & FormValues & ConnectedProps & DispatchProps & IntlProps & Props, {}>({
     state: {
       groups: (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)
     }
   }),
-  // tslint:disable-next-line:max-line-length
-  withHandlers<Handlers, EnhancedProps & ReduxUIProps<UIState> & ConnectedFormProps & FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps & Props>({
+  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedFormProps & FormValues & ConnectedProps & DispatchProps & IntlProps & Props>({
     onFrequencyChange: ({change}) => (eventKey: Frequency) => {
       change!('frequency', eventKey)
     },

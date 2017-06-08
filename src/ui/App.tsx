@@ -37,7 +37,7 @@ class AppComponent extends React.Component<Props & ConnectedProps, any> {
         <IntlProvider locale={locale}>
           <Router>
             <Components.AppWindow>
-              <Route exact path='/' component={Components.Login}/>
+              <Route exact path='/' component={Components.Login as any}/>
               <AuthComponent>
                 <Components.AppContent>
                   <Switch>

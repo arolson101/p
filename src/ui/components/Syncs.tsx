@@ -36,7 +36,7 @@ interface DispatchProps {
   runSync: runSync.Fcn
 }
 
-type AllProps = ConnectedProps & DispatchProps & IntlProps
+type EnhancedProps = ConnectedProps & DispatchProps & IntlProps
 
 @(injectIntl as any)
 @(connect<ConnectedProps, DispatchProps, IntlProps>(
@@ -46,7 +46,7 @@ type AllProps = ConnectedProps & DispatchProps & IntlProps
   }),
   mapDispatchToProps<DispatchProps>({ pushChanges, runSync })
 ) as any)
-export class Syncs extends React.Component<AllProps, {}> {
+export class Syncs extends React.Component<EnhancedProps, {}> {
   render () {
     const { syncs } = this.props
 

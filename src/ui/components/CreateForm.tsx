@@ -2,7 +2,7 @@ import { Button, ButtonToolbar, Row } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, FormProps } from 'redux-form'
 import { DbInfo } from '../../docs/index'
 import { AppState, createDb, mapDispatchToProps } from '../../state/index'
@@ -38,11 +38,7 @@ interface DispatchProps {
   createDb: createDb.Fcn
 }
 
-interface EnhancedProps {
-  onSubmit: (values: Values, dispatch: any, props: AllProps) => Promise<any>
-}
-
-type AllProps = IntlProps & Props & EnhancedProps & ConnectedProps & DispatchProps & FormProps<Values, {}, {}>
+type EnhancedProps = IntlProps & Props & ConnectedProps & DispatchProps & FormProps<Values, {}, {}>
 
 interface Values {
   name: string
@@ -50,7 +46,7 @@ interface Values {
   confirmPassword: string
 }
 
-const enhance = compose<AllProps, Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('CreateForm'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
@@ -61,7 +57,16 @@ const enhance = compose<AllProps, Props>(
     }),
     mapDispatchToProps<DispatchProps>({ createDb })
   ),
-  withProps<EnhancedProps, ConnectedProps & DispatchProps & Props & IntlProps>({
+  reduxForm<Values, ConnectedProps & DispatchProps & Props & IntlProps>({
+    form: 'CreateForm',
+    validate: ((values, props) => {
+      const { files, intl: { formatMessage } } = props
+      const v = new Validator(values, formatMessage)
+      const names = files.map(info => info.name)
+      v.unique('name', names, messages.uniqueName)
+      v.equal('confirmPassword', 'password', forms.passwordsMatch)
+      return v.errors
+    }),
     onSubmit: async (values, dispatch, props) => {
       const { createDb, onCreate, intl: { formatMessage } } = props
       const v = new Validator(values, formatMessage)
@@ -72,17 +77,6 @@ const enhance = compose<AllProps, Props>(
       const dbInfo = await createDb({name, password})
       onCreate(dbInfo)
     }
-  }),
-  reduxForm<EnhancedProps & ConnectedProps & DispatchProps & Props & IntlProps, Values>({
-    form: 'CreateForm',
-    validate: ((values: Values, props: AllProps) => {
-      const { files, intl: { formatMessage } } = props
-      const v = new Validator(values, formatMessage)
-      const names = files.map(info => info.name)
-      v.unique('name', names, messages.uniqueName)
-      v.equal('confirmPassword', 'password', forms.passwordsMatch)
-      return v.errors
-    }) as any
   })
 )
 

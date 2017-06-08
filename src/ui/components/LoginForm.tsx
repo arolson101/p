@@ -2,7 +2,7 @@ import * as React from 'react'
 import { ButtonToolbar, Button, SplitButton, MenuItem } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, withProps } from 'recompose'
+import { compose, setDisplayName, withHandlers } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, FormProps, SubmissionError } from 'redux-form'
 import { DbInfo } from '../../docs/index'
@@ -18,7 +18,7 @@ interface Props {
   onCancel: () => void
 }
 
-interface EnhancedProps {
+interface Handlers {
   onDelete: () => void
 }
 
@@ -27,7 +27,7 @@ type DispatchProps = {
   deleteDb: deleteDb.Fcn
 }
 
-type AllProps = Props & EnhancedProps & DispatchProps & IntlProps & FormProps<Values, {}, {}>
+type EnhancedProps = Props & Handlers & DispatchProps & IntlProps & FormProps<Values, {}, {}>
 
 interface Values {
   password: string
@@ -50,20 +50,19 @@ const messages = defineMessages({
 
 const { Form, PasswordField } = typedFields<Values>()
 
-const enhance = compose<AllProps, Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('LoginForm'),
   injectIntl,
-  connect<{}, DispatchProps, Props & IntlProps>(
+  connect<{}, DispatchProps, Props>(
     () => ({}),
     mapDispatchToProps<DispatchProps>({ loadDb, deleteDb })
   ),
-  withProps<EnhancedProps, DispatchProps & Props & IntlProps>((props) => ({
-    onDelete: () => {
-      const { deleteDb, info } = props
+  withHandlers<Handlers, DispatchProps & Props & IntlProps>({
+    onDelete: ({ deleteDb, info }) => () => {
       deleteDb({info})
     }
-  })),
-  reduxForm<Values, EnhancedProps & DispatchProps & Props & IntlProps>({
+  }),
+  reduxForm<Values, DispatchProps & Props & IntlProps>({
     form: 'Password',
     onSubmit: async (values, dispatch, props) => {
       const { loadDb, intl: { formatMessage }, info, onLogin } = props

@@ -5,7 +5,7 @@ import * as R from 'ramda'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
 import * as SplitPane from 'react-split-pane'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { Bank, Account, Budget, Bill, SyncConnection } from '../../docs/index'
 import { AppState } from '../../state/index'
@@ -79,9 +79,9 @@ interface UIState {
   sidebarWidth: number
 }
 
-type AllProps = ConnectedProps & RouteProps<any> & ReduxUIProps<UIState>
+type EnhancedProps = ConnectedProps & RouteProps<any> & ReduxUIProps<UIState>
 
-const enhance = compose<AllProps, {}>(
+const enhance = compose<EnhancedProps, {}>(
   setDisplayName('AppContent'),
   withRouter,
   connect<ConnectedProps, {}, RouteProps<any>>(
@@ -121,7 +121,7 @@ export const AppContentContextTypes: PropTypes.ValidationMap<AppContentContext> 
 }
 
 @onlyUpdateForPropTypes
-class AppContentComponent extends React.Component<AllProps, AppContentContext> {
+class AppContentComponent extends React.Component<EnhancedProps, AppContentContext> {
   static childContextTypes = AppContentContextTypes
   static propTypes = {
     location: PropTypes.object

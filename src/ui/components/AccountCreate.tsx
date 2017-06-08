@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
-import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from '../../docs/index'
 import { AppState, pushChanges, mapDispatchToProps } from '../../state/index'
 import { Values, AccountForm, SubmitHandler } from './AccountForm'
@@ -18,14 +18,14 @@ interface DispatchProps {
   pushChanges: pushChanges.Fcn
 }
 
-interface EnhancedProps {
+interface Handlers {
   onCancel: () => void
   onSubmit: SubmitHandler<Values>
 }
 
-type AllProps = EnhancedProps & ConnectedProps & RouteProps<Account.Params>
+type EnhancedProps = Handlers & ConnectedProps & RouteProps<Account.Params>
 
-const enhance = compose<AllProps, void>(
+const enhance = compose<EnhancedProps, void>(
   setDisplayName('AccountCreate'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
@@ -38,25 +38,24 @@ const enhance = compose<AllProps, void>(
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
-  withProps<EnhancedProps, ConnectedProps & DispatchProps & RouteProps<Account.Params>>(
-    ({history, pushChanges, lang, bank}) => ({
-      onCancel: () => {
-        history.goBack()
-      },
-      onSubmit: async (values: Values) => {
-        const account: Account = {
-          ...values,
-          visible: true
-        }
+  withHandlers<Handlers, ConnectedProps & DispatchProps & RouteProps<Account.Params>>({
+    onCancel: ({history}) => () => {
+      history.goBack()
+    },
 
-        const doc = Account.doc(bank.doc, account, lang)
-        const nextBank: Bank.Doc = { ...bank.doc, accounts: [...bank.doc.accounts, doc._id] }
-        await pushChanges({docs: [doc, nextBank]})
-
-        history.replace(Account.to.view(doc))
+    onSubmit: ({history, pushChanges, lang, bank}) => async (values: Values) => {
+      const account: Account = {
+        ...values,
+        visible: true
       }
-    })
-  )
+
+      const doc = Account.doc(bank.doc, account, lang)
+      const nextBank: Bank.Doc = { ...bank.doc, accounts: [...bank.doc.accounts, doc._id] }
+      await pushChanges({docs: [doc, nextBank]})
+
+      history.replace(Account.to.view(doc))
+    }
+  }),
 )
 
 export const AccountCreate = enhance((props) => {

@@ -33,16 +33,16 @@ interface UIState {
   editing: boolean
 }
 
-interface EnhancedProps {
+interface Handlers {
   startEdit: () => void
   cancelEdit: () => void
   deleteMe: () => void
   saveEdit: (doc: Bill.Doc) => void
 }
 
-type AllProps = Props & ReduxUIProps<UIState> & DispatchProps & EnhancedProps
+type EnhancedProps = Props & ReduxUIProps<UIState> & DispatchProps & Handlers
 
-const enhance = compose<AllProps, Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('BillDetail'),
   onlyUpdateForPropTypes,
   setPropTypes({
@@ -63,7 +63,7 @@ const enhance = compose<AllProps, Props>(
       editing: false
     } as UIState
   }),
-  withHandlers<EnhancedProps, ReduxUIProps<UIState> & MappedProps & DispatchProps & Props>({
+  withHandlers<Handlers, ReduxUIProps<UIState> & MappedProps & DispatchProps & Props>({
     startEdit: ({updateUI}) => () => {
       updateUI({editing: true})
     },
@@ -78,7 +78,7 @@ const enhance = compose<AllProps, Props>(
       pushChanges({docs: [deleteDoc(item.doc)]})
     }
   }),
-  withPropChangeCallback<EnhancedProps & ReduxUIProps<UIState> & MappedProps & DispatchProps & Props>(
+  withPropChangeCallback<Handlers & ReduxUIProps<UIState> & MappedProps & DispatchProps & Props>(
     'item',
     ({updateUI}) => {
       updateUI({editing: false})

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
-import { compose, setDisplayName, withProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { compose, setDisplayName, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from '../../docs/index'
 import { AppState, pushChanges, mapDispatchToProps } from '../../state/index'
 import { RouteProps } from './props'
@@ -17,14 +17,14 @@ interface DispatchProps {
   pushChanges: pushChanges.Fcn
 }
 
-interface EnhancedProps {
+interface Handlers {
   onCancel: () => void
   onSubmit: SubmitHandler<Values>
 }
 
-type AllProps = EnhancedProps & ConnectedProps & DispatchProps & RouteProps<Account.Params>
+type EnhancedProps = Handlers & ConnectedProps & DispatchProps & RouteProps<Account.Params>
 
-const enhance = compose<AllProps, void>(
+const enhance = compose<EnhancedProps, void>(
   setDisplayName('AccountEdit'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
@@ -36,11 +36,12 @@ const enhance = compose<AllProps, void>(
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges })
   ),
-  withProps<EnhancedProps, ConnectedProps & DispatchProps & RouteProps<Account.Params>>(({history, pushChanges, account}) => ({
-    onCancel: () => {
+  withHandlers<Handlers, ConnectedProps & DispatchProps & RouteProps<Account.Params>>({
+    onCancel: ({history}) => () => {
       history.goBack()
     },
-    onSubmit: async (values: Values) => {
+
+    onSubmit: ({history, pushChanges, account}) => async (values: Values) => {
       const doc: Account.Doc = {
         ...account.doc,
         ...values
@@ -49,7 +50,7 @@ const enhance = compose<AllProps, void>(
 
       history.replace(Account.to.view(doc))
     }
-  }))
+  })
 )
 
 export const AccountEdit = enhance(props => {

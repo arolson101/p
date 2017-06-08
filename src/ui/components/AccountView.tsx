@@ -55,7 +55,7 @@ interface DispatchProps {
 }
 
 type StreamProps = ConnectedProps & RouteProps<Account.Params>
-type AllProps = IntlProps & ConnectedProps & HandlerProps & DispatchProps
+type EnhancedProps = IntlProps & ConnectedProps & HandlerProps & DispatchProps
 
 interface HandlerProps {
   addTransactions (): void
@@ -63,7 +63,7 @@ interface HandlerProps {
   deleteTransactions (): void
 }
 
-const enhance = compose<AllProps, RouteProps<Account.Params>>(
+const enhance = compose<EnhancedProps, RouteProps<Account.Params>>(
   setDisplayName('AccountViewComponent'),
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps & RouteProps<Account.Params>>(

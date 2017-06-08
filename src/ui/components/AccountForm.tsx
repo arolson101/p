@@ -3,7 +3,7 @@ import { PageHeader, InputGroup, Button, ButtonToolbar } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withProps, withPropsOnChange } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange } from 'recompose'
 import { reduxForm, formValueSelector, FormProps } from 'redux-form'
 import { Account } from '../../docs/index'
 import { Validator } from '../../util/index'
@@ -76,7 +76,7 @@ interface ConnectedFormProps {
   type?: Account.Type
 }
 
-type AllProps = FormProps<Values, any, any> & ConnectedFormProps & Props & IntlProps
+type EnhancedProps = FormProps<Values, any, any> & ConnectedFormProps & Props & IntlProps
 
 export interface Values {
   color: string
@@ -91,7 +91,7 @@ const form = 'AccountForm'
 const { Form, TextField, SelectField, ColorAddon } = typedFields<Values>()
 const valueSelector = formValueSelector(form)
 
-const enhance = compose<AllProps, Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('AccountForm'),
   onlyUpdateForPropTypes,
   setPropTypes({

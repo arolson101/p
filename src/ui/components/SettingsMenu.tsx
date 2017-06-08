@@ -22,9 +22,9 @@ interface Props {
   items: (Item | false)[]
 }
 
-type AllProps = Props & RouteProps<any> & IntlProps
+type EnhancedProps = Props & RouteProps<any> & IntlProps
 
-const enhance = compose<AllProps, Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('SettingsMenu'),
   withRouter,
   onlyUpdateForPropTypes,

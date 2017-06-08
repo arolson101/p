@@ -13,23 +13,23 @@ const messages = defineMessages({
   }
 })
 
-interface EnhancedProps {
+interface Handlers {
   onCancel: () => void
   onSave: (doc: Bill.Doc) => void
 }
 
-type AllProps = EnhancedProps & RouteProps<Bill.Params>
+type EnhancedProps = Handlers & RouteProps<Bill.Params>
 
-const enhance = compose<AllProps, RouteProps<Bill.Params>>(
+const enhance = compose<EnhancedProps, RouteProps<Bill.Params>>(
   setDisplayName('BillCreate'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
   withRouter,
-  withHandlers<EnhancedProps, RouteProps<Bill.Params>>({
+  withHandlers<Handlers, RouteProps<Bill.Params>>({
     onCancel: ({history}) => () => {
       history.goBack()
     },
-    onSubmit: ({history}) => async (doc: Bill.Doc) => {
+    onSave: ({history}) => async (doc: Bill.Doc) => {
       history.replace(Bill.to.all())
     }
   })
