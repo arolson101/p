@@ -10,9 +10,9 @@ import { Bank } from '../../docs/index'
 import { AppState, FI, emptyfi, pushChanges, mapDispatchToProps } from '../../state/index'
 import { formatAddress } from '../../util/index'
 import { Validator } from '../../util/index'
+import { AppContentContext, AppContentContextTypes } from './AppContent'
 import { typedFields, forms, SubmitHandler } from './forms/index'
 import { IconPicker } from './forms/IconPicker'
-import { AppContentContext, AppContentContextTypes } from './AppContent'
 
 const messages = defineMessages({
   createTitle: {
@@ -210,100 +210,99 @@ export const BankDialog = enhance((props) => {
         <Modal.Title>
           <FormattedMessage {...title}/>
         </Modal.Title>
-
-        <Form
-          horizontal
-          onSubmit={handleSubmit}
-        >
-
-          <Modal.Body>
-            <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
-              <SelectField
-                autofocus
-                name='fi'
-                label={messages.fi}
-                options={filist}
-                labelKey='name'
-                valueKey='id'
-                onChange={onChangeFI as any}
-                help={messages.fiHelp}
-                placeholderMessage={messages.fiPlaceholder}
-              />
-              <TextField
-                name='name'
-                label={messages.name}
-              />
-              <UrlField
-                name='web'
-                favicoName='favicon'
-                label={messages.web}
-              />
-              <TextField
-                name='address'
-                rows={4}
-                label={messages.address}
-              />
-              <TextField
-                name='notes'
-                rows={4}
-                label={messages.notes}
-              />
-              <CheckboxField
-                name='online'
-                label={messages.online}
-                message={messages.online}
-              />
-              <CollapseField name='online'>
-                <div>
-                  <TextField
-                    name='username'
-                    label={messages.username}
-                  />
-                  <PasswordField
-                    name='password'
-                    label={messages.password}
-                  />
-                  <TextField
-                    name='fid'
-                    label={messages.fid}
-                  />
-                  <TextField
-                    name='org'
-                    label={messages.org}
-                  />
-                  <TextField
-                    name='ofx'
-                    label={messages.ofx}
-                  />
-                </div>
-              </CollapseField>
-            </div>
-          </Modal.Body>
-
-          <Modal.Footer>
-            <ButtonToolbar className='pull-right'>
-              <Button
-                type='button'
-                onClick={onHide}
-              >
-                <FormattedMessage {...forms.cancel}/>
-              </Button>
-              <Button
-                type='submit'
-                bsStyle='primary'
-                id='open-dropdown'
-              >
-                {edit ? (
-                  <FormattedMessage {...forms.save}/>
-                ) : (
-                  <FormattedMessage {...forms.create}/>
-                )}
-              </Button>
-            </ButtonToolbar>
-          </Modal.Footer>
-        </Form>
-
       </Modal.Header>
+
+      <Form
+        horizontal
+        onSubmit={handleSubmit}
+      >
+
+        <Modal.Body>
+          <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+            <SelectField
+              autofocus
+              name='fi'
+              label={messages.fi}
+              options={filist}
+              labelKey='name'
+              valueKey='id'
+              onChange={onChangeFI as any}
+              help={messages.fiHelp}
+              placeholderMessage={messages.fiPlaceholder}
+            />
+            <TextField
+              name='name'
+              label={messages.name}
+            />
+            <UrlField
+              name='web'
+              favicoName='favicon'
+              label={messages.web}
+            />
+            <TextField
+              name='address'
+              rows={4}
+              label={messages.address}
+            />
+            <TextField
+              name='notes'
+              rows={4}
+              label={messages.notes}
+            />
+            <CheckboxField
+              name='online'
+              label={messages.online}
+              message={messages.online}
+            />
+            <CollapseField name='online'>
+              <div>
+                <TextField
+                  name='username'
+                  label={messages.username}
+                />
+                <PasswordField
+                  name='password'
+                  label={messages.password}
+                />
+                <TextField
+                  name='fid'
+                  label={messages.fid}
+                />
+                <TextField
+                  name='org'
+                  label={messages.org}
+                />
+                <TextField
+                  name='ofx'
+                  label={messages.ofx}
+                />
+              </div>
+            </CollapseField>
+          </div>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <ButtonToolbar className='pull-right'>
+            <Button
+              type='button'
+              onClick={onHide}
+            >
+              <FormattedMessage {...forms.cancel}/>
+            </Button>
+            <Button
+              type='submit'
+              bsStyle='primary'
+              id='open-dropdown'
+            >
+              {edit ? (
+                <FormattedMessage {...forms.save}/>
+              ) : (
+                <FormattedMessage {...forms.create}/>
+              )}
+            </Button>
+          </ButtonToolbar>
+        </Modal.Footer>
+      </Form>
     </Modal>
   )
 })

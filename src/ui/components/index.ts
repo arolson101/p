@@ -1,6 +1,5 @@
-export * from './AccountCreate'
 export * from './AccountDelete'
-export * from './AccountEdit'
+export * from './AccountDialog'
 export * from './AccountView'
 export * from './Accounts'
 export * from './AppContent'

@@ -115,26 +115,13 @@ export namespace Account {
   }
 
   export namespace routes {
-    export const create = 'account/:bankId/create'
     export const view = 'account/:bankId/:accountId'
-    export const edit = 'account/:bankId/:accountId/edit'
     export const del = 'account/:bankId/:accountId/delete'
   }
 
   export namespace to {
-    export const create = (bank: Bank.Doc) => {
-      const iparams = Bank.docId(bank._id)
-      if (!iparams) { throw new Error('not a bank docId: ' + bank._id) }
-      const path = docId({ accountId: 'create', bankId: iparams.bankId })
-      return '/' + path
-    }
-
     export const view = (account: Doc): string => {
       return '/' + account._id
-    }
-
-    export const edit = (account: Doc): string => {
-      return '/' + account._id + '/edit'
     }
 
     export const del = (account: Doc): string => {
