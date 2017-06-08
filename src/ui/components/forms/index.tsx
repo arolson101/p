@@ -4,7 +4,7 @@ import * as RB from 'react-bootstrap'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import * as ReactSelect from 'react-select'
-import { compose, mapPropsStream } from 'recompose'
+import { compose, mapPropsStream, withContext } from 'recompose'
 import * as RF from 'redux-form'
 import { createSelector } from 'reselect'
 import * as Rx from 'rxjs/Rx'
@@ -398,28 +398,22 @@ const horizontalLayout: LayoutConfig = {
   nolabel: { smOffset: 2, sm: 10 }
 }
 
-export class FormLayout extends React.Component<RB.FormProps, any> {
-  static childContextTypes = {
-    layout: PropTypes.object
-  }
+const enhanceFormLayout = compose<RB.FormProps, RB.FormProps>(
+  withContext<{ layout: LayoutConfig }, RB.FormProps>(
+    { layout: PropTypes.object },
+    ({ horizontal }) => ({
+      layout: (horizontal ? horizontalLayout : normalLayout)
+    })
+  )
+)
 
-  getChildContext () {
-    return {
-      layout: (this.props.horizontal ? horizontalLayout : normalLayout)
-    }
-  }
-
-  render () {
-    const { children, ...otherProps } = this.props
-    return (
-      <RB.Form
-        {...otherProps}
-      >
-        {children}
-      </RB.Form>
-    )
-  }
-}
+export const FormLayout = enhanceFormLayout(({ children, ...props }) => {
+  return (
+    <RB.Form {...props}>
+      {children}
+    </RB.Form>
+  )
+})
 
 export const typedFields = <V extends RF.DataShape>() => {
   return {

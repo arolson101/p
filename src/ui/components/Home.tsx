@@ -6,6 +6,7 @@ import { Row, OverlayTrigger, Popover, Grid, Col, Panel, ButtonToolbar, Button,
   PageHeader, ListGroup, ListGroupItem, ProgressBar } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
+import { compose, withHandlers, withState } from 'recompose'
 // import { AutoSizer } from 'react-virtualized'
 import { createSelector } from 'reselect'
 // import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack, VictoryGroup, VictoryVoronoiTooltip } from 'victory'
@@ -81,11 +82,17 @@ interface DispatchProps {
   deleteBudget: deleteBudget.Fcn
 }
 
-interface State {
+interface StateProps {
   month?: Date
+  setMonth: (month?: Date) => void
 }
 
-type EnhancedProps = ConnectedProps & DispatchProps & IntlProps
+interface Handlers {
+  setPrevMonth: () => void
+  setNextMonth: () => void
+}
+
+type EnhancedProps = Handlers & StateProps & ConnectedProps & DispatchProps & IntlProps
 
 // interface CategoryValues {
 //   _id: string
@@ -103,149 +110,145 @@ type EnhancedProps = ConnectedProps & DispatchProps & IntlProps
 //   budgets: BudgetValues[]
 // }
 
-@(injectIntl as any)
-@(connect<ConnectedProps, DispatchProps, IntlProps>(
-  (state: AppState): ConnectedProps => ({
-    lang: state.i18n.lang,
-    budgets: state.db.current!.view.budgets,
-    data: selectAccountData(state)
-  }),
-  mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget })
-) as any)
-export class Home extends React.Component<EnhancedProps, State> {
-  state: State = {
-    month: new Date()
-  }
+const enhance = compose<EnhancedProps, void>(
+  injectIntl,
+  connect<ConnectedProps, DispatchProps, IntlProps>(
+    (state: AppState): ConnectedProps => ({
+      lang: state.i18n.lang,
+      budgets: state.db.current!.view.budgets,
+      data: selectAccountData(state)
+    }),
+    mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget })
+  ),
+  withState('month', 'setMonth', undefined),
+  withHandlers<Handlers, StateProps & ConnectedProps & DispatchProps & IntlProps>({
+    setPrevMonth: ({setMonth, month}) => () => {
+      const prev = moment(month).subtract(1, 'month').toDate()
+      setMonth(prev)
+    },
 
-  render () {
-    // const { budgets, data, intl: { formatDate, formatNumber } } = this.props
-    const { budgets } = this.props
-    const { month } = this.state
+    setNextMonth: ({setMonth, month}) => () => {
+      const next = moment(month).add(1, 'month').toDate()
+      setMonth(next)
+    }
+  })
+)
 
-    return (
-      <div style={{paddingBottom: 10}}>
+export const Home = enhance(props => {
+  // const { budgets, data, intl: { formatDate, formatNumber } } = this.props
+  const { budgets, month, setPrevMonth, setNextMonth } = props
 
-        <PageHeader>
-          <FormattedMessage {...messages.page}/>
-        </PageHeader>
+  return (
+    <div style={{paddingBottom: 10}}>
 
-        {/*<AutoSizer disableHeight>
-          {(autoSizerProps: AutoSizer.ChildrenProps) => (
-            <div style={{width: autoSizerProps.width}}>
-              <VictoryChart
-                height={300}
-                width={autoSizerProps.width}
-                domainPadding={20}
-                theme={VictoryTheme.material}
+      <PageHeader>
+        <FormattedMessage {...messages.page}/>
+      </PageHeader>
+
+      {/*<AutoSizer disableHeight>
+        {(autoSizerProps: AutoSizer.ChildrenProps) => (
+          <div style={{width: autoSizerProps.width}}>
+            <VictoryChart
+              height={300}
+              width={autoSizerProps.width}
+              domainPadding={20}
+              theme={VictoryTheme.material}
+            >
+
+              <VictoryAxis
+                scale='time'
+              />
+              <VictoryAxis
+                dependentAxis
+                tickFormat={(x) => (`$${x}`)}
+              />
+              <VictoryStack
+                colorScale={'warm'}
               >
-
-                <VictoryAxis
-                  scale='time'
-                />
-                <VictoryAxis
-                  dependentAxis
-                  tickFormat={(x) => (`$${x}`)}
-                />
-                <VictoryStack
-                  colorScale={'warm'}
-                >
-                  {data.map(account => account.points.length > 1 &&
-                    <VictoryGroup
-                      key={account.name}
-                      data={account.points}
-                      x='date'
-                      y='value'
-                      name={account.name}
-                    >
-                      <VictoryLine
-                      />
-                      <VictoryVoronoiTooltip
-                        labels={
-                          (d: DataPoint) => {
-                            const date = formatDate(d.date, {})
-                            const amount = formatNumber(d.value, {style: 'currency', currency: 'USD'})
-                            return `${account.name}\n${date} - ${d.name}\n${amount}`
-                          }
+                {data.map(account => account.points.length > 1 &&
+                  <VictoryGroup
+                    key={account.name}
+                    data={account.points}
+                    x='date'
+                    y='value'
+                    name={account.name}
+                  >
+                    <VictoryLine
+                    />
+                    <VictoryVoronoiTooltip
+                      labels={
+                        (d: DataPoint) => {
+                          const date = formatDate(d.date, {})
+                          const amount = formatNumber(d.value, {style: 'currency', currency: 'USD'})
+                          return `${account.name}\n${date} - ${d.name}\n${amount}`
                         }
-                      />
-                    </VictoryGroup>
-                  )}
-                </VictoryStack>
-              </VictoryChart>
-            </div>
-          )}
-        </AutoSizer>*/}
+                      }
+                    />
+                  </VictoryGroup>
+                )}
+              </VictoryStack>
+            </VictoryChart>
+          </div>
+        )}
+      </AutoSizer>*/}
 
-        <h3>
-          {moment(month).format('MMMM YYYY')}
-          <ButtonToolbar className='pull-right'>
-            <Button bsStyle='link' onClick={this.prevMonth}><i className='fa fa-caret-left'/></Button>
-            <Button bsStyle='link' onClick={this.nextMonth}><i className='fa fa-caret-right'/></Button>
-          </ButtonToolbar>
-        </h3>
+      <h3>
+        {moment(month).format('MMMM YYYY')}
+        <ButtonToolbar className='pull-right'>
+          <Button bsStyle='link' onClick={setPrevMonth}><i className='fa fa-caret-left'/></Button>
+          <Button bsStyle='link' onClick={setNextMonth}><i className='fa fa-caret-right'/></Button>
+        </ButtonToolbar>
+      </h3>
 
-        {budgets.map(budget =>
-          <Panel key={budget.doc._id} header={
-            <h1>{budget.doc.name}</h1>
-          }>
-            <ListGroup fill>
-              {budget.categories.length === 0 &&
-                <ListGroupItem>
-                  <small><em>no categories</em></small>
-                </ListGroupItem>
-              }
-              {budget.categories.map(category =>
-                <ListGroupItem key={category.doc._id}>
-                  <Grid fluid>
-                    <Row>
-                      <Col xs={2}>
-                        {category.doc.name}
-                      </Col>
-                      <Col xs={8}>
-                        <CategoryProgress category={category}/>
+      {budgets.map(budget =>
+        <Panel key={budget.doc._id} header={
+          <h1>{budget.doc.name}</h1>
+        }>
+          <ListGroup fill>
+            {budget.categories.length === 0 &&
+              <ListGroupItem>
+                <small><em>no categories</em></small>
+              </ListGroupItem>
+            }
+            {budget.categories.map(category =>
+              <ListGroupItem key={category.doc._id}>
+                <Grid fluid>
+                  <Row>
+                    <Col xs={2}>
+                      {category.doc.name}
+                    </Col>
+                    <Col xs={8}>
+                      <CategoryProgress category={category}/>
+                    </Col>
+                    <Col xs={2}>
+                      <em><small>
+                        <CurrencyDisplay amount={category.doc.amount}/>
+                      </small></em>
+                    </Col>
+                  </Row>
+                  {category.bills.map(bill =>
+                    <Row key={bill.doc._id}>
+                      <Col xs={8} xsOffset={2}>
+                        <Favico value={bill.doc.favicon}/>
+                        {' '}
+                        {bill.doc.name}
                       </Col>
                       <Col xs={2}>
                         <em><small>
-                          <CurrencyDisplay amount={category.doc.amount}/>
+                          <CurrencyDisplay amount={bill.doc.amount}/>
                         </small></em>
                       </Col>
                     </Row>
-                    {category.bills.map(bill =>
-                      <Row key={bill.doc._id}>
-                        <Col xs={8} xsOffset={2}>
-                          <Favico value={bill.doc.favicon}/>
-                          {' '}
-                          {bill.doc.name}
-                        </Col>
-                        <Col xs={2}>
-                          <em><small>
-                            <CurrencyDisplay amount={bill.doc.amount}/>
-                          </small></em>
-                        </Col>
-                      </Row>
-                    )}
-                  </Grid>
-                </ListGroupItem>
-              )}
-            </ListGroup>
-          </Panel>
-        )}
-      </div>
-    )
-  }
-
-  @autobind
-  prevMonth () {
-    const month = moment(this.state.month).subtract(1, 'month').toDate()
-    this.setState({month})
-  }
-
-  @autobind
-  nextMonth () {
-    const month = moment(this.state.month).add(1, 'month').toDate()
-    this.setState({month})
-  }
-}
+                  )}
+                </Grid>
+              </ListGroupItem>
+            )}
+          </ListGroup>
+        </Panel>
+      )}
+    </div>
+  )
+})
 
 const CategoryProgress = ({category}: {category: Category.View}) => {
   const max = parseFloat(category.doc.amount as any)

@@ -6,7 +6,6 @@ import * as ReactDOM from 'react-dom'
 import { FormControl, FormControlProps } from 'react-bootstrap'
 import RDatePicker /*, { ReactDatePickerProps }*/ from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { checkPropChange } from '../../enhancers/index'
 
 import './DatePicker.css'
 
@@ -32,11 +31,13 @@ export class DatePicker extends React.Component<Props, State> {
   }
 
   componentDidMount () {
-    checkPropChange(undefined, this.props, 'value', this.onValueChange)
+    this.onValueChange(this.props.value)
   }
 
   componentWillReceiveProps (nextProps: any) {
-    checkPropChange(this.props, nextProps, 'value', this.onValueChange)
+    if (this.props.value !== nextProps.value) {
+      this.onValueChange(this.props.value)
+    }
   }
 
   render () {

@@ -7,7 +7,6 @@ import { compose, setDisplayName, withHandlers, mapProps, onlyUpdateForPropTypes
 import ui, { ReduxUIProps } from 'redux-ui'
 import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from '../../state/index'
 import { Bill } from '../../docs/index'
-import { withPropChangeCallback } from '../enhancers/index'
 import { BillForm } from './BillForm'
 
 const messages = defineMessages({
@@ -30,7 +29,7 @@ interface MappedProps {
 }
 
 interface UIState {
-  editing: boolean
+  editing?: Bill.DocId
 }
 
 interface Handlers {
@@ -60,30 +59,24 @@ const enhance = compose<EnhancedProps, Props>(
     key: 'BillDetail',
     persist: true,
     state: {
-      editing: false
+      editing: undefined
     } as UIState
   }),
   withHandlers<Handlers, ReduxUIProps<UIState> & MappedProps & DispatchProps & Props>({
-    startEdit: ({updateUI}) => () => {
-      updateUI({editing: true})
+    startEdit: ({item, updateUI}) => () => {
+      updateUI({editing: item.doc._id})
     },
     cancelEdit: ({updateUI}) => () => {
-      updateUI({editing: false})
+      updateUI({editing: undefined})
     },
     saveEdit: ({updateUI, pushChanges}) => async (doc: Bill.Doc) => {
       await pushChanges({ docs: [doc] })
-      updateUI({editing: false})
+      updateUI({editing: undefined})
     },
     deleteMe: ({item, pushChanges}) => () => {
       pushChanges({docs: [deleteDoc(item.doc)]})
     }
   }),
-  withPropChangeCallback<Handlers & ReduxUIProps<UIState> & MappedProps & DispatchProps & Props>(
-    'item',
-    ({updateUI}) => {
-      updateUI({editing: false})
-    }
-  )
 )
 
 export const BillDetail = enhance(({ui: { editing }, item, startEdit, saveEdit, cancelEdit, deleteMe}) => {

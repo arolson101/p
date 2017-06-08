@@ -7,7 +7,7 @@ import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
-import { shallowEqual } from 'recompose'
+import { compose, withHandlers, withState, shallowEqual } from 'recompose'
 import { FormProps, FieldArray, FieldsProps, reduxForm, Fields } from 'redux-form'
 import { deleteBudget } from '../../actions/index'
 import { Bill, Budget, Category } from '../../docs/index'
@@ -76,11 +76,16 @@ interface DispatchProps {
   deleteBudget: deleteBudget.Fcn
 }
 
-interface State {
+interface StateProps {
   editing: boolean
+  setEditing: (editing: boolean) => void
 }
 
-type EnhancedProps = FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps
+interface Handlers {
+  toggleEdit: () => void
+}
+
+type EnhancedProps = Handlers & FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps & StateProps
 
 interface CategoryValues {
   _id: string
@@ -100,170 +105,164 @@ interface Values {
 
 const { Form, TextField } = typedFields<any>()
 
-@(injectIntl as any)
-@(connect<ConnectedProps, DispatchProps, IntlProps>(
-  (state: AppState): ConnectedProps => ({
-    lang: state.i18n.lang,
-    budgets: R.sort(Budget.compare, state.db.current!.view.budgets)
+const enhance = compose<EnhancedProps, void>(
+  injectIntl,
+  connect<ConnectedProps, DispatchProps, IntlProps>(
+    (state: AppState): ConnectedProps => ({
+      lang: state.i18n.lang,
+      budgets: R.sort(Budget.compare, state.db.current!.view.budgets)
+    }),
+    mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget })
+  ),
+  withState('editing', 'setEditing', false),
+  reduxForm<Values, StateProps & ConnectedProps & DispatchProps & IntlProps>({
+    form: 'BudgetForm',
+    validate: (values, props: any) => {
+      const { intl: { formatMessage } } = props
+      const v = new Validator(values, formatMessage)
+      v.arrayUnique('budgets', 'name', messages.uniqueBudget)
+      for (let i = 0; values.budgets && i < values.budgets.length; i++) {
+        const vi = v.arraySubvalidator<BudgetValues>('budgets', i)
+        vi.arrayUnique('categories', 'name', formatMessage(messages.uniqueCategory))
+        const budget = values.budgets[i]
+        for (let j = 0; budget && budget.categories && j < budget.categories.length; j++) {
+          const ci = vi.arraySubvalidator<Category>('categories', j)
+          ci.numeral('amount')
+        }
+      }
+      return v.errors
+    },
+    onSubmit: async (values, dispatch, props) => {
+      const { budgets, pushChanges, setEditing, intl: { formatMessage }, lang } = props
+      const v = new Validator(values, formatMessage)
+      const changes: AnyDocument[] = []
+
+      // TODO: delete removed category/budget docs
+
+      for (let i = 0; values.budgets && i < values.budgets.length; i++) {
+        const bv = v.arraySubvalidator<BudgetValues>('budgets', i)
+        bv.required('name')
+        const bvalues = values.budgets[i]
+        if (bvalues) {
+          const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
+          let nextBudget = lastBudget
+            ? lastBudget.doc
+            : Budget.doc({name: bvalues.name, categories: [], sortOrder: i}, lang)
+
+          nextBudget = {
+            ...nextBudget,
+            name: bvalues.name,
+            sortOrder: i
+          }
+
+          const categories = (bvalues.categories || []).map(bc => {
+            const amount = numeral(bc.amount).value() || 0
+            if (!bc) {
+              return '' as Category.DocId
+            }
+            if (bc._id && lastBudget) {
+              const existingCategory = lastBudget.categories.find(cat => cat.doc._id === bc._id)
+              if (!existingCategory) {
+                throw new Error('existing category id ' + bc._id + ' not found')
+              }
+              const nextCategory = {
+                ...existingCategory.doc,
+                ...bc,
+                amount
+              }
+              if (!shallowEqual(existingCategory, nextCategory)) {
+                changes.push(nextCategory)
+              }
+              return existingCategory.doc._id
+            } else {
+              const newCategory = Category.doc(nextBudget, {name: bc.name, amount}, lang)
+              changes.push(newCategory)
+              return newCategory._id
+            }
+          })
+
+          if (!R.equals(categories, nextBudget.categories)) {
+            nextBudget = { ...nextBudget, categories }
+          }
+
+          if (!lastBudget || !shallowEqual(lastBudget.doc, nextBudget)) {
+            changes.push(nextBudget)
+          }
+        }
+        const categories = values.budgets[i].categories
+        for (let c = 0; categories && c < categories.length; c++) {
+          const cv = bv.arraySubvalidator<Category>('categories', c)
+          cv.required('name')
+        }
+      }
+      v.maybeThrowSubmissionError()
+
+      if (changes.length) {
+        await pushChanges({docs: changes})
+      }
+
+      setEditing(false)
+    }
   }),
-  mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget })
-) as any)
-@(reduxForm<EnhancedProps, Values>({
-  form: 'BudgetForm',
-  validate: (values, props: any) => {
-    const { intl: { formatMessage } } = props
-    const v = new Validator(values, formatMessage)
-    v.arrayUnique('budgets', 'name', messages.uniqueBudget)
-    for (let i = 0; values.budgets && i < values.budgets.length; i++) {
-      const vi = v.arraySubvalidator<BudgetValues>('budgets', i)
-      vi.arrayUnique('categories', 'name', formatMessage(messages.uniqueCategory))
-      const budget = values.budgets[i]
-      for (let j = 0; budget && budget.categories && j < budget.categories.length; j++) {
-        const ci = vi.arraySubvalidator<Category>('categories', j)
-        ci.numeral('amount')
-      }
-    }
-    return v.errors
-  }
-}) as any)
-export class Budgets extends React.Component<EnhancedProps, State> {
-  state: State = {
-    editing: false
-  }
-
-  render () {
-    const { budgets, handleSubmit } = this.props
-    const { editing } = this.state
-
-    return (
-      <Form onSubmit={handleSubmit!(this.onSubmit)}>
-        <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
-
-          <PageHeader>
-            <SettingsMenu
-              items={[
-                {
-                  message: messages.editBudget,
-                  onClick: this.toggleEdit
-                },
-              ]}
-            />
-            <FormattedMessage {...messages.page}/>
-          </PageHeader>
-
-          {editing &&
-            <FieldArray name='budgets' component={editBudgetList} intl={this.props.intl}>
-              <Button onClick={this.toggleEdit}>
-                <FormattedMessage {...forms.cancel}/>
-              </Button>
-              <Button type='submit' bsStyle='primary'>
-                <FormattedMessage {...forms.save}/>
-              </Button>
-            </FieldArray>
-          }
-
-          {!editing && budgets.map(budget =>
-            <BudgetDisplay key={budget.doc._id} budget={budget}/>
-          )}
-        </div>
-      </Form>
-    )
-  }
-
-  @autobind
-  async onSubmit (values: Values) {
-    const { budgets, pushChanges, intl: { formatMessage }, lang } = this.props
-    const v = new Validator(values, formatMessage)
-    const changes: AnyDocument[] = []
-
-    // TODO: delete removed category/budget docs
-
-    for (let i = 0; values.budgets && i < values.budgets.length; i++) {
-      const bv = v.arraySubvalidator<BudgetValues>('budgets', i)
-      bv.required('name')
-      const bvalues = values.budgets[i]
-      if (bvalues) {
-        const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
-        let nextBudget = lastBudget
-          ? lastBudget.doc
-          : Budget.doc({name: bvalues.name, categories: [], sortOrder: i}, lang)
-
-        nextBudget = {
-          ...nextBudget,
-          name: bvalues.name,
-          sortOrder: i
-        }
-
-        const categories = (bvalues.categories || []).map(bc => {
-          const amount = numeral(bc.amount).value() || 0
-          if (!bc) {
-            return '' as Category.DocId
-          }
-          if (bc._id && lastBudget) {
-            const existingCategory = lastBudget.categories.find(cat => cat.doc._id === bc._id)
-            if (!existingCategory) {
-              throw new Error('existing category id ' + bc._id + ' not found')
-            }
-            const nextCategory = {
-              ...existingCategory.doc,
-              ...bc,
-              amount
-            }
-            if (!shallowEqual(existingCategory, nextCategory)) {
-              changes.push(nextCategory)
-            }
-            return existingCategory.doc._id
-          } else {
-            const newCategory = Category.doc(nextBudget, {name: bc.name, amount}, lang)
-            changes.push(newCategory)
-            return newCategory._id
-          }
-        })
-
-        if (!R.equals(categories, nextBudget.categories)) {
-          nextBudget = { ...nextBudget, categories }
-        }
-
-        if (!lastBudget || !shallowEqual(lastBudget.doc, nextBudget)) {
-          changes.push(nextBudget)
-        }
-      }
-      const categories = values.budgets[i].categories
-      for (let c = 0; categories && c < categories.length; c++) {
-        const cv = bv.arraySubvalidator<Category>('categories', c)
-        cv.required('name')
-      }
-    }
-    v.maybeThrowSubmissionError()
-
-    if (changes.length) {
-      await pushChanges({docs: changes})
-    }
-
-    this.setState({editing: false})
-  }
-
-  @autobind
-  toggleEdit () {
-    const editing = !this.state.editing
-    if (editing) {
-      const { budgets, initialize } = this.props
-      const values: Values = {
-        budgets: budgets.map((budget): BudgetValues => ({
-          name: budget.doc.name,
-          _id: budget.doc._id,
-          categories: budget.categories.map((category): CategoryValues => ({
-            name: category.doc.name,
-            _id: category.doc._id,
-            amount: category.doc.amount
+  withHandlers<Handlers, FormProps<Values, {}, {}> & StateProps & ConnectedProps & DispatchProps & IntlProps>({
+    toggleEdit: ({budgets, initialize, setEditing, editing}) => () => {
+      editing = !editing
+      if (editing) {
+        const values: Values = {
+          budgets: budgets.map((budget): BudgetValues => ({
+            name: budget.doc.name,
+            _id: budget.doc._id,
+            categories: budget.categories.map((category): CategoryValues => ({
+              name: category.doc.name,
+              _id: category.doc._id,
+              amount: category.doc.amount
+            }))
           }))
-        }))
+        }
+        initialize!(values)
       }
-      initialize!(values)
+      setEditing(editing)
     }
-    this.setState({editing})
-  }
-}
+  })
+)
+
+export const Budgets = enhance(props => {
+  const { budgets, handleSubmit, editing, toggleEdit } = props
+
+  return (
+    <Form onSubmit={handleSubmit}>
+      <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+
+        <PageHeader>
+          <SettingsMenu
+            items={[
+              {
+                message: messages.editBudget,
+                onClick: toggleEdit
+              },
+            ]}
+          />
+          <FormattedMessage {...messages.page}/>
+        </PageHeader>
+
+        {editing &&
+          <FieldArray name='budgets' component={editBudgetList} intl={props.intl}>
+            <Button onClick={toggleEdit}>
+              <FormattedMessage {...forms.cancel}/>
+            </Button>
+            <Button type='submit' bsStyle='primary'>
+              <FormattedMessage {...forms.save}/>
+            </Button>
+          </FieldArray>
+        }
+
+        {!editing && budgets.map(budget =>
+          <BudgetDisplay key={budget.doc._id} budget={budget}/>
+        )}
+      </div>
+    </Form>
+  )
+})
 
 const editBudgetList = (props: any) => {
   const { children, fields, meta: { error }, intl } = props

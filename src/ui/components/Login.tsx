@@ -46,7 +46,7 @@ interface Handlers {
 
 type EnhancedProps = Handlers & ReduxUIProps<UIState> & RouteProps<any> & ConnectedProps
 
-const enhance = compose<EnhancedProps, {}>(
+const enhance = compose<EnhancedProps, void>(
   setDisplayName('Login'),
   onlyUpdateForPropTypes,
   setPropTypes({}),

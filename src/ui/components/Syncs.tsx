@@ -3,6 +3,7 @@ import * as React from 'react'
 import { Panel, Button, PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
+import { compose, withHandlers } from 'recompose'
 import { SyncConnection } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges, deleteDoc } from '../../state/index'
 import { SyncProvider, syncProviders } from '../../sync/index'
@@ -36,85 +37,85 @@ interface DispatchProps {
   runSync: runSync.Fcn
 }
 
-type EnhancedProps = ConnectedProps & DispatchProps & IntlProps
-
-@(injectIntl as any)
-@(connect<ConnectedProps, DispatchProps, IntlProps>(
-  (state: AppState): ConnectedProps => ({
-    syncs: state.db.current!.view.syncs,
-    lang: state.i18n.lang,
-  }),
-  mapDispatchToProps<DispatchProps>({ pushChanges, runSync })
-) as any)
-export class Syncs extends React.Component<EnhancedProps, {}> {
-  render () {
-    const { syncs } = this.props
-
-    return (
-      <div style={{paddingBottom: 10}}>
-
-        <PageHeader>
-          <FormattedMessage {...messages.page}/>
-        </PageHeader>
-
-        {syncProviders.map(provider =>
-          <Panel
-            key={provider.id}
-            header={
-              <h1><FormattedMessage {...provider.title}/></h1>
-            }
-          >
-            <ListGroup fill>
-              {syncs.filter(sync => sync.provider === provider.id).map((sync) =>
-                <ListGroupItem key={sync.provider}>
-                  <SyncStatus sync={sync}/>
-                  <Button onClick={() => this.runSync(sync)}>run sync</Button>
-                  <Button className='pull-right' onClick={() => this.removeSync(sync)}>remove</Button>
-                </ListGroupItem>
-              )}
-              <ListGroupItem>
-                <Button onClick={() => this.addSync(provider)}>
-                  <i className='fa fa-plus'/>
-                  {' '}
-                  <FormattedMessage {...messages.addSync}/>
-                </Button>
-              </ListGroupItem>
-            </ListGroup>
-          </Panel>
-        )}
-      </div>
-    )
-  }
-
-  @autobind
-  async addSync (provider: SyncProvider<any>) {
-    try {
-      const { pushChanges, lang } = this.props
-      const config = await provider.createConfig()
-      const sync = SyncConnection.doc(config, lang)
-      pushChanges({docs: [sync]})
-    } catch (err) {
-      console.log(err)
-    }
-  }
-
-  @autobind
-  async removeSync (provider: SyncConnection.Doc) {
-    try {
-      const { pushChanges } = this.props
-      pushChanges({docs: [deleteDoc(provider)]})
-    } catch (err) {
-      console.log(err)
-    }
-  }
-
-  @autobind
-  async runSync (provider: SyncConnection.Doc) {
-    try {
-      const { runSync } = this.props
-      runSync({config: provider})
-    } catch (err) {
-      console.log(err)
-    }
-  }
+interface Handlers {
+  addSync: (provider: SyncProvider<any>) => void
+  removeSync: (provider: SyncConnection.Doc) => void
+  runSync: (provider: SyncConnection.Doc) => void
 }
+
+type EnhancedProps = Handlers & ConnectedProps & DispatchProps & IntlProps
+
+const enhance = compose<EnhancedProps, void>(
+  injectIntl,
+  connect<ConnectedProps, DispatchProps, IntlProps>(
+    (state: AppState): ConnectedProps => ({
+      syncs: state.db.current!.view.syncs,
+      lang: state.i18n.lang,
+    }),
+    mapDispatchToProps<DispatchProps>({ pushChanges, runSync })
+  ),
+  withHandlers<Handlers, ConnectedProps & DispatchProps & IntlProps>({
+    addSync: ({ pushChanges, lang }) => async (provider: SyncProvider<any>) => {
+      try {
+        const config = await provider.createConfig()
+        const sync = SyncConnection.doc(config, lang)
+        pushChanges({docs: [sync]})
+      } catch (err) {
+        console.log(err)
+      }
+    },
+    removeSync: ({ pushChanges }) => async (provider: SyncConnection.Doc) => {
+      try {
+        pushChanges({docs: [deleteDoc(provider)]})
+      } catch (err) {
+        console.log(err)
+      }
+    },
+    runSync: ({ runSync }) => async (provider: SyncConnection.Doc) => {
+      try {
+        runSync({config: provider})
+      } catch (err) {
+        console.log(err)
+      }
+    }
+  })
+)
+
+export const Syncs = enhance(props => {
+  const { syncs, runSync, removeSync, addSync } = props
+
+  return (
+    <div style={{paddingBottom: 10}}>
+
+      <PageHeader>
+        <FormattedMessage {...messages.page}/>
+      </PageHeader>
+
+      {syncProviders.map(provider =>
+        <Panel
+          key={provider.id}
+          header={
+            <h1><FormattedMessage {...provider.title}/></h1>
+          }
+        >
+          <ListGroup fill>
+            {syncs.filter(sync => sync.provider === provider.id).map((sync) =>
+              <ListGroupItem key={sync.provider}>
+                <SyncStatus sync={sync}/>
+                <Button onClick={() => runSync(sync)}>run sync</Button>
+                <Button className='pull-right' onClick={() => removeSync(sync)}>remove</Button>
+              </ListGroupItem>
+            )}
+            <ListGroupItem>
+              <Button onClick={() => addSync(provider)}>
+                <i className='fa fa-plus'/>
+                {' '}
+                <FormattedMessage {...messages.addSync}/>
+              </Button>
+            </ListGroupItem>
+          </ListGroup>
+        </Panel>
+      )}
+    </div>
+  )
+})

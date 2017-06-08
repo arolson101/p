@@ -5,7 +5,7 @@ import * as R from 'ramda'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router'
 import * as SplitPane from 'react-split-pane'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers, withContext } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { Bank, Account, Budget, Bill, SyncConnection } from '../../docs/index'
 import { AppState } from '../../state/index'
@@ -79,10 +79,32 @@ interface UIState {
   sidebarWidth: number
 }
 
-type EnhancedProps = ConnectedProps & RouteProps<any> & ReduxUIProps<UIState>
+interface StateProps {
+  container: any
+  setContainer: (container: any) => void
+}
+
+interface Handlers {
+  onSizeChange: (sidebarWidth: number) => void
+  onNavClick: (item: NavItem) => void
+}
+
+type EnhancedProps = Handlers & StateProps & ConnectedProps & RouteProps<any> & ReduxUIProps<UIState>
+
+export interface AppContentContext {
+  container: any
+}
+
+export const AppContentContextTypes: PropTypes.ValidationMap<AppContentContext> = {
+  container: PropTypes.object
+}
 
 const enhance = compose<EnhancedProps, {}>(
   setDisplayName('AppContent'),
+  // onlyUpdateForPropTypes,
+  setPropTypes({
+    location: PropTypes.object
+  }),
   withRouter,
   connect<ConnectedProps, {}, RouteProps<any>>(
     (state: AppState): ConnectedProps => ({
@@ -96,6 +118,19 @@ const enhance = compose<EnhancedProps, {}>(
     state: {
       sidebarWidth: 250
     } as UIState
+  }),
+  withState('container', 'setContainer', undefined),
+  withContext<AppContentContext, StateProps & ReduxUIProps<UIState> & ConnectedProps & RouteProps<any>>(
+    AppContentContextTypes,
+    ({container}) => ({container})
+  ),
+  withHandlers<Handlers, StateProps & ReduxUIProps<UIState> & ConnectedProps & RouteProps<any>>({
+    onSizeChange: ({ updateUI }) => (sidebarWidth: number) => {
+      updateUI({sidebarWidth} as UIState)
+    },
+    onNavClick: ({ history }) => (item: NavItem) => {
+      history.push(item.path)
+    }
   })
 )
 
@@ -112,92 +147,49 @@ const makeAccountList = R.pipe(
   R.sortBy((item: NavItem) => Object.keys(Account.Type).indexOf(item.account!.doc.type).toString())
 )
 
-export interface AppContentContext {
-  container: any
-}
+export const AppContent = enhance(props => {
+  const { banks, ThemeNav, children, setContainer, onSizeChange, onNavClick, location: { pathname }, ui: { sidebarWidth } } = props
 
-export const AppContentContextTypes: PropTypes.ValidationMap<AppContentContext> = {
-  container: PropTypes.object
-}
-
-@onlyUpdateForPropTypes
-class AppContentComponent extends React.Component<EnhancedProps, AppContentContext> {
-  static childContextTypes = AppContentContextTypes
-  static propTypes = {
-    location: PropTypes.object
-  }
-
-  state = {
-    container: undefined
-  }
-
-  getChildContext () {
-    return this.state
-  }
-
-  render () {
-    const { banks, ThemeNav, children, location: { pathname }, ui: { sidebarWidth } } = this.props
-
-    const accountGroup: NavGroup = { title: 'accounts', items: makeAccountList(banks) }
-    const groups = [appGroup, accountGroup]
-    let selectedId = ''
-    groups.forEach(group => {
-      group.items.forEach(item => {
-        if (pathname.startsWith(item.path)) {
-          selectedId = item.id
-        }
-      })
+  const accountGroup: NavGroup = { title: 'accounts', items: makeAccountList(banks) }
+  const groups = [appGroup, accountGroup]
+  let selectedId = ''
+  groups.forEach(group => {
+    group.items.forEach(item => {
+      if (pathname.startsWith(item.path)) {
+        selectedId = item.id
+      }
     })
+  })
 
-    return (
-      <div
-        className='modal-container'
-        ref={this.setContainer}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%'
-        }}
+  return (
+    <div
+      className='modal-container'
+      ref={setContainer}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%'
+      }}
+    >
+      <SplitPane
+        split='vertical'
+        minSize={100}
+        defaultSize={sidebarWidth}
+        onChange={onSizeChange}
       >
-        <SplitPane
-          split='vertical'
-          minSize={100}
-          defaultSize={sidebarWidth}
-          onChange={this.onSizeChange}
+        <ThemeNav groups={groups} selectedId={selectedId} onClick={onNavClick} />
+        <div
+          style={{
+            backgroundColor: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            overflow: 'auto'
+          }}
         >
-          <ThemeNav groups={groups} selectedId={selectedId} onClick={this.onNavClick} />
-          <div
-            style={{
-              backgroundColor: 'white',
-              display: 'flex',
-              flexDirection: 'column',
-              height: '100%',
-              overflow: 'auto'
-            }}
-          >
-            {children}
-          </div>
-      </SplitPane>
-    </div>
-    )
-  }
-
-  @autobind
-  onSizeChange (sidebarWidth: number) {
-    const { updateUI } = this.props
-    updateUI({sidebarWidth} as UIState)
-  }
-
-  @autobind
-  setContainer (container: any) {
-    this.setState({container})
-  }
-
-  @autobind
-  onNavClick (item: NavItem) {
-    const { history } = this.props
-    history.push(item.path)
-  }
-}
-
-export const AppContent = enhance(AppContentComponent)
+          {children}
+        </div>
+    </SplitPane>
+  </div>
+  )
+})
