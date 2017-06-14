@@ -196,57 +196,36 @@ export const AccountDialog = enhance((props) => {
 
       <Form horizontal onSubmit={handleSubmit}>
         <Modal.Body>
-          <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+          <TextField
+            name='name'
+            label={messages.name}
+            addonBefore={<ColorAddon name='color'/>}
+            autoFocus
+          />
+          <SelectField
+            name='type'
+            options={typeOptions}
+            clearable={false}
+            optionRenderer={accountTypeRenderer}
+            valueRenderer={accountTypeRenderer}
+            label={messages.type}
+          />
+          <TextField
+            name='number'
+            label={messages.number}
+          />
+          {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
             <TextField
-              name='name'
-              label={messages.name}
-              addonBefore={<ColorAddon name='color'/>}
-              autoFocus
+              name='bankid'
+              label={messages.bankid}
             />
-            <SelectField
-              name='type'
-              options={typeOptions}
-              clearable={false}
-              optionRenderer={accountTypeRenderer}
-              valueRenderer={accountTypeRenderer}
-              label={messages.type}
-            />
+          }
+          {(type === Account.Type.CREDITCARD) &&
             <TextField
-              name='number'
-              label={messages.number}
+              name='key'
+              label={messages.key}
             />
-            {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
-              <TextField
-                name='bankid'
-                label={messages.bankid}
-              />
-            }
-            {(type === Account.Type.CREDITCARD) &&
-              <TextField
-                name='key'
-                label={messages.key}
-              />
-            }
-
-            <ButtonToolbar className='pull-right'>
-              <Button
-                type='button'
-                onClick={onHide}
-              >
-                <FormattedMessage {...forms.cancel}/>
-              </Button>
-              <Button
-                type='submit'
-                bsStyle='primary'
-              >
-                {edit ? (
-                  <FormattedMessage {...forms.save}/>
-                ) : (
-                  <FormattedMessage {...forms.create}/>
-                )}
-              </Button>
-            </ButtonToolbar>
-          </div>
+          }
         </Modal.Body>
 
         <Modal.Footer>

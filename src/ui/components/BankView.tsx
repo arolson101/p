@@ -12,6 +12,7 @@ import { AppState, mapDispatchToProps } from '../../state/index'
 import { RouteProps, IntlProps } from './props'
 import { selectBank } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
+import { AccountDialog } from './AccountDialog'
 import { BankDialog } from './BankDialog'
 
 const messages = defineMessages({
@@ -73,6 +74,7 @@ interface UIState {
   editing?: boolean
   showAll?: boolean
   showModal?: boolean
+  accountCreating?: boolean
   working?: boolean
   error?: string
   message?: string
@@ -83,6 +85,7 @@ interface Handlers {
   toggleShowAll: () => void
   getAccountList: () => void
   hideModal: () => void
+  toggleAccountCreate: () => void
 }
 
 type EnhancedProps = Handlers
@@ -92,7 +95,7 @@ type EnhancedProps = Handlers
   & IntlProps
   & RouteProps<Bank.Params>
 
-const enhance = compose<EnhancedProps, void>(
+const enhance = compose<EnhancedProps, undefined>(
   setDisplayName('BankView'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
@@ -109,6 +112,7 @@ const enhance = compose<EnhancedProps, void>(
       editing: false,
       showAll: false,
       showModal: false,
+      accountCreating: false,
       working: false,
       message: undefined,
       error: undefined
@@ -142,13 +146,17 @@ const enhance = compose<EnhancedProps, void>(
       if (!working) {
         updateUI({showModal: false})
       }
+    },
+
+    toggleAccountCreate: ({ ui: { accountCreating }, updateUI }) => () => {
+      updateUI({accountCreating: !accountCreating})
     }
   })
 )
 
 export const BankView = enhance((props) => {
-  const { bank, history, toggleShowAll, hideModal, getAccountList, toggleEdit } = props
-  const { ui: { editing, working, showModal, message, error, showAll } } = props
+  const { bank, history, toggleShowAll, hideModal, getAccountList, toggleEdit, toggleAccountCreate } = props
+  const { ui: { editing, working, showModal, message, error, showAll, accountCreating } } = props
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
 
@@ -169,7 +177,7 @@ export const BankView = enhance((props) => {
             },
             {
               message: messages.addAccount,
-              to: Account.to.create(bank.doc)
+              onClick: toggleAccountCreate
             },
             {
               message: messages.getAccounts,
@@ -228,6 +236,7 @@ export const BankView = enhance((props) => {
       )}
 
       <BankDialog show={!!editing} edit={bank.doc} onHide={toggleEdit}/>
+      <AccountDialog bank={bank} show={!!accountCreating} onHide={toggleAccountCreate}/>
 
       <Modal show={showModal} onHide={hideModal} backdrop='static'>
         <Modal.Header>

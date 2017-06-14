@@ -5,6 +5,7 @@ import { defineMessages, injectIntl } from 'react-intl'
 import { connect } from 'react-redux'
 import { Column } from 'react-virtualized'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, mapPropsStream } from 'recompose'
+import ui, { ReduxUIProps } from 'redux-ui'
 import * as Rx from 'rxjs/Rx'
 import { getTransactions, deleteAllTransactions } from '../../actions/index'
 import { Bank, Account, Transaction } from '../../docs/index'
@@ -12,6 +13,7 @@ import { AppState, pushChanges, mapDispatchToProps } from '../../state/index'
 import { ListWithDetails, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
 import { RouteProps, IntlProps } from './props'
 import { selectBank, selectAccount } from './selectors'
+import { AccountDialog } from './AccountDialog'
 import { SettingsMenu } from './SettingsMenu'
 import { TransactionDetail } from './TransactionDetail'
 
@@ -55,12 +57,17 @@ interface DispatchProps {
 }
 
 type StreamProps = ConnectedProps & RouteProps<Account.Params>
-type EnhancedProps = IntlProps & ConnectedProps & HandlerProps & DispatchProps
+type EnhancedProps = ReduxUIProps<UIState> & IntlProps & ConnectedProps & HandlerProps & DispatchProps
+
+interface UIState {
+  editing: boolean
+}
 
 interface HandlerProps {
-  addTransactions (): void
-  downloadTransactions (): void
-  deleteTransactions (): void
+  toggleEdit: () => void
+  addTransactions: () => void
+  downloadTransactions: () => void
+  deleteTransactions: () => void
 }
 
 const enhance = compose<EnhancedProps, RouteProps<Account.Params>>(
@@ -109,7 +116,16 @@ const enhance = compose<EnhancedProps, RouteProps<Account.Params>>(
   //     return props$.combineLatest(transactions$, (props, transactions) => ({ ...props, ...transactions }))
   //   }
   // ),
-  withHandlers<HandlerProps, ConnectedProps & DispatchProps & IntlProps & RouteProps<Account.Params>>({
+  ui<UIState, ConnectedProps & DispatchProps & IntlProps & RouteProps<Account.Params>, {}>({
+    state: {
+      editing: false,
+    }
+  }),
+  withHandlers<HandlerProps, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps<Account.Params>>({
+    toggleEdit: ({ ui: { editing }, updateUI }) => () => {
+      updateUI({editing: !editing})
+    },
+
     addTransactions: (props) => () => {
       const { pushChanges, account } = props
       const changes: ChangeSet = new Set()
@@ -148,9 +164,8 @@ const enhance = compose<EnhancedProps, RouteProps<Account.Params>>(
 )
 
 export const AccountView = enhance((props) => {
-  const { account } = props
-  const { downloadTransactions, addTransactions, deleteTransactions } = props
-  // const transactions = (props as any).transactions
+  const { bank, account, toggleEdit, downloadTransactions, addTransactions, deleteTransactions } = props
+  const { ui: { editing } } = props
   const transactions = account.transactions
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -182,7 +197,7 @@ export const AccountView = enhance((props) => {
             },
             {
               message: messages.update,
-              to: Account.to.edit(account.doc)
+              onClick: toggleEdit
             },
             {
               message: messages.delete,
@@ -236,6 +251,8 @@ export const AccountView = enhance((props) => {
           toView={Transaction.to.view}
         />
       </div>
+
+      <AccountDialog bank={bank} edit={account.doc} show={editing} onHide={toggleEdit}/>
     </div>
   )
 })
