@@ -8,7 +8,7 @@ export namespace Lookup {
         map.set(item._id, item)
         return map
       },
-      new Map<K,T>()
+      new Map<K, T>()
     )
   )
 

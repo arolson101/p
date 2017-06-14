@@ -105,7 +105,7 @@ interface Values {
 
 const { Form, TextField } = typedFields<any>()
 
-const enhance = compose<EnhancedProps, void>(
+const enhance = compose<EnhancedProps, undefined>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({

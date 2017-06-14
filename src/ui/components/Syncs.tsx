@@ -45,7 +45,7 @@ interface Handlers {
 
 type EnhancedProps = Handlers & ConnectedProps & DispatchProps & IntlProps
 
-const enhance = compose<EnhancedProps, void>(
+const enhance = compose<EnhancedProps, undefined>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({

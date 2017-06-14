@@ -46,7 +46,7 @@ interface ConnectedProps {
 
 type EnhancedProps = ConnectedProps & RouteProps<any> & IntlProps
 
-const enhance = compose<EnhancedProps, void>(
+const enhance = compose<EnhancedProps, undefined>(
   setDisplayName('Bills'),
   onlyUpdateForPropTypes,
   setPropTypes({}),

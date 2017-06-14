@@ -17,7 +17,7 @@ interface ConnectedProps {
 
 type EnhancedProps = RouteProps<Transaction.Params> & ConnectedProps
 
-const enhance = compose<EnhancedProps, void>(
+const enhance = compose<EnhancedProps, undefined>(
   injectIntl,
   connect<ConnectedProps, {}, RouteProps<Transaction.Params>>(
     (state: AppState, props: RouteProps<Transaction.Params>): ConnectedProps => ({

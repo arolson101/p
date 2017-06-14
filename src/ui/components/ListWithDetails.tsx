@@ -3,7 +3,8 @@ import * as React from 'react'
 import { connect } from 'react-redux'
 import { FormattedDate, FormattedNumber } from 'react-intl'
 import * as SplitPane from 'react-split-pane'
-import { AutoSizer, Table, Column } from 'react-virtualized'
+import { AutoSizer, Dimensions, Table, Column, ColumnProps, TableCellProps,
+  OnScrollCallback, Index, RowMouseEventHandlerParams } from 'react-virtualized'
 import { withRouter } from 'react-router'
 import { compose, setDisplayName, withHandlers, setPropTypes, onlyUpdateForPropTypes } from 'recompose'
 import { AppState } from '../../state/index'
@@ -14,7 +15,7 @@ import './ListWithDetails.css'
 interface Props<T> {
   items: T[]
   toView: (item: T) => string
-  columns: Column.Props[]
+  columns: ColumnProps[]
   DetailComponent: React.ComponentClass<{item: T}> | React.StatelessComponent<{item: T}>
 }
 
@@ -29,10 +30,10 @@ interface State {
 }
 
 interface Handlers {
-  onScroll: Table.OnScroll
-  rowGetter: Table.RowGetter
-  rowClassNameWithSelection: Table.RowClassName
-  onRowClick: Table.OnRowClick
+  onScroll: OnScrollCallback
+  rowGetter: (info: Index) => any
+  rowClassNameWithSelection: ((info: Index) => string)
+  onRowClick: (params: RowMouseEventHandlerParams) => void
 }
 
 type EnhancedProps = Handlers & State & ConnectedProps & RouteProps<any> & Props<any>
@@ -56,13 +57,13 @@ const enhance = compose<EnhancedProps, Props<any>>(
   withQuerySyncedState('scrollTop', 'setScrollTop', 0, parseFloat),
   withQuerySyncedState('selectedIndex', 'setSelectedIndex', -1, parseFloat),
   withHandlers<Handlers, State & ConnectedProps & RouteProps<any> & Props<any>>({
-    onScroll: ({setScrollTop}) => (e: Table.OnScrollProps) => {
-      setScrollTop(e.scrollTop)
+    onScroll: ({setScrollTop}) => ({scrollTop}: {scrollTop: number}) => {
+      setScrollTop(scrollTop)
     },
-    rowGetter: ({items}) => ({index}: Table.RowGetterProps) => {
+    rowGetter: ({items}) => ({index}: Index) => {
       return items[index]
     },
-    rowClassNameWithSelection: ({selectedIndex}) => ({index}: Table.RowClassNameProps) => {
+    rowClassNameWithSelection: ({selectedIndex}) => ({index}: Index) => {
       if (index < 0) {
         return 'headerRow'
       } else if (index === selectedIndex) {
@@ -71,7 +72,7 @@ const enhance = compose<EnhancedProps, Props<any>>(
         return index % 2 === 0 ? 'evenRow' : 'oddRow'
       }
     },
-    onRowClick: ({/*router, toView, items,*/ setSelectedIndex}) => ({index}: Table.OnRowClickProps) => {
+    onRowClick: ({/*router, toView, items,*/ setSelectedIndex}) => ({index}: RowMouseEventHandlerParams) => {
       setSelectedIndex(index)
     }
   })
@@ -90,9 +91,8 @@ export const ListWithDetails = enhance((props) => {
     >
       <div style={{height: '100%'}}>
         <AutoSizer>
-          {(autoSizerProps: AutoSizer.ChildrenProps) => (
+          {(autoSizerProps: Dimensions) => (
             <Table
-              tabIndex={null}
               onScroll={onScroll}
               scrollTop={scrollTop}
               style={{flex: 1}}
@@ -120,19 +120,11 @@ export const ListWithDetails = enhance((props) => {
   )
 })
 
-export const getRowData = ({rowData}: Column.CellDataGetterArgs<any>) => {
-  return rowData
-}
-
-export const getRowDoc = ({rowData}: Column.CellDataGetterArgs<any>) => {
-  return rowData.doc
-}
-
-export const dateCellRenderer = ({cellData}: Column.CellRendererArgs<Date>) => (
+export const dateCellRenderer = ({cellData}: TableCellProps) => (
   cellData && <FormattedDate value={cellData} />
 )
 
-export const currencyCellRenderer = ({cellData}: Column.CellRendererArgs<number>) => (
+export const currencyCellRenderer = ({cellData}: TableCellProps) => (
   cellData && <FormattedNumber
     value={cellData}
     style='currency'

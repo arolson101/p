@@ -1,12 +1,12 @@
 import * as crypto from 'crypto'
+import * as levelup from 'levelup'
 import { KeyDoc, createKeyDoc, decryptMasterKeyDoc } from '../../util/index'
 
 const updown = require('level-updown')
-const levelup = require('levelup') as (hostname: string, options?: levelupOptions) => LevelUp
 
 const keyDocKey = 'local/keyDoc'
 
-const getDoc = <T>(db: LevelUp, key: string) => {
+const getDoc = <T>(db: levelup.LevelUp, key: string) => {
   return new Promise<T | undefined>((resolve, reject) => {
     db.get(key, (error, value: any) => {
       if (error) {
@@ -23,7 +23,7 @@ const getDoc = <T>(db: LevelUp, key: string) => {
   })
 }
 
-const putDoc = (db: LevelUp, key: string, value: any) => {
+const putDoc = (db: levelup.LevelUp, key: string, value: any) => {
   return new Promise<void>((resolve, reject) => {
     db.put(key, JSON.stringify(value), { sync: true }, (error) => {
       if (error) {
@@ -35,7 +35,7 @@ const putDoc = (db: LevelUp, key: string, value: any) => {
   })
 }
 
-const closeDb = (db: LevelUp) => {
+const closeDb = (db: levelup.LevelUp) => {
   return new Promise<void>((resolve, reject) => {
     db.close((error) => {
       if (error) {
@@ -47,7 +47,7 @@ const closeDb = (db: LevelUp) => {
   })
 }
 
-const openLevelDb = async (opts: Options, baseDb: LevelUp, password: string): Promise<any> => {
+const openLevelDb = async (opts: Options, baseDb: levelup.LevelUp, password: string): Promise<any> => {
   try {
     let keyDoc = await getDoc<KeyDoc>(baseDb, keyDocKey)
     if (keyDoc) {

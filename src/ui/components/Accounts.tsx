@@ -36,7 +36,7 @@ interface Handlers {
 
 type EnhancedProps = React.Props<any> & ConnectedProps & State & Handlers
 
-const enhance = compose<EnhancedProps, void>(
+const enhance = compose<EnhancedProps, undefined>(
   setDisplayName('Accounts'),
   onlyUpdateForPropTypes,
   setPropTypes({}),

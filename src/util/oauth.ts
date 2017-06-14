@@ -33,7 +33,7 @@ export const oauthGetAccessToken = async (config: OAuthConfig, options: OAuthOpt
   return new Promise<Token>((resolve, reject) => {
     const channel = `oauth-reply-${oauthChannelIndex++}`
     ipcRenderer.send('oauth-getAccessToken', { config, options, channel })
-    ipcRenderer.once(channel, (event, reply: Reply) => {
+    ipcRenderer.once(channel, (event: string, reply: Reply) => {
       if (reply.error) {
         reject(new Error(reply.error))
       } else {
@@ -48,7 +48,7 @@ export const oauthRefreshToken = async (config: OAuthConfig, refreshToken: strin
   return new Promise<Token>((resolve, reject) => {
     const channel = `oauth-reply-${oauthChannelIndex++}`
     ipcRenderer.send('oauth-refreshToken', { config, refreshToken, channel })
-    ipcRenderer.once(channel, (event, reply: Reply) => {
+    ipcRenderer.once(channel, (event: string, reply: Reply) => {
       if (reply.error) {
         reject(new Error(reply.error))
       } else {

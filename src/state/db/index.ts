@@ -180,7 +180,7 @@ const genLocalId = (name: string): string => {
   const hostname = os.hostname()
   const userInfo = os.userInfo()
   const random = crypto.randomBytes(4).toString('hex')
-  return `${hostname.substr(0,18)}-${userInfo.username.substr(0,18)}-${name.substr(0,18)}-${random}`
+  return `${hostname.substr(0, 18)}-${userInfo.username.substr(0, 18)}-${name.substr(0, 18)}-${random}`
 }
 
 type LoadDbArgs = { info: DbInfo, password: string }

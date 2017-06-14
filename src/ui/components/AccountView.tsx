@@ -3,7 +3,7 @@ import * as React from 'react'
 import { PageHeader } from 'react-bootstrap'
 import { defineMessages, injectIntl } from 'react-intl'
 import { connect } from 'react-redux'
-import { Column } from 'react-virtualized'
+import { Column, ColumnProps, TableCellProps } from 'react-virtualized'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, mapPropsStream } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import * as Rx from 'rxjs/Rx'
@@ -257,7 +257,7 @@ export const AccountView = enhance((props) => {
   )
 })
 
-const nameCellRenderer = ({cellData}: Column.CellRendererArgs<Transaction.View>) => (
+const nameCellRenderer = ({cellData}: TableCellProps) => (
   <div>
     {cellData.doc.name}<br/>
     <small>{cellData.doc.memo}</small>
