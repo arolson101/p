@@ -2,16 +2,16 @@ import * as moment from 'moment'
 import * as R from 'ramda'
 import * as React from 'react'
 import { Grid, Col, Panel, ListGroup, ListGroupItem, PageHeader } from 'react-bootstrap'
-import { injectIntl, FormattedDate, FormattedMessage, defineMessages } from 'react-intl'
+import { FormattedDate, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
+import ui, { ReduxUIProps } from 'redux-ui'
 import { createSelector } from 'reselect'
 import { Bill } from '../../docs/index'
 import { AppState } from '../../state/index'
+import { BillDialog } from './BillDialog'
 import { CurrencyDisplay } from './CurrencyDisplay'
 import { Favico } from './forms/Favico'
-import { RouteProps, IntlProps } from './props'
 import { SettingsMenu } from './SettingsMenu'
 
 const messages = defineMessages({
@@ -44,23 +44,47 @@ interface ConnectedProps {
   groups: BillDisplayGroup[]
 }
 
-type EnhancedProps = ConnectedProps & RouteProps<any> & IntlProps
+interface UIState {
+  creating: boolean
+  editing?: Bill.View
+}
+
+interface Handlers {
+  toggleCreate: () => void
+  toggleEditing: () => void
+}
+
+type UIProps = ReduxUIProps<Partial<UIState>>
+type EnhancedProps = Handlers & UIProps & ConnectedProps
 
 const enhance = compose<EnhancedProps, undefined>(
   setDisplayName('Bills'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
-  injectIntl,
-  withRouter,
   connect<ConnectedProps, {}, {}>(
     (state: AppState): ConnectedProps => ({
       groups: selectBillDisplayGroups(state)
     })
-  )
+  ),
+  ui<UIState, ConnectedProps & ConnectedProps, {}>({
+    state: {
+      creating: false,
+      editing: undefined
+    }
+  }),
+  withHandlers<Handlers, UIProps & ConnectedProps & ConnectedProps>({
+    toggleCreate: ({ ui: { creating }, updateUI }) => () => {
+      updateUI({ creating: !creating })
+    },
+
+    toggleEditing: ({ ui: { editing }, updateUI}) => () => {
+      updateUI({ editing: undefined })
+    }
+  })
 )
 
 export const Bills = enhance((props) => {
-  const { groups, history } = props
+  const { groups, toggleCreate, updateUI, toggleEditing, ui: { creating, editing } } = props
 
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -70,7 +94,7 @@ export const Bills = enhance((props) => {
           items={[
             {
               message: messages.addBill,
-              to: Bill.to.create()
+              onClick: toggleCreate
             }
           ]}
         />
@@ -84,7 +108,7 @@ export const Bills = enhance((props) => {
           <ListGroup fill>
           {group.bills.map(bill => {
             return (
-              <ListGroupItem key={bill.view.doc.name} href={history.createHref({pathname: Bill.to.edit(bill.view.doc)})}>
+              <ListGroupItem key={bill.view.doc.name} onClick={() => updateUI({editing: bill.view})}>
                 <Grid fluid>
                   <Col xs={2}>
                     <FormattedDate value={bill.next} /><br/>
@@ -114,6 +138,8 @@ export const Bills = enhance((props) => {
           </ListGroup>
         </Panel>
       )}
+
+      <BillDialog show={!!creating || !!editing} edit={editing} onHide={editing ? toggleEditing : toggleCreate} />
     </div>
   )
 })

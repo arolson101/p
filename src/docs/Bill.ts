@@ -50,9 +50,7 @@ export namespace Bill {
 
   export namespace routes {
     export const all = 'bills'
-    export const create = 'bill/create'
     export const view = 'bill/:billId'
-    export const edit = 'bill/:billId/edit'
     export const del = 'bill/:billId/delete'
   }
 
@@ -61,16 +59,8 @@ export namespace Bill {
       return '/' + routes.all
     }
 
-    export const create = () => {
-      return '/' + routes.create
-    }
-
     export const view = (bill: Doc): string => {
       return '/' + bill._id
-    }
-
-    export const edit = (bill: Doc): string => {
-      return '/' + bill._id + '/edit'
     }
 
     export const del = (bill: Doc): string => {

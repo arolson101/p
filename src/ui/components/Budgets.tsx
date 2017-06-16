@@ -446,7 +446,8 @@ const CategoryDisplay = ({category}: { category: Category.View }) => (
       {category.bills.map(bill =>
         <Row key={bill.doc._id}>
           <Col xs={4} xsOffset={2}>
-            <Link to={Bill.to.edit(bill.doc)}>
+            {/*<Link to={Bill.to.edit(bill.doc)}>*/}
+            <Link to={''}>
               <Favico value={bill.doc.favicon}/>
               {' '}
               {bill.doc.name}

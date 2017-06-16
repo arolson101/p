@@ -48,8 +48,6 @@ export const App = enhance(props => {
                   <Route exact path={'/' + Transaction.routes.edit} component={Components.TransactionEdit}/>
                   <Route exact path={'/' + Transaction.routes.view} component={Components.TransactionView}/>
                   <Route exact path={'/' + Bill.routes.all} component={Components.Bills}/>
-                  <Route exact path={'/' + Bill.routes.create} component={Components.BillCreate}/>
-                  <Route exact path={'/' + Bill.routes.edit} component={Components.BillEdit}/>
                   <Route exact path={'/' + Budget.routes.all} component={Components.Budgets}/>
                   <Route exact path={'/' + SyncConnection.routes.all} component={Components.Syncs}/>
                 </Switch>

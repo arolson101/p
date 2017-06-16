@@ -66,11 +66,14 @@ const messages = defineMessages({
   }
 })
 
-interface Props {
-  show: boolean
-  onHide: () => void
+interface Params {
   edit?: Account.Doc
   bank: Bank.View
+}
+
+interface Props extends Params {
+  show: boolean
+  onHide: () => void
 }
 
 interface ConnectedProps {
@@ -95,6 +98,8 @@ export interface Values {
   bankid: string
   key: string
 }
+
+const showAccountDialog = (params: Params) => null
 
 const form = 'AccountDialog'
 const { Form, TextField, SelectField, ColorAddon } = typedFields<Values>()

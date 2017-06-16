@@ -7,14 +7,8 @@ import { compose, setDisplayName, withHandlers, mapProps, onlyUpdateForPropTypes
 import ui, { ReduxUIProps } from 'redux-ui'
 import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from '../../state/index'
 import { Bill } from '../../docs/index'
-import { BillForm } from './BillForm'
+import { BillDialog } from './BillDialog'
 
-const messages = defineMessages({
-  page: {
-    id: 'BillDetail.page',
-    defaultMessage: 'Edit Bill'
-  }
-})
 
 interface Props {
   item: Bill.View
@@ -36,7 +30,6 @@ interface Handlers {
   startEdit: () => void
   cancelEdit: () => void
   deleteMe: () => void
-  saveEdit: (doc: Bill.Doc) => void
 }
 
 type EnhancedProps = Props & ReduxUIProps<UIState> & DispatchProps & Handlers
@@ -69,28 +62,20 @@ const enhance = compose<EnhancedProps, Props>(
     cancelEdit: ({updateUI}) => () => {
       updateUI({editing: undefined})
     },
-    saveEdit: ({updateUI, pushChanges}) => async (doc: Bill.Doc) => {
-      await pushChanges({ docs: [doc] })
-      updateUI({editing: undefined})
-    },
     deleteMe: ({item, pushChanges}) => () => {
       pushChanges({docs: [deleteDoc(item.doc)]})
     }
   }),
 )
 
-export const BillDetail = enhance(({ui: { editing }, item, startEdit, saveEdit, cancelEdit, deleteMe}) => {
+export const BillDetail = enhance(({ui: { editing }, item, startEdit, cancelEdit, deleteMe}) => {
   const date = Bill.getDate(item)
-
-  if (editing) {
-    return <BillForm title={messages.page} edit={item} onSave={saveEdit} onCancel={cancelEdit} />
-  } else {
-    return <div>
-      name: {item.doc.name}<br/>
-      group: {item.doc.group}<br/>
-      date: <FormattedDate value={date}/><br/>
-      <Button onClick={startEdit}>edit</Button>
-      <Button onClick={deleteMe}>delete</Button>
-    </div>
-  }
+  return <div>
+    name: {item.doc.name}<br/>
+    group: {item.doc.group}<br/>
+    date: <FormattedDate value={date}/><br/>
+    <Button onClick={startEdit}>edit</Button>
+    <Button onClick={deleteMe}>delete</Button>
+    <BillDialog edit={item} onHide={cancelEdit} show={!!editing}/>
+  </div>
 })
