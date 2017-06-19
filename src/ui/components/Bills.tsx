@@ -1,7 +1,7 @@
 import * as moment from 'moment'
 import * as R from 'ramda'
 import * as React from 'react'
-import { Grid, Col, Panel, ListGroup, ListGroupItem, PageHeader } from 'react-bootstrap'
+import { Button, Grid, Col, Panel, ListGroup, ListGroupItem, PageHeader } from 'react-bootstrap'
 import { FormattedDate, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
@@ -108,13 +108,13 @@ export const Bills = enhance((props) => {
           <ListGroup fill>
           {group.bills.map(bill => {
             return (
-              <ListGroupItem key={bill.view.doc.name} onClick={() => updateUI({editing: bill.view})}>
+              <ListGroupItem key={bill.view.doc.name}>
                 <Grid fluid>
                   <Col xs={2}>
                     <FormattedDate value={bill.next} /><br/>
                     <small><em>{bill.view.rrule.toText()}</em></small>
                   </Col>
-                  <Col xs={5}>
+                  <Col xs={4}>
                     <Favico value={bill.view.doc.favicon}/>
                     {' '}
                     {bill.view.doc.name}<br/>
@@ -130,6 +130,11 @@ export const Bills = enhance((props) => {
                   </Col>
                   <Col xs={2}>
                     <CurrencyDisplay amount={bill.view.doc.amount}/>
+                  </Col>
+                  <Col xs={1}>
+                    <Button bsStyle='link' onClick={() => updateUI({editing: bill.view})}>
+                      <i className='fa fa-edit'/>
+                    </Button>
                   </Col>
                 </Grid>
               </ListGroupItem>
