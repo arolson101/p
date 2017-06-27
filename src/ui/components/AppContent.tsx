@@ -167,7 +167,8 @@ export const AppContent = enhance(props => {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100%'
+        height: '100%',
+        width: '100%'
       }}
     >
       <SplitPane
