@@ -1,4 +1,4 @@
-const autobind = require('autobind-decorator')
+const autobind = require('autobind-decorator').default
 import * as moment from 'moment'
 import * as PropTypes from 'prop-types'
 import * as React from 'react'

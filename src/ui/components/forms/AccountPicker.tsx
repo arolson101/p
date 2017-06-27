@@ -42,7 +42,7 @@ interface AccountSelectOption extends SelectOption {
 const accountOptions = createSelector(
   (state: AppState) => state.db.current && state.db.current.view.banks,
   (banks: Bank.View[] = []): AccountSelectOption[] => {
-    const accounts = R.flatten(banks.map(bank =>
+    const accounts = R.flatten<AccountSelectOption>(banks.map(bank =>
       bank.accounts.length ? [
         {
           value: bank.doc._id,

@@ -76,7 +76,7 @@ declare namespace PouchDB {
     on<Content>(event: 'complete', handler: (info: CompleteInfo<Content>) => any): ChangeEmitter
     on(event: 'error', handler: (err: Error) => any): ChangeEmitter
   }
-  interface Database<Content extends Core.Encodable> {
+  interface Database<Content extends {} = {}> {
     changes(options: ChangesOpts): ChangeEmitter
   }
 }

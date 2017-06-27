@@ -1,7 +1,7 @@
 /// <reference types="pouchdb-core" />
 
 declare namespace PouchDB {
-    interface Database<Content extends PouchDB.Core.Encodable> {
+    interface Database<Content extends {} = {}> {
       crypto(password: string): any;
   }
 }

@@ -162,7 +162,7 @@ const makeBillDisplayGroup = (startDate: Date) => R.pipe(
   R.mapObjIndexed((bills: BillDisplay[], name: string): BillDisplayGroup => ({
     name,
     order: moment(name, 'MMMM YYYY').valueOf(),
-    bills: R.sortBy(bill => bill.next, bills)
+    bills: R.sortBy(bill => bill.next.valueOf(), bills)
   })),
   R.values,
   R.sortBy((group: BillDisplayGroup) => group.order.toString())

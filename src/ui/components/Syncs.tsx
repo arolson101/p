@@ -1,4 +1,3 @@
-const autobind = require('autobind-decorator')
 import * as React from 'react'
 import { Panel, Button, PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'

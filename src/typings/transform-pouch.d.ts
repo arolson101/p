@@ -5,7 +5,7 @@ declare namespace PouchDB {
     outgoing?: (doc: PouchDB.Core.Document<any>) => PouchDB.Core.Document<any>
   }
 
-  interface Database<Content extends Core.Encodable> {
+  interface Database<Content extends {} = {}> {
     transform(options: TransformOpts): void
   }
 }

@@ -74,7 +74,7 @@ const optionLabel = (budget: Budget.Doc, category: string): string => {
 const categoryOptions = createSelector(
   (state: AppState) => state.db.current!.view.budgets,
   (budgets: Budget.View[]): SelectOption[] => {
-    const options = R.flatten(budgets.map(budget =>
+    const options = R.flatten<SelectOption>(budgets.map(budget =>
       budget.categories.length ? [
         ...budget.categories.map(category => ({
           value: category.doc._id,

@@ -1,4 +1,3 @@
-const autobind = require('autobind-decorator')
 import * as moment from 'moment'
 import * as R from 'ramda'
 import * as React from 'react'

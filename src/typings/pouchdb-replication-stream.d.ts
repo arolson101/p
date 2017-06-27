@@ -7,7 +7,7 @@ declare namespace PouchDB {
   type DumpReplicateKeys = 'batch_size' | 'batches_limit' | 'filter' | 'doc_ids' | 'query_params' | 'since' | 'view'
   type DumpOptions = Pick<Replication.ReplicateOptions, DumpReplicateKeys>
 
-  interface Database<Content extends PouchDB.Core.Encodable> {
+  interface Database<Content extends {} = {}> {
     dump(stream: NodeJS.WritableStream, opts?: DumpOptions): Promise<any>
     load(stream: NodeJS.ReadableStream): Promise<any>
   }
