@@ -1,11 +1,12 @@
 import * as React from 'react'
 import { storiesOf } from '@storybook/react'
+import { BankDialog } from '../src/ui/dialogs/index'
 
 const action = (str: string) => () => console.log(str)
 
 storiesOf('Button', module)
-  .add('with text', () => (
-    <button onClick={action('clicked')}>Hello Button</button>
+  .add('AccountDialog', () => (
+    <BankDialog show={true} onHide={() => null} />
   ))
   .add('with some emoji', () => (
     <button onClick={action('clicked')}>😀 😎 👍 💯</button>

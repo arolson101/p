@@ -7,8 +7,11 @@ module.exports = function (config, env) {
     config.module.rules.push({
         test: /\.tsx?$/,
         exclude: /node_modules/,
-        include: [/stories/, /components/],
-        loader: 'ts-loader'
+        include: [/stories/, /components/, /src/],
+        use: [
+            'babel-loader',
+            'awesome-typescript-loader'
+        ]
     })
 
     config.module.rules.push({
