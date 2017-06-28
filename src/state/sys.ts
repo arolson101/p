@@ -28,7 +28,7 @@ type Actions =
 const reducer = (state: SysState = initialState, action: Actions): SysState => {
   switch (action.type) {
     case SYS_SET_THEME:
-      return { ...state, list: action.theme }
+      return { ...state, theme: action.theme }
 
     default:
       return state

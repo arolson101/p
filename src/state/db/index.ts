@@ -341,7 +341,7 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
       return { ...state, current: action.current }
 
     case DB_CHANGES:
-      return { ...state, current: { ...state.current, view: action.view, cache: action.cache } }
+      return { ...state, current: { ...state.current!, view: action.view, cache: action.cache } }
 
     default:
       return state

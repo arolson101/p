@@ -223,7 +223,7 @@ export const BankDialog = enhance((props) => {
               autofocus
               name='fi'
               label={messages.fi}
-              options={filist}
+              options={filist as any}
               labelKey='name'
               valueKey='id'
               onChange={onChangeFI as any}

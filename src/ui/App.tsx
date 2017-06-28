@@ -3,6 +3,7 @@ import { Route, Switch, Redirect, withRouter, HashRouter as Router } from 'react
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
 import { compose } from 'recompose'
+import * as Redux from 'redux'
 import { DbInfo, Bank, Account, Transaction, Bill, Budget, SyncConnection } from '../docs/index'
 import { AppState, CurrentDb } from '../state/index'
 import * as Components from './components/index'

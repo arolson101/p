@@ -13,6 +13,7 @@ export interface Bill {
   account?: Account.DocId
   category: Category.DocId
   rruleString: string
+  showAdvanced?: boolean
 }
 
 export namespace Bill {
