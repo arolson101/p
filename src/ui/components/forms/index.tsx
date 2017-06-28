@@ -294,6 +294,13 @@ const SelectField = injectIntl(<V extends RF.DataShape>(props: SelectFieldProps<
   return <RF.Field {...props} component={renderSelect} placeholder={placeholder} parse={parse}/>
 }) as any as <V extends RF.DataShape>(props: SelectFieldProps<V>) => JSX.Element
 
+const selectFieldParse = (value?: SelectOption): string => {
+  if (!value) {
+    return ''
+  }
+  return value.value
+}
+
 // account --------------------------------------------------------------------
 type AccountFieldProps<V> = FormField<V>
 const renderAccount = (props: AccountFieldProps<any> & RF.WrappedFieldProps<any>) => {
@@ -308,7 +315,7 @@ const renderAccount = (props: AccountFieldProps<any> & RF.WrappedFieldProps<any>
 }
 
 const AccountField = <V extends RF.DataShape>(props: AccountFieldProps<V>) => {
-  return <RF.Field component={renderAccount} {...props as any}/>
+  return <RF.Field component={renderAccount} {...props as any} parse={selectFieldParse}/>
 }
 
 // budget ---------------------------------------------------------------------
@@ -325,7 +332,7 @@ const renderBudget = (props: BudgetFieldProps<any> & RF.WrappedFieldProps<any>) 
 }
 
 const BudgetField = <V extends RF.DataShape>(props: BudgetFieldProps<V>) => {
-  return <RF.Field component={renderBudget} {...props as any}/>
+  return <RF.Field component={renderBudget} {...props as any} parse={selectFieldParse}/>
 }
 
 // date -----------------------------------------------------------------------
