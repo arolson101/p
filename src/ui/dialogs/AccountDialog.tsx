@@ -7,12 +7,10 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, getConte
 import { reduxForm, formValueSelector, FormProps } from 'redux-form'
 import { Bank, Account } from '../../docs/index'
 import { Validator } from '../../util/index'
-import { AppState, pushChanges, mapDispatchToProps } from '../../state/index'
-import { AppContentContext, AppContentContextTypes } from './AppContent'
-import { typedFields, forms, SubmitHandler } from './forms/index'
-import { IntlProps } from './props'
-
-export { SubmitHandler }
+import { AppState, pushChanges, mapDispatchToProps, setDialog } from '../../state/index'
+import { DialogContainer } from '../dialogs/DialogContainer'
+import { typedFields, forms } from '../components/forms/index'
+import { IntlProps } from '../components/props'
 
 const messages = defineMessages({
   createTitle: {
@@ -88,9 +86,15 @@ interface ConnectedFormProps {
   type?: Account.Type
 }
 
-type EnhancedProps = AppContentContext & FormProps<Values, any, any> & ConnectedFormProps & DispatchProps & Props & IntlProps
+type EnhancedProps = DialogContainer.Context & FormProps<Values, any, any> & ConnectedFormProps & DispatchProps & Props & IntlProps
 
-export interface Values {
+export const AccountDialogStatic = {
+  dialog: 'AccountDialog'
+}
+
+export const showAccountDialog = (params: Params) => setDialog(AccountDialogStatic.dialog, params)
+
+interface Values {
   color: string
   name: string
   number: string
@@ -98,8 +102,6 @@ export interface Values {
   bankid: string
   key: string
 }
-
-const showAccountDialog = (params: Params) => null
 
 const form = 'AccountDialog'
 const { Form, TextField, SelectField, ColorAddon } = typedFields<Values>()
@@ -114,8 +116,8 @@ const enhance = compose<EnhancedProps, Props>(
     bank: PropTypes.object.isRequired,
     onHide: PropTypes.func.isRequired
   }),
-  getContext<AppContentContext, Props>(
-    AppContentContextTypes
+  getContext<DialogContainer.Context, Props>(
+    DialogContainer.ContextTypes
   ),
   injectIntl,
   connect<ConnectedProps, DispatchProps, Props>(
@@ -181,12 +183,12 @@ const enhance = compose<EnhancedProps, Props>(
 )
 
 export const AccountDialog = enhance((props) => {
-  const { edit, type, handleSubmit, onHide, show, container, reset } = props
+  const { edit, type, handleSubmit, onHide, show, dialogContainer, reset } = props
   const { formatMessage } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle
   return (
     <Modal
-      container={container}
+      container={dialogContainer}
       show={show}
       onHide={onHide}
       onExited={reset}

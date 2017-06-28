@@ -7,12 +7,12 @@ import { compose, setDisplayName, withPropsOnChange, withHandlers, onlyUpdateFor
 import { reduxForm, FormProps, formValueSelector } from 'redux-form'
 import { getFavicon } from '../../actions/index'
 import { Bank } from '../../docs/index'
-import { AppState, FI, emptyfi, pushChanges, mapDispatchToProps } from '../../state/index'
+import { AppState, FI, emptyfi, pushChanges, mapDispatchToProps, setDialog } from '../../state/index'
 import { formatAddress } from '../../util/index'
 import { Validator } from '../../util/index'
-import { AppContentContext, AppContentContextTypes } from './AppContent'
-import { typedFields, forms, SubmitHandler } from './forms/index'
-import { IconPicker } from './forms/IconPicker'
+import { DialogContainer } from '../dialogs/DialogContainer'
+import { typedFields, forms, SubmitHandler } from '../components/forms/index'
+import { IconPicker } from '../components/forms/IconPicker'
 
 const messages = defineMessages({
   createTitle: {
@@ -77,10 +77,13 @@ const messages = defineMessages({
   }
 })
 
-interface Props {
+interface Params {
+  edit?: Bank.Doc
+}
+
+interface Props extends Params {
   show: boolean
   onHide: () => void
-  edit?: Bank.Doc
 }
 
 interface ConnectedProps {
@@ -96,11 +99,15 @@ interface Handlers {
   onChangeFI: (event: any, index: number) => void
 }
 
-type EnhancedProps = AppContentContext & Handlers & FormProps<Values, any, any> & ConnectedProps & Props & InjectedIntlProps
+type EnhancedProps = DialogContainer.Context & Handlers & FormProps<Values, any, any> & ConnectedProps & Props & InjectedIntlProps
 
-export type SubmitFunction<V> = SubmitHandler<V>
+export const BankDialogStatic = {
+  dialog: 'BankDialog'
+}
 
-export interface Values {
+export const showBankDialog = (params: Params) => setDialog(BankDialogStatic.dialog, params)
+
+interface Values {
   fi: number
 
   name: string
@@ -130,8 +137,8 @@ const enhance = compose<EnhancedProps, Props>(
     show: PropTypes.bool.isRequired,
     onHide: PropTypes.func.isRequired
   }),
-  getContext<AppContentContext, Props>(
-    AppContentContextTypes
+  getContext<DialogContainer.Context, Props>(
+    DialogContainer.ContextTypes
   ),
   connect<ConnectedProps, {}, Props>(
     (state: AppState): ConnectedProps => ({
@@ -194,12 +201,12 @@ const enhance = compose<EnhancedProps, Props>(
 
 export const BankDialog = enhance((props) => {
   const { edit, handleSubmit, onChangeFI, filist, reset } = props
-  const { show, onHide, container } = props
+  const { show, onHide, dialogContainer } = props
   const title = edit ? messages.editTitle : messages.createTitle
 
   return (
     <Modal
-      container={container}
+      container={dialogContainer}
       show={show}
       onHide={onHide}
       onExited={reset}

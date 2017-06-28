@@ -12,8 +12,8 @@ import { AppState, mapDispatchToProps } from '../../state/index'
 import { RouteProps, IntlProps } from './props'
 import { selectBank } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
-import { AccountDialog } from './AccountDialog'
-import { BankDialog } from './BankDialog'
+import { showAccountDialog } from '../dialogs/AccountDialog'
+import { showBankDialog } from '../dialogs/index'
 
 const messages = defineMessages({
   noAccounts: {
@@ -68,13 +68,13 @@ interface ConnectedProps {
 
 interface DispatchProps {
   getAccounts: getAccounts.Fcn
+  showAccountDialog: typeof showAccountDialog
+  showBankDialog: typeof showBankDialog
 }
 
 interface UIState {
-  editing?: boolean
   showAll?: boolean
   showModal?: boolean
-  accountCreating?: boolean
   working?: boolean
   error?: string
   message?: string
@@ -85,7 +85,7 @@ interface Handlers {
   toggleShowAll: () => void
   getAccountList: () => void
   hideModal: () => void
-  toggleAccountCreate: () => void
+  createAccount: () => void
 }
 
 type EnhancedProps = Handlers
@@ -105,22 +105,20 @@ const enhance = compose<EnhancedProps, undefined>(
     (state: AppState, props) => ({
       bank: selectBank(state, props)
     }),
-    mapDispatchToProps<DispatchProps>({ getAccounts })
+    mapDispatchToProps<DispatchProps>({ getAccounts, showBankDialog, showAccountDialog })
   ),
   ui<UIState, ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>, {}>({
     state: {
-      editing: false,
       showAll: false,
       showModal: false,
-      accountCreating: false,
       working: false,
       message: undefined,
       error: undefined
     } as UIState
   }),
   withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>>({
-    toggleEdit: ({ ui: { editing }, updateUI }) => () => {
-      updateUI({editing: !editing})
+    toggleEdit: ({ bank: { doc: edit }, showBankDialog }) => () => {
+      showBankDialog({edit})
     },
 
     toggleShowAll: ({ ui: { showAll }, updateUI }) => () => {
@@ -148,15 +146,15 @@ const enhance = compose<EnhancedProps, undefined>(
       }
     },
 
-    toggleAccountCreate: ({ ui: { accountCreating }, updateUI }) => () => {
-      updateUI({accountCreating: !accountCreating})
+    createAccount: ({ bank, showAccountDialog }) => () => {
+      showAccountDialog({bank})
     }
   })
 )
 
 export const BankView = enhance((props) => {
-  const { bank, history, toggleShowAll, hideModal, getAccountList, toggleEdit, toggleAccountCreate } = props
-  const { ui: { editing, working, showModal, message, error, showAll, accountCreating } } = props
+  const { bank, history, toggleShowAll, hideModal, getAccountList, toggleEdit, createAccount } = props
+  const { ui: { working, showModal, message, error, showAll } } = props
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
 
@@ -177,7 +175,7 @@ export const BankView = enhance((props) => {
             },
             {
               message: messages.addAccount,
-              onClick: toggleAccountCreate
+              onClick: createAccount
             },
             {
               message: messages.getAccounts,
@@ -234,9 +232,6 @@ export const BankView = enhance((props) => {
       ) : (
         <FormattedMessage {...messages.noAccounts}/>
       )}
-
-      <BankDialog show={!!editing} edit={bank.doc} onHide={toggleEdit}/>
-      <AccountDialog bank={bank} show={!!accountCreating} onHide={toggleAccountCreate}/>
 
       <Modal show={showModal} onHide={hideModal} backdrop='static'>
         <Modal.Header>

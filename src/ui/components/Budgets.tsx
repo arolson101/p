@@ -12,6 +12,7 @@ import { deleteBudget } from '../../actions/index'
 import { Bill, Budget, Category } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { Validator } from '../../util/index'
+import { showBillDialog } from '../dialogs/index'
 import { CurrencyDisplay } from './CurrencyDisplay'
 import { SettingsMenu } from './SettingsMenu'
 import { typedFields, forms } from './forms/index'
@@ -65,6 +66,8 @@ const messages = defineMessages({
   },
 })
 
+type showBillDialogType = typeof showBillDialog
+
 interface ConnectedProps {
   lang: string
   budgets: Budget.View[]
@@ -73,6 +76,7 @@ interface ConnectedProps {
 interface DispatchProps {
   pushChanges: pushChanges.Fcn
   deleteBudget: deleteBudget.Fcn
+  showBillDialog: showBillDialogType
 }
 
 interface StateProps {
@@ -111,7 +115,7 @@ const enhance = compose<EnhancedProps, undefined>(
       lang: state.i18n.lang,
       budgets: R.sort(Budget.compare, state.db.current!.view.budgets)
     }),
-    mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget })
+    mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget, showBillDialog })
   ),
   withState('editing', 'setEditing', false),
   reduxForm<Values, StateProps & ConnectedProps & DispatchProps & IntlProps>({
@@ -226,7 +230,7 @@ const enhance = compose<EnhancedProps, undefined>(
 )
 
 export const Budgets = enhance(props => {
-  const { budgets, handleSubmit, editing, toggleEdit } = props
+  const { budgets, handleSubmit, editing, toggleEdit, showBillDialog } = props
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -256,7 +260,7 @@ export const Budgets = enhance(props => {
         }
 
         {!editing && budgets.map(budget =>
-          <BudgetDisplay key={budget.doc._id} budget={budget}/>
+          <BudgetDisplay key={budget.doc._id} budget={budget} showBillDialog={showBillDialog}/>
         )}
       </div>
     </Form>
@@ -402,7 +406,7 @@ const categoryTotal = (category: Category.View): number => {
   return category.bills.reduce((val, bill) => val + bill.doc.amount, category.doc.amount)
 }
 
-const BudgetDisplay = ({budget}: { budget: Budget.View }) => (
+const BudgetDisplay = ({budget, showBillDialog}: { budget: Budget.View, showBillDialog: showBillDialogType }) => (
   <Panel header={
     <h1>
       {budget.doc.name}
@@ -418,13 +422,13 @@ const BudgetDisplay = ({budget}: { budget: Budget.View }) => (
         </ListGroupItem>
       }
       {budget.categories.map((category, index) =>
-        <CategoryDisplay key={category.doc._id} category={category}/>
+        <CategoryDisplay key={category.doc._id} category={category} showBillDialog={showBillDialog}/>
       )}
     </ListGroup>
   </Panel>
 )
 
-const CategoryDisplay = ({category}: { category: Category.View }) => (
+const CategoryDisplay = ({category, showBillDialog}: { category: Category.View, showBillDialog: showBillDialogType }) => (
   <ListGroupItem>
     <Grid fluid>
       <Row>
@@ -446,7 +450,10 @@ const CategoryDisplay = ({category}: { category: Category.View }) => (
         <Row key={bill.doc._id}>
           <Col xs={4} xsOffset={2}>
             {/*<Link to={Bill.to.edit(bill.doc)}>*/}
-            <Link to={''}>
+            <Link to={''} onClick={(e) => {
+              e.preventDefault()
+              showBillDialog({edit: bill})
+            }}>
               <Favico value={bill.doc.favicon}/>
               {' '}
               {bill.doc.name}

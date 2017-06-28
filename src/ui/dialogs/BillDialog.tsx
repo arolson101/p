@@ -11,18 +11,15 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange, getContext } from 'recompose'
 import { Dispatch } from 'redux'
-import { reduxForm, formValueSelector, FormProps, SubmitHandler } from 'redux-form'
+import { reduxForm, formValueSelector, FormProps } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'
 import * as RRule from 'rrule-alt'
 import { Account, Budget, Bill } from '../../docs/index'
-import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
+import { AppState, mapDispatchToProps, pushChanges, setDialog } from '../../state/index'
 import { Validator } from '../../util/index'
-import { AppContentContext, AppContentContextTypes } from './AppContent'
-import { typedFields, forms, SelectOption } from './forms/index'
-import { IconPicker } from './forms/IconPicker'
-import { IntlProps } from './props'
-
-export { SubmitHandler }
+import { DialogContainer } from '../dialogs/DialogContainer'
+import { typedFields, forms, SelectOption } from '../components/forms/index'
+import { IntlProps } from '../components/props'
 
 const messages = defineMessages({
   editTitle: {
@@ -159,10 +156,13 @@ const messages = defineMessages({
   },
 })
 
-interface Props {
+interface Params {
+  edit?: Bill.View
+}
+
+interface Props extends Params {
   show: boolean
   onHide: () => void
-  edit?: Bill.View
 }
 
 interface StateProps {
@@ -205,7 +205,7 @@ type EnhancedProps = Handlers
   & ConnectedProps
   & IntlProps
   & Props
-  & AppContentContext
+  & DialogContainer.Context
 
 type Frequency = 'days' | 'weeks' | 'months' | 'years'
 type EndType = 'endDate' | 'endCount'
@@ -235,6 +235,12 @@ interface Values extends RRuleValues {
 
 type FormValues = FormProps<Values, {}, {}>
 
+export const BillDialogStatic = {
+  dialog: 'BillDialog'
+}
+
+export const showBillDialog = (params: Params) => setDialog(BillDialogStatic.dialog, params)
+
 const form = 'BillDialog'
 const valueSelector = formValueSelector(form)
 
@@ -247,8 +253,8 @@ const enhance = compose<EnhancedProps, Props>(
     onHide: PropTypes.func.isRequired
   }),
   injectIntl,
-  getContext<AppContentContext, Props>(
-    AppContentContextTypes
+  getContext<DialogContainer.Context, Props>(
+    DialogContainer.ContextTypes
   ),
   withPropsOnChange<any, IntlProps & Props>(
     ['edit', 'intl'],
@@ -392,7 +398,7 @@ const { Form, TextField, UrlField, SelectField, DateField, CollapseField,
 
 export const BillDialog = enhance((props) => {
   const { edit, ui: { groups }, monthOptions, weekdayOptions, handleSubmit,
-    frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, container, show, onHide, reset } = props
+    frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, dialogContainer, show, onHide, reset } = props
   const { formatMessage } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle
 
@@ -403,7 +409,7 @@ export const BillDialog = enhance((props) => {
 
   return (
     <Modal
-      container={container}
+      container={dialogContainer}
       show={show}
       onHide={onHide}
       onExited={reset}

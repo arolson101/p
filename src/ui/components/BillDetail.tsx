@@ -7,8 +7,7 @@ import { compose, setDisplayName, withHandlers, mapProps, onlyUpdateForPropTypes
 import ui, { ReduxUIProps } from 'redux-ui'
 import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from '../../state/index'
 import { Bill } from '../../docs/index'
-import { BillDialog } from './BillDialog'
-
+import { showBillDialog } from '../dialogs/index'
 
 interface Props {
   item: Bill.View
@@ -16,23 +15,19 @@ interface Props {
 
 interface DispatchProps {
   pushChanges: pushChanges.Fcn
+  showBillDialog: typeof showBillDialog
 }
 
 interface MappedProps {
   date: Date
 }
 
-interface UIState {
-  editing?: Bill.DocId
-}
-
 interface Handlers {
   startEdit: () => void
-  cancelEdit: () => void
   deleteMe: () => void
 }
 
-type EnhancedProps = Props & ReduxUIProps<UIState> & DispatchProps & Handlers
+type EnhancedProps = Props & DispatchProps & Handlers
 
 const enhance = compose<EnhancedProps, Props>(
   setDisplayName('BillDetail'),
@@ -42,25 +37,15 @@ const enhance = compose<EnhancedProps, Props>(
   }),
   connect<{}, DispatchProps, Props>(
     (state: AppState) => ({}),
-    mapDispatchToProps<DispatchProps>({ pushChanges })
+    mapDispatchToProps<DispatchProps>({ pushChanges, showBillDialog })
   ),
   mapProps<MappedProps, DispatchProps & Props>(props => ({
     ...props,
     date: Bill.getDate(props.item)
   })),
-  ui<UIState, Props, {}>({
-    key: 'BillDetail',
-    persist: true,
-    state: {
-      editing: undefined
-    } as UIState
-  }),
-  withHandlers<Handlers, ReduxUIProps<UIState> & MappedProps & DispatchProps & Props>({
-    startEdit: ({item, updateUI}) => () => {
-      updateUI({editing: item.doc._id})
-    },
-    cancelEdit: ({updateUI}) => () => {
-      updateUI({editing: undefined})
+  withHandlers<Handlers, MappedProps & DispatchProps & Props>({
+    startEdit: ({ item, showBillDialog }) => () => {
+      showBillDialog({ edit: item })
     },
     deleteMe: ({item, pushChanges}) => () => {
       pushChanges({docs: [deleteDoc(item.doc)]})
@@ -68,7 +53,7 @@ const enhance = compose<EnhancedProps, Props>(
   }),
 )
 
-export const BillDetail = enhance(({ui: { editing }, item, startEdit, cancelEdit, deleteMe}) => {
+export const BillDetail = enhance(({item, startEdit, deleteMe}) => {
   const date = Bill.getDate(item)
   return <div>
     name: {item.doc.name}<br/>
@@ -76,6 +61,5 @@ export const BillDetail = enhance(({ui: { editing }, item, startEdit, cancelEdit
     date: <FormattedDate value={date}/><br/>
     <Button onClick={startEdit}>edit</Button>
     <Button onClick={deleteMe}>delete</Button>
-    <BillDialog edit={item} onHide={cancelEdit} show={!!editing}/>
   </div>
 })

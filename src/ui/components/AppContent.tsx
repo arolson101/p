@@ -8,6 +8,7 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withStat
 import ui, { ReduxUIProps } from 'redux-ui'
 import { Bank, Account, Budget, Bill, SyncConnection } from '../../docs/index'
 import { AppState } from '../../state/index'
+import { DialogContainer, DialogDisplay } from '../dialogs/index'
 import * as Mac from '../macOS/index'
 import * as Win from '../windows/index'
 import { RouteProps } from './props'
@@ -78,25 +79,12 @@ interface UIState {
   sidebarWidth: number
 }
 
-interface StateProps {
-  container: any
-  setContainer: (container: any) => void
-}
-
 interface Handlers {
   onSizeChange: (sidebarWidth: number) => void
   onNavClick: (item: NavItem) => void
 }
 
-type EnhancedProps = Handlers & StateProps & ConnectedProps & RouteProps<any> & ReduxUIProps<UIState>
-
-export interface AppContentContext {
-  container: any
-}
-
-export const AppContentContextTypes: PropTypes.ValidationMap<AppContentContext> = {
-  container: PropTypes.object
-}
+type EnhancedProps = Handlers & ConnectedProps & RouteProps<any> & ReduxUIProps<UIState>
 
 const enhance = compose<EnhancedProps, {}>(
   setDisplayName('AppContent'),
@@ -118,12 +106,7 @@ const enhance = compose<EnhancedProps, {}>(
       sidebarWidth: 250
     } as UIState
   }),
-  withState('container', 'setContainer', undefined),
-  withContext<AppContentContext, StateProps & ReduxUIProps<UIState> & ConnectedProps & RouteProps<any>>(
-    AppContentContextTypes,
-    ({container}) => ({container})
-  ),
-  withHandlers<Handlers, StateProps & ReduxUIProps<UIState> & ConnectedProps & RouteProps<any>>({
+  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & RouteProps<any>>({
     onSizeChange: ({ updateUI }) => (sidebarWidth: number) => {
       updateUI({sidebarWidth} as UIState)
     },
@@ -147,7 +130,7 @@ const makeAccountList = R.pipe(
 )
 
 export const AppContent = enhance(props => {
-  const { banks, ThemeNav, children, setContainer, onSizeChange, onNavClick, location: { pathname }, ui: { sidebarWidth } } = props
+  const { banks, ThemeNav, children, onSizeChange, onNavClick, location: { pathname }, ui: { sidebarWidth } } = props
 
   const accountGroup: NavGroup = { title: 'accounts', items: makeAccountList(banks) }
   const groups = [appGroup, accountGroup]
@@ -161,16 +144,8 @@ export const AppContent = enhance(props => {
   })
 
   return (
-    <div
-      className='modal-container'
-      ref={setContainer}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        width: '100%'
-      }}
-    >
+    <DialogContainer.Component>
+      <DialogDisplay/>
       <SplitPane
         split='vertical'
         minSize={100}
@@ -190,6 +165,6 @@ export const AppContent = enhance(props => {
           {children}
         </div>
     </SplitPane>
-  </div>
+  </DialogContainer.Component>
   )
 })

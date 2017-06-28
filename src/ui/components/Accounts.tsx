@@ -5,10 +5,10 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers } from 'recompose'
 import { Bank, Account } from '../../docs/index'
-import { AppState } from '../../state/index'
+import { AppState, mapDispatchToProps } from '../../state/index'
 import { Favico } from './forms/Favico'
 import { selectBanks } from './selectors'
-import { BankDialog } from './BankDialog'
+import { showBankDialog } from '../dialogs/index'
 
 const messages = defineMessages({
   page: {
@@ -25,16 +25,15 @@ interface ConnectedProps {
   banks: Bank.View[]
 }
 
-interface State {
-  showCreate: boolean
-  setShowCreate: (showCreate: boolean) => void
+interface DispatchProps {
+  showBankDialog: typeof showBankDialog
 }
 
 interface Handlers {
-  toggleCreate: () => void
+  createBank: () => void
 }
 
-type EnhancedProps = React.Props<any> & ConnectedProps & State & Handlers
+type EnhancedProps = React.Props<any> & ConnectedProps & Handlers
 
 const enhance = compose<EnhancedProps, undefined>(
   setDisplayName('Accounts'),
@@ -43,18 +42,18 @@ const enhance = compose<EnhancedProps, undefined>(
   connect<ConnectedProps, {}, {}>(
     (state: AppState): ConnectedProps => ({
       banks: selectBanks(state)
-    })
+    }),
+    mapDispatchToProps<DispatchProps>({ showBankDialog })
   ),
-  withState('showCreate', 'setShowCreate', false),
   withHandlers({
-    toggleCreate: ({setShowCreate, showCreate}) => () => {
-      setShowCreate(!showCreate)
+    createBank: ({ showBankDialog }) => () => {
+      showBankDialog({})
     }
   })
 )
 
 export const Accounts = enhance(props => {
-  const { banks, toggleCreate, showCreate } = props
+  const { banks, createBank } = props
 
   return (
     <div>
@@ -79,8 +78,7 @@ export const Accounts = enhance(props => {
           </li>
         )}
       </ul>
-      <Button onClick={toggleCreate}>add institution</Button>
-      <BankDialog show={showCreate} onHide={toggleCreate}/>
+      <Button onClick={createBank}>add institution</Button>
       {/*<Link to={Bank.to.create()}>add institution</Link><br/>*/}
     </div>
   )

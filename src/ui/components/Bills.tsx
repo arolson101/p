@@ -8,8 +8,8 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHand
 import ui, { ReduxUIProps } from 'redux-ui'
 import { createSelector } from 'reselect'
 import { Bill } from '../../docs/index'
-import { AppState } from '../../state/index'
-import { BillDialog } from './BillDialog'
+import { AppState, mapDispatchToProps } from '../../state/index'
+import { showBillDialog } from '../dialogs/index'
 import { CurrencyDisplay } from './CurrencyDisplay'
 import { Favico } from './forms/Favico'
 import { SettingsMenu } from './SettingsMenu'
@@ -44,47 +44,35 @@ interface ConnectedProps {
   groups: BillDisplayGroup[]
 }
 
-interface UIState {
-  creating: boolean
-  editing?: Bill.View
+interface DispatchProps {
+  showBillDialog: typeof showBillDialog
 }
 
 interface Handlers {
-  toggleCreate: () => void
-  toggleEditing: () => void
+  createBill: () => void
 }
 
-type UIProps = ReduxUIProps<Partial<UIState>>
-type EnhancedProps = Handlers & UIProps & ConnectedProps
+type EnhancedProps = Handlers & ConnectedProps & DispatchProps
 
 const enhance = compose<EnhancedProps, undefined>(
   setDisplayName('Bills'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
-  connect<ConnectedProps, {}, {}>(
+  connect<ConnectedProps, DispatchProps, {}>(
     (state: AppState): ConnectedProps => ({
       groups: selectBillDisplayGroups(state)
-    })
+    }),
+    mapDispatchToProps<DispatchProps>({ showBillDialog })
   ),
-  ui<UIState, ConnectedProps & ConnectedProps, {}>({
-    state: {
-      creating: false,
-      editing: undefined
-    }
-  }),
-  withHandlers<Handlers, UIProps & ConnectedProps & ConnectedProps>({
-    toggleCreate: ({ ui: { creating }, updateUI }) => () => {
-      updateUI({ creating: !creating })
+  withHandlers<Handlers, ConnectedProps & ConnectedProps & DispatchProps>({
+    createBill: ({ showBillDialog }) => () => {
+      showBillDialog({})
     },
-
-    toggleEditing: ({ ui: { editing }, updateUI}) => () => {
-      updateUI({ editing: undefined })
-    }
   })
 )
 
 export const Bills = enhance((props) => {
-  const { groups, toggleCreate, updateUI, toggleEditing, ui: { creating, editing } } = props
+  const { groups, createBill, showBillDialog } = props
 
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -94,7 +82,7 @@ export const Bills = enhance((props) => {
           items={[
             {
               message: messages.addBill,
-              onClick: toggleCreate
+              onClick: createBill
             }
           ]}
         />
@@ -132,7 +120,7 @@ export const Bills = enhance((props) => {
                     <CurrencyDisplay amount={bill.view.doc.amount}/>
                   </Col>
                   <Col xs={1}>
-                    <Button bsStyle='link' onClick={() => updateUI({editing: bill.view})}>
+                    <Button bsStyle='link' onClick={() => showBillDialog({edit: bill.view})}>
                       <i className='fa fa-edit'/>
                     </Button>
                   </Col>
@@ -143,8 +131,6 @@ export const Bills = enhance((props) => {
           </ListGroup>
         </Panel>
       )}
-
-      <BillDialog show={!!creating || !!editing} edit={editing} onHide={editing ? toggleEditing : toggleCreate} />
     </div>
   )
 })
