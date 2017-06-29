@@ -2,7 +2,7 @@ import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import * as R from 'ramda'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router'
+import { withRouter, RouteComponentProps } from 'react-router'
 import * as SplitPane from 'react-split-pane'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers, withContext } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
@@ -11,7 +11,6 @@ import { AppState } from '../../state/index'
 import { DialogContainer, DialogDisplay } from '../dialogs/index'
 import * as Mac from '../macOS/index'
 import * as Win from '../windows/index'
-import { RouteProps } from './props'
 
 import './AppContent.css'
 
@@ -70,6 +69,8 @@ const appGroup: NavGroup = {
   ]
 }
 
+type RouteProps = RouteComponentProps<any>
+
 interface ConnectedProps {
   ThemeNav: React.StatelessComponent<NavProps>
   banks: Bank.View[]
@@ -84,7 +85,7 @@ interface Handlers {
   onNavClick: (item: NavItem) => void
 }
 
-type EnhancedProps = Handlers & ConnectedProps & RouteProps<any> & ReduxUIProps<UIState>
+type EnhancedProps = Handlers & ConnectedProps & RouteProps & ReduxUIProps<UIState>
 
 const enhance = compose<EnhancedProps, {}>(
   setDisplayName('AppContent'),
@@ -93,20 +94,20 @@ const enhance = compose<EnhancedProps, {}>(
     location: PropTypes.object
   }),
   withRouter,
-  connect<ConnectedProps, {}, RouteProps<any>>(
+  connect<ConnectedProps, {}, RouteProps>(
     (state: AppState): ConnectedProps => ({
       ThemeNav: state.sys.theme === 'macOS' ? Mac.AppNav : Win.AppNav as any,
       banks: state.db.current!.view.banks
     })
   ),
-  ui<UIState, ConnectedProps & RouteProps<any>, {}>({
+  ui<UIState, ConnectedProps & RouteProps, {}>({
     key: 'AppContent',
     persist: true,
     state: {
       sidebarWidth: 250
     } as UIState
   }),
-  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & RouteProps<any>>({
+  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & RouteProps>({
     onSizeChange: ({ updateUI }) => (sidebarWidth: number) => {
       updateUI({sidebarWidth} as UIState)
     },

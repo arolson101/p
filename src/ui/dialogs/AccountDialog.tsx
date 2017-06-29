@@ -10,7 +10,6 @@ import { Validator } from '../../util/index'
 import { AppState, pushChanges, mapDispatchToProps, setDialog } from '../../state/index'
 import { DialogContainer } from '../dialogs/DialogContainer'
 import { typedFields, forms } from '../components/forms/index'
-import { IntlProps } from '../components/props'
 
 const messages = defineMessages({
   createTitle: {

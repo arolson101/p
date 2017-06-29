@@ -11,7 +11,6 @@ import { runSync } from '../../state/db/sync'
 import { syncProviders } from '../../sync/index'
 import { Validator } from '../../util/index'
 import { typedFields, forms } from './forms/index'
-import { IntlProps } from './props'
 
 const messages = defineMessages({
   password: {

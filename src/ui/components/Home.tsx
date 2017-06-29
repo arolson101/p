@@ -14,7 +14,6 @@ import { Bank, Bill, Account, Budget, Category } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { CurrencyDisplay } from './CurrencyDisplay'
 import { Favico } from './forms/Favico'
-import { IntlProps } from './props'
 
 const messages = defineMessages({
   page: {

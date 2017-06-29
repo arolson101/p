@@ -2,9 +2,8 @@ import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { ButtonGroup, DropdownButton, MenuItem, MenuItemProps } from 'react-bootstrap'
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl'
-import { withRouter } from 'react-router'
+import { withRouter, RouteComponentProps } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { RouteProps, IntlProps } from './props'
 
 const messages = defineMessages({
   options: {
@@ -22,7 +21,7 @@ interface Props {
   items: (Item | false)[]
 }
 
-type EnhancedProps = Props & RouteProps<any> & IntlProps
+type EnhancedProps = Props & RouteComponentProps<any> & IntlProps
 
 const enhance = compose<EnhancedProps, Props>(
   setDisplayName('SettingsMenu'),

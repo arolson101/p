@@ -2,14 +2,13 @@ import * as React from 'react'
 import { Grid, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router'
+import { withRouter, RouteComponentProps } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { DbInfo } from '../../docs/index'
 import { AppState } from '../../state/index'
 import { LoginForm } from './LoginForm'
 import { CreateForm } from './CreateForm'
-import { RouteProps } from './props'
 
 const icons = {
   newDb: {
@@ -31,6 +30,8 @@ const messages = defineMessages({
   }
 })
 
+type RouteProps = RouteComponentProps<any>
+
 interface ConnectedProps {
   files: DbInfo[]
 }
@@ -44,14 +45,14 @@ interface Handlers {
   onLogin: (dbInfo: DbInfo) => void
 }
 
-type EnhancedProps = Handlers & ReduxUIProps<UIState> & RouteProps<any> & ConnectedProps
+type EnhancedProps = Handlers & ReduxUIProps<UIState> & RouteProps & ConnectedProps
 
 const enhance = compose<EnhancedProps, undefined>(
   setDisplayName('Login'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
   withRouter,
-  connect<ConnectedProps, {}, RouteProps<any>>(
+  connect<ConnectedProps, {}, RouteProps>(
     (state: AppState): ConnectedProps => ({
       files: state.db.files
     })
@@ -63,7 +64,7 @@ const enhance = compose<EnhancedProps, undefined>(
       activeId: ''
     } as UIState
   }),
-  withHandlers<Handlers, ReduxUIProps<UIState> & RouteProps<any>>({
+  withHandlers<Handlers, ReduxUIProps<UIState> & RouteProps>({
     deselect: ({ updateUI }) => () => {
       updateUI({activeId: ''})
     },

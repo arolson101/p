@@ -5,12 +5,13 @@ import { FormattedDate, FormattedNumber } from 'react-intl'
 import * as SplitPane from 'react-split-pane'
 import { AutoSizer, Dimensions, Table, Column, ColumnProps, TableCellProps,
   OnScrollCallback, Index, RowMouseEventHandlerParams } from 'react-virtualized'
-import { withRouter } from 'react-router'
+import { withRouter, RouteComponentProps } from 'react-router'
 import { compose, setDisplayName, withHandlers, setPropTypes, onlyUpdateForPropTypes } from 'recompose'
 import { AppState } from '../../state/index'
-import { RouteProps } from './props'
 import { withQuerySyncedState } from '../enhancers/index'
 import './ListWithDetails.css'
+
+type RouteProps = RouteComponentProps<any>
 
 interface Props<T> {
   items: T[]
@@ -36,7 +37,7 @@ interface Handlers {
   onRowClick: (params: RowMouseEventHandlerParams) => void
 }
 
-type EnhancedProps = Handlers & State & ConnectedProps & RouteProps<any> & Props<any>
+type EnhancedProps = Handlers & State & ConnectedProps & RouteProps & Props<any>
 
 const enhance = compose<EnhancedProps, Props<any>>(
   setDisplayName('ListWithDetails'),
@@ -48,7 +49,7 @@ const enhance = compose<EnhancedProps, Props<any>>(
     columns: PropTypes.array.isRequired,
     DetailComponent: PropTypes.func.isRequired,
   } as PropTypes<Props<any>>),
-  connect<ConnectedProps, {}, RouteProps<any> & Props<any>>(
+  connect<ConnectedProps, {}, RouteProps & Props<any>>(
     (state: AppState) => ({
       browser: state.browser,
       sideBySide: state.browser.greaterThan.small
@@ -56,7 +57,7 @@ const enhance = compose<EnhancedProps, Props<any>>(
   ),
   withQuerySyncedState('scrollTop', 'setScrollTop', 0, parseFloat),
   withQuerySyncedState('selectedIndex', 'setSelectedIndex', -1, parseFloat),
-  withHandlers<Handlers, State & ConnectedProps & RouteProps<any> & Props<any>>({
+  withHandlers<Handlers, State & ConnectedProps & RouteProps & Props<any>>({
     onScroll: ({setScrollTop}) => ({scrollTop}: {scrollTop: number}) => {
       setScrollTop(scrollTop)
     },

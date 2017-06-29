@@ -2,14 +2,13 @@ import * as React from 'react'
 import { Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router'
+import { withRouter, RouteComponentProps } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteBank } from '../../actions/index'
 import { DbInfo, Bank } from '../../docs/index'
 import { AppState, mapDispatchToProps } from '../../state/index'
 import { forms } from './forms/index'
-import { RouteProps } from './props'
 import { selectBank } from './selectors'
 
 const messages = defineMessages({
@@ -26,6 +25,8 @@ const messages = defineMessages({
     defaultMessage: "This will delete bank '{name}' and all its accounts.  Are you sure?"
   }
 })
+
+type RouteProps = RouteComponentProps<Bank.Params>
 
 interface ConnectedProps {
   bank: Bank.View
@@ -44,26 +45,26 @@ interface Handlers {
   confirmDelete: () => void
 }
 
-type EnhancedProps = Handlers & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Bank.Params>
+type EnhancedProps = Handlers & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps
 
-const enhance = compose<EnhancedProps, RouteProps<Bank.Params>>(
+const enhance = compose<EnhancedProps, RouteProps>(
   setDisplayName('BankDelete'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
   withRouter,
-  connect<ConnectedProps, DispatchProps, RouteProps<Bank.Params>>(
+  connect<ConnectedProps, DispatchProps, RouteProps>(
     (state: AppState, props) => ({
       bank: selectBank(state, props)
     }),
     mapDispatchToProps<DispatchProps>({ deleteBank })
   ),
-  ui<UIState, ConnectedProps & RouteProps<any>, {}>({
+  ui<UIState, ConnectedProps & RouteProps, {}>({
     state: {
       error: undefined,
       deleting: false
     } as UIState
   }),
-  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps<Bank.Params>>({
+  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps>({
     confirmDelete: ({updateUI, bank, deleteBank, history}) => async () => {
       try {
         updateUI({error: undefined, deleting: true})

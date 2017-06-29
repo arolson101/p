@@ -8,7 +8,6 @@ import { DbInfo } from '../../docs/index'
 import { AppState, createDb, mapDispatchToProps } from '../../state/index'
 import { Validator } from '../../util/index'
 import { forms, typedFields } from './forms/index'
-import { IntlProps } from './props'
 
 const messages = defineMessages({
   welcome: {

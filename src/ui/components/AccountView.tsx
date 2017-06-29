@@ -3,6 +3,7 @@ import * as React from 'react'
 import { PageHeader } from 'react-bootstrap'
 import { defineMessages, injectIntl } from 'react-intl'
 import { connect } from 'react-redux'
+import { RouteComponentProps } from 'react-router'
 import { Column, ColumnProps, TableCellProps } from 'react-virtualized'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, mapPropsStream } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
@@ -11,7 +12,6 @@ import { getTransactions, deleteAllTransactions } from '../../actions/index'
 import { Bank, Account, Transaction } from '../../docs/index'
 import { AppState, pushChanges, mapDispatchToProps } from '../../state/index'
 import { ListWithDetails, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
-import { RouteProps, IntlProps } from './props'
 import { selectBank, selectAccount } from './selectors'
 import { showAccountDialog } from '../dialogs/index'
 import { SettingsMenu } from './SettingsMenu'
@@ -44,6 +44,8 @@ const messages = defineMessages({
   }
 })
 
+type RouteProps = RouteComponentProps<Account.Params>
+
 interface ConnectedProps {
   bank: Bank.View
   account: Account.View
@@ -57,7 +59,7 @@ interface DispatchProps {
   showAccountDialog: typeof showAccountDialog
 }
 
-type StreamProps = ConnectedProps & RouteProps<Account.Params>
+type StreamProps = ConnectedProps & RouteProps
 type EnhancedProps = IntlProps & ConnectedProps & HandlerProps & DispatchProps
 
 interface HandlerProps {
@@ -67,10 +69,10 @@ interface HandlerProps {
   deleteTransactions: () => void
 }
 
-const enhance = compose<EnhancedProps, RouteProps<Account.Params>>(
+const enhance = compose<EnhancedProps, RouteProps>(
   setDisplayName('AccountViewComponent'),
   injectIntl,
-  connect<ConnectedProps, DispatchProps, IntlProps & RouteProps<Account.Params>>(
+  connect<ConnectedProps, DispatchProps, IntlProps & RouteProps>(
     (state: AppState, props): ConnectedProps => ({
       bank: selectBank(state, props!),
       account: selectAccount(state, props!),
@@ -113,7 +115,7 @@ const enhance = compose<EnhancedProps, RouteProps<Account.Params>>(
   //     return props$.combineLatest(transactions$, (props, transactions) => ({ ...props, ...transactions }))
   //   }
   // ),
-  withHandlers<HandlerProps, ConnectedProps & DispatchProps & IntlProps & RouteProps<Account.Params>>({
+  withHandlers<HandlerProps, ConnectedProps & DispatchProps & IntlProps & RouteProps>({
     editAccount: ({ showAccountDialog, bank, account: { doc: edit } }) => () => {
       showAccountDialog({bank, edit})
     },

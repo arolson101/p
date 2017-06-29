@@ -1,10 +1,10 @@
 import * as React from 'react'
-import { RouteProps } from '../components/props'
+import { RouteComponentProps } from 'react-router'
 const debounce = require('lodash.debounce')
 
 export const withQuerySyncedState = <T extends {}>(name: string, setter: string, dflt: T, convert: (val: string) => T) =>
   (Component: any) =>
-    class extends React.PureComponent<RouteProps<any>, any> {
+    class extends React.PureComponent<RouteComponentProps<any>, any> {
       private setValue: ((value: T) => void) & _.Cancelable
       constructor (props?: any) {
         super(props)

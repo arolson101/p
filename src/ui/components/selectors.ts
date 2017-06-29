@@ -1,7 +1,7 @@
 // import { createSelector } from 'reselect'
+import { RouteComponentProps } from 'react-router'
 import { AppState } from '../../state/index'
 import { Bank, Account, Transaction, Bill } from '../../docs/index'
-import { RouteProps } from './props'
 
 export const selectBanks = (state: AppState) => {
   if (!state.db.current) {
@@ -12,7 +12,7 @@ export const selectBanks = (state: AppState) => {
 
 // TODO: figure out why createSelector isn't working on these anymore
 
-export const selectBank = (state: AppState, props?: RouteProps<Bank.Params>) => {
+export const selectBank = (state: AppState, props?: RouteComponentProps<Bank.Params>) => {
   const banks = state.db.current && state.db.current.view.banks
   const bankId = props && Bank.docId(props.match.params)
   if (!banks) {
@@ -28,7 +28,7 @@ export const selectBank = (state: AppState, props?: RouteProps<Bank.Params>) => 
   return bank
 }
 
-export const selectAccount = (state: AppState, props?: RouteProps<Account.Params>) => {
+export const selectAccount = (state: AppState, props?: RouteComponentProps<Account.Params>) => {
   const bank = selectBank(state, props)
   const accountId = props && Account.docId(props.match.params)
   if (!accountId) {
@@ -41,7 +41,7 @@ export const selectAccount = (state: AppState, props?: RouteProps<Account.Params
   return account
 }
 
-export const selectTransaction = (state: AppState, props?: RouteProps<Transaction.Params>) => {
+export const selectTransaction = (state: AppState, props?: RouteComponentProps<Transaction.Params>) => {
   const account = selectAccount(state, props)
   const txDocId = props && Transaction.docId(props.match.params)
   if (!txDocId) {
@@ -61,7 +61,7 @@ export const selectBills = (state: AppState) => {
   return state.db.current.view.bills
 }
 
-export const selectBill = (state: AppState, props?: RouteProps<Bill.Params>) => {
+export const selectBill = (state: AppState, props?: RouteComponentProps<Bill.Params>) => {
   const bills = state.db.current && state.db.current.view.bills
   const billId = props && Bill.docId(props.match.params)
   if (!bills) {

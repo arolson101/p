@@ -1,13 +1,14 @@
 import * as React from 'react'
 import { PageHeader } from 'react-bootstrap'
 import { connect } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, RouteComponentProps } from 'react-router-dom'
 import { compose } from 'redux'
 import { Bank, Account, Transaction } from '../../docs/index'
 import { AppState } from '../../state/index'
-import { RouteProps } from './props'
 import { selectBank, selectAccount, selectTransaction } from './selectors'
 import { TransactionDetail } from './TransactionDetail'
+
+type RouteProps = RouteComponentProps<Transaction.Params>
 
 interface ConnectedProps {
   bank: Bank.View
@@ -15,11 +16,11 @@ interface ConnectedProps {
   transaction: Transaction.View
 }
 
-type EnhancedProps = RouteProps<Transaction.Params> & ConnectedProps
+type EnhancedProps = RouteProps & ConnectedProps
 
 const enhance = compose(
   connect(
-    (state: AppState, props: RouteProps<Transaction.Params>): ConnectedProps => ({
+    (state: AppState, props: RouteProps): ConnectedProps => ({
       bank: selectBank(state, props),
       account: selectAccount(state, props),
       transaction: selectTransaction(state, props),

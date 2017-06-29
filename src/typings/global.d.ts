@@ -1,5 +1,7 @@
 /// <reference types='react-addons-perf'/>
 /// <reference types='webpack-env'/>
+/// <reference types='react-intl'/>
+/// <reference types='react-router'/>
 
 interface Measurements {}
 
@@ -73,4 +75,10 @@ declare module google {
 declare type MemoryStream = NodeJS.WritableStream & NodeJS.ReadableStream & {
     toString(): string
     toBuffer(): Buffer
+}
+
+declare type FormatMessageFcn = (messageDescriptor: ReactIntl.FormattedMessage.MessageDescriptor, values?: Object) => string
+
+declare interface IntlProps {
+  intl: ReactIntl.InjectedIntl
 }

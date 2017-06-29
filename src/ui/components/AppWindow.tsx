@@ -2,18 +2,19 @@ import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import Helmet from 'react-helmet'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router'
+import { withRouter, RouteComponentProps } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import { AppState } from '../../state/index'
 import * as Mac from '../macOS/index'
 import * as Win from '../windows/index'
-import { RouteProps } from './props'
 
 export interface AppWindowProps {
   title: string
   onBack: Function
   onForward: Function
 }
+
+type RouteProps = RouteComponentProps<any>
 
 interface ConnectedProps {
   ThemeWindow: any
@@ -24,7 +25,7 @@ interface Handlers {
   onForward: () => void
 }
 
-type EnhancedProps = Handlers & ConnectedProps & RouteProps<any> & React.Props<any>
+type EnhancedProps = Handlers & ConnectedProps & RouteProps & React.Props<any>
 
 const enhance = compose<EnhancedProps, {}>(
   setDisplayName('AppWindow'),
@@ -33,12 +34,12 @@ const enhance = compose<EnhancedProps, {}>(
   setPropTypes({
     location: PropTypes.object
   }),
-  connect<ConnectedProps, {}, RouteProps<any>>(
+  connect<ConnectedProps, {}, RouteProps>(
     (state: AppState) => ({
       ThemeWindow: state.sys.theme === 'macOS' ? Mac.AppWindow : Win.AppWindow
     })
   ),
-  withHandlers<Handlers, ConnectedProps & RouteProps<any>>({
+  withHandlers<Handlers, ConnectedProps & RouteProps>({
     onBack: ({history}) => () => {
       history.goBack()
     },

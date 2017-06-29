@@ -9,7 +9,6 @@ import { DbInfo } from '../../docs/index'
 import { AppState, loadDb, deleteDb, mapDispatchToProps } from '../../state/index'
 import { Validator } from '../../util/index'
 import { ConfirmDelete } from './ConfirmDelete'
-import { IntlProps } from './props'
 import { typedFields, forms } from './forms/index'
 
 interface Props {

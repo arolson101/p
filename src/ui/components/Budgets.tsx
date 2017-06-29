@@ -17,7 +17,6 @@ import { CurrencyDisplay } from './CurrencyDisplay'
 import { SettingsMenu } from './SettingsMenu'
 import { typedFields, forms } from './forms/index'
 import { Favico } from './forms/Favico'
-import { IntlProps } from './props'
 
 const messages = defineMessages({
   page: {

@@ -1,13 +1,12 @@
 import * as React from 'react'
 import { Nav, NavItem } from 'react-bootstrap'
 import { FormattedNumber } from 'react-intl'
-import { withRouter } from 'react-router'
+import { withRouter, RouteComponentProps } from 'react-router'
 import { compose } from 'recompose'
 import { NavProps } from '../components/AppContent'
-import { RouteProps } from '../components/props'
 import './AppNav.css'
 
-type EnhancedProps = RouteProps<any> & NavProps
+type EnhancedProps = RouteComponentProps<any> & NavProps
 
 const enhance = compose<EnhancedProps, NavProps>(
   withRouter,

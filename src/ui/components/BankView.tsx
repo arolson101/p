@@ -2,14 +2,13 @@ import * as React from 'react'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { Alert, PageHeader, ProgressBar, Table, Button, Modal } from 'react-bootstrap'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router'
+import { withRouter, RouteComponentProps } from 'react-router'
 import { Link } from 'react-router-dom'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withState } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { getAccounts } from '../../actions/index'
 import { Bank, Account } from '../../docs/index'
 import { AppState, mapDispatchToProps } from '../../state/index'
-import { RouteProps, IntlProps } from './props'
 import { selectBank } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
 import { showAccountDialog } from '../dialogs/AccountDialog'
@@ -62,6 +61,8 @@ const messages = defineMessages({
   }
 })
 
+type RouteProps = RouteComponentProps<Bank.Params>
+
 interface ConnectedProps {
   bank: Bank.View
 }
@@ -93,7 +94,7 @@ type EnhancedProps = Handlers
   & ConnectedProps
   & DispatchProps
   & IntlProps
-  & RouteProps<Bank.Params>
+  & RouteProps
 
 const enhance = compose<EnhancedProps, undefined>(
   setDisplayName('BankView'),
@@ -101,13 +102,13 @@ const enhance = compose<EnhancedProps, undefined>(
   setPropTypes({}),
   injectIntl,
   withRouter,
-  connect<ConnectedProps, DispatchProps, IntlProps & RouteProps<Bank.Params>>(
+  connect<ConnectedProps, DispatchProps, IntlProps & RouteProps>(
     (state: AppState, props) => ({
       bank: selectBank(state, props)
     }),
     mapDispatchToProps<DispatchProps>({ getAccounts, showBankDialog, showAccountDialog })
   ),
-  ui<UIState, ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>, {}>({
+  ui<UIState, ConnectedProps & DispatchProps & IntlProps & RouteProps, {}>({
     state: {
       showAll: false,
       showModal: false,
@@ -116,7 +117,7 @@ const enhance = compose<EnhancedProps, undefined>(
       error: undefined
     } as UIState
   }),
-  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps<Bank.Params>>({
+  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps>({
     toggleEdit: ({ bank: { doc: edit }, showBankDialog }) => () => {
       showBankDialog({edit})
     },

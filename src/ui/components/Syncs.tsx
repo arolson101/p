@@ -8,7 +8,6 @@ import { AppState, mapDispatchToProps, pushChanges, deleteDoc } from '../../stat
 import { SyncProvider, syncProviders } from '../../sync/index'
 import { runSync } from '../../state/db/sync'
 // import { Favico } from './forms/Favico'
-import { IntlProps } from './props'
 import { SyncStatus } from './SyncStatus'
 
 const messages = defineMessages({

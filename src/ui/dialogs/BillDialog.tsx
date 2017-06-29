@@ -19,7 +19,6 @@ import { AppState, mapDispatchToProps, pushChanges, setDialog } from '../../stat
 import { Validator } from '../../util/index'
 import { DialogContainer } from '../dialogs/DialogContainer'
 import { typedFields, forms, SelectOption } from '../components/forms/index'
-import { IntlProps } from '../components/props'
 
 const messages = defineMessages({
   editTitle: {
