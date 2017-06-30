@@ -1,15 +1,15 @@
 import * as PropTypes from 'prop-types'
-import { Modal, ModalProps, PageHeader, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
+import { Modal, PageHeader, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, getContext, withHandlers, withPropsOnChange } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange } from 'recompose'
 import { reduxForm, formValueSelector, FormProps } from 'redux-form'
 import { Bank, Account } from '../../docs/index'
 import { Validator } from '../../util/index'
 import { AppState, pushChanges, mapDispatchToProps, setDialog } from '../../state/index'
-import { DialogContainer } from '../dialogs/DialogContainer'
 import { typedFields, forms } from '../components/forms/index'
+import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({
   createTitle: {
@@ -85,7 +85,7 @@ interface ConnectedFormProps {
   type?: Account.Type
 }
 
-type EnhancedProps = DialogContainer.Context & FormProps<Values, any, any> & ConnectedFormProps & DispatchProps & Props & IntlProps
+type EnhancedProps = FormProps<Values, any, any> & ConnectedFormProps & DispatchProps & Props & IntlProps
 
 export const AccountDialogStatic = {
   dialog: 'AccountDialog'
@@ -115,9 +115,6 @@ const enhance = compose<EnhancedProps, Props>(
     bank: PropTypes.object.isRequired,
     onHide: PropTypes.func.isRequired
   }),
-  getContext<DialogContainer.Context, Props>(
-    DialogContainer.ContextTypes
-  ),
   injectIntl,
   connect<ConnectedProps, DispatchProps, Props>(
     (state: AppState): ConnectedProps => ({
@@ -182,12 +179,11 @@ const enhance = compose<EnhancedProps, Props>(
 )
 
 export const AccountDialog = enhance((props) => {
-  const { edit, type, handleSubmit, onHide, show, dialogContainer, reset } = props
+  const { edit, type, handleSubmit, onHide, show, reset } = props
   const { formatMessage } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle
   return (
-    <Modal
-      container={dialogContainer}
+    <ContainedModal
       show={show}
       onHide={onHide}
       onExited={reset}
@@ -256,7 +252,7 @@ export const AccountDialog = enhance((props) => {
           </ButtonToolbar>
         </Modal.Footer>
       </Form>
-    </Modal>
+    </ContainedModal>
   )
 })
 

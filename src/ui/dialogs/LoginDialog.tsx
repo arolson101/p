@@ -1,0 +1,159 @@
+import * as React from 'react'
+import { Modal, ModalProps, PageHeader, InputGroup, ButtonToolbar, Button, SplitButton, MenuItem } from 'react-bootstrap'
+import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
+import { connect } from 'react-redux'
+import { withRouter, RouteComponentProps } from 'react-router'
+import { compose, setDisplayName, withHandlers } from 'recompose'
+import { Dispatch } from 'redux'
+import { reduxForm, FormProps, SubmissionError } from 'redux-form'
+import { DbInfo } from '../../docs/index'
+import { AppState, loadDb, deleteDb, setDialog, mapDispatchToProps } from '../../state/index'
+import { Validator } from '../../util/index'
+import { ConfirmDelete } from '../components/ConfirmDelete'
+import { typedFields, forms } from '../components/forms/index'
+import { ContainedModal } from './ContainedModal'
+
+export const LoginDialogStatic = {
+  dialog: 'LoginDialog'
+}
+
+export const showLoginDialog = (params: Params) => setDialog(LoginDialogStatic.dialog, params)
+
+type RouteProps = RouteComponentProps<any>
+
+interface Params {
+  info: DbInfo
+}
+
+interface Props extends Params {
+  show: boolean
+  onHide: () => void
+}
+
+interface Handlers {
+  onDelete: () => void
+}
+
+type DispatchProps = {
+  loadDb: loadDb.Fcn
+  deleteDb: deleteDb.Fcn
+}
+
+type EnhancedProps = Props & Handlers & DispatchProps & IntlProps & FormProps<Values, {}, {}> & RouteProps
+
+interface Values {
+  password: string
+}
+
+const messages = defineMessages({
+  deleteDb: {
+    id: 'LoginDialog.deleteDb',
+    defaultMessage: 'Delete Database'
+  },
+  confirmDeleteTitle: {
+    id: 'LoginDialog.confirmDeleteTitle',
+    defaultMessage: 'Confirm Delete'
+  },
+  confirmDeleteBody: {
+    id: 'LoginDialog.confirmDeleteBody',
+    defaultMessage: "Are you sure?  You won't be able to undo this"
+  }
+})
+
+const enhance = compose<EnhancedProps, Props>(
+  setDisplayName('LoginDialog'),
+  injectIntl,
+  withRouter,
+  connect<{}, DispatchProps, Props>(
+    () => ({}),
+    mapDispatchToProps<DispatchProps>({ loadDb, deleteDb })
+  ),
+  withHandlers<Handlers, DispatchProps & Props & IntlProps & RouteProps>({
+    onDelete: ({ deleteDb, info }) => () => {
+      deleteDb({info})
+    }
+  }),
+  reduxForm<Values, Handlers & DispatchProps & Props & IntlProps & RouteProps>({
+    form: 'Password',
+    onSubmit: async (values, dispatch, props) => {
+      const { loadDb, intl: { formatMessage }, info, history, onHide } = props
+      const v = new Validator(values, formatMessage)
+      v.required('password')
+      v.maybeThrowSubmissionError()
+
+      try {
+        const { password } = values
+        await loadDb({info, password})
+        onHide()
+        history.push(DbInfo.to.home())
+      } catch (error) {
+        throw new SubmissionError<Values>({password: error.message})
+      }
+    },
+  })
+)
+
+const { Form, PasswordField } = typedFields<Values>()
+
+export const LoginDialog = enhance((props) => {
+  if (!props.info) {
+    return null as any
+  }
+  const { show, onHide, reset, handleSubmit, onDelete, intl: { formatMessage }, submitting } = props
+  return (
+    <ContainedModal
+      show={show}
+      onHide={onHide}
+      onExited={reset}
+      backdrop='static'
+      bsSize='large'
+    >
+      <Modal.Header closeButton={!submitting}>
+        <Modal.Title>
+          {props.info.name}
+        </Modal.Title>
+      </Modal.Header>
+
+      <Form horizontal onSubmit={handleSubmit}>
+        <Modal.Body>
+          <PasswordField
+            autoFocus
+            name='password'
+            label={forms.password}
+            disabled={submitting}
+          />
+        </Modal.Body>
+
+        <Modal.Footer>
+          <ButtonToolbar className='pull-right'>
+            <ConfirmDelete
+              component={Button}
+              event='onSelect'
+              title={formatMessage(messages.confirmDeleteTitle)}
+              body={formatMessage(messages.confirmDeleteBody)}
+              confirm={formatMessage(messages.deleteDb)}
+              onConfirmed={onDelete}
+            >
+              <FormattedMessage {...messages.deleteDb}/>
+            </ConfirmDelete>
+
+            <Button
+              type='button'
+              onClick={onHide}
+              disabled={submitting}
+            >
+              <FormattedMessage {...forms.cancel}/>
+            </Button>
+            <Button
+              type='submit'
+              bsStyle='primary'
+              disabled={submitting}
+            >
+              <FormattedMessage {...forms.login}/>
+            </Button>
+          </ButtonToolbar>
+        </Modal.Footer>
+      </Form>
+    </ContainedModal>
+  )
+})

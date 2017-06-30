@@ -9,7 +9,7 @@ import { Modal, DropdownButton, MenuItem, SelectCallback,
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange, getContext } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, formValueSelector, FormProps } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'
@@ -17,8 +17,8 @@ import * as RRule from 'rrule-alt'
 import { Account, Budget, Bill } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges, setDialog } from '../../state/index'
 import { Validator } from '../../util/index'
-import { DialogContainer } from '../dialogs/DialogContainer'
 import { typedFields, forms, SelectOption } from '../components/forms/index'
+import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({
   editTitle: {
@@ -204,7 +204,6 @@ type EnhancedProps = Handlers
   & ConnectedProps
   & IntlProps
   & Props
-  & DialogContainer.Context
 
 type Frequency = 'days' | 'weeks' | 'months' | 'years'
 type EndType = 'endDate' | 'endCount'
@@ -252,9 +251,6 @@ const enhance = compose<EnhancedProps, Props>(
     onHide: PropTypes.func.isRequired
   }),
   injectIntl,
-  getContext<DialogContainer.Context, Props>(
-    DialogContainer.ContextTypes
-  ),
   withPropsOnChange<any, IntlProps & Props>(
     ['edit', 'intl'],
     ({edit, intl: { formatNumber }}) => {
@@ -397,7 +393,7 @@ const { Form, TextField, UrlField, SelectField, DateField, CollapseField,
 
 export const BillDialog = enhance((props) => {
   const { edit, ui: { groups }, monthOptions, weekdayOptions, handleSubmit,
-    frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, dialogContainer, show, onHide, reset } = props
+    frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, show, onHide, reset } = props
   const { formatMessage } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle
 
@@ -407,8 +403,7 @@ export const BillDialog = enhance((props) => {
   const text = rrule ? rrule.toText() : ''
 
   return (
-    <Modal
-      container={dialogContainer}
+    <ContainedModal
       show={show}
       onHide={onHide}
       onExited={reset}
@@ -598,7 +593,7 @@ export const BillDialog = enhance((props) => {
         </Modal.Footer>
 
       </Form>
-    </Modal>
+    </ContainedModal>
   )
 })
 

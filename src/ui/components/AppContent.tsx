@@ -8,7 +8,6 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withStat
 import ui, { ReduxUIProps } from 'redux-ui'
 import { Bank, Account, Budget, Bill, SyncConnection } from '../../docs/index'
 import { AppState } from '../../state/index'
-import { DialogContainer, DialogDisplay } from '../dialogs/index'
 import * as Mac from '../macOS/index'
 import * as Win from '../windows/index'
 
@@ -145,27 +144,24 @@ export const AppContent = enhance(props => {
   })
 
   return (
-    <DialogContainer.Component>
-      <DialogDisplay/>
-      <SplitPane
-        split='vertical'
-        minSize={100}
-        defaultSize={sidebarWidth}
-        onChange={onSizeChange}
+    <SplitPane
+      split='vertical'
+      minSize={100}
+      defaultSize={sidebarWidth}
+      onChange={onSizeChange}
+    >
+      <ThemeNav groups={groups} selectedId={selectedId} onClick={onNavClick} />
+      <div
+        style={{
+          backgroundColor: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          overflow: 'auto'
+        }}
       >
-        <ThemeNav groups={groups} selectedId={selectedId} onClick={onNavClick} />
-        <div
-          style={{
-            backgroundColor: 'white',
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
-            overflow: 'auto'
-          }}
-        >
-          {children}
-        </div>
+        {children}
+      </div>
     </SplitPane>
-  </DialogContainer.Component>
   )
 })

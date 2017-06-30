@@ -6,8 +6,8 @@ import { withRouter, RouteComponentProps } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { DbInfo } from '../../docs/index'
-import { AppState } from '../../state/index'
-import { LoginForm } from './LoginForm'
+import { AppState, mapDispatchToProps } from '../../state/index'
+import { showLoginDialog } from '../dialogs/index'
 import { CreateForm } from './CreateForm'
 
 const icons = {
@@ -36,6 +36,10 @@ interface ConnectedProps {
   files: DbInfo[]
 }
 
+interface DispatchProps {
+  showLoginDialog: typeof showLoginDialog
+}
+
 interface UIState {
   activeId: string
 }
@@ -45,17 +49,18 @@ interface Handlers {
   onLogin: (dbInfo: DbInfo) => void
 }
 
-type EnhancedProps = Handlers & ReduxUIProps<UIState> & RouteProps & ConnectedProps
+type EnhancedProps = Handlers & ReduxUIProps<UIState> & RouteProps & ConnectedProps & DispatchProps
 
 const enhance = compose<EnhancedProps, undefined>(
   setDisplayName('Login'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
   withRouter,
-  connect<ConnectedProps, {}, RouteProps>(
+  connect<ConnectedProps, DispatchProps, RouteProps>(
     (state: AppState): ConnectedProps => ({
       files: state.db.files
-    })
+    }),
+    mapDispatchToProps<DispatchProps>({ showLoginDialog })
   ),
   ui<UIState, {}, {}>({
     key: 'Login',
@@ -68,16 +73,13 @@ const enhance = compose<EnhancedProps, undefined>(
     deselect: ({ updateUI }) => () => {
       updateUI({activeId: ''})
     },
-    onLogin: ({history}) => (dbInfo: DbInfo) => {
-      history.push(DbInfo.to.home())
-    }
   })
 )
 
 const activeProps = { bsStyle: 'info' }
 const createId = '_create'
 
-export const Login = enhance(({ files, ui: { activeId }, updateUI, deselect, onLogin }) => (
+export const Login = enhance(({ files, ui: { activeId }, updateUI, deselect, onLogin, showLoginDialog }) => (
   <Grid>
     <div style={{padding: 50}}>
       <ListGroup>
@@ -87,16 +89,19 @@ export const Login = enhance(({ files, ui: { activeId }, updateUI, deselect, onL
           return (
             <ListGroupItem
               key={file.name}
-              {...props}
+              onClick={() => {
+                console.log('showing login dialog')
+                showLoginDialog({info: file})
+              }}
             >
               <h4><i {...icons.openDb}/> {file.name}</h4>
-              {active &&
+              {/*{active &&
                 <LoginForm
                   info={file}
                   onCancel={deselect}
                   onLogin={onLogin}
                 />
-              }
+              }*/}
             </ListGroupItem>
           )
         })}

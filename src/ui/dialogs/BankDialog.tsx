@@ -1,18 +1,17 @@
 import * as PropTypes from 'prop-types'
 import * as React from 'react'
-import { Modal, ModalProps, PageHeader, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
+import { Modal, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { compose, setDisplayName, withPropsOnChange, withHandlers, onlyUpdateForPropTypes, setPropTypes, getContext } from 'recompose'
+import { compose, setDisplayName, withPropsOnChange, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, FormProps, formValueSelector } from 'redux-form'
 import { getFavicon } from '../../actions/index'
 import { Bank } from '../../docs/index'
 import { AppState, FI, emptyfi, pushChanges, mapDispatchToProps, setDialog } from '../../state/index'
 import { formatAddress } from '../../util/index'
 import { Validator } from '../../util/index'
-import { DialogContainer } from '../dialogs/DialogContainer'
 import { typedFields, forms, SubmitHandler } from '../components/forms/index'
-import { IconPicker } from '../components/forms/IconPicker'
+import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({
   createTitle: {
@@ -99,7 +98,7 @@ interface Handlers {
   onChangeFI: (event: any, index: number) => void
 }
 
-type EnhancedProps = DialogContainer.Context & Handlers & FormProps<Values, any, any> & ConnectedProps & Props & InjectedIntlProps
+type EnhancedProps = Handlers & FormProps<Values, any, any> & ConnectedProps & Props & InjectedIntlProps
 
 export const BankDialogStatic = {
   dialog: 'BankDialog'
@@ -137,9 +136,6 @@ const enhance = compose<EnhancedProps, Props>(
     show: PropTypes.bool.isRequired,
     onHide: PropTypes.func.isRequired
   }),
-  getContext<DialogContainer.Context, Props>(
-    DialogContainer.ContextTypes
-  ),
   connect<ConnectedProps, {}, Props>(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
@@ -201,12 +197,11 @@ const enhance = compose<EnhancedProps, Props>(
 
 export const BankDialog = enhance((props) => {
   const { edit, handleSubmit, onChangeFI, filist, reset } = props
-  const { show, onHide, dialogContainer } = props
+  const { show, onHide } = props
   const title = edit ? messages.editTitle : messages.createTitle
 
   return (
-    <Modal
-      container={dialogContainer}
+    <ContainedModal
       show={show}
       onHide={onHide}
       onExited={reset}
@@ -310,6 +305,6 @@ export const BankDialog = enhance((props) => {
           </ButtonToolbar>
         </Modal.Footer>
       </Form>
-    </Modal>
+    </ContainedModal>
   )
 })

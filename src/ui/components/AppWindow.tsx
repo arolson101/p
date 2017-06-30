@@ -4,6 +4,7 @@ import Helmet from 'react-helmet'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
+import { DialogContainer, DialogDisplay } from '../dialogs/index'
 import { AppState } from '../../state/index'
 import * as Mac from '../macOS/index'
 import * as Win from '../windows/index'
@@ -60,7 +61,10 @@ export const AppWindow = enhance((props) => {
       ]}
     />
     <ThemeWindow title={title} onBack={onBack} onForward={onForward}>
-      {children}
+      <DialogContainer.Component>
+        <DialogDisplay/>
+        {children}
+      </DialogContainer.Component>
     </ThemeWindow>
   </div>
 })
