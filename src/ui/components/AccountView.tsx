@@ -13,7 +13,7 @@ import { Bank, Account, Transaction } from '../../docs/index'
 import { AppState, pushChanges, mapDispatchToProps } from '../../state/index'
 import { ListWithDetails, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
 import { selectBank, selectAccount } from './selectors'
-import { showAccountDialog } from '../dialogs/index'
+import { showAccountDialog, showAccountDeleteDialog } from '../dialogs/index'
 import { SettingsMenu } from './SettingsMenu'
 import { TransactionDetail } from './TransactionDetail'
 
@@ -57,6 +57,7 @@ interface DispatchProps {
   getTransactions: getTransactions.Fcn
   deleteAllTransactions: deleteAllTransactions.Fcn
   showAccountDialog: typeof showAccountDialog
+  showAccountDeleteDialog: typeof showAccountDeleteDialog
 }
 
 type StreamProps = ConnectedProps & RouteProps
@@ -64,6 +65,7 @@ type EnhancedProps = IntlProps & ConnectedProps & HandlerProps & DispatchProps
 
 interface HandlerProps {
   editAccount: () => void
+  deleteAccount: () => void
   addTransactions: () => void
   downloadTransactions: () => void
   deleteTransactions: () => void
@@ -78,7 +80,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
       account: selectAccount(state, props!),
       db: state.db.current!.db
     }),
-    mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions, showAccountDialog })
+    mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions, showAccountDialog, showAccountDeleteDialog })
   ),
   // mapPropsStream(
   //   (props$: Rx.Observable<StreamProps>) => {
@@ -120,6 +122,10 @@ const enhance = compose<EnhancedProps, RouteProps>(
       showAccountDialog({bank, edit})
     },
 
+    deleteAccount: ({ showAccountDeleteDialog, bank, account }) => () => {
+      showAccountDeleteDialog({bank, account})
+    },
+
     addTransactions: (props) => () => {
       const { pushChanges, account } = props
       const changes: ChangeSet = new Set()
@@ -158,7 +164,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
 )
 
 export const AccountView = enhance((props) => {
-  const { bank, account, editAccount, downloadTransactions, addTransactions, deleteTransactions } = props
+  const { bank, account, editAccount, downloadTransactions, addTransactions, deleteTransactions, deleteAccount } = props
   const transactions = account.transactions
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -194,7 +200,7 @@ export const AccountView = enhance((props) => {
             },
             {
               message: messages.delete,
-              to: Account.to.del(account.doc)
+              onClick: deleteAccount
             }
           ]}
         />

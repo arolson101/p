@@ -116,16 +116,11 @@ export namespace Account {
 
   export namespace routes {
     export const view = 'account/:bankId/:accountId'
-    export const del = 'account/:bankId/:accountId/delete'
   }
 
   export namespace to {
     export const view = (account: Doc): string => {
       return '/' + account._id
-    }
-
-    export const del = (account: Doc): string => {
-      return '/' + account._id + '/delete'
     }
   }
 

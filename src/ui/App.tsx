@@ -47,7 +47,6 @@ export const App = enhance(props => {
                   <Route exact path={'/' + Bank.routes.all} component={Components.Accounts} />
                   <Route exact path={'/' + Bank.routes.view} component={Components.BankView}/>
                   <Route exact path={'/' + Account.routes.view} component={Components.AccountView}/>
-                  <Route exact path={'/' + Account.routes.del} component={Components.AccountDelete}/>
                   <Route exact path={'/' + Transaction.routes.edit} component={Components.TransactionEdit}/>
                   <Route exact path={'/' + Transaction.routes.view} component={Components.TransactionView}/>
                   <Route exact path={'/' + Bill.routes.all} component={Components.Bills}/>

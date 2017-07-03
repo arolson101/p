@@ -1,4 +1,3 @@
-export * from './AccountDelete'
 export * from './AccountView'
 export * from './Accounts'
 export * from './AppContent'

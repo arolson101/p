@@ -7,6 +7,7 @@ import { Bank, Account } from '../../docs/index'
 import { Validator } from '../../util/index'
 import { AppState, closeDialog, mapDispatchToProps } from '../../state/index'
 import { AccountDialog, AccountDialogStatic } from './AccountDialog'
+import { AccountDeleteDialog, AccountDeleteDialogStatic } from './AccountDeleteDialog'
 import { BankDialog, BankDialogStatic } from './BankDialog'
 import { BankDeleteDialog, BankDeleteDialogStatic } from './BankDeleteDialog'
 import { BillDialog, BillDialogStatic } from './BillDialog'
@@ -44,6 +45,8 @@ export const DialogDisplay = enhance((props) => {
   switch (dialog) {
     case AccountDialogStatic.dialog:
       return <AccountDialog {...passedProps}/>
+    case AccountDeleteDialogStatic.dialog:
+      return <AccountDeleteDialog {...passedProps}/>
     case BankDialogStatic.dialog:
       return <BankDialog {...passedProps}/>
     case BankDeleteDialogStatic.dialog:
