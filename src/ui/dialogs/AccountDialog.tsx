@@ -3,6 +3,7 @@ import { Modal, PageHeader, InputGroup, ButtonToolbar, Button } from 'react-boot
 import * as React from 'react'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
+import { push } from 'react-router-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange } from 'recompose'
 import { reduxForm, formValueSelector, FormProps } from 'redux-form'
 import { Bank, Account } from '../../docs/index'
@@ -79,6 +80,7 @@ interface ConnectedProps {
 
 interface DispatchProps {
   pushChanges: pushChanges.Fcn
+  push: (path: string) => void
 }
 
 interface ConnectedFormProps {
@@ -120,7 +122,7 @@ const enhance = compose<EnhancedProps, Props>(
     (state: AppState): ConnectedProps => ({
       lang: state.i18n.locale,
     }),
-    mapDispatchToProps<DispatchProps>({ pushChanges })
+    mapDispatchToProps<DispatchProps>({ pushChanges, push })
   ),
   withPropsOnChange<any, FormProps<Values, any, any> & Props>(
     ['edit'],
@@ -135,7 +137,7 @@ const enhance = compose<EnhancedProps, Props>(
     form,
     enableReinitialize: true,
     onSubmit: async (values, dispatch, props) => {
-      const { bank, edit, lang, pushChanges, onHide, intl: { formatMessage } } = props
+      const { bank, edit, lang, pushChanges, onHide, intl: { formatMessage }, push } = props
       const v = new Validator(values, formatMessage)
       v.required('name', 'number', 'type')
       v.maybeThrowSubmissionError()
@@ -157,6 +159,10 @@ const enhance = compose<EnhancedProps, Props>(
       }
 
       await pushChanges({docs})
+
+      if (!edit) {
+        push(Account.to.view(doc))
+      }
 
       onHide()
     },

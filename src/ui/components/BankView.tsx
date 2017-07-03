@@ -11,8 +11,7 @@ import { Bank, Account } from '../../docs/index'
 import { AppState, mapDispatchToProps } from '../../state/index'
 import { selectBank } from './selectors'
 import { SettingsMenu } from './SettingsMenu'
-import { showAccountDialog } from '../dialogs/AccountDialog'
-import { showBankDialog } from '../dialogs/index'
+import { showAccountDialog, showBankDialog, showBankDeleteDialog } from '../dialogs/index'
 
 const messages = defineMessages({
   noAccounts: {
@@ -71,6 +70,7 @@ interface DispatchProps {
   getAccounts: getAccounts.Fcn
   showAccountDialog: typeof showAccountDialog
   showBankDialog: typeof showBankDialog
+  showBankDeleteDialog: typeof showBankDeleteDialog
 }
 
 interface UIState {
@@ -87,6 +87,7 @@ interface Handlers {
   getAccountList: () => void
   hideModal: () => void
   createAccount: () => void
+  deleteBank: () => void
 }
 
 type EnhancedProps = Handlers
@@ -106,7 +107,7 @@ const enhance = compose<EnhancedProps, undefined>(
     (state: AppState, props) => ({
       bank: selectBank(state, props)
     }),
-    mapDispatchToProps<DispatchProps>({ getAccounts, showBankDialog, showAccountDialog })
+    mapDispatchToProps<DispatchProps>({ getAccounts, showBankDialog, showAccountDialog, showBankDeleteDialog })
   ),
   ui<UIState, ConnectedProps & DispatchProps & IntlProps & RouteProps, {}>({
     state: {
@@ -149,12 +150,16 @@ const enhance = compose<EnhancedProps, undefined>(
 
     createAccount: ({ bank, showAccountDialog }) => () => {
       showAccountDialog({bank})
+    },
+
+    deleteBank: ({ bank, showBankDeleteDialog }) => () => {
+      showBankDeleteDialog({bank})
     }
   })
 )
 
 export const BankView = enhance((props) => {
-  const { bank, history, toggleShowAll, hideModal, getAccountList, toggleEdit, createAccount } = props
+  const { bank, history, toggleShowAll, hideModal, getAccountList, toggleEdit, createAccount, deleteBank } = props
   const { ui: { working, showModal, message, error, showAll } } = props
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -197,7 +202,7 @@ export const BankView = enhance((props) => {
             },
             {
               message: messages.delete,
-              to: Bank.to.del(bank.doc)
+              onClick: deleteBank,
             }
           ]}
         />

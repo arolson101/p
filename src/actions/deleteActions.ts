@@ -1,5 +1,5 @@
 import { replace } from 'react-router-redux'
-import { AppThunk, ThunkFcn, deleteDoc, Deletion } from '../state/index'
+import { AppThunk, ThunkFcn, deleteDoc, Deletion, pushChanges } from '../state/index'
 import { Bank, Account, Budget } from '../docs/index'
 
 type DeleteBankArgs = { bank: Bank.View }
@@ -8,15 +8,15 @@ export const deleteBank: AppThunk<DeleteBankArgs, void> = ({bank}) =>
   async (dispatch, getState) => {
     const { db: { current } } = getState()
     if (!current) { throw new Error('no db') }
-    let deletions: Deletion[] = []
+    let docs: Deletion[] = []
     for (let account of bank.accounts) {
-      deletions.push(deleteDoc(account.doc))
+      docs.push(deleteDoc(account.doc))
       for (let transaction of account.transactions) {
-        deletions.push(deleteDoc(transaction.doc))
+        docs.push(deleteDoc(transaction.doc))
       }
     }
-    deletions.push(deleteDoc(bank.doc))
-    await current.db.bulkDocs(deletions)
+    docs.push(deleteDoc(bank.doc))
+    return dispatch(pushChanges({docs}))
   }
 
 type DeleteAccountArgs = { bank: Bank.View, account: Account.View }
@@ -31,14 +31,14 @@ export const deleteAccount: AppThunk<DeleteAccountArgs, void> = ({bank, account}
       bank.accounts.splice(idx, 1)
     }
 
-    let deletions: Deletion[] = []
-    deletions.push(deleteDoc(account.doc))
+    let docs: (Deletion | AnyDocument)[] = [bank.doc]
+    docs.push(deleteDoc(account.doc))
 
     for (let transaction of account.transactions) {
-      deletions.push(deleteDoc(transaction.doc))
+      docs.push(deleteDoc(transaction.doc))
     }
 
-    await current.db.bulkDocs([bank, ...deletions])
+    return dispatch(pushChanges({docs}))
   }
 
 type DeleteAllTransactionsArgs = { account: Account.View }
@@ -48,12 +48,12 @@ export const deleteAllTransactions: AppThunk<DeleteAllTransactionsArgs, void> = 
     const { db: { current } } = getState()
     if (!current) { throw new Error('no db') }
 
-    let deletions: Deletion[] = []
+    let docs: Deletion[] = []
     for (let transaction of account.transactions) {
-      deletions.push(deleteDoc(transaction.doc))
+      docs.push(deleteDoc(transaction.doc))
     }
 
-    await current.db.bulkDocs(deletions)
+    return dispatch(pushChanges({docs}))
   }
 
 type DeleteBudgetArgs = { budget: Budget.View }
@@ -63,11 +63,11 @@ export const deleteBudget: AppThunk<DeleteBudgetArgs, void> = ({budget}) =>
     const { db: { current } } = getState()
     if (!current) { throw new Error('no db') }
 
-    let deletions: Deletion[] = []
+    let docs: Deletion[] = []
     for (let category of budget.categories) {
-      deletions.push(deleteDoc(category.doc))
+      docs.push(deleteDoc(category.doc))
     }
-    deletions.push(deleteDoc(budget.doc))
+    docs.push(deleteDoc(budget.doc))
 
-    await current.db.bulkDocs(deletions)
+    return dispatch(pushChanges({docs}))
   }

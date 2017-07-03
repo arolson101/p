@@ -1,5 +1,6 @@
 export * from './AccountDialog'
 export * from './BankDialog'
+export * from './BankDeleteDialog'
 export * from './BillDialog'
 export * from './CreateDbDialog'
 export * from './DialogContainer'

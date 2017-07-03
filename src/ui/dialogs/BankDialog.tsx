@@ -3,6 +3,7 @@ import * as React from 'react'
 import { Modal, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
+import { push } from 'react-router-redux'
 import { compose, setDisplayName, withPropsOnChange, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, FormProps, formValueSelector } from 'redux-form'
 import { getFavicon } from '../../actions/index'
@@ -92,6 +93,7 @@ interface ConnectedProps {
 
 interface DispatchProps {
   pushChanges: pushChanges.Fcn
+  push: (path: string) => void
 }
 
 interface Handlers {
@@ -141,7 +143,7 @@ const enhance = compose<EnhancedProps, Props>(
       filist: state.fi.list,
       lang: state.i18n.locale,
     }),
-    mapDispatchToProps<DispatchProps>({ pushChanges })
+    mapDispatchToProps<DispatchProps>({ pushChanges, push })
   ),
   withPropsOnChange<any, ConnectedProps & Props>(
     ['edit', 'filist'],
@@ -157,7 +159,7 @@ const enhance = compose<EnhancedProps, Props>(
     form: 'BankDialog',
     enableReinitialize: true,
     onSubmit: async (values, dispatch, props) => {
-      const { edit, filist, onHide, pushChanges, lang, intl: { formatMessage } } = props
+      const { edit, filist, onHide, pushChanges, lang, intl: { formatMessage }, push } = props
       const v = new Validator(values, formatMessage)
       v.required('name')
       v.maybeThrowSubmissionError()
@@ -176,6 +178,10 @@ const enhance = compose<EnhancedProps, Props>(
         }
       }, lang)
       await pushChanges({docs: [doc]})
+
+      if (!edit) {
+        push(Bank.to.view(doc))
+      }
 
       onHide()
     },

@@ -58,7 +58,6 @@ export namespace Bank {
   export namespace routes {
     export const all = 'banks'
     export const view = 'bank/:bankId'
-    export const del = 'bank/:bankId/delete'
   }
 
   export namespace to {
@@ -68,10 +67,6 @@ export namespace Bank {
 
     export const view = (bank: Doc): string => {
       return '/' + bank._id
-    }
-
-    export const del = (bank: Doc): string => {
-      return '/' + bank._id + '/delete'
     }
 
     export const accountCreate = (bank: Doc): string => {
