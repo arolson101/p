@@ -3,6 +3,7 @@ import { Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
+import { goBack, replace } from 'react-router-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteAccount } from '../../actions/index'
@@ -35,6 +36,8 @@ interface ConnectedProps {
 
 interface DispatchProps {
   deleteAccount: deleteAccount.Fcn
+  goBack: () => void
+  replace: (location: string) => void
 }
 
 interface UIState {
@@ -58,7 +61,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
       bank: selectBank(state, props),
       account: selectAccount(state, props)
     }),
-    mapDispatchToProps<DispatchProps>({ deleteAccount })
+    mapDispatchToProps<DispatchProps>({ deleteAccount, goBack, replace })
   ),
   ui<UIState, ConnectedProps & DispatchProps & RouteProps, {}>({
     state: {
@@ -67,12 +70,12 @@ const enhance = compose<EnhancedProps, RouteProps>(
     } as UIState
   }),
   withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps>({
-    confirmDelete: ({updateUI, bank, account, deleteAccount, history}: any) => async () => {
+    confirmDelete: ({updateUI, bank, account, deleteAccount, replace}: any) => async () => {
       try {
         updateUI({error: undefined, deleting: true})
         await deleteAccount({bank, account})
         updateUI({deleting: false})
-        history.replace(DbInfo.to.home())
+        replace(Bank.to.view(bank.doc))
       } catch (err) {
         updateUI({error: err.message, deleting: false})
       }
@@ -81,7 +84,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
 )
 
 export const AccountDelete = enhance(props => {
-  const { history, account, ui: { error, deleting }, confirmDelete } = props
+  const { history, account, ui: { error, deleting }, confirmDelete, goBack } = props
   return (
     <div>
       <p><FormattedMessage {...messages.text} values={{name: account.doc.name}}/></p>
@@ -93,7 +96,7 @@ export const AccountDelete = enhance(props => {
       <ButtonToolbar className='pull-right'>
         <Button
           type='button'
-          onClick={() => history.goBack()}
+          onClick={goBack}
           disabled={deleting}
         >
           <FormattedMessage {...forms.cancel}/>

@@ -1,3 +1,4 @@
+import createHistory from 'history/createHashHistory'
 import * as React from 'react'
 import { render } from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
@@ -18,7 +19,8 @@ require('react-select/dist/react-select.css')
 setObservableConfig(rxjsconfig)
 
 const main = (element: Element) => {
-  const store = createAppStore()
+  const history = createHistory()
+  const store = createAppStore(history)
 
   if (module.hot) {
     module.hot.accept('./ui', () => {
@@ -43,7 +45,7 @@ const main = (element: Element) => {
     render(
       (
         <AppContainer>
-          <App store={store} />
+          <App store={store} history={history}/>
         </AppContainer>
       ),
       element

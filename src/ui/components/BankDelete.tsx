@@ -3,6 +3,7 @@ import { Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
+import { goBack } from 'react-router-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteBank } from '../../actions/index'
@@ -34,6 +35,7 @@ interface ConnectedProps {
 
 interface DispatchProps {
   deleteBank: deleteBank.Fcn
+  goBack: () => void
 }
 
 interface UIState {
@@ -56,7 +58,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
     (state: AppState, props) => ({
       bank: selectBank(state, props)
     }),
-    mapDispatchToProps<DispatchProps>({ deleteBank })
+    mapDispatchToProps<DispatchProps>({ deleteBank, goBack })
   ),
   ui<UIState, ConnectedProps & RouteProps, {}>({
     state: {
@@ -79,7 +81,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
 )
 
 export const BankDelete = enhance(props => {
-  const { history, bank, ui: { error, deleting }, confirmDelete } = props
+  const { history, bank, ui: { error, deleting }, goBack, confirmDelete } = props
   return (
     <div>
       <p><FormattedMessage {...messages.text} values={{name: bank.doc.name}}/></p>
@@ -91,7 +93,7 @@ export const BankDelete = enhance(props => {
       <ButtonToolbar className='pull-right'>
         <Button
           type='button'
-          onClick={() => history.goBack()}
+          onClick={goBack}
           disabled={deleting}
         >
           <FormattedMessage {...forms.cancel}/>

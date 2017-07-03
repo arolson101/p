@@ -1,18 +1,16 @@
 import * as React from 'react'
 import { Nav, NavItem } from 'react-bootstrap'
 import { FormattedNumber } from 'react-intl'
-import { withRouter, RouteComponentProps } from 'react-router'
 import { compose } from 'recompose'
 import { NavProps } from '../components/AppContent'
 import './AppNav.css'
 
-type EnhancedProps = RouteComponentProps<any> & NavProps
+type EnhancedProps = NavProps
 
 const enhance = compose<EnhancedProps, NavProps>(
-  withRouter,
 )
 
-export const AppNav = enhance(({groups, selectedId, onClick, history}) =>
+export const AppNav = enhance(({groups, selectedId, onClick}) =>
   <div>
     {groups.map(group =>
       <div key={group.title}>

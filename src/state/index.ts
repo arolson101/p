@@ -1,3 +1,5 @@
+import { History } from 'history'
+import { routerMiddleware } from 'react-router-redux'
 import { createStore, applyMiddleware, combineReducers, bindActionCreators, Dispatch, ThunkAction } from 'redux'
 import { responsiveStoreEnhancer } from 'redux-responsive'
 import ReduxThunk from 'redux-thunk'
@@ -61,12 +63,12 @@ export const AppInit: AppThunk<void, void> = () => async (dispatch) => {
   await Promise.all(initializers.map(init => dispatch(init(undefined))))
 }
 
-export const createAppStore = () => {
+export const createAppStore = (history: History) => {
   const store = createStore<AppState>(
     AppState,
     composeWithDevTools(
       responsiveStoreEnhancer,
-      applyMiddleware(ReduxThunk)
+      applyMiddleware(ReduxThunk, routerMiddleware(history))
     )
   )
   return store

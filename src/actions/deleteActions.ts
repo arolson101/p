@@ -1,3 +1,4 @@
+import { replace } from 'react-router-redux'
 import { AppThunk, ThunkFcn, deleteDoc, Deletion } from '../state/index'
 import { Bank, Account, Budget } from '../docs/index'
 

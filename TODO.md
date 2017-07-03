@@ -21,3 +21,9 @@ usability concerns
 potential solutions
 * storybook
 * react-datasheet
+
+cleanup
+* replace history api calls with react-router-redux
+* replace redux-forms with react-forms
+* remove redux-ui
+* make actions change app state rather than waiting for actions to complete (remove withRouter)

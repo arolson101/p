@@ -2,7 +2,6 @@ import { Modal, ModalProps, PageHeader, Row, ButtonToolbar, Button } from 'react
 import * as React from 'react'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, FormProps } from 'redux-form'
 import { DbInfo } from '../../docs/index'
@@ -32,8 +31,6 @@ const messages = defineMessages({
   },
 })
 
-type RouteProps = RouteComponentProps<any>
-
 interface Props {
   show: boolean
   onHide: () => void
@@ -47,7 +44,7 @@ interface DispatchProps {
   createDb: createDb.Fcn
 }
 
-type EnhancedProps = RouteProps & IntlProps & Props & ConnectedProps & DispatchProps & FormProps<Values, {}, {}>
+type EnhancedProps = IntlProps & Props & ConnectedProps & DispatchProps & FormProps<Values, {}, {}>
 
 interface Values {
   name: string
@@ -57,15 +54,14 @@ interface Values {
 
 const enhance = compose<EnhancedProps, Props>(
   setDisplayName('CreateForm'),
-  connect<ConnectedProps, DispatchProps, Props & IntlProps & RouteProps>(
+  connect<ConnectedProps, DispatchProps, Props & IntlProps>(
     (state: AppState) => ({
       files: state.db.files
     }),
     mapDispatchToProps<DispatchProps>({ createDb })
   ),
   injectIntl,
-  withRouter,
-  reduxForm<Values, ConnectedProps & DispatchProps & Props & IntlProps & RouteProps>({
+  reduxForm<Values, ConnectedProps & DispatchProps & Props & IntlProps>({
     form: 'CreateForm',
     validate: ((values, props) => {
       const { files, intl: { formatMessage } } = props
@@ -76,15 +72,14 @@ const enhance = compose<EnhancedProps, Props>(
       return v.errors
     }),
     onSubmit: async (values, dispatch, props) => {
-      const { createDb, onHide, intl: { formatMessage }, history } = props
+      const { createDb, onHide, intl: { formatMessage } } = props
       const v = new Validator(values, formatMessage)
       v.required('name', 'password', 'confirmPassword')
       v.maybeThrowSubmissionError()
 
       const { name, password } = values
-      const dbInfo = await createDb({name, password})
+      await createDb({name, password})
       onHide()
-      history.push(DbInfo.to.home())
     }
   })
 )

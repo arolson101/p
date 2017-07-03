@@ -4,6 +4,7 @@ import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import * as R from 'ramda'
+import { push } from 'react-router-redux'
 import { ThunkAction } from 'redux'
 import * as Rx from 'rxjs/Rx'
 import { DocCache, DbView, LocalDoc } from '../../docs/index'
@@ -272,7 +273,9 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     console.log(`${cache.transactions.size} transactions`)
 
     const current = { info, db, localInfo, change$, changeProcessed$, view, cache }
-    dispatch(setDb(current))
+    await dispatch(setDb(current))
+
+    dispatch(push(DbInfo.to.home()))
     // dumpNextSequence(current)
   }
 

@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Modal, ModalProps, PageHeader, InputGroup, ButtonToolbar, Button, SplitButton, MenuItem } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router'
 import { compose, setDisplayName, withState, withHandlers } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, FormProps, SubmissionError } from 'redux-form'
@@ -17,8 +16,6 @@ export const LoginDialogStatic = {
 }
 
 export const showLoginDialog = (params: Params) => setDialog(LoginDialogStatic.dialog, params)
-
-type RouteProps = RouteComponentProps<any>
 
 interface Params {
   info: DbInfo
@@ -45,7 +42,7 @@ type DispatchProps = {
   deleteDb: deleteDb.Fcn
 }
 
-type EnhancedProps = Props & Handlers & State & DispatchProps & IntlProps & FormProps<Values, {}, {}> & RouteProps
+type EnhancedProps = Props & Handlers & State & DispatchProps & IntlProps & FormProps<Values, {}, {}>
 
 interface Values {
   password: string
@@ -69,13 +66,12 @@ const messages = defineMessages({
 const enhance = compose<EnhancedProps, Props>(
   setDisplayName('LoginDialog'),
   injectIntl,
-  withRouter,
   connect<{}, DispatchProps, Props>(
     () => ({}),
     mapDispatchToProps<DispatchProps>({ loadDb, deleteDb })
   ),
   withState('deleting', 'setDeleting', false),
-  withHandlers<Handlers, State & DispatchProps & Props & IntlProps & RouteProps>({
+  withHandlers<Handlers, State & DispatchProps & Props & IntlProps>({
     onDelete: ({ setDeleting }) => () => {
       setDeleting(true)
     },
@@ -87,10 +83,10 @@ const enhance = compose<EnhancedProps, Props>(
       onHide()
     }
   }),
-  reduxForm<Values, Handlers & State & DispatchProps & Props & IntlProps & RouteProps>({
+  reduxForm<Values, Handlers & State & DispatchProps & Props & IntlProps>({
     form: 'Password',
     onSubmit: async (values, dispatch, props) => {
-      const { loadDb, intl: { formatMessage }, info, history, onHide } = props
+      const { loadDb, intl: { formatMessage }, info, onHide } = props
       const v = new Validator(values, formatMessage)
       v.required('password')
       v.maybeThrowSubmissionError()
@@ -99,7 +95,6 @@ const enhance = compose<EnhancedProps, Props>(
         const { password } = values
         await loadDb({info, password})
         onHide()
-        history.push(DbInfo.to.home())
       } catch (error) {
         throw new SubmissionError<Values>({password: error.message})
       }

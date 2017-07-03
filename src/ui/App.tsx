@@ -1,5 +1,7 @@
+import { History } from 'history'
 import * as React from 'react'
-import { Route, Switch, Redirect, withRouter, HashRouter as Router } from 'react-router-dom'
+import { Route, Switch, Redirect } from 'react-router-dom'
+import { ConnectedRouter } from 'react-router-redux'
 import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
 import { compose } from 'recompose'
@@ -10,6 +12,7 @@ import * as Components from './components/index'
 
 interface Props {
   store: Redux.Store<AppState>
+  history: History
 }
 
 interface ConnectedProps {
@@ -29,12 +32,12 @@ const enhance = compose<EnhancedProps, Props>(
 )
 
 export const App = enhance(props => {
-  const { store, locale, current } = props
+  const { store, history, locale, current } = props
 
   return (
     <Provider store={store}>
       <IntlProvider locale={locale}>
-        <Router>
+        <ConnectedRouter history={history}>
           <Components.AppWindow>
             <Route exact path='/' component={Components.Login}/>
             {current ? (
@@ -57,7 +60,7 @@ export const App = enhance(props => {
               <Redirect to='/'/>
             )}
           </Components.AppWindow>
-        </Router>
+        </ConnectedRouter>
       </IntlProvider>
     </Provider>
   )

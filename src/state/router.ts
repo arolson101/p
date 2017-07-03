@@ -1,9 +1,9 @@
 import { routerReducer, RouterState } from 'react-router-redux'
 
 export interface RouterSlice {
-  routing: RouterState
+  router: RouterState
 }
 
 export const RouterSlice = {
-  routing: routerReducer
+  router: routerReducer
 }
