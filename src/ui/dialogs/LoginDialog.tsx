@@ -3,13 +3,12 @@ import { Modal, ModalProps, PageHeader, InputGroup, ButtonToolbar, Button, Split
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
-import { compose, setDisplayName, withHandlers } from 'recompose'
+import { compose, setDisplayName, withState, withHandlers } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, FormProps, SubmissionError } from 'redux-form'
 import { DbInfo } from '../../docs/index'
 import { AppState, loadDb, deleteDb, setDialog, mapDispatchToProps } from '../../state/index'
 import { Validator } from '../../util/index'
-import { ConfirmDelete } from '../components/ConfirmDelete'
 import { typedFields, forms } from '../components/forms/index'
 import { ContainedModal } from './ContainedModal'
 
@@ -30,8 +29,15 @@ interface Props extends Params {
   onHide: () => void
 }
 
+interface State {
+  deleting: boolean
+  setDeleting: (deleting: boolean) => void
+}
+
 interface Handlers {
   onDelete: () => void
+  onCancelDelete: () => void
+  onDeleteConfirmed: () => void
 }
 
 type DispatchProps = {
@@ -39,7 +45,7 @@ type DispatchProps = {
   deleteDb: deleteDb.Fcn
 }
 
-type EnhancedProps = Props & Handlers & DispatchProps & IntlProps & FormProps<Values, {}, {}> & RouteProps
+type EnhancedProps = Props & Handlers & State & DispatchProps & IntlProps & FormProps<Values, {}, {}> & RouteProps
 
 interface Values {
   password: string
@@ -68,12 +74,20 @@ const enhance = compose<EnhancedProps, Props>(
     () => ({}),
     mapDispatchToProps<DispatchProps>({ loadDb, deleteDb })
   ),
-  withHandlers<Handlers, DispatchProps & Props & IntlProps & RouteProps>({
-    onDelete: ({ deleteDb, info }) => () => {
+  withState('deleting', 'setDeleting', false),
+  withHandlers<Handlers, State & DispatchProps & Props & IntlProps & RouteProps>({
+    onDelete: ({ setDeleting }) => () => {
+      setDeleting(true)
+    },
+    onCancelDelete: ({ setDeleting }) => () => {
+      setDeleting(false)
+    },
+    onDeleteConfirmed: ({ deleteDb, info, onHide }) => async () => {
       deleteDb({info})
+      onHide()
     }
   }),
-  reduxForm<Values, Handlers & DispatchProps & Props & IntlProps & RouteProps>({
+  reduxForm<Values, Handlers & State & DispatchProps & Props & IntlProps & RouteProps>({
     form: 'Password',
     onSubmit: async (values, dispatch, props) => {
       const { loadDb, intl: { formatMessage }, info, history, onHide } = props
@@ -99,7 +113,9 @@ export const LoginDialog = enhance((props) => {
   if (!props.info) {
     return null as any
   }
-  const { show, onHide, reset, handleSubmit, onDelete, intl: { formatMessage }, submitting } = props
+  const { show, onHide, reset, handleSubmit, deleting, onCancelDelete,
+    onDelete, onDeleteConfirmed, intl: { formatMessage }, submitting } = props
+
   return (
     <ContainedModal
       show={show}
@@ -114,46 +130,65 @@ export const LoginDialog = enhance((props) => {
         </Modal.Title>
       </Modal.Header>
 
-      <Form horizontal onSubmit={handleSubmit}>
-        <Modal.Body>
-          <PasswordField
-            autoFocus
-            name='password'
-            label={forms.password}
-            disabled={submitting}
-          />
-        </Modal.Body>
+      {deleting ? [
+        <Modal.Body key='body'>
+          <FormattedMessage {...messages.confirmDeleteBody}/>
+        </Modal.Body>,
 
-        <Modal.Footer>
+        <Modal.Footer key='footer'>
           <ButtonToolbar className='pull-right'>
-            <ConfirmDelete
-              component={Button}
-              event='onSelect'
-              title={formatMessage(messages.confirmDeleteTitle)}
-              body={formatMessage(messages.confirmDeleteBody)}
-              confirm={formatMessage(messages.deleteDb)}
-              onConfirmed={onDelete}
-            >
-              <FormattedMessage {...messages.deleteDb}/>
-            </ConfirmDelete>
-
             <Button
               type='button'
-              onClick={onHide}
-              disabled={submitting}
+              onClick={onCancelDelete}
             >
               <FormattedMessage {...forms.cancel}/>
             </Button>
             <Button
-              type='submit'
-              bsStyle='primary'
-              disabled={submitting}
+              onClick={onDeleteConfirmed}
+              bsStyle='danger'
             >
-              <FormattedMessage {...forms.login}/>
+              <FormattedMessage {...messages.confirmDeleteTitle}/>
             </Button>
           </ButtonToolbar>
         </Modal.Footer>
-      </Form>
+      ] : (
+        <Form horizontal onSubmit={handleSubmit}>
+          <Modal.Body>
+            <PasswordField
+              autoFocus
+              name='password'
+              label={forms.password}
+              disabled={submitting}
+            />
+          </Modal.Body>
+
+          <Modal.Footer>
+            <ButtonToolbar className='pull-right'>
+              <Button
+                onClick={onDelete}
+              >
+                <FormattedMessage {...messages.deleteDb}/>
+              </Button>
+
+              <Button
+                type='button'
+                onClick={onHide}
+                disabled={submitting}
+              >
+                <FormattedMessage {...forms.cancel}/>
+              </Button>
+              <Button
+                type='submit'
+                bsStyle='primary'
+                disabled={submitting}
+              >
+                <FormattedMessage {...forms.login}/>
+              </Button>
+            </ButtonToolbar>
+          </Modal.Footer>
+        </Form>
+      )}
+
     </ContainedModal>
   )
 })
