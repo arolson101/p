@@ -9,6 +9,7 @@ import { AppState, closeDialog, mapDispatchToProps } from '../../state/index'
 import { AccountDialog, AccountDialogStatic } from './AccountDialog'
 import { BankDialog, BankDialogStatic } from './BankDialog'
 import { BillDialog, BillDialogStatic } from './BillDialog'
+import { CreateDbDialog, CreateDbDialogStatic } from './CreateDbDialog'
 import { LoginDialog, LoginDialogStatic } from './LoginDialog'
 
 interface ConnectedProps {
@@ -45,6 +46,8 @@ export const DialogDisplay = enhance((props) => {
       return <BankDialog show={show} onHide={closeDialog} {...dialogProps as any}/>
     case BillDialogStatic.dialog:
       return <BillDialog show={show} onHide={closeDialog} {...dialogProps as any}/>
+    case CreateDbDialogStatic.dialog:
+      return <CreateDbDialog show={show} onHide={closeDialog} {...dialogProps as any}/>
     case LoginDialogStatic.dialog:
       return <LoginDialog show={show} onHide={closeDialog} {...dialogProps as any}/>
     default:
