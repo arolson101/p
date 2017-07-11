@@ -8,7 +8,8 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHand
 import { reduxForm, formValueSelector, FormProps } from 'redux-form'
 import { Bank, Account } from '../../docs/index'
 import { Validator } from '../../util/index'
-import { AppState, pushChanges, mapDispatchToProps, setDialog } from '../../state/index'
+import { AppState, mapDispatchToProps, setDialog } from '../../state/index'
+import { saveAccount } from '../../actions/index'
 import { typedFields, forms } from '../components/forms/index'
 import { ContainedModal } from './ContainedModal'
 
@@ -78,8 +79,8 @@ interface ConnectedProps {
 }
 
 interface DispatchProps {
-  pushChanges: pushChanges.Fcn
   push: (path: string) => void
+  saveAccount: saveAccount.Fcn
 }
 
 interface ConnectedFormProps {
@@ -94,14 +95,7 @@ export const AccountDialogStatic = {
 
 export const showAccountDialog = (params: Params) => setDialog(AccountDialogStatic.dialog, params)
 
-interface Values {
-  color: string
-  name: string
-  number: string
-  type: Account.Type
-  bankid: string
-  key: string
-}
+type Values = saveAccount.Values
 
 const form = 'AccountDialog'
 const { Form, TextField, SelectField, ColorAddon } = typedFields<Values>()
@@ -118,9 +112,8 @@ const enhance = compose<EnhancedProps, Props>(
   }),
   injectIntl,
   connect<ConnectedProps, DispatchProps, Props>(
-    (state: AppState): ConnectedProps => ({
-    }),
-    mapDispatchToProps<DispatchProps>({ pushChanges, push })
+    (state: AppState): ConnectedProps => ({}),
+    mapDispatchToProps<DispatchProps>({ saveAccount, push })
   ),
   withPropsOnChange<any, FormProps<Values, any, any> & Props>(
     ['edit'],
@@ -135,27 +128,9 @@ const enhance = compose<EnhancedProps, Props>(
     form,
     enableReinitialize: true,
     onSubmit: async (values, dispatch, props) => {
-      const { bank, edit, pushChanges, onHide, intl: { formatMessage }, push } = props
-      const v = new Validator(values, formatMessage)
-      v.required('name', 'number', 'type')
-      v.maybeThrowSubmissionError()
+      const { bank, edit, saveAccount, onHide, intl: { formatMessage }, push } = props
 
-      const doc = Account.doc(
-        bank.doc,
-        {
-          visible: true,
-          ...edit,
-          ...values,
-        }
-      )
-
-      const docs: AnyDocument[] = [doc]
-      if (!edit) {
-        const nextBank: Bank.Doc = { ...bank.doc, accounts: [...bank.doc.accounts, doc._id] }
-        docs.push(nextBank)
-      }
-
-      await pushChanges({docs})
+      const doc = await saveAccount({formatMessage, values, bank, edit})
 
       if (!edit) {
         push(Account.to.view(doc))

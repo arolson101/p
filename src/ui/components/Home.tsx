@@ -11,7 +11,7 @@ import { createSelector } from 'reselect'
 // import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack, VictoryGroup, VictoryVoronoiTooltip } from 'victory'
 import { deleteBudget } from '../../actions/index'
 import { Bank, Bill, Account, Budget, Category } from '../../docs/index'
-import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
+import { AppState, mapDispatchToProps } from '../../state/index'
 import { CurrencyDisplay } from './CurrencyDisplay'
 import { Favico } from './forms/Favico'
 
@@ -75,7 +75,6 @@ interface ConnectedProps {
 }
 
 interface DispatchProps {
-  pushChanges: pushChanges.Fcn
   deleteBudget: deleteBudget.Fcn
 }
 
@@ -114,7 +113,7 @@ const enhance = compose<EnhancedProps, undefined>(
       budgets: state.db.current!.view.budgets,
       data: selectAccountData(state)
     }),
-    mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget })
+    mapDispatchToProps<DispatchProps>({ deleteBudget })
   ),
   withState('month', 'setMonth', undefined),
   withHandlers<Handlers, StateProps & ConnectedProps & DispatchProps & IntlProps>({

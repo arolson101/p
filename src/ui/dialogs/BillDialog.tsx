@@ -14,8 +14,9 @@ import { Dispatch } from 'redux'
 import { reduxForm, formValueSelector, FormProps } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'
 import * as RRule from 'rrule-alt'
+import { saveBill, toRRule, RRuleErrorMessage } from '../../actions/index'
 import { Account, Budget, Bill } from '../../docs/index'
-import { AppState, mapDispatchToProps, pushChanges, setDialog } from '../../state/index'
+import { AppState, mapDispatchToProps, setDialog } from '../../state/index'
 import { Validator } from '../../util/index'
 import { typedFields, forms, SelectOption } from '../components/forms/index'
 import { ContainedModal } from './ContainedModal'
@@ -172,7 +173,7 @@ interface StateProps {
 }
 
 interface DispatchProps {
-  pushChanges: pushChanges.Fcn
+  saveBill: saveBill.Fcn
 }
 
 type ConnectedProps = StateProps & DispatchProps
@@ -305,7 +306,7 @@ const enhance = compose<EnhancedProps, Props>(
       monthOptions: monthOptions(state),
       weekdayOptions: weekdayOptions(state),
     }),
-    mapDispatchToProps<DispatchProps>({ pushChanges })
+    mapDispatchToProps<DispatchProps>({ saveBill })
   ),
   reduxForm<Values, ConnectedProps & DispatchProps & IntlProps & Props>({
     form,
@@ -328,30 +329,8 @@ const enhance = compose<EnhancedProps, Props>(
       return v.errors
     },
     onSubmit: async (values, dispatch, props) => {
-      const { edit, onHide, pushChanges, intl: { formatMessage } } = props
-      const v = new Validator(values, formatMessage)
-      v.required('group', 'name', 'amount', 'start')
-
-      const rrule = toRRule(values)
-      if (rrule instanceof ErrorMessage) {
-        v.errors[rrule.field] = formatMessage(rrule.message)
-      }
-
-      v.maybeThrowSubmissionError()
-
-      const { amount, frequency, start, end, until, count, interval, byweekday, bymonth, category, ...rest } = values
-      const docs: AnyDocument[] = []
-
-      const bill: Bill = {
-        ...(edit ? edit.doc : {}),
-        ...rest,
-        amount: numeral(amount).value(),
-        category: Budget.maybeCreateCategory(category, props.budgets, docs),
-        rruleString: rrule.toString()
-      }
-      const doc = Bill.doc(bill)
-      docs.push(doc)
-      await pushChanges({docs})
+      const { edit, onHide, saveBill, intl: { formatMessage } } = props
+      await saveBill({edit: (edit ? edit.doc : undefined), formatMessage, values})
       return onHide()
     }
   }),
@@ -650,64 +629,9 @@ const rruleSelector = createSelector(
   (state: AppState) => valueSelector(state, 'bymonth') as string,
   (frequency, start, end, until, count, interval, byweekday, bymonth): RRule | undefined => {
     const rrule = toRRule({frequency, start, end, until, count, interval, byweekday, bymonth})
-    if (rrule instanceof ErrorMessage) {
+    if (rrule instanceof RRuleErrorMessage) {
       return undefined
     }
     return rrule
   }
 )
-
-class ErrorMessage {
-  field: keyof Values
-  message: FormattedMessage.MessageDescriptor
-
-  constructor (field: keyof Values, formattedMessage: FormattedMessage.MessageDescriptor) {
-    this.field = field
-    this.message = formattedMessage
-  }
-}
-
-const toRRuleFreq = {
-  days: RRule.DAILY,
-  weeks: RRule.WEEKLY,
-  months: RRule.MONTHLY,
-  years: RRule.YEARLY
-} as { [f: string]: RRule.Frequency }
-
-const rruleDays = [RRule.SU, RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA]
-
-const toRRule = ({frequency, start, end, until, count, interval, byweekday, bymonth}: RRuleValues): RRule | ErrorMessage => {
-  const date = moment(start, 'L')
-  if (!date.isValid()) {
-    return new ErrorMessage('start', forms.required)
-  }
-
-  const opts: RRule.Options = {
-    freq: toRRuleFreq[frequency],
-    dtstart: date.toDate()
-  }
-
-  if (interval) {
-    opts.interval = +interval
-  }
-  if (byweekday) {
-    opts.byweekday = byweekday.split(',').map(x => rruleDays[+x])
-  }
-  if (bymonth) {
-    opts.bymonth = bymonth.split(',').map(x => +x)
-  }
-
-  if (end === 'endDate') {
-    const untilDate = moment(until, 'L')
-    if (!untilDate.isValid()) {
-      return new ErrorMessage('until', forms.required)
-    }
-    opts.until = untilDate.toDate()
-  } else {
-    if (count && count > 0) {
-      opts.count = +count
-    }
-  }
-
-  return new RRule(opts)
-}

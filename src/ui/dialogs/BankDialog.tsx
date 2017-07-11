@@ -6,9 +6,9 @@ import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import { compose, setDisplayName, withPropsOnChange, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, FormProps, formValueSelector } from 'redux-form'
-import { getFavicon } from '../../actions/index'
+import { getFavicon, saveBank } from '../../actions/index'
 import { Bank } from '../../docs/index'
-import { AppState, FI, emptyfi, pushChanges, mapDispatchToProps, setDialog } from '../../state/index'
+import { AppState, FI, emptyfi, mapDispatchToProps, setDialog } from '../../state/index'
 import { formatAddress } from '../../util/index'
 import { Validator } from '../../util/index'
 import { typedFields, forms, SubmitHandler } from '../components/forms/index'
@@ -91,7 +91,7 @@ interface ConnectedProps {
 }
 
 interface DispatchProps {
-  pushChanges: pushChanges.Fcn
+  saveBank: saveBank.Fcn
   push: (path: string) => void
 }
 
@@ -107,24 +107,7 @@ export const BankDialogStatic = {
 
 export const showBankDialog = (params: Params) => setDialog(BankDialogStatic.dialog, params)
 
-interface Values {
-  fi: number
-
-  name: string
-  web: string
-  address: string
-  notes: string
-  favicon: string
-
-  online: boolean
-
-  fid: string
-  org: string
-  ofx: string
-
-  username: string
-  password: string
-}
+type Values = saveBank.Values
 
 const { Form, TextField, PasswordField, UrlField, SelectField, CheckboxField, CollapseField } = typedFields<Values>()
 
@@ -141,7 +124,7 @@ const enhance = compose<EnhancedProps, Props>(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
     }),
-    mapDispatchToProps<DispatchProps>({ pushChanges, push })
+    mapDispatchToProps<DispatchProps>({ saveBank, push })
   ),
   withPropsOnChange<any, ConnectedProps & Props>(
     ['edit', 'filist'],
@@ -157,25 +140,9 @@ const enhance = compose<EnhancedProps, Props>(
     form: 'BankDialog',
     enableReinitialize: true,
     onSubmit: async (values, dispatch, props) => {
-      const { edit, filist, onHide, pushChanges, intl: { formatMessage }, push } = props
-      const v = new Validator(values, formatMessage)
-      v.required('name')
-      v.maybeThrowSubmissionError()
+      const { edit, filist, onHide, saveBank, intl: { formatMessage }, push } = props
 
-      const { fi, username, password, ...newValues } = values
-      const doc: Bank.Doc = Bank.doc({
-        accounts: [],
-
-        ...edit,
-        ...newValues,
-
-        fi: fi ? filist[fi - 1].name : undefined,
-        login: {
-          username: username,
-          password: password
-        }
-      })
-      await pushChanges({docs: [doc]})
+      const doc = await saveBank({edit, filist, formatMessage, values})
 
       if (!edit) {
         push(Bank.to.view(doc))
