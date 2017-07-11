@@ -99,7 +99,7 @@ export const getFavicon = async (url: string, cancelToken?: CancelToken): Promis
   }
 }
 
-export const getFavicon$ = (url: string): Rx.Observable<string | undefined> => {
+export const getFaviconStream = (url: string): Rx.Observable<string | undefined> => {
   return Rx.Observable.create((observer: Rx.Observer<string | undefined>) => {
     const source = CancelToken.source()
     getFavicon(url, source.token).then(

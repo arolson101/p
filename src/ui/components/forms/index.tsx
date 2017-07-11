@@ -8,7 +8,7 @@ import { compose, mapPropsStream, withContext } from 'recompose'
 import * as RF from 'redux-form'
 import { createSelector } from 'reselect'
 import * as Rx from 'rxjs/Rx'
-import { getFavicon$ } from '../../../actions/index'
+import { getFaviconStream } from '../../../util/index'
 import { mapDispatchToProps } from '../../../state/index'
 import { AccountPicker } from './AccountPicker'
 import { BudgetPicker } from './BudgetPicker'
@@ -178,7 +178,7 @@ const enhanceUrl = compose(
         .distinctUntilChanged()
         .debounceTime(500)
         // .do((url) => console.log(`getting favicon for ${url}`))
-        .switchMap(getFavicon$)
+        .switchMap(getFaviconStream)
         .withLatestFrom(props$, (icon, props) => {
           const { change, meta: { form }, favicoName } = props
           change(form, favicoName, icon || '')
