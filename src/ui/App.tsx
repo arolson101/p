@@ -9,6 +9,7 @@ import * as Redux from 'redux'
 import { DbInfo, Bank, Account, Transaction, Bill, Budget, SyncConnection } from '../docs/index'
 import { AppState, CurrentDb } from '../state/index'
 import * as Components from './components/index'
+import * as Pages from './pages/index'
 
 interface Props {
   store: Redux.Store<AppState>
@@ -39,19 +40,19 @@ export const App = enhance(props => {
       <IntlProvider locale={locale}>
         <ConnectedRouter history={history}>
           <Components.AppWindow>
-            <Route exact path='/' component={Components.Login}/>
+            <Route exact path='/' component={Pages.Login}/>
             {current ? (
               <Components.AppContent>
                 <Switch>
-                  <Route exact path={'/' + DbInfo.routes.home} component={Components.Home} />
-                  <Route exact path={'/' + Bank.routes.all} component={Components.Accounts} />
-                  <Route exact path={'/' + Bank.routes.view} component={Components.BankView}/>
-                  <Route exact path={'/' + Account.routes.view} component={Components.AccountView}/>
-                  <Route exact path={'/' + Transaction.routes.edit} component={Components.TransactionEdit}/>
-                  <Route exact path={'/' + Transaction.routes.view} component={Components.TransactionView}/>
-                  <Route exact path={'/' + Bill.routes.all} component={Components.Bills}/>
-                  <Route exact path={'/' + Budget.routes.all} component={Components.Budgets}/>
-                  <Route exact path={'/' + SyncConnection.routes.all} component={Components.Syncs}/>
+                  <Route exact path={'/' + DbInfo.routes.home} component={Pages.Home} />
+                  <Route exact path={'/' + Bank.routes.all} component={Pages.Accounts} />
+                  <Route exact path={'/' + Bank.routes.view} component={Pages.BankView}/>
+                  <Route exact path={'/' + Account.routes.view} component={Pages.AccountView}/>
+                  <Route exact path={'/' + Transaction.routes.edit} component={Pages.TransactionEdit}/>
+                  <Route exact path={'/' + Transaction.routes.view} component={Pages.TransactionView}/>
+                  <Route exact path={'/' + Bill.routes.all} component={Pages.Bills}/>
+                  <Route exact path={'/' + Budget.routes.all} component={Pages.Budgets}/>
+                  <Route exact path={'/' + SyncConnection.routes.all} component={Pages.Syncs}/>
                 </Switch>
               </Components.AppContent>
             ) : (

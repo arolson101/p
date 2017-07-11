@@ -4,8 +4,8 @@ import * as Select from 'react-select'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName } from 'recompose'
-import { Bank } from '../../../docs/index'
-import { AppState } from '../../../state/index'
+import { Bank } from '../../docs/index'
+import { AppState } from '../../state/index'
 import { SelectOption } from './index'
 
 interface ConnectedProps {

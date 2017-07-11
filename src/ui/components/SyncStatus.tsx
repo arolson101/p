@@ -10,7 +10,7 @@ import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { runSync } from '../../state/db/sync'
 import { syncProviders } from '../../sync/index'
 import { Validator } from '../../util/index'
-import { typedFields, forms } from './forms/index'
+import { typedFields, forms } from './forms'
 
 const messages = defineMessages({
   password: {

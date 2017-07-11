@@ -12,8 +12,8 @@ import { createSelector } from 'reselect'
 import { deleteBudget } from '../../actions/index'
 import { Bank, Bill, Account, Budget, Category } from '../../docs/index'
 import { AppState, mapDispatchToProps } from '../../state/index'
-import { CurrencyDisplay } from './CurrencyDisplay'
-import { Favico } from './forms/Favico'
+import { CurrencyDisplay } from '../components/CurrencyDisplay'
+import { Favico } from '../components/Favico'
 
 const messages = defineMessages({
   page: {

@@ -11,7 +11,7 @@ import { Bank } from '../../docs/index'
 import { AppState, FI, emptyfi, mapDispatchToProps, setDialog } from '../../state/index'
 import { formatAddress } from '../../util/index'
 import { Validator } from '../../util/index'
-import { typedFields, forms, SubmitHandler } from '../components/forms/index'
+import { typedFields, forms, SubmitHandler } from '../components/forms'
 import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({

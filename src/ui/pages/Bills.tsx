@@ -10,9 +10,9 @@ import { createSelector } from 'reselect'
 import { Bill } from '../../docs/index'
 import { AppState, mapDispatchToProps } from '../../state/index'
 import { showBillDialog } from '../dialogs/index'
-import { CurrencyDisplay } from './CurrencyDisplay'
-import { Favico } from './forms/Favico'
-import { SettingsMenu } from './SettingsMenu'
+import { CurrencyDisplay } from '../components/CurrencyDisplay'
+import { Favico } from '../components/Favico'
+import { SettingsMenu } from '../components/SettingsMenu'
 
 const messages = defineMessages({
   page: {

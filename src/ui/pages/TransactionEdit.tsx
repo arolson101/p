@@ -5,8 +5,8 @@ import { Link, RouteComponentProps } from 'react-router-dom'
 import { compose } from 'redux'
 import { Bank, Account, Transaction } from '../../docs/index'
 import { AppState } from '../../state/index'
-import { selectBank, selectAccount, selectTransaction } from './selectors'
-import { TransactionDetail } from './TransactionDetail'
+import { selectBank, selectAccount, selectTransaction } from '../../selectors'
+import { TransactionDetail } from '../components/TransactionDetail'
 
 type RouteProps = RouteComponentProps<Transaction.Params>
 

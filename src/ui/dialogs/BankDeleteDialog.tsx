@@ -9,8 +9,8 @@ import ui, { ReduxUIProps } from 'redux-ui'
 import { deleteBank } from '../../actions/index'
 import { DbInfo, Bank } from '../../docs/index'
 import { AppState, mapDispatchToProps, setDialog } from '../../state/index'
-import { forms } from '../components/forms/index'
-import { selectBank } from '../components/selectors'
+import { forms } from '../components/forms'
+import { selectBank } from '../../selectors'
 import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({

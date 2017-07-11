@@ -7,7 +7,7 @@ import { reduxForm, FormProps } from 'redux-form'
 import { DbInfo } from '../../docs/index'
 import { AppState, createDb, setDialog, mapDispatchToProps } from '../../state/index'
 import { Validator } from '../../util/index'
-import { forms, typedFields } from '../components/forms/index'
+import { forms, typedFields } from '../components/forms'
 import { ContainedModal } from './ContainedModal'
 
 export const CreateDbDialogStatic = {

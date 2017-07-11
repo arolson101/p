@@ -6,8 +6,8 @@ import { Link } from 'react-router-dom'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers } from 'recompose'
 import { Bank, Account } from '../../docs/index'
 import { AppState, mapDispatchToProps } from '../../state/index'
-import { Favico } from './forms/Favico'
-import { selectBanks } from './selectors'
+import { Favico } from '../components/Favico'
+import { selectBanks } from '../../selectors'
 import { showBankDialog } from '../dialogs/index'
 
 const messages = defineMessages({

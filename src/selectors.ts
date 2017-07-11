@@ -1,7 +1,7 @@
 // import { createSelector } from 'reselect'
 import { RouteComponentProps } from 'react-router'
-import { AppState } from '../../state/index'
-import { Bank, Account, Transaction, Bill } from '../../docs/index'
+import { AppState } from './state/index'
+import { Bank, Account, Transaction, Bill } from './docs/index'
 
 export const selectBanks = (state: AppState) => {
   if (!state.db.current) {

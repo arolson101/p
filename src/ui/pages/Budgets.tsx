@@ -13,10 +13,10 @@ import { Bill, Budget, Category } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { Validator } from '../../util/index'
 import { showBillDialog } from '../dialogs/index'
-import { CurrencyDisplay } from './CurrencyDisplay'
-import { SettingsMenu } from './SettingsMenu'
-import { typedFields, forms } from './forms/index'
-import { Favico } from './forms/Favico'
+import { CurrencyDisplay } from '../components/CurrencyDisplay'
+import { SettingsMenu } from '../components/SettingsMenu'
+import { typedFields, forms } from '../components/forms'
+import { Favico } from '../components/Favico'
 
 const messages = defineMessages({
   page: {

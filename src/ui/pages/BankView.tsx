@@ -9,8 +9,8 @@ import ui, { ReduxUIProps } from 'redux-ui'
 import { getAccounts } from '../../actions/index'
 import { Bank, Account } from '../../docs/index'
 import { AppState, mapDispatchToProps } from '../../state/index'
-import { selectBank } from './selectors'
-import { SettingsMenu } from './SettingsMenu'
+import { selectBank } from '../../selectors'
+import { SettingsMenu } from '../components/SettingsMenu'
 import { showAccountDialog, showBankDialog, showBankDeleteDialog } from '../dialogs/index'
 
 const messages = defineMessages({

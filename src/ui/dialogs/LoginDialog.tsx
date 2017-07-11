@@ -8,7 +8,7 @@ import { reduxForm, FormProps, SubmissionError } from 'redux-form'
 import { DbInfo } from '../../docs/index'
 import { AppState, loadDb, deleteDb, setDialog, mapDispatchToProps } from '../../state/index'
 import { Validator } from '../../util/index'
-import { typedFields, forms } from '../components/forms/index'
+import { typedFields, forms } from '../components/forms'
 import { ContainedModal } from './ContainedModal'
 
 export const LoginDialogStatic = {

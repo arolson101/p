@@ -10,7 +10,7 @@ import { Bank, Account } from '../../docs/index'
 import { Validator } from '../../util/index'
 import { AppState, mapDispatchToProps, setDialog } from '../../state/index'
 import { saveAccount } from '../../actions/index'
-import { typedFields, forms } from '../components/forms/index'
+import { typedFields, forms } from '../components/forms'
 import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({

@@ -11,11 +11,11 @@ import * as Rx from 'rxjs/Rx'
 import { getTransactions, deleteAllTransactions } from '../../actions/index'
 import { Bank, Account, Transaction } from '../../docs/index'
 import { AppState, pushChanges, mapDispatchToProps } from '../../state/index'
-import { ListWithDetails, dateCellRenderer, currencyCellRenderer } from './ListWithDetails'
-import { selectBank, selectAccount } from './selectors'
+import { ListWithDetails, dateCellRenderer, currencyCellRenderer } from '../components/ListWithDetails'
+import { selectBank, selectAccount } from '../../selectors'
 import { showAccountDialog, showAccountDeleteDialog } from '../dialogs/index'
-import { SettingsMenu } from './SettingsMenu'
-import { TransactionDetail } from './TransactionDetail'
+import { SettingsMenu } from '../components/SettingsMenu'
+import { TransactionDetail } from '../components/TransactionDetail'
 
 const messages = defineMessages({
   settings: {

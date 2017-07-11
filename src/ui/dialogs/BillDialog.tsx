@@ -18,7 +18,7 @@ import { saveBill, toRRule, RRuleErrorMessage } from '../../actions/index'
 import { Account, Budget, Bill } from '../../docs/index'
 import { AppState, mapDispatchToProps, setDialog } from '../../state/index'
 import { Validator } from '../../util/index'
-import { typedFields, forms, SelectOption } from '../components/forms/index'
+import { typedFields, forms, SelectOption } from '../components/forms'
 import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({
