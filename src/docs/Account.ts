@@ -140,14 +140,14 @@ export namespace Account {
     return aparts.accountId
   }
 
-  export const doc = (bank: Bank.Doc, account: Account, lang: string): Doc => {
+  export const doc = (bank: Bank.Doc, account: Account): Doc => {
     const iparams = Bank.docId(bank._id)
     if (!iparams) {
       throw new Error('invalid bankId: ' + bank._id)
     }
     const _id = docId({
       bankId: iparams.bankId,
-      accountId: makeid(account.name, lang)
+      accountId: makeid()
     })
     return { _id, ...account }
   }

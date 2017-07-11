@@ -46,7 +46,7 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
       if (accountProfiles.length === 0) {
         res.push(formatMessage(messages.noaccounts))
       } else {
-        const { db: { current }, i18n: { lang } } = getState()
+        const { db: { current } } = getState()
         if (!current) { throw new Error('no db') }
         const changes: AnyDocument[] = []
         const nextBank: Bank.Doc = { ...bank.doc, accounts: [...bank.doc.accounts] }
@@ -97,7 +97,7 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
           const existingAccount = findExistingAccount(bank, accountNumber, accountType)
           if (!existingAccount) {
             res.push(formatMessage(messages.accountAdded, account))
-            const doc = Account.doc(bank.doc, account, lang)
+            const doc = Account.doc(bank.doc, account)
             nextBank.accounts.push(doc._id)
             changes.push(doc)
           } else {

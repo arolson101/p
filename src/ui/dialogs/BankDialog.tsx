@@ -88,7 +88,6 @@ interface Props extends Params {
 
 interface ConnectedProps {
   filist: FI[]
-  lang: string
 }
 
 interface DispatchProps {
@@ -141,7 +140,6 @@ const enhance = compose<EnhancedProps, Props>(
   connect<ConnectedProps, {}, Props>(
     (state: AppState): ConnectedProps => ({
       filist: state.fi.list,
-      lang: state.i18n.locale,
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, push })
   ),
@@ -159,7 +157,7 @@ const enhance = compose<EnhancedProps, Props>(
     form: 'BankDialog',
     enableReinitialize: true,
     onSubmit: async (values, dispatch, props) => {
-      const { edit, filist, onHide, pushChanges, lang, intl: { formatMessage }, push } = props
+      const { edit, filist, onHide, pushChanges, intl: { formatMessage }, push } = props
       const v = new Validator(values, formatMessage)
       v.required('name')
       v.maybeThrowSubmissionError()
@@ -176,7 +174,7 @@ const enhance = compose<EnhancedProps, Props>(
           username: username,
           password: password
         }
-      }, lang)
+      })
       await pushChanges({docs: [doc]})
 
       if (!edit) {

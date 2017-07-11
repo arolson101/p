@@ -75,7 +75,6 @@ interface Props extends Params {
 }
 
 interface ConnectedProps {
-  lang: string
 }
 
 interface DispatchProps {
@@ -120,7 +119,6 @@ const enhance = compose<EnhancedProps, Props>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, Props>(
     (state: AppState): ConnectedProps => ({
-      lang: state.i18n.locale,
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, push })
   ),
@@ -137,7 +135,7 @@ const enhance = compose<EnhancedProps, Props>(
     form,
     enableReinitialize: true,
     onSubmit: async (values, dispatch, props) => {
-      const { bank, edit, lang, pushChanges, onHide, intl: { formatMessage }, push } = props
+      const { bank, edit, pushChanges, onHide, intl: { formatMessage }, push } = props
       const v = new Validator(values, formatMessage)
       v.required('name', 'number', 'type')
       v.maybeThrowSubmissionError()
@@ -148,8 +146,7 @@ const enhance = compose<EnhancedProps, Props>(
           visible: true,
           ...edit,
           ...values,
-        },
-        lang
+        }
       )
 
       const docs: AnyDocument[] = [doc]

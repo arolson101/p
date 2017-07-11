@@ -2,6 +2,8 @@ import * as numeral from 'numeral'
 import { addLocaleData } from 'react-intl'
 import * as en from 'react-intl/locale-data/en'
 
+// TODO: react-intl-redux
+
 addLocaleData(en)
 
 export interface I18nState {

@@ -27,7 +27,6 @@ const messages = defineMessages({
 
 interface ConnectedProps {
   syncs: SyncConnection.Doc[]
-  lang: string
 }
 
 interface DispatchProps {
@@ -48,15 +47,14 @@ const enhance = compose<EnhancedProps, undefined>(
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({
       syncs: state.db.current!.view.syncs,
-      lang: state.i18n.lang,
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, runSync })
   ),
   withHandlers<Handlers, ConnectedProps & DispatchProps & IntlProps>({
-    addSync: ({ pushChanges, lang }) => async (provider: SyncProvider<any>) => {
+    addSync: ({ pushChanges }) => async (provider: SyncProvider<any>) => {
       try {
         const config = await provider.createConfig()
-        const sync = SyncConnection.doc(config, lang)
+        const sync = SyncConnection.doc(config)
         pushChanges({docs: [sync]})
       } catch (err) {
         console.log(err)

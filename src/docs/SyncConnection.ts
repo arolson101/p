@@ -61,9 +61,9 @@ export namespace SyncConnection {
     return aparts.syncId
   }
 
-  export const doc = (sync: SyncConnection, lang: string): Doc => {
+  export const doc = (sync: SyncConnection): Doc => {
     const _id = docId({
-      syncId: makeid(sync.provider, lang)
+      syncId: makeid()
     })
     return { _id, ...sync }
   }

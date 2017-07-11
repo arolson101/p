@@ -68,7 +68,6 @@ const messages = defineMessages({
 type showBillDialogType = typeof showBillDialog
 
 interface ConnectedProps {
-  lang: string
   budgets: Budget.View[]
 }
 
@@ -111,7 +110,6 @@ const enhance = compose<EnhancedProps, undefined>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({
-      lang: state.i18n.lang,
       budgets: R.sort(Budget.compare, state.db.current!.view.budgets)
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget, showBillDialog })
@@ -135,7 +133,7 @@ const enhance = compose<EnhancedProps, undefined>(
       return v.errors
     },
     onSubmit: async (values, dispatch, props) => {
-      const { budgets, pushChanges, setEditing, intl: { formatMessage }, lang } = props
+      const { budgets, pushChanges, setEditing, intl: { formatMessage } } = props
       const v = new Validator(values, formatMessage)
       const changes: AnyDocument[] = []
 
@@ -149,7 +147,7 @@ const enhance = compose<EnhancedProps, undefined>(
           const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
           let nextBudget = lastBudget
             ? lastBudget.doc
-            : Budget.doc({name: bvalues.name, categories: [], sortOrder: i}, lang)
+            : Budget.doc({name: bvalues.name, categories: [], sortOrder: i})
 
           nextBudget = {
             ...nextBudget,
@@ -177,7 +175,7 @@ const enhance = compose<EnhancedProps, undefined>(
               }
               return existingCategory.doc._id
             } else {
-              const newCategory = Category.doc(nextBudget, {name: bc.name, amount}, lang)
+              const newCategory = Category.doc(nextBudget, {name: bc.name, amount})
               changes.push(newCategory)
               return newCategory._id
             }

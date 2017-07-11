@@ -45,9 +45,9 @@ export namespace Category {
     return !!docId(doc._id as DocId)
   }
 
-  export const doc = (budget: Budget.Doc, category: Category, lang: string): Doc => {
+  export const doc = (budget: Budget.Doc, category: Category): Doc => {
     const budgetId = Budget.idFromDocId(budget._id)
-    const categoryId = makeid(category.name, lang)
+    const categoryId = makeid()
     const _id = docId({ budgetId, categoryId })
     return { _id, ...category }
   }

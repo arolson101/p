@@ -75,14 +75,14 @@ export namespace Budget {
     return bparts.budgetId
   }
 
-  export const doc = (budget: Budget, lang: string): Doc => {
+  export const doc = (budget: Budget): Doc => {
     const _id = docId({
-      budgetId: makeid(budget.name, lang)
+      budgetId: makeid()
     })
     return { _id, ...budget }
   }
 
-  export const maybeCreateCategory = (label: string, budgets: Budget.View[], lang: string, docs: AnyDocument[]): Category.DocId => {
+  export const maybeCreateCategory = (label: string, budgets: Budget.View[], docs: AnyDocument[]): Category.DocId => {
     if (Category.isDocId(label)) {
       return label
     }
@@ -97,8 +97,7 @@ export namespace Budget {
       {
         name,
         amount: 0
-      },
-      lang
+      }
     )
     docs.push(newCategory)
 

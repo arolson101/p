@@ -165,7 +165,6 @@ interface Props extends Params {
 }
 
 interface StateProps {
-  lang: string
   monthOptions: SelectOption[]
   weekdayOptions: SelectOption[]
   bills: Bill.View[]
@@ -301,7 +300,6 @@ const enhance = compose<EnhancedProps, Props>(
   ),
   connect<StateProps, DispatchProps, IntlProps & Props>(
     (state: AppState): StateProps => ({
-      lang: state.i18n.lang,
       bills: state.db.current!.view.bills,
       budgets: state.db.current!.view.budgets,
       monthOptions: monthOptions(state),
@@ -330,7 +328,7 @@ const enhance = compose<EnhancedProps, Props>(
       return v.errors
     },
     onSubmit: async (values, dispatch, props) => {
-      const { edit, lang, onHide, pushChanges, intl: { formatMessage } } = props
+      const { edit, onHide, pushChanges, intl: { formatMessage } } = props
       const v = new Validator(values, formatMessage)
       v.required('group', 'name', 'amount', 'start')
 
@@ -348,10 +346,10 @@ const enhance = compose<EnhancedProps, Props>(
         ...(edit ? edit.doc : {}),
         ...rest,
         amount: numeral(amount).value(),
-        category: Budget.maybeCreateCategory(category, props.budgets, lang, docs),
+        category: Budget.maybeCreateCategory(category, props.budgets, docs),
         rruleString: rrule.toString()
       }
-      const doc = Bill.doc(bill, lang)
+      const doc = Bill.doc(bill)
       docs.push(doc)
       await pushChanges({docs})
       return onHide()

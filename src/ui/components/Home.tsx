@@ -70,7 +70,6 @@ interface AccountData {
 }
 
 interface ConnectedProps {
-  lang: string
   budgets: Budget.View[]
   data: AccountData[]
 }
@@ -112,7 +111,6 @@ const enhance = compose<EnhancedProps, undefined>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({
-      lang: state.i18n.lang,
       budgets: state.db.current!.view.budgets,
       data: selectAccountData(state)
     }),

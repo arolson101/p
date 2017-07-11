@@ -32,7 +32,6 @@ interface Props {
 }
 
 interface ConnectedProps {
-  lang: string
 }
 
 interface DispatchProps {
@@ -57,7 +56,6 @@ const enhance = compose<EnhancedProps, Props>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, Props & IntlProps>(
     (state: AppState): ConnectedProps => ({
-      lang: state.i18n.lang,
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, runSync })
   ),
