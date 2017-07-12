@@ -6,6 +6,7 @@ import { composeWithDevTools } from 'redux-devtools-extension'
 
 export * from './db/index'
 export * from './dialog'
+export * from './docs'
 export * from './form'
 export * from './fi'
 export * from './i18n'
@@ -15,6 +16,7 @@ export * from './ui'
 
 import { DbSlice, DbInit } from './db/index'
 import { DialogSlice, DialogState } from './dialog'
+import { DocsSlice } from './docs'
 import { FiSlice, FiInit } from './fi'
 import { FormSlice } from './form'
 import { I18nSlice } from './i18n'
@@ -25,6 +27,7 @@ import { UiSlice } from './ui'
 export type AppState =
   DbSlice &
   DialogSlice &
+  DocsSlice &
   FiSlice &
   FormSlice &
   I18nSlice &
@@ -35,6 +38,7 @@ export type AppState =
 export const AppState = combineReducers<AppState>({
   ...DbSlice,
   ...DialogSlice,
+  ...DocsSlice,
   ...FiSlice,
   ...FormSlice,
   ...I18nSlice,

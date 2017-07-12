@@ -12,6 +12,7 @@ import { DbInfo } from './DbInfo'
 import { incomingDelta, resolveConflict } from './delta'
 import { levelcrypt } from './levelcrypt'
 import { PouchDB } from './pouch'
+import { initDocs } from '../docs'
 
 export { DbInfo }
 
@@ -51,8 +52,9 @@ type DbThunk<Args, Ret> = (args: Args) => ThunkAction<Promise<Ret>, State, any>
 type DbFcn<Args, Ret> = (args: Args) => Promise<Ret>
 type DbChangeInfo = PouchDB.ChangeInfo<{}>
 
+export const DB_SET_CURRENT = 'db/setCurrent'
 
-interface SetDbAction {
+export interface SetDbAction {
   type: typeof DB_SET_CURRENT
   current?: CurrentDb
 }
@@ -74,18 +76,17 @@ const dbSetFiles = (files: DbInfo[]): DbSetFilesAction => ({
   files
 })
 
-type DB_CHANGES = 'db/changes'
-const DB_CHANGES = 'db/changes'
-interface DbChangesAction {
-  type: DB_CHANGES
-  view: DbView
-  cache: DocCache
+export const DB_CHANGES = 'db/changes'
+export interface DbChangesAction<T> {
+  type: typeof DB_CHANGES
+  db: PouchDB.Database
+  changes: PouchDB.ChangeInfo<T>[]
 }
 
-const dbChanges = (view: DbView, cache: DocCache): DbChangesAction => ({
+const dbChanges = (db: PouchDB.Database, changes: DbChangeInfo[]): DbChangesAction<any> => ({
   type: DB_CHANGES,
-  view,
-  cache
+  db,
+  changes,
 })
 
 type CreateDbArgs = { name: string, password: string }
@@ -228,17 +229,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     change$
     .buffer(change$.debounceTime(10))
     .forEach((changeInfos) => {
-      const { db: { current } } = getState()
-      console.log(`processChanges: ${changeInfos.length}`, changeInfos)
-      if (current) {
-        const nextCache = DocCache.updateCache(current.cache, changeInfos)
-        const nextView = DbView.buildView(nextCache)
-        dispatch(dbChanges(nextView, nextCache))
-
-        changeInfos.forEach(ci => changeProcessed$.next(ci.id))
-
-        // dumpNextSequence(current)
-      }
+      dispatch(dbChanges(db, changeInfos))
     })
 
     console.time('load')
@@ -265,16 +256,17 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     const cache = DocCache.addDocsToCache(docs)
     const view = DbView.buildView(cache)
 
-    console.timeEnd('load')
-    console.log(`${cache.transactions.size} transactions`)
-
     const current = { info, db, localInfo, change$, changeProcessed$, view, cache }
     await dispatch(setDb(current))
+
+    await dispatch(initDocs({db}))
+    console.timeEnd('load')
+    console.log(`${cache.transactions.size} transactions`)
 
     // dumpNextSequence(current)
   }
 
-const resolveConflicts = (db: PouchDB.Database<any>, ...docs: (AnyDocument | undefined)[]): boolean => {
+export const resolveConflicts = (db: PouchDB.Database<any>, ...docs: (AnyDocument | undefined)[]): boolean => {
   const conflicts = docs.filter((doc: AnyDocument | undefined) => doc && doc._conflicts && doc._conflicts.length > 0)
   for (let conflict of conflicts) {
     // console.log('conflict: ', conflict)
@@ -324,7 +316,7 @@ export const unloadDb = (): SetDbAction => setDb(undefined)
 type Actions =
   DbSetFilesAction |
   SetDbAction |
-  DbChangesAction |
+  DbChangesAction<any> |
   { type: '' }
 
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
@@ -339,7 +331,19 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
       return { ...state, current: action.current }
 
     case DB_CHANGES:
-      return { ...state, current: { ...state.current!, view: action.view, cache: action.cache } }
+      if (state.current && state.current.db === action.db) {
+        const nextCache = DocCache.updateCache(state.current.cache, action.changes)
+        const nextView = DbView.buildView(nextCache)
+
+        console.log(`${action.changes.length} changes`)
+        for (let ci of action.changes) {
+          state.current.changeProcessed$.next(ci.id)
+        }
+
+        return { ...state, current: { ...state.current!, view: nextView, cache: nextCache } }
+      } else {
+        return state
+      }
 
     default:
       return state
