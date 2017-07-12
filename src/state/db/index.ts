@@ -52,11 +52,9 @@ type DbThunk<Args, Ret> = (args: Args) => ThunkAction<Promise<Ret>, State, any>
 type DbFcn<Args, Ret> = (args: Args) => Promise<Ret>
 type DbChangeInfo = PouchDB.ChangeInfo<{}>
 
-type DB_SET_CURRENT = 'db/setCurrent'
-const DB_SET_CURRENT = 'db/setCurrent'
 
 interface SetDbAction {
-  type: DB_SET_CURRENT
+  type: typeof DB_SET_CURRENT
   current?: CurrentDb
 }
 
@@ -65,11 +63,10 @@ const setDb = (current?: CurrentDb): SetDbAction => ({
   current
 })
 
-type DB_SET_FILES = 'db/setFiles'
 const DB_SET_FILES = 'db/setFiles'
 
 interface DbSetFilesAction {
-  type: DB_SET_FILES
+  type: typeof DB_SET_FILES
   files: DbInfo[]
 }
 

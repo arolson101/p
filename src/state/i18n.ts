@@ -16,11 +16,10 @@ const defaultState = {
   lang: 'en'
 }
 
-type SET_LOCALE = 'i18n/SET_LOCALE'
 const SET_LOCALE = 'i18n/SET_LOCALE'
 
 interface SetLocaleAction {
-  type: SET_LOCALE,
+  type: typeof SET_LOCALE,
   locale: string,
   lang: string
 }

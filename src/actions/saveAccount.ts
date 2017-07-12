@@ -30,9 +30,6 @@ export namespace saveAccount {
 
 export const saveAccount: AppThunk<Params, Return> = ({bank, edit, formatMessage, values}) =>
   async (dispatch, getState) => {
-    const { db: { current } } = getState()
-    if (!current) { throw new Error('no db') }
-
     const v = new Validator(values, formatMessage)
     v.required('name', 'number', 'type')
     v.maybeThrowSubmissionError()

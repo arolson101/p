@@ -37,11 +37,10 @@ export const emptyfi: FinancialInstitution = {
   profile: emptyprofile
 }
 
-export type FI_SET = 'fi/set'
 export const FI_SET = 'fi/set'
 
 export interface SetFiAction {
-  type: FI_SET
+  type: typeof FI_SET
   fi: FI[]
 }
 

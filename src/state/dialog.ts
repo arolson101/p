@@ -11,11 +11,10 @@ const defaultState = {
   props: {}
 }
 
-type SET_DIALOG = 'dialog/SET_DIALOG'
 const SET_DIALOG = 'dialog/SET_DIALOG'
 
 interface SetDialogAction {
-  type: SET_DIALOG,
+  type: typeof SET_DIALOG,
   dialog: string,
   props: any
 }
@@ -26,11 +25,10 @@ export const setDialog = (dialog: string, props: any): SetDialogAction => ({
   props
 })
 
-type CLOSE_DIALOG = 'dialog/CLOSE_DIALOG'
 const CLOSE_DIALOG = 'dialog/CLOSE_DIALOG'
 
 interface CloseDialogAction {
-  type: CLOSE_DIALOG
+  type: typeof CLOSE_DIALOG
 }
 
 export const closeDialog = (): CloseDialogAction => ({
