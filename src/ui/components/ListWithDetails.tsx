@@ -50,10 +50,7 @@ const enhance = compose<EnhancedProps, Props<any>>(
     DetailComponent: PropTypes.func.isRequired,
   } as PropTypes<Props<any>>),
   connect<ConnectedProps, {}, RouteProps & Props<any>>(
-    (state: AppState) => ({
-      browser: state.browser,
-      sideBySide: state.browser.greaterThan.small
-    })
+    (state: AppState) => ({})
   ),
   withQuerySyncedState('scrollTop', 'setScrollTop', 0, parseFloat),
   withQuerySyncedState('selectedIndex', 'setSelectedIndex', -1, parseFloat),
