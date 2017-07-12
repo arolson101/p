@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Modal, ModalProps, PageHeader, InputGroup, ButtonToolbar, Button, SplitButton, MenuItem } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
+import { push } from 'react-router-redux'
 import { compose, setDisplayName, withState, withHandlers } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, FormProps, SubmissionError } from 'redux-form'
@@ -40,6 +41,7 @@ interface Handlers {
 type DispatchProps = {
   loadDb: loadDb.Fcn
   deleteDb: deleteDb.Fcn
+  push: typeof push
 }
 
 type EnhancedProps = Props & Handlers & State & DispatchProps & IntlProps & FormProps<Values, {}, {}>
@@ -68,7 +70,7 @@ const enhance = compose<EnhancedProps, Props>(
   injectIntl,
   connect<{}, DispatchProps, Props>(
     () => ({}),
-    mapDispatchToProps<DispatchProps>({ loadDb, deleteDb })
+    mapDispatchToProps<DispatchProps>({ loadDb, deleteDb, push })
   ),
   withState('deleting', 'setDeleting', false),
   withHandlers<Handlers, State & DispatchProps & Props & IntlProps>({
@@ -86,7 +88,7 @@ const enhance = compose<EnhancedProps, Props>(
   reduxForm<Values, Handlers & State & DispatchProps & Props & IntlProps>({
     form: 'Password',
     onSubmit: async (values, dispatch, props) => {
-      const { loadDb, intl: { formatMessage }, info, onHide } = props
+      const { loadDb, push, intl: { formatMessage }, info, onHide } = props
       const v = new Validator(values, formatMessage)
       v.required('password')
       v.maybeThrowSubmissionError()
@@ -94,6 +96,7 @@ const enhance = compose<EnhancedProps, Props>(
       try {
         const { password } = values
         await loadDb({info, password})
+        push(DbInfo.to.home())
         onHide()
       } catch (error) {
         throw new SubmissionError<Values>({password: error.message})

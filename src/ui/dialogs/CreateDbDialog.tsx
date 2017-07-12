@@ -2,6 +2,7 @@ import { Modal, ModalProps, PageHeader, Row, ButtonToolbar, Button } from 'react
 import * as React from 'react'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
+import { push } from 'react-router-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, FormProps } from 'redux-form'
 import { DbInfo } from '../../docs/index'
@@ -42,6 +43,7 @@ interface ConnectedProps {
 
 interface DispatchProps {
   createDb: createDb.Fcn
+  push: typeof push
 }
 
 type EnhancedProps = IntlProps & Props & ConnectedProps & DispatchProps & FormProps<Values, {}, {}>
@@ -58,7 +60,7 @@ const enhance = compose<EnhancedProps, Props>(
     (state: AppState) => ({
       files: state.db.files
     }),
-    mapDispatchToProps<DispatchProps>({ createDb })
+    mapDispatchToProps<DispatchProps>({ createDb, push })
   ),
   injectIntl,
   reduxForm<Values, ConnectedProps & DispatchProps & Props & IntlProps>({
@@ -79,6 +81,7 @@ const enhance = compose<EnhancedProps, Props>(
 
       const { name, password } = values
       await createDb({name, password})
+      push(DbInfo.to.home())
       onHide()
     }
   })
