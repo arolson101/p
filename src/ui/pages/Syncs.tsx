@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { compose, withHandlers } from 'recompose'
 import { SyncConnection } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges, deleteDoc } from '../../state/index'
+import { selectSyncs } from '../../selectors'
 import { SyncProvider, syncProviders } from '../../sync/index'
 import { runSync } from '../../state/db/sync'
 // import { Favico } from './forms/Favico'
@@ -46,7 +47,7 @@ const enhance = compose<EnhancedProps, undefined>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({
-      syncs: state.db.current!.view.syncs,
+      syncs: selectSyncs(state),
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, runSync })
   ),

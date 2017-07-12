@@ -17,7 +17,7 @@ const messages = defineMessages({
   }
 })
 
-type GetTransactionsArgs = { bank: Bank.View, account: Account.View, start: Date, end: Date, formatMessage: FormatMessage }
+type GetTransactionsArgs = { bank: Bank.Doc, account: Account.Doc, start: Date, end: Date, formatMessage: FormatMessage }
 export namespace getTransactions { export type Fcn = ThunkFcn<GetTransactionsArgs, string> }
 export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, account, start, end, formatMessage}) =>
   async (dispatch, getState): Promise<string> => {
@@ -29,6 +29,11 @@ export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, ac
       if (transactionList) {
         const { db: { current } } = getState()
         if (!current) { throw new Error('no db') }
+        const existingTransactions = (await current.db.allDocs({
+          include_docs: true,
+          startkey: Transaction.startkeyForAccount(account, start),
+          endkey: Transaction.endkeyForAccount(account, end)
+        })).rows.map(result => result.doc! as Transaction.Doc)
         const newTransactions = transactionList.getTransactions() || []
         const changes: ChangeSet = new Set()
         for (let newTransaction of newTransactions) {
@@ -37,9 +42,9 @@ export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, ac
             // not sure why bank would give us transactions outside of our date range, but it happens!
             continue
           }
-          const existingTransaction = findMatchingTransaction(account.transactions, newTransaction)
+          const existingTransaction = findMatchingTransaction(existingTransactions, newTransaction)
           if (!existingTransaction) {
-            const transaction = Transaction.doc(account.doc, {
+            const transaction = Transaction.doc(account, {
               serverid: newTransaction.getId(),
               time: time.valueOf(),
               type: ofx4js.domain.data.common.TransactionType[newTransaction.getTransactionType()],
@@ -62,7 +67,7 @@ export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, ac
     }
   }
 
-const findMatchingTransaction = (existingTransactions: Transaction.View[], newTransaction: ofx4js.domain.data.common.Transaction) => {
+const findMatchingTransaction = (existingTransactions: Transaction.Doc[], newTransaction: ofx4js.domain.data.common.Transaction) => {
   const id = newTransaction.getId()
-  return existingTransactions.find(existingTransaction => existingTransaction.doc.serverid === id)
+  return existingTransactions.find(existingTransaction => existingTransaction.serverid === id)
 }

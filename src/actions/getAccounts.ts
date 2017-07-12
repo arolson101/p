@@ -38,8 +38,8 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
   async (dispatch, getState) => {
     const res = []
     try {
-      let service = createConnection(bank, formatMessage)
-      let { username, password } = checkLogin(bank, formatMessage)
+      let service = createConnection(bank.doc, formatMessage)
+      let { username, password } = checkLogin(bank.doc, formatMessage)
       let accountProfiles = await service.readAccountProfiles(username, password)
 
       res.push(formatMessage(messages.success))
@@ -117,9 +117,9 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
     }
   }
 
-const findExistingAccount = (bank: Bank.View, num: string, type: Account.Type): undefined | Account.View => {
+const findExistingAccount = (bank: Bank.View, num: string, type: Account.Type): undefined | Account.Doc => {
   for (let account of bank.accounts) {
-    if (account.doc.number === num && account.doc.type === type) {
+    if (account.number === num && account.type === type) {
       return account
     }
   }

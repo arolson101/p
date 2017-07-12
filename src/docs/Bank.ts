@@ -37,16 +37,16 @@ export namespace Bank {
 
   export type View = {
     doc: Doc
-    accounts: Account.View[]
+    accounts: Account.Doc[]
   }
 
   export const buildView = (doc: Doc, cache: DocCache): View => {
     return ({
       doc,
       accounts: (doc.accounts || [])
-        .map(accountId => cache.accounts.get(accountId))
+        .map(accountId => cache.accounts.get(accountId)!)
         .filter((account?: Account.Doc) => account !== undefined)
-        .map((account: Account.Doc) => Account.buildView(account, cache))
+        // .map((account: Account.Doc) => Account.buildView(account, cache))
     })
   }
 

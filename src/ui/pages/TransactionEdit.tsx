@@ -12,8 +12,8 @@ type RouteProps = RouteComponentProps<Transaction.Params>
 
 interface ConnectedProps {
   bank: Bank.View
-  account: Account.View
-  transaction: Transaction.View
+  account: Account.Doc
+  transaction: Transaction.Doc
 }
 
 type EnhancedProps = RouteProps & ConnectedProps
@@ -21,9 +21,9 @@ type EnhancedProps = RouteProps & ConnectedProps
 const enhance = compose(
   connect(
     (state: AppState, props: RouteProps): ConnectedProps => ({
-      bank: selectBank(state, props),
-      account: selectAccount(state, props),
-      transaction: selectTransaction(state, props),
+      bank: selectBank(Bank.docId(props!.match.params))(state)!,
+      account: selectAccount(Account.docId(props!.match.params))(state)!,
+      transaction: selectTransaction(state, Transaction.docId(props!.match.params))!,
     })
   )
 )
@@ -33,13 +33,13 @@ export const TransactionEdit = enhance(props => {
   return (
     <div>
       <PageHeader>
-        {transaction.doc.name}
+        {transaction.name}
       </PageHeader>
       <div>
-        serverid: {transaction.doc.serverid}<br/>
-        name: {transaction.doc.name}<br/>
-        memo: {transaction.doc.memo}<br/>
-        amount: {transaction.doc.amount}<br/>
+        serverid: {transaction.serverid}<br/>
+        name: {transaction.name}<br/>
+        memo: {transaction.memo}<br/>
+        amount: {transaction.amount}<br/>
       </div>
     </div>
   )

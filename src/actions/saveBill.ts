@@ -41,7 +41,7 @@ export namespace saveBill {
 
 export const saveBill: AppThunk<Params, Return> = ({edit, formatMessage, values}) =>
   async (dispatch, getState) => {
-    const { db: { current } } = getState()
+    const { db: { current }, docs: { budgets } } = getState()
     if (!current) { throw new Error('no db') }
 
     const v = new Validator(values, formatMessage)
@@ -61,7 +61,7 @@ export const saveBill: AppThunk<Params, Return> = ({edit, formatMessage, values}
       ...edit,
       ...rest,
       amount: numeral(amount).value(),
-      category: Budget.maybeCreateCategory(category, current.view.budgets, docs),
+      category: Budget.maybeCreateCategory(category, Object.values(budgets), docs),
       rruleString: rrule.toString()
     })
     docs.push(bill)

@@ -4,18 +4,18 @@ import 'react-virtualized/styles.css'
 import { Transaction } from '../../docs/index'
 
 interface Props {
-  item: Transaction.View
+  item: Transaction.Doc
 }
 
 export const TransactionDetail = (props: Props) => {
   const { item } = props
   return (
     <div>
-      serverid: {item.doc.serverid}<br/>
-      name: {item.doc.name}<br/>
-      memo: {item.doc.memo}<br/>
-      amount: {item.doc.amount}<br/>
-      <div><Link to={Transaction.to.edit(item.doc)}>edit</Link></div>
+      serverid: {item.serverid}<br/>
+      name: {item.name}<br/>
+      memo: {item.memo}<br/>
+      amount: {item.amount}<br/>
+      <div><Link to={Transaction.to.edit(item)}>edit</Link></div>
     </div>
   )
 }

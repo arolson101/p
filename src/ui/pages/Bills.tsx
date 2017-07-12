@@ -8,6 +8,7 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHand
 import ui, { ReduxUIProps } from 'redux-ui'
 import { createSelector } from 'reselect'
 import { Bill } from '../../docs/index'
+import { selectBillViews } from '../../selectors'
 import { AppState, mapDispatchToProps } from '../../state/index'
 import { showBillDialog } from '../dialogs/index'
 import { CurrencyDisplay } from '../components/CurrencyDisplay'
@@ -161,7 +162,7 @@ const getMonthStart = (): Date => {
 }
 
 const selectBillDisplayGroups = createSelector(
-  (state: AppState) => state.db.current!.view.bills,
+  (state: AppState) => selectBillViews(state),
   (state: AppState) => getMonthStart(),
   (bills, start) => {
     return makeBillDisplayGroup(start)(bills)

@@ -23,7 +23,7 @@ export const AppNav = enhance(({groups, selectedId, onClick}) =>
               {item.title}
               {item.account &&
                 <em><small className='pull-right'>
-                  <FormattedNumber value={item.account.balance} style='currency' currency='USD'/>
+                  <FormattedNumber value={/*item.account.balance*/ 0} style='currency' currency='USD'/>
                 </small></em>
               }
             </NavItem>

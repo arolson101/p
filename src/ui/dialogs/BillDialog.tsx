@@ -16,6 +16,7 @@ import ui, { ReduxUIProps } from 'redux-ui'
 import * as RRule from 'rrule-alt'
 import { saveBill, toRRule, RRuleErrorMessage } from '../../actions/index'
 import { Account, Budget, Bill } from '../../docs/index'
+import { selectBillViews, selectBudgetViews } from '../../selectors'
 import { AppState, mapDispatchToProps, setDialog } from '../../state/index'
 import { Validator } from '../../util/index'
 import { typedFields, forms, SelectOption } from '../components/forms'
@@ -301,8 +302,8 @@ const enhance = compose<EnhancedProps, Props>(
   ),
   connect<StateProps, DispatchProps, IntlProps & Props>(
     (state: AppState): StateProps => ({
-      bills: state.db.current!.view.bills,
-      budgets: state.db.current!.view.budgets,
+      bills: selectBillViews(state),
+      budgets: selectBudgetViews(state),
       monthOptions: monthOptions(state),
       weekdayOptions: weekdayOptions(state),
     }),
@@ -330,7 +331,7 @@ const enhance = compose<EnhancedProps, Props>(
     },
     onSubmit: async (values, dispatch, props) => {
       const { edit, onHide, saveBill, intl: { formatMessage } } = props
-      await saveBill({edit: (edit ? edit.doc : undefined), formatMessage, values})
+      await saveBill({edit: edit && edit.doc, formatMessage, values})
       return onHide()
     }
   }),

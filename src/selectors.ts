@@ -1,78 +1,210 @@
-// import { createSelector } from 'reselect'
+import { createSelector } from 'reselect'
 import { RouteComponentProps } from 'react-router'
+import * as RRule from 'rrule-alt'
 import { AppState } from './state/index'
-import { Bank, Account, Transaction, Bill } from './docs/index'
+import { Bank, Account, Transaction, Bill, Category, Budget, SyncConnection } from './docs/index'
 
-export const selectBanks = (state: AppState) => {
-  if (!state.db.current) {
-    throw new Error('no open db!')
+export const selectBank = (bankId: Bank.DocId) => createSelector(
+  (state: AppState) => state.docs.banks,
+  (state: AppState) => state.docs.accounts,
+  (banks, accounts) => {
+    const doc = banks[bankId]
+    if (!doc) {
+      console.error(`invalid bankId: `, bankId)
+      return
+    }
+    return ({
+      doc,
+      accounts: (doc.accounts || [])
+        .map(accountId => accounts[accountId])
+        .filter((account?: Account.Doc) => account !== undefined)
+    }) as Bank.View
   }
-  return state.db.current.view.banks
-}
+)
 
-// TODO: figure out why createSelector isn't working on these anymore
+export const selectBanks = createSelector(
+  (state: AppState) => state.docs.banks,
+  (state: AppState) => state,
+  (banks, state) => {
+    return Object.keys(banks)
+      .map((bankId: Bank.DocId) => selectBank(bankId)(state)!)
+      .filter(bank => !!bank)
+  }
+)
 
-export const selectBank = (state: AppState, props?: RouteComponentProps<Bank.Params>) => {
-  const banks = state.db.current && state.db.current.view.banks
-  const bankId = props && Bank.docId(props.match.params)
-  if (!banks) {
-    throw new Error('no banks!')
+export const selectAccount = (accountId: Account.DocId) => createSelector(
+  (state: AppState) => state.docs.accounts,
+  (accounts) => {
+    const doc = accounts[accountId]
+    if (!doc) {
+      console.error(`invalid accountId: `, accountId)
+      return
+    }
+    return doc
   }
-  if (!bankId) {
-    throw new Error('no bankId!')
-  }
-  const bank = banks.find(b => b.doc._id === bankId)
-  if (!bank) {
-    throw new Error('bank not found!')
-  }
-  return bank
-}
+)
 
-export const selectAccount = (state: AppState, props?: RouteComponentProps<Account.Params>) => {
-  const bank = selectBank(state, props)
-  const accountId = props && Account.docId(props.match.params)
-  if (!accountId) {
-    throw new Error('no accountId!')
+export const selectBudget = (budgetId: Budget.DocId) => createSelector(
+  (state: AppState) => state.docs.budgets,
+  (budgets) => {
+    const doc = budgets[budgetId]
+    if (!doc) {
+      console.error(`invalid budgetId: `, budgetId)
+      return
+    }
+    return doc
   }
-  const account = bank.accounts.find(a => a.doc._id === accountId)
-  if (!account) {
-    throw new Error('account not found!')
-  }
-  return account
-}
+)
 
-export const selectTransaction = (state: AppState, props?: RouteComponentProps<Transaction.Params>) => {
-  const account = selectAccount(state, props)
-  const txDocId = props && Transaction.docId(props.match.params)
-  if (!txDocId) {
-    throw new Error('no txDocId')
-  }
-  const transaction = account.transactions.find(tx => tx.doc._id === txDocId)
-  if (!transaction) {
-    throw new Error('transaction not found!')
-  }
-  return transaction
-}
+export const selectBudgetView = (budgetId: Budget.DocId) => createSelector(
+  (state: AppState) => state.docs.budgets,
+  (state: AppState) => state.docs.bills,
+  (state: AppState) => state,
+  (budgets, billDocs, state) => {
+    const doc = budgets[budgetId]
+    if (!doc) {
+      console.error(`invalid budgetId: `, budgetId)
+      return
+    }
 
-export const selectBills = (state: AppState) => {
-  if (!state.db.current) {
-    throw new Error('no open db!')
-  }
-  return state.db.current.view.bills
-}
+    const categories = (doc.categories || [])
+      .map(category => selectCategory(state, category)!)
+      .filter(category => category !== undefined)
+      .map(category => selectCategoryView(state, category._id))
 
-export const selectBill = (state: AppState, props?: RouteComponentProps<Bill.Params>) => {
-  const bills = state.db.current && state.db.current.view.bills
-  const billId = props && Bill.docId(props.match.params)
-  if (!bills) {
-    throw new Error('no bills!')
+    return ({
+      doc,
+      categories
+    }) as Budget.View
   }
-  if (!billId) {
-    throw new Error('no billId!')
+)
+
+export const selectBudgets = createSelector(
+  (state: AppState) => state.docs.budgets,
+  (state: AppState) => state,
+  (budgets, state) => {
+    return Object.keys(budgets)
+      .map((budgetId: Budget.DocId) => selectBudget(budgetId)(state)!)
+      .filter(budget => !!budget)
+      .sort(Budget.compareDoc)
   }
-  const bill = bills.find(b => b.doc._id === billId)
-  if (!bill) {
-    throw new Error('bill not found!')
+)
+
+export const selectBudgetViews = createSelector(
+  (state: AppState) => state.docs.budgets,
+  (state: AppState) => state,
+  (budgets, state) => {
+    return Object.keys(budgets)
+      .map((budgetId: Budget.DocId) => selectBudgetView(budgetId)(state)!)
+      .filter(budget => !!budget)
+      .sort(Budget.compare)
   }
-  return bill
-}
+)
+
+export const selectCategory = createSelector(
+  (state: AppState, categoryId: Category.DocId) => state.docs.categories,
+  (state: AppState, categoryId: Category.DocId) => categoryId,
+  (categories, categoryId) => {
+    const doc = categories[categoryId]
+    if (!doc) {
+      console.error(`invalid categoryId: `, categoryId)
+      return
+    }
+    return doc
+  }
+)
+
+export const selectCategoryView = createSelector(
+  (state: AppState, categoryId: Category.DocId) => state.docs.categories,
+  (state: AppState, categoryId: Category.DocId) => state.docs.bills,
+  (state: AppState, categoryId: Category.DocId) => state,
+  (state: AppState, categoryId: Category.DocId) => categoryId,
+  (categories, billDocs, state, categoryId) => {
+    const doc = categories[categoryId]
+    if (!doc) {
+      console.error(`invalid categoryId: `, categoryId)
+      return
+    }
+
+    const bills = Object.values(billDocs)
+      .filter(bill => bill.category === doc._id)
+      .map(bill => selectBillView(bill._id)(state))
+
+    return {
+      doc,
+      bills
+    } as Category.View
+  }
+)
+
+export const selectTransaction = createSelector(
+  (state: AppState, transactionId: Transaction.DocId) => state.docs.transactions,
+  (state: AppState, transactionId: Transaction.DocId) => transactionId,
+  (transactions, transactionId) => {
+    const doc = transactions[transactionId]
+    if (!doc) {
+      console.error(`invalid transactionId: `, transactionId)
+      return
+    }
+    return doc
+  }
+)
+
+export const selectBillView = (billId: Bill.DocId) => createSelector(
+  (state: AppState) => state.docs.bills,
+  (state: AppState) => state,
+  (bills, state) => {
+    const doc = bills[billId]
+    if (!doc) {
+      console.error(`invalid billId: `, billId)
+      return
+    }
+    return ({
+      doc,
+      rrule: RRule.fromString(doc.rruleString),
+      account: doc.account && selectAccount(doc.account)(state),
+      budget: doc.category && selectBudget(Category.budgetId(doc.category))(state),
+      category: doc.category && selectCategory(state, doc.category)
+    }) as Bill.View
+  }
+)
+
+export const selectBills = createSelector(
+  (state: AppState) => state.docs.bills,
+  (bills) => {
+    return Object.keys(bills)
+  }
+)
+
+export const selectBillViews = createSelector(
+  (state: AppState) => state.docs.bills,
+  (state: AppState) => state,
+  (bills, state) => {
+    return Object.keys(bills)
+      .map((billId: Bill.DocId) => selectBillView(billId)(state)!)
+      .filter(bill => !!bill)
+  }
+)
+
+export const selectSync = createSelector(
+  (state: AppState, syncId: SyncConnection.DocId) => state.docs.syncConnections,
+  (state: AppState, syncId: SyncConnection.DocId) => syncId,
+  (syncConnections, syncId) => {
+    const doc = syncConnections[syncId]
+    if (!doc) {
+      console.error(`invalid syncId: `, syncId)
+      return
+    }
+    return doc
+  }
+)
+
+export const selectSyncs = createSelector(
+  (state: AppState) => state.docs.syncConnections,
+  (state: AppState) => state,
+  (syncConnections, state) => {
+    return Object.keys(syncConnections)
+      .map((syncId: SyncConnection.DocId) => selectSync(state, syncId)!)
+      .filter(sync => !!sync)
+  }
+)

@@ -39,7 +39,7 @@ const enhance = compose<EnhancedProps, undefined>(
   setDisplayName('Accounts'),
   onlyUpdateForPropTypes,
   setPropTypes({}),
-  connect<ConnectedProps, {}, {}>(
+  connect<ConnectedProps, DispatchProps, {}>(
     (state: AppState): ConnectedProps => ({
       banks: selectBanks(state)
     }),
@@ -70,8 +70,8 @@ export const Accounts = enhance(props => {
             </Link>
             <ul>
               {bank.accounts.map(account =>
-                <li key={account.doc._id}>
-                  <Link to={Account.to.view(account.doc)}>{account.doc.name}</Link>
+                <li key={account._id}>
+                  <Link to={Account.to.view(account)}>{account.name}</Link>
                 </li>
               )}
             </ul>

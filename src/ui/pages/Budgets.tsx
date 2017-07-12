@@ -10,6 +10,7 @@ import { compose, withHandlers, withState, shallowEqual } from 'recompose'
 import { FormProps, FieldArray, FieldsProps, reduxForm, Fields } from 'redux-form'
 import { deleteBudget } from '../../actions/index'
 import { Bill, Budget, Category } from '../../docs/index'
+import { selectBudgetViews } from '../../selectors'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
 import { Validator } from '../../util/index'
 import { showBillDialog } from '../dialogs/index'
@@ -110,7 +111,7 @@ const enhance = compose<EnhancedProps, undefined>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({
-      budgets: R.sort(Budget.compare, state.db.current!.view.budgets)
+      budgets: selectBudgetViews(state)
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget, showBillDialog })
   ),

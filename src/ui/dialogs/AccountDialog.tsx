@@ -141,9 +141,9 @@ const enhance = compose<EnhancedProps, Props>(
     validate: ((values, props) => {
       const { edit, bank, intl: { formatMessage } } = props
       const v = new Validator(values, formatMessage)
-      const otherAccounts = bank.accounts.filter(acct => !edit || edit._id !== acct.doc._id)
-      const otherNames = otherAccounts.map(acct => acct.doc.name)
-      const otherNumbers = otherAccounts.filter(acct => acct.doc.type === v.values.type).map(acct => acct.doc.number)
+      const otherAccounts = bank.accounts.filter(acct => !edit || edit._id !== acct._id)
+      const otherNames = otherAccounts.map(acct => acct.name)
+      const otherNumbers = otherAccounts.filter(acct => acct.type === v.values.type).map(acct => acct.number)
       v.unique('name', otherNames, messages.uniqueName)
       v.unique('number', otherNumbers, messages.uniqueNumber)
       return v.errors

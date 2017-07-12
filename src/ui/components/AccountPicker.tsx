@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName } from 'recompose'
 import { Bank } from '../../docs/index'
+import { selectBanks } from '../../selectors'
 import { AppState } from '../../state/index'
 import { SelectOption } from './index'
 
@@ -40,7 +41,7 @@ interface AccountSelectOption extends SelectOption {
 }
 
 const accountOptions = createSelector(
-  (state: AppState) => state.db.current && state.db.current.view.banks,
+  (state: AppState) => selectBanks(state),
   (banks: Bank.View[] = []): AccountSelectOption[] => {
     const accounts = R.flatten<AccountSelectOption>(banks.map(bank =>
       bank.accounts.length ? [
@@ -51,9 +52,9 @@ const accountOptions = createSelector(
           disabled: true
         },
         ...bank.accounts.map(acct => ({
-          value: acct.doc._id,
-          label: acct.doc.name,
-          fullName: `${bank.doc.name} - ${acct.doc.name}`
+          value: acct._id,
+          label: acct.name,
+          fullName: `${bank.doc.name} - ${acct.name}`
         }))
       ] : []
     ))

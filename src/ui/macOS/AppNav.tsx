@@ -30,7 +30,7 @@ export const AppNav = ({groups, selectedId, onClick}: NavProps) =>
           </Text>
           {item.account &&
             <em><small className='pull-right' style={{whiteSpace: 'nowrap'}}>
-              <FormattedNumber value={item.account.balance} style='currency' currency='USD'/>
+              <FormattedNumber value={/*item.account.balance*/ 0} style='currency' currency='USD'/>
             </small></em>
           }
         </ListViewRow>

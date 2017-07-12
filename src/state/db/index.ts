@@ -33,8 +33,7 @@ export interface CurrentDb {
   db: PouchDB.Database<any>
   change$: Rx.Subject<DbChangeInfo>
   changeProcessed$: Rx.Subject<string>
-  view: DbView
-  cache: DocCache
+  local: LocalDoc.Doc
 }
 
 export interface DbState {
@@ -111,7 +110,7 @@ export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
     const locals = docs.filter(doc => doc._id.startsWith('_local'))
     if (locals.length) {
       locals.push(
-        LocalDoc.updateIds(current.cache.local, locals)
+        LocalDoc.updateIds(current.local, locals)
       )
     }
 
@@ -161,6 +160,12 @@ export interface Deletion {
 export const deleteDoc = (doc: AnyDocument): Deletion => ({
   _id: doc._id,
   _rev: doc._rev,
+  _deleted: true
+})
+
+export const deleteId = (_id: string, _rev: string): Deletion => ({
+  _id,
+  _rev,
   _deleted: true
 })
 
@@ -235,33 +240,33 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     console.time('load')
 
     const local = await safeGet<LocalDoc.Doc>(db, LocalDoc.DocId) || LocalDoc.create()
-    const localDocs: AnyDocument[] = []
-    for (let id in local.ids) {
-      const doc = await safeGet<AnyDocument | undefined>(db, id)
-      if (doc) {
-        localDocs.push(doc)
-      }
-    }
-    // let docs: AnyDocument[] = []
-    // for (let opts of DocCache.allDocs) {
-    //   const allDocs = await db.allDocs({include_docs: true, conflicts: true, ...opts})
-    //   docs.push(...allDocs.rows.map(row => row.doc!))
+    // const localDocs: AnyDocument[] = []
+    // for (let id in local.ids) {
+    //   const doc = await safeGet<AnyDocument | undefined>(db, id)
+    //   if (doc) {
+    //     localDocs.push(doc)
+    //   }
     // }
-    // docs.push(local)
-    // docs.push(...localDocs)
-    const allDocs = await db.allDocs({include_docs: true, conflicts: true})
-    const docs: AnyDocument[] = allDocs.rows.map(row => row.doc!).concat(localDocs).concat(local)
-    resolveConflicts(db, ...docs)
+    // // let docs: AnyDocument[] = []
+    // // for (let opts of DocCache.allDocs) {
+    // //   const allDocs = await db.allDocs({include_docs: true, conflicts: true, ...opts})
+    // //   docs.push(...allDocs.rows.map(row => row.doc!))
+    // // }
+    // // docs.push(local)
+    // // docs.push(...localDocs)
+    // const allDocs = await db.allDocs({include_docs: true, conflicts: true})
+    // const docs: AnyDocument[] = allDocs.rows.map(row => row.doc!).concat(localDocs).concat(local)
+    // resolveConflicts(db, ...docs)
 
-    const cache = DocCache.addDocsToCache(docs)
-    const view = DbView.buildView(cache)
+    // const cache = DocCache.addDocsToCache(docs)
+    // const view = DbView.buildView(cache)
 
-    const current = { info, db, localInfo, change$, changeProcessed$, view, cache }
+    const current = { info, db, localInfo, change$, changeProcessed$, local }
     await dispatch(setDb(current))
 
     await dispatch(initDocs({db}))
     console.timeEnd('load')
-    console.log(`${cache.transactions.size} transactions`)
+    // console.log(`${cache.transactions.size} transactions`)
 
     // dumpNextSequence(current)
   }
@@ -332,15 +337,15 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
 
     case DB_CHANGES:
       if (state.current && state.current.db === action.db) {
-        const nextCache = DocCache.updateCache(state.current.cache, action.changes)
-        const nextView = DbView.buildView(nextCache)
+        // const nextCache = DocCache.updateCache(state.current.cache, action.changes)
+        // const nextView = DbView.buildView(nextCache)
 
         console.log(`${action.changes.length} changes`)
         for (let ci of action.changes) {
           state.current.changeProcessed$.next(ci.id)
         }
 
-        return { ...state, current: { ...state.current!, view: nextView, cache: nextCache } }
+        return { ...state, current: { ...state.current! /*, view: nextView, cache: nextCache*/ } }
       } else {
         return state
       }

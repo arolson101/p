@@ -48,7 +48,7 @@ type RouteProps = RouteComponentProps<Account.Params>
 
 interface ConnectedProps {
   bank: Bank.View
-  account: Account.View
+  account: Account.Doc
   db: PouchDB.Database<Transaction.Doc>
 }
 
@@ -76,8 +76,8 @@ const enhance = compose<EnhancedProps, RouteProps>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps & RouteProps>(
     (state: AppState, props): ConnectedProps => ({
-      bank: selectBank(state, props!),
-      account: selectAccount(state, props!),
+      bank: selectBank(Bank.docId(props!.match.params))(state)!,
+      account: selectAccount(Account.docId(props!.match.params))(state)!,
       db: state.db.current!.db
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions, showAccountDialog, showAccountDeleteDialog })
@@ -118,7 +118,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
   //   }
   // ),
   withHandlers<HandlerProps, ConnectedProps & DispatchProps & IntlProps & RouteProps>({
-    editAccount: ({ showAccountDialog, bank, account: { doc: edit } }) => () => {
+    editAccount: ({ showAccountDialog, bank, account: edit }) => () => {
       showAccountDialog({bank, edit})
     },
 
@@ -132,7 +132,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
       let balance = 0
       for (let i = 0; i < 1000; i++) {
         const time = new Date(2016, 11, i, Math.trunc(Math.random() * 24), Math.trunc(Math.random() * 60))
-        const tx = Transaction.doc(account.doc, {
+        const tx = Transaction.doc(account, {
           time: time.valueOf(),
           name: 'payee ' + i + ' ' + Math.random() * 100,
           type: '',
@@ -151,7 +151,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
       const { getTransactions, bank, account, intl: { formatMessage } } = props
       const start = new Date(2016, 11, 1)
       const end = new Date(2016, 11, 31)
-      await getTransactions({bank, account, start, end, formatMessage})
+      await getTransactions({bank: bank.doc, account, start, end, formatMessage})
       // TODO: try/catch
     },
 
@@ -165,7 +165,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
 
 export const AccountView = enhance((props) => {
   const { bank, account, editAccount, downloadTransactions, addTransactions, deleteTransactions, deleteAccount } = props
-  const transactions = account.transactions
+  const transactions: Transaction[] = [] // account.transactions
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
       <PageHeader>
@@ -205,9 +205,9 @@ export const AccountView = enhance((props) => {
           ]}
         />
 
-        {account.doc.name}
+        {account.name}
         {' '}
-        <small>{account.doc.number}</small>
+        <small>{account.number}</small>
       </PageHeader>
 
       <div style={{flex: 1}}>

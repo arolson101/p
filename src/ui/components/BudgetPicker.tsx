@@ -5,12 +5,13 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName, withHandlers } from 'recompose'
 import { Budget } from '../../docs/index'
+import { selectBudgets, selectBudgetViews } from '../../selectors'
 import { AppState } from '../../state/index'
 import { SelectOption } from './index'
 
 interface ConnectedProps {
   options: SelectOption[]
-  budgets: Budget.View[]
+  budgets: Budget.Doc[]
 }
 
 interface Handlers {
@@ -25,7 +26,7 @@ const enhance = compose<EnhancedProps, {}>(
   connect<ConnectedProps, {}, {}>(
     (state: AppState): ConnectedProps => ({
       options: categoryOptions(state),
-      budgets: state.db.current!.view.budgets
+      budgets: selectBudgets(state)
     })
   ),
   withHandlers<Handlers, ConnectedProps>({
@@ -72,7 +73,7 @@ const optionLabel = (budget: Budget.Doc, category: string): string => {
 }
 
 const categoryOptions = createSelector(
-  (state: AppState) => state.db.current!.view.budgets,
+  (state: AppState) => selectBudgetViews(state),
   (budgets: Budget.View[]): SelectOption[] => {
     const options = R.flatten<SelectOption>(budgets.map(budget =>
       budget.categories.length ? [

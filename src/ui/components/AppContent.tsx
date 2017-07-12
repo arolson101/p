@@ -7,6 +7,7 @@ import * as SplitPane from 'react-split-pane'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers, withContext } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { Bank, Account, Budget, Bill, SyncConnection } from '../../docs/index'
+import { selectBanks } from '../../selectors'
 import { AppState } from '../../state/index'
 import * as Mac from '../macOS/index'
 import * as Win from '../windows/index'
@@ -18,7 +19,7 @@ export interface NavItem {
   icon: string
   path: string
   title: string
-  account?: Account.View
+  account?: Account.Doc
 }
 
 export interface NavGroup {
@@ -96,7 +97,7 @@ const enhance = compose<EnhancedProps, {}>(
   connect<ConnectedProps, {}, RouteProps>(
     (state: AppState): ConnectedProps => ({
       ThemeNav: state.sys.theme === 'macOS' ? Mac.AppNav : Win.AppNav as any,
-      banks: state.db.current!.view.banks
+      banks: selectBanks(state)
     })
   ),
   ui<UIState, ConnectedProps & RouteProps, {}>({
@@ -118,15 +119,15 @@ const enhance = compose<EnhancedProps, {}>(
 
 const makeAccountList = R.pipe(
   R.chain((bank: Bank.View) => bank.accounts),
-  R.map((account: Account.View): NavItem => ({
-    id: account.doc._id,
-    icon: Account.icons[account.doc.type],
-    path: Account.to.view(account.doc),
-    title: account.doc.name,
+  R.map((account: Account.Doc): NavItem => ({
+    id: account._id,
+    icon: Account.icons[account.type],
+    path: Account.to.view(account),
+    title: account.name,
     account
   })),
   R.sortBy((item: NavItem) => item.title.toLocaleLowerCase()),
-  R.sortBy((item: NavItem) => Object.keys(Account.Type).indexOf(item.account!.doc.type).toString())
+  R.sortBy((item: NavItem) => Object.keys(Account.Type).indexOf(item.account!.type).toString())
 )
 
 export const AppContent = enhance(props => {

@@ -34,7 +34,7 @@ export namespace Category {
   }
 
   export const linkView = (view: View, views: DbView) => {
-    view.bills = views.bills.filter(bill => bill.doc.category === view.doc._id)
+    // view.bills = views.bills.filter(bill => bill.doc.category === view.doc._id)
   }
 
   export const isDocId = (id: string): id is DocId => {

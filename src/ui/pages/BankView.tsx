@@ -105,7 +105,7 @@ const enhance = compose<EnhancedProps, undefined>(
   withRouter,
   connect<ConnectedProps, DispatchProps, IntlProps & RouteProps>(
     (state: AppState, props) => ({
-      bank: selectBank(state, props)
+      bank: selectBank(Bank.docId(props!.match.params))(state)!
     }),
     mapDispatchToProps<DispatchProps>({ getAccounts, showBankDialog, showAccountDialog, showBankDeleteDialog })
   ),
@@ -223,14 +223,14 @@ export const BankView = enhance((props) => {
             </tr>
           </thead>
           <tbody>
-            {bank.accounts.filter(account => account.doc.visible || showAll).map(account => account &&
-              <tr key={account.doc._id} href={history.createHref({pathname: Account.to.view(account.doc)})}>
+            {bank.accounts.filter(account => account.visible || showAll).map(account => account &&
+              <tr key={account._id} href={history.createHref({pathname: Account.to.view(account)})}>
                 {showAll &&
-                  <td>{account.doc.visible}</td>
+                  <td>{account.visible}</td>
                 }
-                <td>{account.doc.type && <FormattedMessage {...Account.messages[account.doc.type]}/>}</td>
-                <td><Link to={Account.to.view(account.doc)}>{account.doc.name}</Link></td>
-                <td><Link to={Account.to.view(account.doc)}>{account.doc.number}</Link></td>
+                <td>{account.type && <FormattedMessage {...Account.messages[account.type]}/>}</td>
+                <td><Link to={Account.to.view(account)}>{account.name}</Link></td>
+                <td><Link to={Account.to.view(account)}>{account.number}</Link></td>
               </tr>
             )}
           </tbody>

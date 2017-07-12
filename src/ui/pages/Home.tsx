@@ -11,6 +11,7 @@ import { createSelector } from 'reselect'
 // import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack, VictoryGroup, VictoryVoronoiTooltip } from 'victory'
 import { deleteBudget } from '../../actions/index'
 import { Bank, Bill, Account, Budget, Category } from '../../docs/index'
+import { selectBanks, selectBillViews, selectBudgetViews } from '../../selectors'
 import { AppState, mapDispatchToProps } from '../../state/index'
 import { CurrencyDisplay } from '../components/CurrencyDisplay'
 import { Favico } from '../components/Favico'
@@ -110,7 +111,7 @@ const enhance = compose<EnhancedProps, undefined>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({
-      budgets: state.db.current!.view.budgets,
+      budgets: selectBudgetViews(state),
       data: selectAccountData(state)
     }),
     mapDispatchToProps<DispatchProps>({ deleteBudget })
@@ -205,24 +206,24 @@ export const Home = enhance(props => {
                 <small><em>no categories</em></small>
               </ListGroupItem>
             }
-            {budget.categories.map(category =>
-              <ListGroupItem key={category.doc._id}>
+            {/* {budget.categories.map(category =>
+              <ListGroupItem key={category._id}>
                 <Grid fluid>
                   <Row>
                     <Col xs={2}>
-                      {category.doc.name}
+                      {category.name}
                     </Col>
                     <Col xs={8}>
                       <CategoryProgress category={category}/>
                     </Col>
                     <Col xs={2}>
                       <em><small>
-                        <CurrencyDisplay amount={category.doc.amount}/>
+                        <CurrencyDisplay amount={category.amount}/>
                       </small></em>
                     </Col>
                   </Row>
                   {category.bills.map(bill =>
-                    <Row key={bill.doc._id}>
+                    <Row key={bill._id}>
                       <Col xs={8} xsOffset={2}>
                         <Favico value={bill.doc.favicon}/>
                         {' '}
@@ -237,7 +238,7 @@ export const Home = enhance(props => {
                   )}
                 </Grid>
               </ListGroupItem>
-            )}
+            )} */}
           </ListGroup>
         </Panel>
       )}
@@ -273,16 +274,16 @@ const CategoryProgress = ({category}: {category: Category.View}) => {
 }
 
 const selectAccountData = createSelector(
-  (state: AppState) => state.db.current!.view.banks,
-  (state: AppState) => state.db.current!.view.bills,
+  (state: AppState) => selectBanks(state),
+  (state: AppState) => selectBillViews(state),
   (banks, bills) => {
     const start = new Date()
     const end = moment(start).add(3, 'months').toDate()
     return R.pipe(
       R.chain((bank: Bank.View) => bank.accounts),
-      R.map((account: Account.View): AccountData => {
+      R.map((account: Account.Doc): AccountData => {
         const points = R.pipe(
-          R.filter((bill: Bill.View) => bill.doc.account === account.doc._id),
+          R.filter((bill: Bill.View) => bill.doc.account === account._id),
           R.chain(
             (bill: Bill.View) => bill.rrule.between(start, end, true)
               .map(date => ({date, value: bill.doc.amount, name: bill.doc.name}))
@@ -294,14 +295,14 @@ const selectAccountData = createSelector(
               pts.push({...pt, value: pt.value + prev})
               return pts
             },
-            [{date: start, value: account.balance, name: 'initial balance'}]
+            [{date: start, value: 0 /*account.balance*/, name: 'initial balance'}]
           )
         )(bills)
 
         // console.log(account.doc.name, points)
 
         return {
-          name: account.doc.name,
+          name: account.name,
           points
         }
       })
