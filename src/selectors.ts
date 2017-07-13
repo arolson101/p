@@ -1,14 +1,39 @@
+import * as docURI from 'docuri'
 import { createSelector } from 'reselect'
 import { RouteComponentProps } from 'react-router'
 import * as RRule from 'rrule-alt'
 import { AppState } from './state/index'
 import { Bank, Account, Transaction, Bill, Category, Budget, SyncConnection } from './docs/index'
 
-export const selectBank = (bankId: Bank.DocId) => createSelector(
-  (state: AppState) => state.docs.banks,
-  (state: AppState) => state.docs.accounts,
-  (banks, accounts) => {
-    const doc = banks[bankId]
+interface MinRouteProps<T> {
+  match: {
+    params: T
+  }
+}
+
+const minRouteProps = <ID, T>(fcn: docURI.Route<T, ID>, id: ID): MinRouteProps<T> => {
+  const params = fcn(id)
+  if (!params) {
+    throw new Error(`invalid id: ${id}`)
+  }
+  return ({
+    match: {
+      params: params as T
+    }
+  })
+}
+
+const debugSelector = (name: string, id?: string) => {
+  // console.log(`selector ${name} running for '${id}`)
+}
+
+export const selectBank = createSelector(
+  (state: AppState, props: MinRouteProps<Bank.Params> | undefined) => state.docs.banks,
+  (state: AppState, props: MinRouteProps<Bank.Params> | undefined) => state.docs.accounts,
+  (state: AppState, props: MinRouteProps<Bank.Params> | undefined) => props && Bank.docId(props.match.params),
+  (banks, accounts, bankId): Bank.View | undefined => {
+    debugSelector('selectBank', bankId)
+    const doc = bankId && banks[bankId]
     if (!doc) {
       console.error(`invalid bankId: `, bankId)
       return
@@ -18,24 +43,27 @@ export const selectBank = (bankId: Bank.DocId) => createSelector(
       accounts: (doc.accounts || [])
         .map(accountId => accounts[accountId])
         .filter((account?: Account.Doc) => account !== undefined)
-    }) as Bank.View
+    })
   }
 )
 
 export const selectBanks = createSelector(
   (state: AppState) => state.docs.banks,
   (state: AppState) => state,
-  (banks, state) => {
+  (banks, state): Bank.View[] => {
+    debugSelector('selectBanks')
     return Object.keys(banks)
-      .map((bankId: Bank.DocId) => selectBank(bankId)(state)!)
+      .map((bankId: Bank.DocId) => selectBank(state, minRouteProps(Bank.docId, bankId))!)
       .filter(bank => !!bank)
   }
 )
 
-export const selectAccount = (accountId: Account.DocId) => createSelector(
-  (state: AppState) => state.docs.accounts,
-  (accounts) => {
-    const doc = accounts[accountId]
+export const selectAccount = createSelector(
+  (state: AppState, props: MinRouteProps<Account.Params> | undefined) => state.docs.accounts,
+  (state: AppState, props: MinRouteProps<Account.Params> | undefined) => props && Account.docId(props.match.params),
+  (accounts, accountId): Account.Doc | undefined => {
+    debugSelector('selectAccount', accountId)
+    const doc = accountId && accounts[accountId]
     if (!doc) {
       console.error(`invalid accountId: `, accountId)
       return
@@ -44,10 +72,12 @@ export const selectAccount = (accountId: Account.DocId) => createSelector(
   }
 )
 
-export const selectBudget = (budgetId: Budget.DocId) => createSelector(
-  (state: AppState) => state.docs.budgets,
-  (budgets) => {
-    const doc = budgets[budgetId]
+export const selectBudget = createSelector(
+  (state: AppState, props: MinRouteProps<Budget.Params> | undefined) => state.docs.budgets,
+  (state: AppState, props: MinRouteProps<Budget.Params> | undefined) => props && Budget.docId(props.match.params),
+  (budgets, budgetId): Budget.Doc | undefined => {
+    debugSelector('selectBudget', budgetId)
+    const doc = budgetId && budgets[budgetId]
     if (!doc) {
       console.error(`invalid budgetId: `, budgetId)
       return
@@ -56,35 +86,37 @@ export const selectBudget = (budgetId: Budget.DocId) => createSelector(
   }
 )
 
-export const selectBudgetView = (budgetId: Budget.DocId) => createSelector(
-  (state: AppState) => state.docs.budgets,
-  (state: AppState) => state.docs.bills,
-  (state: AppState) => state,
-  (budgets, billDocs, state) => {
-    const doc = budgets[budgetId]
+export const selectBudgetView = createSelector(
+  (state: AppState, props: MinRouteProps<Budget.Params> | undefined) => state.docs.budgets,
+  (state: AppState, props: MinRouteProps<Budget.Params> | undefined) => state.docs.bills,
+  (state: AppState, props: MinRouteProps<Budget.Params> | undefined) => state,
+  (state: AppState, props: MinRouteProps<Budget.Params> | undefined) => props && Budget.docId(props.match.params),
+  (budgets, billDocs, state, budgetId): Budget.View | undefined => {
+    debugSelector('selectBudgetView', budgetId)
+    const doc = budgetId && budgets[budgetId]
     if (!doc) {
       console.error(`invalid budgetId: `, budgetId)
       return
     }
 
-    const categories = (doc.categories || [])
-      .map(category => selectCategory(state, category)!)
-      .filter(category => category !== undefined)
-      .map(category => selectCategoryView(state, category._id))
+    const categories: Category.View[] = (doc.categories || [])
+      .map(category => selectCategoryView(state, minRouteProps(Category.docId, category))!)
+      .filter(category => !!category)
 
     return ({
       doc,
       categories
-    }) as Budget.View
+    })
   }
 )
 
 export const selectBudgets = createSelector(
   (state: AppState) => state.docs.budgets,
   (state: AppState) => state,
-  (budgets, state) => {
+  (budgets, state): Budget.Doc[] => {
+    debugSelector('selectBudgets')
     return Object.keys(budgets)
-      .map((budgetId: Budget.DocId) => selectBudget(budgetId)(state)!)
+      .map((budgetId: Budget.DocId) => selectBudget(state, minRouteProps(Budget.docId, budgetId))!)
       .filter(budget => !!budget)
       .sort(Budget.compareDoc)
   }
@@ -93,19 +125,21 @@ export const selectBudgets = createSelector(
 export const selectBudgetViews = createSelector(
   (state: AppState) => state.docs.budgets,
   (state: AppState) => state,
-  (budgets, state) => {
+  (budgets, state): Budget.View[] => {
+    debugSelector('selectBudgetViews')
     return Object.keys(budgets)
-      .map((budgetId: Budget.DocId) => selectBudgetView(budgetId)(state)!)
+      .map((budgetId: Budget.DocId) => selectBudgetView(state, minRouteProps(Budget.docId, budgetId))!)
       .filter(budget => !!budget)
       .sort(Budget.compare)
   }
 )
 
 export const selectCategory = createSelector(
-  (state: AppState, categoryId: Category.DocId) => state.docs.categories,
-  (state: AppState, categoryId: Category.DocId) => categoryId,
-  (categories, categoryId) => {
-    const doc = categories[categoryId]
+  (state: AppState, props: MinRouteProps<Category.Params> | undefined) => state.docs.categories,
+  (state: AppState, props: MinRouteProps<Category.Params> | undefined) => props && Category.docId(props.match.params),
+  (categories, categoryId): Category.Doc | undefined => {
+    debugSelector('selectCategory', categoryId)
+    const doc = categoryId && categories[categoryId]
     if (!doc) {
       console.error(`invalid categoryId: `, categoryId)
       return
@@ -115,33 +149,36 @@ export const selectCategory = createSelector(
 )
 
 export const selectCategoryView = createSelector(
-  (state: AppState, categoryId: Category.DocId) => state.docs.categories,
-  (state: AppState, categoryId: Category.DocId) => state.docs.bills,
-  (state: AppState, categoryId: Category.DocId) => state,
-  (state: AppState, categoryId: Category.DocId) => categoryId,
-  (categories, billDocs, state, categoryId) => {
-    const doc = categories[categoryId]
+  (state: AppState, props: MinRouteProps<Category.Params> | undefined) => state.docs.categories,
+  (state: AppState, props: MinRouteProps<Category.Params> | undefined) => state.docs.bills,
+  (state: AppState, props: MinRouteProps<Category.Params> | undefined) => state,
+  (state: AppState, props: MinRouteProps<Category.Params> | undefined) => props && Category.docId(props.match.params),
+  (categories, billDocs, state, categoryId): Category.View | undefined => {
+    debugSelector('selectCategoryView', categoryId)
+    const doc = categoryId && categories[categoryId]
     if (!doc) {
       console.error(`invalid categoryId: `, categoryId)
       return
     }
 
-    const bills = Object.values(billDocs)
+    const bills: Bill.View[] = Object.values(billDocs)
       .filter(bill => bill.category === doc._id)
-      .map(bill => selectBillView(bill._id)(state))
+      .map(bill => selectBillView(state, minRouteProps(Bill.docId, bill._id))!)
+      .filter(bill => !!bill)
 
     return {
       doc,
       bills
-    } as Category.View
+    }
   }
 )
 
 export const selectTransaction = createSelector(
-  (state: AppState, transactionId: Transaction.DocId) => state.docs.transactions,
-  (state: AppState, transactionId: Transaction.DocId) => transactionId,
-  (transactions, transactionId) => {
-    const doc = transactions[transactionId]
+  (state: AppState, props: MinRouteProps<Transaction.Params> | undefined) => state.docs.transactions,
+  (state: AppState, props: MinRouteProps<Transaction.Params> | undefined) => props && Transaction.docId(props.match.params),
+  (transactions, transactionId): Transaction.Doc | undefined => {
+    debugSelector('selectTransaction', transactionId)
+    const doc = transactionId && transactions[transactionId]
     if (!doc) {
       console.error(`invalid transactionId: `, transactionId)
       return
@@ -150,11 +187,13 @@ export const selectTransaction = createSelector(
   }
 )
 
-export const selectBillView = (billId: Bill.DocId) => createSelector(
-  (state: AppState) => state.docs.bills,
-  (state: AppState) => state,
-  (bills, state) => {
-    const doc = bills[billId]
+export const selectBillView = createSelector(
+  (state: AppState, props: MinRouteProps<Bill.Params> | undefined) => state.docs.bills,
+  (state: AppState, props: MinRouteProps<Bill.Params> | undefined) => state,
+  (state: AppState, props: MinRouteProps<Bill.Params> | undefined) => props && Bill.docId(props.match.params),
+  (bills, state, billId): Bill.View | undefined => {
+    debugSelector('selectBillView', billId)
+    const doc = billId && bills[billId]
     if (!doc) {
       console.error(`invalid billId: `, billId)
       return
@@ -162,35 +201,38 @@ export const selectBillView = (billId: Bill.DocId) => createSelector(
     return ({
       doc,
       rrule: RRule.fromString(doc.rruleString),
-      account: doc.account && selectAccount(doc.account)(state),
-      budget: doc.category && selectBudget(Category.budgetId(doc.category))(state),
-      category: doc.category && selectCategory(state, doc.category)
-    }) as Bill.View
+      account: doc.account && selectAccount(state, minRouteProps(Account.docId, doc.account)),
+      budget: doc.category && selectBudget(state, minRouteProps(Category.docId, doc.category)),
+      category: doc.category && selectCategory(state, minRouteProps(Category.docId, doc.category))
+    })
   }
 )
 
 export const selectBills = createSelector(
   (state: AppState) => state.docs.bills,
-  (bills) => {
-    return Object.keys(bills)
+  (bills): Bill.Doc[] => {
+    debugSelector('selectBills')
+    return Object.values(bills)
   }
 )
 
 export const selectBillViews = createSelector(
   (state: AppState) => state.docs.bills,
   (state: AppState) => state,
-  (bills, state) => {
+  (bills, state): Bill.View[] => {
+    debugSelector('selectBillViews')
     return Object.keys(bills)
-      .map((billId: Bill.DocId) => selectBillView(billId)(state)!)
+      .map((billId: Bill.DocId) => selectBillView(state, minRouteProps(Bill.docId, billId))!)
       .filter(bill => !!bill)
   }
 )
 
 export const selectSync = createSelector(
-  (state: AppState, syncId: SyncConnection.DocId) => state.docs.syncConnections,
-  (state: AppState, syncId: SyncConnection.DocId) => syncId,
-  (syncConnections, syncId) => {
-    const doc = syncConnections[syncId]
+  (state: AppState, props: MinRouteProps<SyncConnection.Params> | undefined) => state.docs.syncConnections,
+  (state: AppState, props: MinRouteProps<SyncConnection.Params> | undefined) => props && SyncConnection.docId(props.match.params),
+  (syncConnections, syncId): SyncConnection.Doc | undefined => {
+    debugSelector('selectSync', syncId)
+    const doc = syncId && syncConnections[syncId]
     if (!doc) {
       console.error(`invalid syncId: `, syncId)
       return
@@ -202,9 +244,10 @@ export const selectSync = createSelector(
 export const selectSyncs = createSelector(
   (state: AppState) => state.docs.syncConnections,
   (state: AppState) => state,
-  (syncConnections, state) => {
+  (syncConnections, state): SyncConnection.Doc[] => {
+    debugSelector('selectSyncs')
     return Object.keys(syncConnections)
-      .map((syncId: SyncConnection.DocId) => selectSync(state, syncId)!)
+      .map((syncId: SyncConnection.DocId) => selectSync(state, minRouteProps(SyncConnection.docId, syncId))!)
       .filter(sync => !!sync)
   }
 )

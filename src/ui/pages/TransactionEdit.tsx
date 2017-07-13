@@ -21,9 +21,9 @@ type EnhancedProps = RouteProps & ConnectedProps
 const enhance = compose(
   connect(
     (state: AppState, props: RouteProps): ConnectedProps => ({
-      bank: selectBank(Bank.docId(props!.match.params))(state)!,
-      account: selectAccount(Account.docId(props!.match.params))(state)!,
-      transaction: selectTransaction(state, Transaction.docId(props!.match.params))!,
+      bank: selectBank(state, props)!,
+      account: selectAccount(state, props)!,
+      transaction: selectTransaction(state, props)!,
     })
   )
 )

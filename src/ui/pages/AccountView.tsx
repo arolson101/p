@@ -76,8 +76,8 @@ const enhance = compose<EnhancedProps, RouteProps>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps & RouteProps>(
     (state: AppState, props): ConnectedProps => ({
-      bank: selectBank(Bank.docId(props!.match.params))(state)!,
-      account: selectAccount(Account.docId(props!.match.params))(state)!,
+      bank: selectBank(state, props)!,
+      account: selectAccount(state, props)!,
       db: state.db.current!.db
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions, showAccountDialog, showAccountDeleteDialog })

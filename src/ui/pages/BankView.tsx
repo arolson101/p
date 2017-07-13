@@ -105,7 +105,7 @@ const enhance = compose<EnhancedProps, undefined>(
   withRouter,
   connect<ConnectedProps, DispatchProps, IntlProps & RouteProps>(
     (state: AppState, props) => ({
-      bank: selectBank(Bank.docId(props!.match.params))(state)!
+      bank: selectBank(state, props)!
     }),
     mapDispatchToProps<DispatchProps>({ getAccounts, showBankDialog, showAccountDialog, showBankDeleteDialog })
   ),

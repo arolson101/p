@@ -10,7 +10,6 @@ import { deleteAccount } from '../../actions/index'
 import { DbInfo, Bank, Account } from '../../docs/index'
 import { AppState, mapDispatchToProps, setDialog } from '../../state/index'
 import { forms } from '../components/forms'
-import { selectBank, selectAccount } from '../../selectors'
 import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({
