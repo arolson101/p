@@ -206,24 +206,24 @@ export const Home = enhance(props => {
                 <small><em>no categories</em></small>
               </ListGroupItem>
             }
-            {/* {budget.categories.map(category =>
-              <ListGroupItem key={category._id}>
+             {budget.categories.map(category =>
+              <ListGroupItem key={category.doc._id}>
                 <Grid fluid>
                   <Row>
                     <Col xs={2}>
-                      {category.name}
+                      {category.doc.name}
                     </Col>
                     <Col xs={8}>
                       <CategoryProgress category={category}/>
                     </Col>
                     <Col xs={2}>
                       <em><small>
-                        <CurrencyDisplay amount={category.amount}/>
+                        <CurrencyDisplay amount={category.doc.amount}/>
                       </small></em>
                     </Col>
                   </Row>
                   {category.bills.map(bill =>
-                    <Row key={bill._id}>
+                    <Row key={bill.doc._id}>
                       <Col xs={8} xsOffset={2}>
                         <Favico value={bill.doc.favicon}/>
                         {' '}
@@ -238,7 +238,7 @@ export const Home = enhance(props => {
                   )}
                 </Grid>
               </ListGroupItem>
-            )} */}
+            )}
           </ListGroup>
         </Panel>
       )}
