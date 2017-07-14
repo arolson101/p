@@ -22,7 +22,7 @@ export const setTheme = (theme: Theme): SetThemeAction => ({
 
 type Actions =
   SetThemeAction |
-  { type: '' }
+  EmptyAction
 
 const reducer = (state: SysState = initialState, action: Actions): SysState => {
   switch (action.type) {

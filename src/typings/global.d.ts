@@ -82,3 +82,5 @@ declare type FormatMessageFcn = (messageDescriptor: ReactIntl.FormattedMessage.M
 declare interface IntlProps {
   intl: ReactIntl.InjectedIntl
 }
+
+declare type EmptyAction = { type: '' }

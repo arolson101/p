@@ -51,7 +51,7 @@ export const setFi = (fi: FI[]): SetFiAction => ({
 
 type Actions =
   SetFiAction |
-  { type: '' }
+  EmptyAction
 
 const reducer = (state: FiState = initialState, action: Actions): FiState => {
   switch (action.type) {

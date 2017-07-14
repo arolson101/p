@@ -35,7 +35,7 @@ export const closeDialog = (): CloseDialogAction => ({
   type: CLOSE_DIALOG
 })
 
-type Actions = SetDialogAction | CloseDialogAction | { type: '' }
+type Actions = SetDialogAction | CloseDialogAction | EmptyAction
 
 const reducer = (state: DialogState = defaultState, action: Actions): DialogState => {
   switch (action.type) {

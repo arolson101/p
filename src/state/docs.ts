@@ -72,7 +72,7 @@ const safeGet = async <T> (db: PouchDB.Database<any>, id: string): Promise<T | u
   }
 }
 
-type Actions<T> = DbChangesAction<T> | DocsInitAction | SetDbAction | { type: '' }
+type Actions<T> = DbChangesAction<T> | DocsInitAction | SetDbAction | EmptyAction
 const initialState = {}
 
 const docReducer = <T>(isDoc: (id: string) => boolean) =>

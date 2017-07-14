@@ -30,7 +30,7 @@ export const SetLocale = (locale: string, lang: string): SetLocaleAction => ({
   lang
 })
 
-type Actions = SetLocaleAction | { type: '' }
+type Actions = SetLocaleAction | EmptyAction
 
 const reducer = (state: I18nState = defaultState, action: Actions): I18nState => {
   switch (action.type) {

@@ -322,7 +322,7 @@ type Actions =
   DbSetFilesAction |
   SetDbAction |
   DbChangesAction<any> |
-  { type: '' }
+  EmptyAction
 
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
   switch (action.type) {
