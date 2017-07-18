@@ -7,7 +7,7 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withStat
 import { Bank, Account } from '../../docs/index'
 import { AppState, mapDispatchToProps } from '../../state/index'
 import { Favico } from '../components/Favico'
-import { selectBanks } from '../../selectors'
+import { selectBank, selectBanks, selectAccount } from '../../selectors'
 import { showBankDialog } from '../dialogs/index'
 
 const messages = defineMessages({
@@ -22,7 +22,7 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  banks: Bank.View[]
+  banks: Bank.Doc[]
 }
 
 interface DispatchProps {
@@ -62,24 +62,45 @@ export const Accounts = enhance(props => {
       </PageHeader>
       <ul>
         {banks.map(bank =>
-          <li key={bank.doc._id}>
-            <Favico value={bank.doc.favicon}/>
-            {' '}
-            <Link to={Bank.to.view(bank.doc)}>
-              {bank.doc.name}
-            </Link>
-            <ul>
-              {bank.accounts.map(account =>
-                <li key={account._id}>
-                  <Link to={Account.to.view(account)}>{account.name}</Link>
-                </li>
-              )}
-            </ul>
-          </li>
+          <BankListItem key={bank._id} bank={bank}/>
         )}
       </ul>
       <Button onClick={createBank}>add institution</Button>
       {/*<Link to={Bank.to.create()}>add institution</Link><br/>*/}
     </div>
+  )
+})
+
+const BankListItem = (props: { bank: Bank.Doc }) => {
+  const { bank } = props
+  return (
+    <li key={bank._id}>
+      <Favico value={bank.favicon}/>
+      {' '}
+      <Link to={Bank.to.view(bank)}>
+        {bank.name}
+      </Link>
+      <ul>
+        {bank.accounts.map(accountId =>
+          <AccountListItem key={accountId} accountId={accountId}/>
+        )}
+      </ul>
+    </li>
+  )
+}
+
+const AccountListItem = connect(
+  (state: AppState, props: { accountId: Account.DocId }) => ({
+    account: selectAccount(state, props.accountId)!
+  })
+)(props => {
+  const { account } = props
+  if (!account) {
+    return null
+  }
+  return (
+    <li key={account._id}>
+      <Link to={Account.to.view(account)}>{account.name}</Link>
+    </li>
   )
 })

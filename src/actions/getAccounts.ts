@@ -1,6 +1,7 @@
 import { defineMessages, FormattedMessage } from 'react-intl'
-import { AppThunk, ThunkFcn } from '../state/index'
+import { AppState, AppThunk, ThunkFcn } from '../state/index'
 import { Bank, Account } from '../docs/index'
+import { selectBankAccounts } from '../selectors'
 import { createConnection, checkLogin, toAccountType } from '../util/online'
 
 type FormatMessage = (messageDescriptor: FormattedMessage.MessageDescriptor, values?: Object) => string
@@ -32,28 +33,30 @@ const messages = defineMessages({
   }
 })
 
-type GetAccountsArgs = { bank: Bank.View, formatMessage: FormatMessage }
+type GetAccountsArgs = { bank: Bank.Doc, formatMessage: FormatMessage }
 export namespace getAccounts { export type Fcn = ThunkFcn<GetAccountsArgs, string> }
 export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMessage}) =>
   async (dispatch, getState) => {
     const res = []
     try {
-      let service = createConnection(bank.doc, formatMessage)
-      let { username, password } = checkLogin(bank.doc, formatMessage)
+      let service = createConnection(bank, formatMessage)
+      let { username, password } = checkLogin(bank, formatMessage)
       let accountProfiles = await service.readAccountProfiles(username, password)
 
       res.push(formatMessage(messages.success))
       if (accountProfiles.length === 0) {
         res.push(formatMessage(messages.noaccounts))
       } else {
-        const { db: { current } } = getState()
+        const state = getState()
+        const { db: { current } } = state
+        const bankAccounts = selectBankAccounts(state, bank._id)
         if (!current) { throw new Error('no db') }
         const changes: AnyDocument[] = []
-        const nextBank: Bank.Doc = { ...bank.doc, accounts: [...bank.doc.accounts] }
+        const nextBank: Bank.Doc = { ...bank, accounts: [...bank.accounts] }
 
         for (let accountProfile of accountProfiles) {
           const accountName = accountProfile.getDescription()
-            || (accountProfiles.length === 1 ? bank.doc.name : `${bank.doc.name} ${accountProfiles.indexOf(accountProfile)}`)
+            || (accountProfiles.length === 1 ? bank.name : `${bank.name} ${accountProfiles.indexOf(accountProfile)}`)
           let accountType: Account.Type
           let accountNumber: string
           let bankid = ''
@@ -94,10 +97,10 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
             visible: true
           }
 
-          const existingAccount = findExistingAccount(bank, accountNumber, accountType)
+          const existingAccount = findExistingAccount(bankAccounts, accountNumber, accountType)
           if (!existingAccount) {
             res.push(formatMessage(messages.accountAdded, account))
-            const doc = Account.doc(bank.doc, account)
+            const doc = Account.doc(bank, account)
             nextBank.accounts.push(doc._id)
             changes.push(doc)
           } else {
@@ -117,8 +120,8 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
     }
   }
 
-const findExistingAccount = (bank: Bank.View, num: string, type: Account.Type): undefined | Account.Doc => {
-  for (let account of bank.accounts) {
+const findExistingAccount = (accounts: Account.Doc[], num: string, type: Account.Type): undefined | Account.Doc => {
+  for (let account of accounts) {
     if (account.number === num && account.type === type) {
       return account
     }

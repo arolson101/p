@@ -126,23 +126,3 @@ export namespace DocCache {
     return nextCache
   }
 }
-
-export interface DbView {
-  banks: Bank.View[]
-  bills: Bill.View[]
-  budgets: Budget.View[]
-  syncs: SyncConnection.Doc[]
-}
-
-export namespace DbView {
-  export const buildView = (cache: DocCache): DbView => {
-    const views = {
-      banks: Lookup.map(cache.banks, bank => Bank.buildView(bank, cache)),
-      bills: Lookup.map(cache.bills, bill => Bill.buildView(bill, cache)),
-      budgets: Lookup.map(cache.budgets, budget => Budget.buildView(budget, cache)),
-      syncs: Lookup.map(cache.syncs, sync => sync)
-    }
-    views.budgets.forEach(budget => Budget.linkView(budget, views))
-    return views
-  }
-}

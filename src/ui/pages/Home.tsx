@@ -11,7 +11,7 @@ import { createSelector } from 'reselect'
 // import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack, VictoryGroup, VictoryVoronoiTooltip } from 'victory'
 import { deleteBudget } from '../../actions/index'
 import { Bank, Bill, Account, Budget, Category } from '../../docs/index'
-import { selectBanks, selectBillViews, selectBudgetViews } from '../../selectors'
+import { selectAccounts, selectBillViews, selectBudgetViews } from '../../selectors'
 import { AppState, mapDispatchToProps } from '../../state/index'
 import { CurrencyDisplay } from '../components/CurrencyDisplay'
 import { Favico } from '../components/Favico'
@@ -274,13 +274,12 @@ const CategoryProgress = ({category}: {category: Category.View}) => {
 }
 
 const selectAccountData = createSelector(
-  (state: AppState) => selectBanks(state),
+  (state: AppState) => selectAccounts(state),
   (state: AppState) => selectBillViews(state),
-  (banks, bills) => {
+  (accounts, bills) => {
     const start = new Date()
     const end = moment(start).add(3, 'months').toDate()
     return R.pipe(
-      R.chain((bank: Bank.View) => bank.accounts),
       R.map((account: Account.Doc): AccountData => {
         const points = R.pipe(
           R.filter((bill: Bill.View) => bill.doc.account === account._id),
@@ -306,6 +305,6 @@ const selectAccountData = createSelector(
           points
         }
       })
-    )(banks)
+    )(accounts)
   }
 )

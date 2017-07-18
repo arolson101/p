@@ -7,7 +7,7 @@ import * as SplitPane from 'react-split-pane'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers, withContext } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { Bank, Account, Budget, Bill, SyncConnection } from '../../docs/index'
-import { selectBanks } from '../../selectors'
+import { selectAccounts } from '../../selectors'
 import { AppState } from '../../state/index'
 import * as Mac from '../macOS/index'
 import * as Win from '../windows/index'
@@ -73,7 +73,7 @@ type RouteProps = RouteComponentProps<any>
 
 interface ConnectedProps {
   ThemeNav: React.StatelessComponent<NavProps>
-  banks: Bank.View[]
+  accounts: Account.Doc[]
 }
 
 interface UIState {
@@ -97,7 +97,7 @@ const enhance = compose<EnhancedProps, {}>(
   connect<ConnectedProps, {}, RouteProps>(
     (state: AppState): ConnectedProps => ({
       ThemeNav: state.sys.theme === 'macOS' ? Mac.AppNav : Win.AppNav as any,
-      banks: selectBanks(state)
+      accounts: selectAccounts(state)
     })
   ),
   ui<UIState, ConnectedProps & RouteProps, {}>({
@@ -118,7 +118,6 @@ const enhance = compose<EnhancedProps, {}>(
 )
 
 const makeAccountList = R.pipe(
-  R.chain((bank: Bank.View) => bank.accounts),
   R.map((account: Account.Doc): NavItem => ({
     id: account._id,
     icon: Account.icons[account.type],
@@ -131,9 +130,9 @@ const makeAccountList = R.pipe(
 )
 
 export const AppContent = enhance(props => {
-  const { banks, ThemeNav, children, onSizeChange, onNavClick, location: { pathname }, ui: { sidebarWidth } } = props
+  const { accounts, ThemeNav, children, onSizeChange, onNavClick, location: { pathname }, ui: { sidebarWidth } } = props
 
-  const accountGroup: NavGroup = { title: 'accounts', items: makeAccountList(banks) }
+  const accountGroup: NavGroup = { title: 'accounts', items: makeAccountList(accounts) }
   const groups = [appGroup, accountGroup]
   let selectedId = ''
   groups.forEach(group => {

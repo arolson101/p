@@ -1,3 +1,4 @@
+import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { Alert, PageHeader, ProgressBar, Table, Button, Modal } from 'react-bootstrap'
@@ -9,7 +10,7 @@ import ui, { ReduxUIProps } from 'redux-ui'
 import { getAccounts } from '../../actions/index'
 import { Bank, Account } from '../../docs/index'
 import { AppState, mapDispatchToProps } from '../../state/index'
-import { selectBank } from '../../selectors'
+import { selectBank, selectBankAccounts } from '../../selectors'
 import { SettingsMenu } from '../components/SettingsMenu'
 import { showAccountDialog, showBankDialog, showBankDeleteDialog } from '../dialogs/index'
 
@@ -62,8 +63,13 @@ const messages = defineMessages({
 
 type RouteProps = RouteComponentProps<Bank.Params>
 
+interface Props {
+  bankId: Bank.DocId
+}
+
 interface ConnectedProps {
-  bank: Bank.View
+  bank: Bank.Doc
+  accounts: Account.Doc[]
 }
 
 interface DispatchProps {
@@ -96,20 +102,24 @@ type EnhancedProps = Handlers
   & DispatchProps
   & IntlProps
   & RouteProps
+  & Props
 
-const enhance = compose<EnhancedProps, undefined>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('BankView'),
   onlyUpdateForPropTypes,
-  setPropTypes({}),
+  setPropTypes({
+    bankId: PropTypes.string.isRequired
+  }),
   injectIntl,
   withRouter,
-  connect<ConnectedProps, DispatchProps, IntlProps & RouteProps>(
+  connect<ConnectedProps, DispatchProps, IntlProps & RouteProps & Props>(
     (state: AppState, props) => ({
-      bank: selectBank(state, props)!
+      bank: selectBank(state, props && props.bankId)!,
+      accounts: selectBankAccounts(state, props && props.bankId)!,
     }),
     mapDispatchToProps<DispatchProps>({ getAccounts, showBankDialog, showAccountDialog, showBankDeleteDialog })
   ),
-  ui<UIState, ConnectedProps & DispatchProps & IntlProps & RouteProps, {}>({
+  ui<UIState, ConnectedProps & DispatchProps & IntlProps & RouteProps & Props, {}>({
     state: {
       showAll: false,
       showModal: false,
@@ -118,8 +128,8 @@ const enhance = compose<EnhancedProps, undefined>(
       error: undefined
     } as UIState
   }),
-  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps>({
-    toggleEdit: ({ bank: { doc: edit }, showBankDialog }) => () => {
+  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps & Props>({
+    toggleEdit: ({ bank: edit, showBankDialog }) => () => {
       showBankDialog({edit})
     },
 
@@ -158,8 +168,13 @@ const enhance = compose<EnhancedProps, undefined>(
   })
 )
 
+export const BankViewRoute = (props: RouteComponentProps<Bank.Params>) =>
+  <BankView
+    bankId={Bank.docId(props.match.params)}
+  />
+
 export const BankView = enhance((props) => {
-  const { bank, history, toggleShowAll, hideModal, getAccountList, toggleEdit, createAccount, deleteBank } = props
+  const { bank, accounts, history, toggleShowAll, hideModal, getAccountList, toggleEdit, createAccount, deleteBank } = props
   const { ui: { working, showModal, message, error, showAll } } = props
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
@@ -186,7 +201,7 @@ export const BankView = enhance((props) => {
             {
               message: messages.getAccounts,
               onClick: getAccountList,
-              disabled: !bank.doc.online
+              disabled: !bank.online
             },
             {
               divider: true
@@ -207,7 +222,7 @@ export const BankView = enhance((props) => {
           ]}
         />
 
-        {bank.doc.name}
+        {bank.name}
       </PageHeader>
 
       {bank.accounts.length > 0 ? (
@@ -223,7 +238,7 @@ export const BankView = enhance((props) => {
             </tr>
           </thead>
           <tbody>
-            {bank.accounts.filter(account => account.visible || showAll).map(account => account &&
+            {accounts.filter(account => account.visible || showAll).map(account => account &&
               <tr key={account._id} href={history.createHref({pathname: Account.to.view(account)})}>
                 {showAll &&
                   <td>{account.visible}</td>

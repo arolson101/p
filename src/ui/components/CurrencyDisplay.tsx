@@ -4,7 +4,7 @@ import { Account } from '../../docs/index'
 
 interface Props {
   amount: number
-  account?: Account.View
+  account?: Account.Doc
 }
 
 export const CurrencyDisplay = (props: Props) =>

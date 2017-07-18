@@ -44,10 +44,13 @@ const messages = defineMessages({
   }
 })
 
-type RouteProps = RouteComponentProps<Account.Params>
+interface Props {
+  accountId: Account.DocId
+  bankId: Bank.DocId
+}
 
 interface ConnectedProps {
-  bank: Bank.View
+  bank: Bank.Doc
   account: Account.Doc
   db: PouchDB.Database<Transaction.Doc>
 }
@@ -60,7 +63,7 @@ interface DispatchProps {
   showAccountDeleteDialog: typeof showAccountDeleteDialog
 }
 
-type StreamProps = ConnectedProps & RouteProps
+type StreamProps = ConnectedProps & Props
 type EnhancedProps = IntlProps & ConnectedProps & HandlerProps & DispatchProps
 
 interface HandlerProps {
@@ -71,13 +74,13 @@ interface HandlerProps {
   deleteTransactions: () => void
 }
 
-const enhance = compose<EnhancedProps, RouteProps>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('AccountViewComponent'),
   injectIntl,
-  connect<ConnectedProps, DispatchProps, IntlProps & RouteProps>(
+  connect<ConnectedProps, DispatchProps, IntlProps & Props>(
     (state: AppState, props): ConnectedProps => ({
-      bank: selectBank(state, props)!,
-      account: selectAccount(state, props)!,
+      bank: selectBank(state, props && props.bankId)!,
+      account: selectAccount(state, props && props.accountId)!,
       db: state.db.current!.db
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions, showAccountDialog, showAccountDeleteDialog })
@@ -117,7 +120,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
   //     return props$.combineLatest(transactions$, (props, transactions) => ({ ...props, ...transactions }))
   //   }
   // ),
-  withHandlers<HandlerProps, ConnectedProps & DispatchProps & IntlProps & RouteProps>({
+  withHandlers<HandlerProps, ConnectedProps & DispatchProps & IntlProps>({
     editAccount: ({ showAccountDialog, bank, account: edit }) => () => {
       showAccountDialog({bank, edit})
     },
@@ -151,7 +154,7 @@ const enhance = compose<EnhancedProps, RouteProps>(
       const { getTransactions, bank, account, intl: { formatMessage } } = props
       const start = new Date(2016, 11, 1)
       const end = new Date(2016, 11, 31)
-      await getTransactions({bank: bank.doc, account, start, end, formatMessage})
+      await getTransactions({bank, account, start, end, formatMessage})
       // TODO: try/catch
     },
 
@@ -162,6 +165,12 @@ const enhance = compose<EnhancedProps, RouteProps>(
     }
   })
 )
+
+export const AccountViewRoute = (props: RouteComponentProps<Account.Params>) =>
+  <AccountView
+    bankId={Bank.docId(props.match.params)}
+    accountId={Account.docId(props.match.params)}
+  />
 
 export const AccountView = enhance((props) => {
   const { bank, account, editAccount, downloadTransactions, addTransactions, deleteTransactions, deleteAccount } = props

@@ -11,24 +11,37 @@ import { TransactionDetail } from '../components/TransactionDetail'
 
 type RouteProps = RouteComponentProps<Transaction.Params>
 
+interface Props {
+  bankId: Bank.DocId
+  accountId: Account.DocId
+  transactionId: Transaction.DocId
+}
+
 interface ConnectedProps {
-  bank: Bank.View
+  bank: Bank.Doc
   account: Account.Doc
   transaction: Transaction.Doc
 }
 
-type EnhancedProps = RouteProps & ConnectedProps
+type EnhancedProps = RouteProps & ConnectedProps & Props
 
-const enhance = compose<EnhancedProps, undefined>(
+const enhance = compose<EnhancedProps, Props>(
   injectIntl,
-  connect<ConnectedProps, {}, RouteProps>(
-    (state: AppState, props: RouteProps): ConnectedProps => ({
-      bank: selectBank(state, props)!,
-      account: selectAccount(state, props)!,
-      transaction: selectTransaction(state, props)!,
+  connect<ConnectedProps, {}, Props>(
+    (state: AppState, props): ConnectedProps => ({
+      bank: selectBank(state, props && props.bankId)!,
+      account: selectAccount(state, props && props.accountId)!,
+      transaction: selectTransaction(state, props && props.transactionId)!,
     })
   )
 )
+
+export const TransactionViewRoute = (props: RouteComponentProps<Transaction.Params>) =>
+  <TransactionView
+    bankId={Bank.docId(props.match.params)}
+    accountId={Account.docId(props.match.params)}
+    transactionId={Transaction.docId(props.match.params)}
+  />
 
 export const TransactionView = enhance(props => {
   const { transaction } = props

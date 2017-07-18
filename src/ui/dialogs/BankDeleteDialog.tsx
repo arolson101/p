@@ -28,7 +28,7 @@ const messages = defineMessages({
 })
 
 interface Params {
-  bank: Bank.View
+  bank: Bank.Doc
 }
 
 interface Props extends Params {
@@ -100,7 +100,7 @@ export const BankDeleteDialog = enhance(props => {
       </Modal.Header>
 
       <Modal.Body>
-        <FormattedMessage {...messages.text} values={{name: bank.doc.name}}/>
+        <FormattedMessage {...messages.text} values={{name: bank.name}}/>
         {error &&
           <Alert bsStyle='danger'>
             {error}

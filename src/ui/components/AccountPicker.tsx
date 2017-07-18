@@ -42,20 +42,25 @@ interface AccountSelectOption extends SelectOption {
 
 const accountOptions = createSelector(
   (state: AppState) => selectBanks(state),
-  (banks: Bank.View[] = []): AccountSelectOption[] => {
+  (state: AppState) => state.docs.accounts,
+  (banks, accountDocs): AccountSelectOption[] => {
     const accounts = R.flatten<AccountSelectOption>(banks.map(bank =>
       bank.accounts.length ? [
         {
-          value: bank.doc._id,
-          label: bank.doc.name,
+          value: bank._id,
+          label: bank.name,
           fullName: '',
           disabled: true
         },
-        ...bank.accounts.map(acct => ({
-          value: acct._id,
-          label: acct.name,
-          fullName: `${bank.doc.name} - ${acct.name}`
-        }))
+        ...bank.accounts.map(accountId => {
+          const account = accountId && accountDocs[accountId]
+          return account && ({
+            value: account._id,
+            label: account.name,
+            fullName: `${bank.name} - ${account.name}`
+          })
+        })
+        .filter(account => !!account)
       ] : []
     ))
     return accounts

@@ -85,34 +85,28 @@ export namespace Account {
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
   export const icon = 'fa fa-university'
 
-  export type View = {
-    doc: Doc
-    transactions: Transaction.View[]
-    balance: number
-  }
-
   export const allDocs = {
     startkey: 'account/',
     endkey: 'account/\uffff',
   }
 
-  export const buildView = (doc: Doc, cache: DocCache): View => {
-    const startkey = Transaction.startkeyForAccount(doc)
-    const endkey = Transaction.endkeyForAccount(doc)
-    let balance = 0
-    const transactions = Array.from(cache.transactions.values())
-      .filter(transaction => (startkey < transaction._id && transaction._id < endkey))
-      .map(transaction => {
-        balance += transaction.amount
-        return Transaction.buildView(transaction, balance)
-      })
+  // export const buildView = (doc: Doc, cache: DocCache): View => {
+  //   const startkey = Transaction.startkeyForAccount(doc)
+  //   const endkey = Transaction.endkeyForAccount(doc)
+  //   let balance = 0
+  //   const transactions = Array.from(cache.transactions.values())
+  //     .filter(transaction => (startkey < transaction._id && transaction._id < endkey))
+  //     .map(transaction => {
+  //       balance += transaction.amount
+  //       return Transaction.buildView(transaction, balance)
+  //     })
 
-    return ({
-      doc,
-      transactions,
-      balance
-    })
-  }
+  //   return ({
+  //     doc,
+  //     transactions,
+  //     balance
+  //   })
+  // }
 
   export namespace routes {
     export const view = 'account/:bankId/:accountId'

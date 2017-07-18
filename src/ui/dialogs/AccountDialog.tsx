@@ -10,6 +10,7 @@ import { Bank, Account } from '../../docs/index'
 import { Validator } from '../../util/index'
 import { AppState, mapDispatchToProps, setDialog } from '../../state/index'
 import { saveAccount } from '../../actions/index'
+import { selectBankAccounts } from '../../selectors'
 import { typedFields, forms } from '../components/forms'
 import { ContainedModal } from './ContainedModal'
 
@@ -67,7 +68,7 @@ const messages = defineMessages({
 
 interface Params {
   edit?: Account.Doc
-  bank: Bank.View
+  bank: Bank.Doc
 }
 
 interface Props extends Params {
@@ -76,6 +77,7 @@ interface Props extends Params {
 }
 
 interface ConnectedProps {
+  accounts: Account.Doc[]
 }
 
 interface DispatchProps {
@@ -112,7 +114,9 @@ const enhance = compose<EnhancedProps, Props>(
   }),
   injectIntl,
   connect<ConnectedProps, DispatchProps, Props>(
-    (state: AppState): ConnectedProps => ({}),
+    (state: AppState, props): ConnectedProps => ({
+      accounts: selectBankAccounts(state, props && props.bank._id)
+    }),
     mapDispatchToProps<DispatchProps>({ saveAccount, push })
   ),
   withPropsOnChange<any, FormProps<Values, any, any> & Props>(
@@ -139,9 +143,9 @@ const enhance = compose<EnhancedProps, Props>(
       onHide()
     },
     validate: ((values, props) => {
-      const { edit, bank, intl: { formatMessage } } = props
+      const { edit, bank, accounts, intl: { formatMessage } } = props
       const v = new Validator(values, formatMessage)
-      const otherAccounts = bank.accounts.filter(acct => !edit || edit._id !== acct._id)
+      const otherAccounts = accounts.filter(acct => !edit || edit._id !== acct._id)
       const otherNames = otherAccounts.map(acct => acct.name)
       const otherNumbers = otherAccounts.filter(acct => acct.type === v.values.type).map(acct => acct.number)
       v.unique('name', otherNames, messages.uniqueName)

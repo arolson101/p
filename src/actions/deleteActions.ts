@@ -1,15 +1,18 @@
 import { replace } from 'react-router-redux'
 import { AppThunk, ThunkFcn, deleteDoc, deleteId, Deletion, pushChanges } from '../state/index'
 import { Bank, Account, Budget, Transaction } from '../docs/index'
+import { selectBankAccounts } from '../selectors'
 
-type DeleteBankArgs = { bank: Bank.View }
+type DeleteBankArgs = { bank: Bank.Doc }
 export namespace deleteBank { export type Fcn = ThunkFcn<DeleteBankArgs, string> }
 export const deleteBank: AppThunk<DeleteBankArgs, void> = ({bank}) =>
   async (dispatch, getState) => {
-    const { db: { current } } = getState()
+    const state = getState()
+    const { db: { current } } = state
     if (!current) { throw new Error('no db') }
     let docs: Deletion[] = []
-    for (let account of bank.accounts) {
+    const accounts = selectBankAccounts(state, bank._id)
+    for (let account of accounts) {
       docs.push(deleteDoc(account))
       const transactions = await current.db.allDocs({
         include_docs: false,
@@ -20,18 +23,18 @@ export const deleteBank: AppThunk<DeleteBankArgs, void> = ({bank}) =>
         docs.push(deleteId(transaction.id, transaction.value.rev))
       }
     }
-    docs.push(deleteDoc(bank.doc))
+    docs.push(deleteDoc(bank))
     return dispatch(pushChanges({docs}))
   }
 
-type DeleteAccountArgs = { bank: Bank.View, account: Account.Doc }
+type DeleteAccountArgs = { bank: Bank.Doc, account: Account.Doc }
 export namespace deleteAccount { export type Fcn = ThunkFcn<DeleteAccountArgs, string> }
 export const deleteAccount: AppThunk<DeleteAccountArgs, void> = ({bank, account}) =>
   async (dispatch, getState) => {
     const { db: { current } } = getState()
     if (!current) { throw new Error('no db') }
 
-    const bankDoc = { ...bank.doc, accounts: [...bank.doc.accounts] }
+    const bankDoc = { ...bank, accounts: [...bank.accounts] }
     const idx = bankDoc.accounts.indexOf(account._id)
     if (idx !== -1) {
       bankDoc.accounts.splice(idx, 1)

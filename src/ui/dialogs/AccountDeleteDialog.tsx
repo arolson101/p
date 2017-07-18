@@ -30,7 +30,7 @@ const messages = defineMessages({
 type RouteProps = RouteComponentProps<Account.Params>
 
 interface Params {
-  bank: Bank.View
+  bank: Bank.Doc
   account: Account.Doc
 }
 

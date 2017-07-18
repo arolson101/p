@@ -28,39 +28,48 @@ const debugSelector = (name: string, id?: string) => {
 }
 
 export const selectBank = createSelector(
-  (state: AppState, props: MinRouteProps<Bank.Params> | undefined) => state.docs.banks,
-  (state: AppState, props: MinRouteProps<Bank.Params> | undefined) => state.docs.accounts,
-  (state: AppState, props: MinRouteProps<Bank.Params> | undefined) => props && Bank.docId(props.match.params),
-  (banks, accounts, bankId): Bank.View | undefined => {
+  (state: AppState, bankId: Bank.DocId | undefined) => state.docs.banks,
+  (state: AppState, bankId: Bank.DocId | undefined) => bankId,
+  (banks, bankId): Bank.Doc | undefined => {
     debugSelector('selectBank', bankId)
     const doc = bankId && banks[bankId]
     if (!doc) {
       console.error(`invalid bankId: `, bankId)
-      return
     }
-    return ({
-      doc,
-      accounts: (doc.accounts || [])
-        .map(accountId => accounts[accountId])
-        .filter((account?: Account.Doc) => account !== undefined)
-    })
+    return doc
   }
 )
 
 export const selectBanks = createSelector(
   (state: AppState) => state.docs.banks,
   (state: AppState) => state,
-  (banks, state): Bank.View[] => {
+  (banks, state): Bank.Doc[] => {
     debugSelector('selectBanks')
     return Object.keys(banks)
-      .map((bankId: Bank.DocId) => selectBank(state, minRouteProps(Bank.docId, bankId))!)
+      .map((bankId: Bank.DocId) => selectBank(state, bankId)!)
       .filter(bank => !!bank)
   }
 )
 
+export const selectBankAccounts = createSelector(
+  (state: AppState, bankId: Bank.DocId | undefined) => state.docs.banks,
+  (state: AppState, bankId: Bank.DocId | undefined) => state.docs.accounts,
+  (state: AppState, bankId: Bank.DocId | undefined) => bankId,
+  (banks, accounts, bankId): Account.Doc[] => {
+    debugSelector('selectBankAccounts', bankId)
+    const doc = bankId && banks[bankId]
+    if (!doc) {
+      console.error(`invalid bankId: `, bankId)
+    }
+    return (doc ? doc.accounts : [])
+      .map(accountId => accountId && accounts[accountId])
+      .filter(account => !!account)
+  }
+)
+
 export const selectAccount = createSelector(
-  (state: AppState, props: MinRouteProps<Account.Params> | undefined) => state.docs.accounts,
-  (state: AppState, props: MinRouteProps<Account.Params> | undefined) => props && Account.docId(props.match.params),
+  (state: AppState, accountId: Account.DocId | undefined) => state.docs.accounts,
+  (state: AppState, accountId: Account.DocId | undefined) => accountId,
   (accounts, accountId): Account.Doc | undefined => {
     debugSelector('selectAccount', accountId)
     const doc = accountId && accounts[accountId]
@@ -69,6 +78,17 @@ export const selectAccount = createSelector(
       return
     }
     return doc
+  }
+)
+
+export const selectAccounts = createSelector(
+  (state: AppState) => state.docs.accounts,
+  (state: AppState) => state,
+  (accounts, state): Account.Doc[] => {
+    debugSelector('selectAccounts')
+    return Object.keys(accounts)
+      .map((accountId: Account.DocId) => selectAccount(state, accountId)!)
+      .filter(bank => !!bank)
   }
 )
 
@@ -174,8 +194,8 @@ export const selectCategoryView = createSelector(
 )
 
 export const selectTransaction = createSelector(
-  (state: AppState, props: MinRouteProps<Transaction.Params> | undefined) => state.docs.transactions,
-  (state: AppState, props: MinRouteProps<Transaction.Params> | undefined) => props && Transaction.docId(props.match.params),
+  (state: AppState, transactionId: Transaction.DocId | undefined) => state.docs.transactions,
+  (state: AppState, transactionId: Transaction.DocId | undefined) => transactionId,
   (transactions, transactionId): Transaction.Doc | undefined => {
     debugSelector('selectTransaction', transactionId)
     const doc = transactionId && transactions[transactionId]
@@ -201,7 +221,7 @@ export const selectBillView = createSelector(
     return ({
       doc,
       rrule: RRule.fromString(doc.rruleString),
-      account: doc.account && selectAccount(state, minRouteProps(Account.docId, doc.account)),
+      account: doc.account && selectAccount(state, doc.account),
       budget: doc.category && selectBudget(state, minRouteProps(Category.docId, doc.category)),
       category: doc.category && selectCategory(state, minRouteProps(Category.docId, doc.category))
     })
