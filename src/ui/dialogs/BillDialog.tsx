@@ -16,7 +16,7 @@ import ui, { ReduxUIProps } from 'redux-ui'
 import * as RRule from 'rrule-alt'
 import { saveBill, toRRule, RRuleErrorMessage } from '../../actions/index'
 import { Account, Budget, Bill } from '../../docs/index'
-import { selectBills, selectBudgetViews } from '../../selectors'
+import { selectBills, selectBudgets } from '../../selectors'
 import { AppState, mapDispatchToProps, setDialog } from '../../state/index'
 import { Validator } from '../../util/index'
 import { typedFields, forms, SelectOption } from '../components/forms'
@@ -170,7 +170,7 @@ interface StateProps {
   monthOptions: SelectOption[]
   weekdayOptions: SelectOption[]
   bills: Bill.Doc[]
-  budgets: Budget.View[]
+  budgets: Budget.Doc[]
 }
 
 interface DispatchProps {
@@ -303,7 +303,7 @@ const enhance = compose<EnhancedProps, Props>(
   connect<StateProps, DispatchProps, IntlProps & Props>(
     (state: AppState): StateProps => ({
       bills: selectBills(state),
-      budgets: selectBudgetViews(state),
+      budgets: selectBudgets(state),
       monthOptions: monthOptions(state),
       weekdayOptions: weekdayOptions(state),
     }),

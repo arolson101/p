@@ -3,7 +3,7 @@ import { Account, Bank, Bill, Budget, Category, LocalDoc, SyncConnection, Transa
 import { AppThunk, ThunkFcn } from './index'
 import { DB_CHANGES, DbChangesAction, DB_SET_CURRENT, SetDbAction, resolveConflicts } from './db/index'
 
-interface Cache<T> {
+export interface Cache<T> {
   [id: string]: T
 }
 

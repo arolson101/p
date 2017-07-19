@@ -11,7 +11,7 @@ import { createSelector } from 'reselect'
 // import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack, VictoryGroup, VictoryVoronoiTooltip } from 'victory'
 import { deleteBudget } from '../../actions/index'
 import { Bank, Bill, Account, Budget, Category } from '../../docs/index'
-import { selectAccounts, selectBillViews, selectBudgetViews } from '../../selectors'
+import { selectAccounts, selectBills, selectBudgets } from '../../selectors'
 import { AppState, mapDispatchToProps } from '../../state/index'
 import { CurrencyDisplay } from '../components/CurrencyDisplay'
 import { Favico } from '../components/Favico'
@@ -71,7 +71,7 @@ interface AccountData {
 }
 
 interface ConnectedProps {
-  budgets: Budget.View[]
+  budgets: Budget.Doc[]
   data: AccountData[]
 }
 
@@ -111,7 +111,7 @@ const enhance = compose<EnhancedProps, undefined>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({
-      budgets: selectBudgetViews(state),
+      budgets: selectBudgets(state),
       data: selectAccountData(state)
     }),
     mapDispatchToProps<DispatchProps>({ deleteBudget })
@@ -197,8 +197,8 @@ export const Home = enhance(props => {
       </h3>
 
       {budgets.map(budget =>
-        <Panel key={budget.doc._id} header={
-          <h1>{budget.doc.name}</h1>
+        <Panel key={budget._id} header={
+          <h1>{budget.name}</h1>
         }>
           <ListGroup fill>
             {budget.categories.length === 0 &&
@@ -206,7 +206,7 @@ export const Home = enhance(props => {
                 <small><em>no categories</em></small>
               </ListGroupItem>
             }
-             {budget.categories.map(category =>
+             {/*budget.categories.map(category =>
               <ListGroupItem key={category.doc._id}>
                 <Grid fluid>
                   <Row>
@@ -238,7 +238,7 @@ export const Home = enhance(props => {
                   )}
                 </Grid>
               </ListGroupItem>
-            )}
+            )*/}
           </ListGroup>
         </Panel>
       )}
@@ -246,13 +246,13 @@ export const Home = enhance(props => {
   )
 })
 
-const CategoryProgress = ({category}: {category: Category.View}) => {
-  const max = parseFloat(category.doc.amount as any)
-  const expenses = category.doc.amount / 4
-  const contributions = category.doc.amount / 3
+const CategoryProgress = ({category}: {category: Category.Doc}) => {
+  const max = parseFloat(category.amount as any)
+  const expenses = category.amount / 4
+  const contributions = category.amount / 3
 
   const overlay = (
-    <Popover id={'popover-category-' + category.doc._id}>
+    <Popover id={'popover-category-' + category._id}>
       Contributions: ${contributions}<br/>
       Expenses: ${expenses}
     </Popover>
@@ -275,36 +275,37 @@ const CategoryProgress = ({category}: {category: Category.View}) => {
 
 const selectAccountData = createSelector(
   (state: AppState) => selectAccounts(state),
-  (state: AppState) => selectBillViews(state),
+  (state: AppState) => selectBills(state),
   (accounts, bills) => {
-    const start = new Date()
-    const end = moment(start).add(3, 'months').toDate()
-    return R.pipe(
-      R.map((account: Account.Doc): AccountData => {
-        const points = R.pipe(
-          R.filter((bill: Bill.View) => bill.doc.account === account._id),
-          R.chain(
-            (bill: Bill.View) => bill.rrule.between(start, end, true)
-              .map(date => ({date, value: bill.doc.amount, name: bill.doc.name}))
-          ),
-          R.sort((a: DataPoint, b: DataPoint) => a.date.valueOf() - b.date.valueOf()),
-          R.reduce(
-            (pts: DataPoint[], pt: DataPoint) => {
-              const prev = pts[pts.length - 1].value
-              pts.push({...pt, value: pt.value + prev})
-              return pts
-            },
-            [{date: start, value: 0 /*account.balance*/, name: 'initial balance'}]
-          )
-        )(bills)
+    return []
+    // const start = new Date()
+    // const end = moment(start).add(3, 'months').toDate()
+    // return R.pipe(
+    //   R.map((account: Account.Doc): AccountData => {
+    //     const points = R.pipe(
+    //       R.filter((bill: Bill.Doc) => bill.account === account._id),
+    //       R.chain(
+    //         (bill: Bill.Doc) => bill.rrule.between(start, end, true)
+    //           .map(date => ({date, value: bill.doc.amount, name: bill.doc.name}))
+    //       ),
+    //       R.sort((a: DataPoint, b: DataPoint) => a.date.valueOf() - b.date.valueOf()),
+    //       R.reduce(
+    //         (pts: DataPoint[], pt: DataPoint) => {
+    //           const prev = pts[pts.length - 1].value
+    //           pts.push({...pt, value: pt.value + prev})
+    //           return pts
+    //         },
+    //         [{date: start, value: 0 /*account.balance*/, name: 'initial balance'}]
+    //       )
+    //     )(bills)
 
-        // console.log(account.doc.name, points)
+    //     // console.log(account.doc.name, points)
 
-        return {
-          name: account.name,
-          points
-        }
-      })
-    )(accounts)
+    //     return {
+    //       name: account.name,
+    //       points
+    //     }
+    //   })
+    // )(accounts)
   }
 )

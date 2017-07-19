@@ -16,10 +16,10 @@ export namespace Category {
   export type Cache = Lookup<DocId, Doc>
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
-  export type View = {
-    doc: Doc
-    bills: Bill.View[]
-  }
+  // export type View = {
+  //   doc: Doc
+  //   bills: Bill.View[]
+  // }
 
   export const allDocs = {
     startkey: 'category/',

@@ -10,8 +10,8 @@ import { compose, withHandlers, withState, shallowEqual } from 'recompose'
 import { FormProps, FieldArray, FieldsProps, reduxForm, Fields } from 'redux-form'
 import { deleteBudget } from '../../actions/index'
 import { Bill, Budget, Category } from '../../docs/index'
-import { selectBudgetViews } from '../../selectors'
-import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
+import { selectBudgets, selectCategories, selectBills, selectBillsForCategory, selectCategoriesForBudget } from '../../selectors'
+import { AppState, mapDispatchToProps, pushChanges, Cache } from '../../state/index'
 import { Validator } from '../../util/index'
 import { showBillDialog } from '../dialogs/index'
 import { CurrencyDisplay } from '../components/CurrencyDisplay'
@@ -69,7 +69,8 @@ const messages = defineMessages({
 type showBillDialogType = typeof showBillDialog
 
 interface ConnectedProps {
-  budgets: Budget.View[]
+  budgets: Budget.Doc[]
+  categoryCache: Cache<Category.Doc>
 }
 
 interface DispatchProps {
@@ -111,7 +112,8 @@ const enhance = compose<EnhancedProps, undefined>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({
-      budgets: selectBudgetViews(state)
+      budgets: selectBudgets(state),
+      categoryCache: state.docs.categories
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget, showBillDialog })
   ),
@@ -134,7 +136,7 @@ const enhance = compose<EnhancedProps, undefined>(
       return v.errors
     },
     onSubmit: async (values, dispatch, props) => {
-      const { budgets, pushChanges, setEditing, intl: { formatMessage } } = props
+      const { budgets, pushChanges, setEditing, categoryCache, intl: { formatMessage } } = props
       const v = new Validator(values, formatMessage)
       const changes: AnyDocument[] = []
 
@@ -145,9 +147,9 @@ const enhance = compose<EnhancedProps, undefined>(
         bv.required('name')
         const bvalues = values.budgets[i]
         if (bvalues) {
-          const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
+          const lastBudget = budgets.find(budget => budget._id === bvalues._id)
           let nextBudget = lastBudget
-            ? lastBudget.doc
+            ? lastBudget
             : Budget.doc({name: bvalues.name, categories: [], sortOrder: i})
 
           nextBudget = {
@@ -162,19 +164,19 @@ const enhance = compose<EnhancedProps, undefined>(
               return '' as Category.DocId
             }
             if (bc._id && lastBudget) {
-              const existingCategory = lastBudget.categories.find(cat => cat.doc._id === bc._id)
+              const existingCategory = categoryCache[bc._id]
               if (!existingCategory) {
                 throw new Error('existing category id ' + bc._id + ' not found')
               }
               const nextCategory = {
-                ...existingCategory.doc,
+                ...existingCategory,
                 ...bc,
                 amount
               }
               if (!shallowEqual(existingCategory, nextCategory)) {
                 changes.push(nextCategory)
               }
-              return existingCategory.doc._id
+              return existingCategory._id
             } else {
               const newCategory = Category.doc(nextBudget, {name: bc.name, amount})
               changes.push(newCategory)
@@ -186,7 +188,7 @@ const enhance = compose<EnhancedProps, undefined>(
             nextBudget = { ...nextBudget, categories }
           }
 
-          if (!lastBudget || !shallowEqual(lastBudget.doc, nextBudget)) {
+          if (!lastBudget || !shallowEqual(lastBudget, nextBudget)) {
             changes.push(nextBudget)
           }
         }
@@ -206,18 +208,21 @@ const enhance = compose<EnhancedProps, undefined>(
     }
   }),
   withHandlers<Handlers, FormProps<Values, {}, {}> & StateProps & ConnectedProps & DispatchProps & IntlProps>({
-    toggleEdit: ({budgets, initialize, setEditing, editing}) => () => {
+    toggleEdit: ({budgets, categoryCache, initialize, setEditing, editing}) => () => {
       editing = !editing
       if (editing) {
         const values: Values = {
           budgets: budgets.map((budget): BudgetValues => ({
-            name: budget.doc.name,
-            _id: budget.doc._id,
-            categories: budget.categories.map((category): CategoryValues => ({
-              name: category.doc.name,
-              _id: category.doc._id,
-              amount: category.doc.amount
-            }))
+            name: budget.name,
+            _id: budget._id,
+            categories: budget.categories
+              .map(categoryId => categoryCache[categoryId])
+              .filter(category => !!category)
+              .map((category): CategoryValues => ({
+                name: category.name,
+                _id: category._id,
+                amount: category.amount
+              }))
           }))
         }
         initialize!(values)
@@ -228,7 +233,7 @@ const enhance = compose<EnhancedProps, undefined>(
 )
 
 export const Budgets = enhance(props => {
-  const { budgets, handleSubmit, editing, toggleEdit, showBillDialog } = props
+  const { budgets, categoryCache, handleSubmit, editing, toggleEdit, showBillDialog } = props
 
   return (
     <Form onSubmit={handleSubmit}>
@@ -258,7 +263,11 @@ export const Budgets = enhance(props => {
         }
 
         {!editing && budgets.map(budget =>
-          <BudgetDisplay key={budget.doc._id} budget={budget} showBillDialog={showBillDialog}/>
+          <BudgetDisplay
+            key={budget._id}
+            budget={budget}
+            showBillDialog={showBillDialog}
+          />
         )}
       </div>
     </Form>
@@ -396,20 +405,28 @@ const SortableCategory = SortableElement(({category, onRemove, intl: { formatMes
   </ListGroupItem>
 )
 
-const budgetTotal = (budget: Budget.View): number => {
-  return budget.categories.reduce((val, category) => val + categoryTotal(category), 0)
+const budgetTotal = (categories: Category.Doc[], allBills: Bill.Doc[]): number => {
+  return categories.reduce((val, category) => val + categoryTotal(category, allBills), 0)
 }
 
-const categoryTotal = (category: Category.View): number => {
-  return category.bills.reduce((val, bill) => val + bill.doc.amount, category.doc.amount)
+const categoryTotal = (category: Category.Doc, allBills: Bill.Doc[]): number => {
+  return allBills
+    .filter(bill => bill.category === category._id)
+    .reduce((val, bill) => val + bill.amount, category.amount)
 }
 
-const BudgetDisplay = ({budget, showBillDialog}: { budget: Budget.View, showBillDialog: showBillDialogType }) => (
-  <Panel header={
+const BudgetDisplay = connect(
+  (state: AppState, props: { budget: Budget.Doc, showBillDialog: showBillDialogType }) => ({
+    categories: selectCategoriesForBudget(state, props.budget._id),
+    allBills: selectBills(state)
+  })
+)(props => {
+  const { budget, categories, allBills, showBillDialog } = props
+  return <Panel header={
     <h1>
-      {budget.doc.name}
+      {budget.name}
       <span className='pull-right'>
-        <CurrencyDisplay amount={budgetTotal(budget)}/>
+        <CurrencyDisplay amount={budgetTotal(categories, allBills)}/>
       </span>
     </h1>
   }>
@@ -419,49 +436,54 @@ const BudgetDisplay = ({budget, showBillDialog}: { budget: Budget.View, showBill
           <small><em>no categories</em></small>
         </ListGroupItem>
       }
-      {budget.categories.map((category, index) =>
-        <CategoryDisplay key={category.doc._id} category={category} showBillDialog={showBillDialog}/>
+      {categories.map((category, index) =>
+        <CategoryDisplay key={category._id} category={category} showBillDialog={showBillDialog}/>
       )}
     </ListGroup>
   </Panel>
-)
+})
 
-const CategoryDisplay = ({category, showBillDialog}: { category: Category.View, showBillDialog: showBillDialogType }) => (
-  <ListGroupItem>
+const CategoryDisplay = connect(
+  (state: AppState, props: { category: Category.Doc, showBillDialog: showBillDialogType }) => ({
+    bills: selectBillsForCategory(state, props.category._id)
+  })
+)(props => {
+  const { bills, category, showBillDialog } = props
+  return <ListGroupItem>
     <Grid fluid>
       <Row>
-        <Col xs={10}>{category.doc.name}</Col>
-        <Col xs={2}><CurrencyDisplay amount={categoryTotal(category)}/></Col>
+        <Col xs={10}>{category.name}</Col>
+        <Col xs={2}><CurrencyDisplay amount={categoryTotal(category, bills)}/></Col>
       </Row>
 
-      {category.doc.amount > 0 && category.bills.length > 0 &&
+      {category.amount > 0 && bills.length > 0 &&
         <Row>
           <Col xs={2}></Col>
           <Col xs={4}><FormattedMessage {...messages.categoryAmount}/></Col>
           <Col xs={2}>
-            <CurrencyDisplay amount={category.doc.amount}/>
+            <CurrencyDisplay amount={category.amount}/>
           </Col>
         </Row>
       }
 
-      {category.bills.map(bill =>
-        <Row key={bill.doc._id}>
+      {bills.map(bill =>
+        <Row key={bill._id}>
           <Col xs={4} xsOffset={2}>
             {/*<Link to={Bill.to.edit(bill.doc)}>*/}
             <Link to={''} onClick={(e) => {
               e.preventDefault()
-              showBillDialog({edit: bill.doc})
+              showBillDialog({edit: bill})
             }}>
-              <Favico value={bill.doc.favicon}/>
+              <Favico value={bill.favicon}/>
               {' '}
-              {bill.doc.name}
+              {bill.name}
             </Link>
           </Col>
           <Col xs={2}>
-            <CurrencyDisplay amount={bill.doc.amount}/>
+            <CurrencyDisplay amount={bill.amount}/>
           </Col>
         </Row>
       )}
     </Grid>
   </ListGroupItem>
-)
+})

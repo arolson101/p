@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName, withHandlers } from 'recompose'
 import { Budget } from '../../docs/index'
-import { selectBudgets, selectBudgetViews } from '../../selectors'
+import { selectBudgets } from '../../selectors'
 import { AppState } from '../../state/index'
 import { SelectOption } from './index'
 
@@ -43,7 +43,7 @@ const enhance = compose<EnhancedProps, {}>(
     newOptionCreator: props => (arg: { label: string, labelKey: string, valueKey: string }): SelectOption => {
       const { budget, category } = Budget.validateNewCategory(props.budgets, arg.label)
       if (budget) {
-        const label = optionLabel(budget!, category)
+        const label = optionLabel(budget, category)
         return {
           value: label,
           label
@@ -73,13 +73,17 @@ const optionLabel = (budget: Budget.Doc, category: string): string => {
 }
 
 const categoryOptions = createSelector(
-  (state: AppState) => selectBudgetViews(state),
-  (budgets: Budget.View[]): SelectOption[] => {
+  (state: AppState) => selectBudgets(state),
+  (state: AppState) => state.docs.categories,
+  (budgets: Budget.Doc[], categories): SelectOption[] => {
     const options = R.flatten<SelectOption>(budgets.map(budget =>
       budget.categories.length ? [
-        ...budget.categories.map(category => ({
-          value: category.doc._id,
-          label: optionLabel(budget.doc, category.doc.name)
+        ...budget.categories
+        .map(categoryId => categories[categoryId])
+        .filter(category => !!category)
+        .map(category => ({
+          value: category._id,
+          label: optionLabel(budget, category.name)
         }))
       ] : []
     ))

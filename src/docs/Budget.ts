@@ -17,13 +17,13 @@ export namespace Budget {
   export type Cache = Lookup<DocId, Doc>
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
   export const icon = 'fa fa-signal'
-  export const compare = (a: View, b: View) => (a.doc.sortOrder - b.doc.sortOrder)
+  // export const compare = (a: View, b: View) => (a.doc.sortOrder - b.doc.sortOrder)
   export const compareDoc = (a: Doc, b: Doc) => (a.sortOrder - b.sortOrder)
 
-  export type View = {
-    doc: Doc
-    categories: Category.View[]
-  }
+  // export type View = {
+  //   doc: Doc
+  //   categories: Category.View[]
+  // }
 
   export const allDocs = {
     startkey: 'budget/',

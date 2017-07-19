@@ -26,13 +26,13 @@ export namespace Bill {
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
   export const icon = 'fa fa-envelope'
 
-  export type View = {
-    doc: Doc
-    rrule: RRule
-    account?: Account.Doc
-    budget?: Budget.Doc
-    category?: Category.Doc
-  }
+  // export type View = {
+  //   doc: Doc
+  //   rrule: RRule
+  //   account?: Account.Doc
+  //   budget?: Budget.Doc
+  //   category?: Category.Doc
+  // }
 
   export const allDocs = {
     startkey: 'bill/',

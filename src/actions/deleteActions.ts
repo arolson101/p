@@ -75,18 +75,21 @@ export const deleteAllTransactions: AppThunk<DeleteAllTransactionsArgs, void> = 
     return dispatch(pushChanges({docs}))
   }
 
-type DeleteBudgetArgs = { budget: Budget.View }
+type DeleteBudgetArgs = { budget: Budget.Doc }
 export namespace deleteBudget { export type Fcn = ThunkFcn<DeleteBudgetArgs, void> }
 export const deleteBudget: AppThunk<DeleteBudgetArgs, void> = ({budget}) =>
   async (dispatch, getState) => {
-    const { db: { current } } = getState()
+    const { db: { current }, docs: { categories } } = getState()
     if (!current) { throw new Error('no db') }
 
     let docs: Deletion[] = []
-    for (let category of budget.categories) {
-      docs.push(deleteDoc(category.doc))
+    for (let categoryId of budget.categories) {
+      const category = categories[categoryId]
+      if (category) {
+        docs.push(deleteDoc(category))
+      }
     }
-    docs.push(deleteDoc(budget.doc))
+    docs.push(deleteDoc(budget))
 
     return dispatch(pushChanges({docs}))
   }
