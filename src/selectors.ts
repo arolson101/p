@@ -6,7 +6,7 @@ import { AppState } from './state/index'
 import { Bank, Account, Transaction, Bill, Category, Budget, SyncConnection } from './docs/index'
 
 const debugSelector = (name: string, id?: string) => {
-  // console.log(`selector ${name} running for '${id}`)
+  // console.log(`selector ${name} running for '${id}'`)
 }
 
 export const selectBank = createSelector(
@@ -24,12 +24,9 @@ export const selectBank = createSelector(
 
 export const selectBanks = createSelector(
   (state: AppState) => state.views.banks,
-  (state: AppState) => state,
-  (banks, state): Bank.View[] => {
+  (banks): Bank.View[] => {
     debugSelector('selectBanks')
-    return Object.keys(banks)
-      .map((bankId: Bank.DocId) => selectBank(state, bankId)!)
-      .filter(bank => !!bank)
+    return Object.values(banks)
   }
 )
 
@@ -44,7 +41,7 @@ export const selectBankAccounts = createSelector(
       console.error(`invalid bankId: `, bankId)
     }
     return (view ? view.doc.accounts : [])
-      .map(accountId => accountId && accounts[accountId])
+      .map(accountId => accounts[accountId])
       .filter(account => !!account)
   }
 )
