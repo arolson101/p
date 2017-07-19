@@ -12,7 +12,7 @@ import { DbInfo } from './DbInfo'
 import { incomingDelta, resolveConflict } from './delta'
 import { levelcrypt } from './levelcrypt'
 import { PouchDB } from './pouch'
-import { initDocs } from '../docs'
+import { initDocs } from '../views'
 
 export { DbInfo }
 

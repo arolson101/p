@@ -18,9 +18,9 @@ interface Props {
 }
 
 interface ConnectedProps {
-  bank: Bank.Doc
-  account: Account.Doc
-  transaction: Transaction.Doc
+  bank: Bank.View
+  account: Account.View
+  transaction: Transaction.View
 }
 
 type EnhancedProps = RouteProps & ConnectedProps & Props
@@ -48,7 +48,7 @@ export const TransactionView = enhance(props => {
   return (
     <div>
       <PageHeader>
-        {transaction.name}
+        {transaction.doc.name}
       </PageHeader>
       <TransactionDetail item={transaction}/>
     </div>

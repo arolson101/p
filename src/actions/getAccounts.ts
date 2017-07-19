@@ -33,7 +33,7 @@ const messages = defineMessages({
   }
 })
 
-type GetAccountsArgs = { bank: Bank.Doc, formatMessage: FormatMessage }
+type GetAccountsArgs = { bank: Bank.View, formatMessage: FormatMessage }
 export namespace getAccounts { export type Fcn = ThunkFcn<GetAccountsArgs, string> }
 export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMessage}) =>
   async (dispatch, getState) => {
@@ -49,14 +49,14 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
       } else {
         const state = getState()
         const { db: { current } } = state
-        const bankAccounts = selectBankAccounts(state, bank._id)
+        const bankAccounts = selectBankAccounts(state, bank.doc._id)
         if (!current) { throw new Error('no db') }
         const changes: AnyDocument[] = []
-        const nextBank: Bank.Doc = { ...bank, accounts: [...bank.accounts] }
+        const nextBank: Bank.Doc = { ...bank.doc, accounts: [...bank.doc.accounts] }
 
         for (let accountProfile of accountProfiles) {
           const accountName = accountProfile.getDescription()
-            || (accountProfiles.length === 1 ? bank.name : `${bank.name} ${accountProfiles.indexOf(accountProfile)}`)
+            || (accountProfiles.length === 1 ? bank.doc.name : `${bank.doc.name} ${accountProfiles.indexOf(accountProfile)}`)
           let accountType: Account.Type
           let accountNumber: string
           let bankid = ''
@@ -100,7 +100,7 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
           const existingAccount = findExistingAccount(bankAccounts, accountNumber, accountType)
           if (!existingAccount) {
             res.push(formatMessage(messages.accountAdded, account))
-            const doc = Account.doc(bank, account)
+            const doc = Account.doc(bank.doc, account)
             nextBank.accounts.push(doc._id)
             changes.push(doc)
           } else {
@@ -120,9 +120,9 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
     }
   }
 
-const findExistingAccount = (accounts: Account.Doc[], num: string, type: Account.Type): undefined | Account.Doc => {
+const findExistingAccount = (accounts: Account.View[], num: string, type: Account.Type): undefined | Account.View => {
   for (let account of accounts) {
-    if (account.number === num && account.type === type) {
+    if (account.doc.number === num && account.doc.type === type) {
       return account
     }
   }

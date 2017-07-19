@@ -69,8 +69,8 @@ const messages = defineMessages({
 type showBillDialogType = typeof showBillDialog
 
 interface ConnectedProps {
-  budgets: Budget.Doc[]
-  categoryCache: Cache<Category.Doc>
+  budgets: Budget.View[]
+  categoryCache: Cache<Category.View>
 }
 
 interface DispatchProps {
@@ -91,13 +91,13 @@ interface Handlers {
 type EnhancedProps = Handlers & FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps & StateProps
 
 interface CategoryValues {
-  _id: string
+  _id: Category.DocId
   name: string
   amount: number
 }
 
 interface BudgetValues {
-  _id: string
+  _id: Budget.DocId
   name: string
   categories: CategoryValues[]
 }
@@ -113,7 +113,7 @@ const enhance = compose<EnhancedProps, undefined>(
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({
       budgets: selectBudgets(state),
-      categoryCache: state.docs.categories
+      categoryCache: state.views.categories
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget, showBillDialog })
   ),
@@ -147,9 +147,9 @@ const enhance = compose<EnhancedProps, undefined>(
         bv.required('name')
         const bvalues = values.budgets[i]
         if (bvalues) {
-          const lastBudget = budgets.find(budget => budget._id === bvalues._id)
-          let nextBudget = lastBudget
-            ? lastBudget
+          const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
+          let nextBudget: Budget.Doc = lastBudget
+            ? lastBudget.doc
             : Budget.doc({name: bvalues.name, categories: [], sortOrder: i})
 
           nextBudget = {
@@ -164,11 +164,11 @@ const enhance = compose<EnhancedProps, undefined>(
               return '' as Category.DocId
             }
             if (bc._id && lastBudget) {
-              const existingCategory = categoryCache[bc._id]
+              const existingCategory: Category.Doc | undefined = categoryCache[bc._id] && categoryCache[bc._id].doc
               if (!existingCategory) {
                 throw new Error('existing category id ' + bc._id + ' not found')
               }
-              const nextCategory = {
+              const nextCategory: Category.Doc = {
                 ...existingCategory,
                 ...bc,
                 amount
@@ -213,15 +213,15 @@ const enhance = compose<EnhancedProps, undefined>(
       if (editing) {
         const values: Values = {
           budgets: budgets.map((budget): BudgetValues => ({
-            name: budget.name,
-            _id: budget._id,
-            categories: budget.categories
+            name: budget.doc.name,
+            _id: budget.doc._id,
+            categories: budget.doc.categories
               .map(categoryId => categoryCache[categoryId])
               .filter(category => !!category)
               .map((category): CategoryValues => ({
-                name: category.name,
-                _id: category._id,
-                amount: category.amount
+                name: category.doc.name,
+                _id: category.doc._id,
+                amount: category.doc.amount
               }))
           }))
         }
@@ -264,7 +264,7 @@ export const Budgets = enhance(props => {
 
         {!editing && budgets.map(budget =>
           <BudgetDisplay
-            key={budget._id}
+            key={budget.doc._id}
             budget={budget}
             showBillDialog={showBillDialog}
           />
@@ -405,82 +405,82 @@ const SortableCategory = SortableElement(({category, onRemove, intl: { formatMes
   </ListGroupItem>
 )
 
-const budgetTotal = (categories: Category.Doc[], allBills: Bill.Doc[]): number => {
+const budgetTotal = (categories: Category.View[], allBills: Bill.View[]): number => {
   return categories.reduce((val, category) => val + categoryTotal(category, allBills), 0)
 }
 
-const categoryTotal = (category: Category.Doc, allBills: Bill.Doc[]): number => {
+const categoryTotal = (category: Category.View, allBills: Bill.View[]): number => {
   return allBills
-    .filter(bill => bill.category === category._id)
-    .reduce((val, bill) => val + bill.amount, category.amount)
+    .filter(bill => bill.doc.category === category.doc._id)
+    .reduce((val, bill) => val + bill.doc.amount, category.doc.amount)
 }
 
 const BudgetDisplay = connect(
-  (state: AppState, props: { budget: Budget.Doc, showBillDialog: showBillDialogType }) => ({
-    categories: selectCategoriesForBudget(state, props.budget._id),
+  (state: AppState, props: { budget: Budget.View, showBillDialog: showBillDialogType }) => ({
+    categories: selectCategoriesForBudget(state, props.budget.doc._id),
     allBills: selectBills(state)
   })
 )(props => {
   const { budget, categories, allBills, showBillDialog } = props
   return <Panel header={
     <h1>
-      {budget.name}
+      {budget.doc.name}
       <span className='pull-right'>
         <CurrencyDisplay amount={budgetTotal(categories, allBills)}/>
       </span>
     </h1>
   }>
     <ListGroup fill>
-      {budget.categories.length === 0 &&
+      {budget.doc.categories.length === 0 &&
         <ListGroupItem>
           <small><em>no categories</em></small>
         </ListGroupItem>
       }
       {categories.map((category, index) =>
-        <CategoryDisplay key={category._id} category={category} showBillDialog={showBillDialog}/>
+        <CategoryDisplay key={category.doc._id} category={category} showBillDialog={showBillDialog}/>
       )}
     </ListGroup>
   </Panel>
 })
 
 const CategoryDisplay = connect(
-  (state: AppState, props: { category: Category.Doc, showBillDialog: showBillDialogType }) => ({
-    bills: selectBillsForCategory(state, props.category._id)
+  (state: AppState, props: { category: Category.View, showBillDialog: showBillDialogType }) => ({
+    bills: selectBillsForCategory(state, props.category.doc._id)
   })
 )(props => {
   const { bills, category, showBillDialog } = props
   return <ListGroupItem>
     <Grid fluid>
       <Row>
-        <Col xs={10}>{category.name}</Col>
+        <Col xs={10}>{category.doc.name}</Col>
         <Col xs={2}><CurrencyDisplay amount={categoryTotal(category, bills)}/></Col>
       </Row>
 
-      {category.amount > 0 && bills.length > 0 &&
+      {category.doc.amount > 0 && bills.length > 0 &&
         <Row>
           <Col xs={2}></Col>
           <Col xs={4}><FormattedMessage {...messages.categoryAmount}/></Col>
           <Col xs={2}>
-            <CurrencyDisplay amount={category.amount}/>
+            <CurrencyDisplay amount={category.doc.amount}/>
           </Col>
         </Row>
       }
 
       {bills.map(bill =>
-        <Row key={bill._id}>
+        <Row key={bill.doc._id}>
           <Col xs={4} xsOffset={2}>
             {/*<Link to={Bill.to.edit(bill.doc)}>*/}
             <Link to={''} onClick={(e) => {
               e.preventDefault()
               showBillDialog({edit: bill})
             }}>
-              <Favico value={bill.favicon}/>
+              <Favico value={bill.doc.favicon}/>
               {' '}
-              {bill.name}
+              {bill.doc.name}
             </Link>
           </Col>
           <Col xs={2}>
-            <CurrencyDisplay amount={bill.amount}/>
+            <CurrencyDisplay amount={bill.doc.amount}/>
           </Col>
         </Row>
       )}

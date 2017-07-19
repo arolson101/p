@@ -78,7 +78,7 @@ const messages = defineMessages({
 })
 
 interface Params {
-  edit?: Bank.Doc
+  edit?: Bank.View
 }
 
 interface Props extends Params {
@@ -130,8 +130,8 @@ const enhance = compose<EnhancedProps, Props>(
     ['edit', 'filist'],
     ({ edit, filist }) => {
       if (edit) {
-        const fi = filist.findIndex(fiEntry => fiEntry.name === edit.fi) + 1
-        const initialValues = { ...edit, ...edit.login, fi }
+        const fi = filist.findIndex(fiEntry => fiEntry.name === edit.doc.fi) + 1
+        const initialValues: Partial<Values> = { ...edit.doc, ...edit.doc.login, fi }
         return { initialValues }
       }
     }
@@ -142,7 +142,7 @@ const enhance = compose<EnhancedProps, Props>(
     onSubmit: async (values, dispatch, props) => {
       const { edit, filist, onHide, saveBank, intl: { formatMessage }, push } = props
 
-      const doc = await saveBank({edit, filist, formatMessage, values})
+      const doc = await saveBank({edit: edit && edit.doc, filist, formatMessage, values})
 
       if (!edit) {
         push(Bank.to.view(doc))

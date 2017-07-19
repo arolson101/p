@@ -41,7 +41,7 @@ export namespace saveBill {
 
 export const saveBill: AppThunk<Params, Return> = ({edit, formatMessage, values}) =>
   async (dispatch, getState) => {
-    const { db: { current }, docs: { budgets } } = getState()
+    const { db: { current }, views: { budgets } } = getState()
     if (!current) { throw new Error('no db') }
 
     const v = new Validator(values, formatMessage)

@@ -71,7 +71,7 @@ interface AccountData {
 }
 
 interface ConnectedProps {
-  budgets: Budget.Doc[]
+  budgets: Budget.View[]
   data: AccountData[]
 }
 
@@ -197,11 +197,11 @@ export const Home = enhance(props => {
       </h3>
 
       {budgets.map(budget =>
-        <Panel key={budget._id} header={
-          <h1>{budget.name}</h1>
+        <Panel key={budget.doc._id} header={
+          <h1>{budget.doc.name}</h1>
         }>
           <ListGroup fill>
-            {budget.categories.length === 0 &&
+            {budget.doc.categories.length === 0 &&
               <ListGroupItem>
                 <small><em>no categories</em></small>
               </ListGroupItem>

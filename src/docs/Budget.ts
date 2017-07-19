@@ -17,13 +17,15 @@ export namespace Budget {
   export type Cache = Lookup<DocId, Doc>
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
   export const icon = 'fa fa-signal'
-  // export const compare = (a: View, b: View) => (a.doc.sortOrder - b.doc.sortOrder)
-  export const compareDoc = (a: Doc, b: Doc) => (a.sortOrder - b.sortOrder)
+  export const compare = (a: View, b: View) => (a.doc.sortOrder - b.doc.sortOrder)
 
-  // export type View = {
-  //   doc: Doc
-  //   categories: Category.View[]
-  // }
+  export interface View {
+    doc: Doc
+  }
+
+  export const buildView = (doc: Doc): View => ({
+    doc,
+  })
 
   export const allDocs = {
     startkey: 'budget/',
@@ -68,7 +70,7 @@ export namespace Budget {
     return { _id, ...budget }
   }
 
-  export const maybeCreateCategory = (label: string, budgets: Budget.Doc[], docs: AnyDocument[]): Category.DocId => {
+  export const maybeCreateCategory = (label: string, budgets: Budget.View[], docs: AnyDocument[]): Category.DocId => {
     if (Category.isDocId(label)) {
       return label
     }
@@ -79,7 +81,7 @@ export namespace Budget {
     }
 
     const newCategory = Category.doc(
-      budget,
+      budget.doc,
       {
         name,
         amount: 0
@@ -88,9 +90,9 @@ export namespace Budget {
     docs.push(newCategory)
 
     const nextBudget: Budget.Doc = {
-      ...budget,
+      ...budget.doc,
       categories: [
-        ...budget.categories,
+        ...budget.doc.categories,
         newCategory._id
       ]
     }
@@ -100,13 +102,13 @@ export namespace Budget {
   }
 
   export interface CategoryInfo {
-    budget?: Budget.Doc
+    budget?: Budget.View
     category: string
   }
 
-  export const validateNewCategory = (budgets: Budget.Doc[], label?: string): CategoryInfo => {
+  export const validateNewCategory = (budgets: Budget.View[], label?: string): CategoryInfo => {
     const [budgetName, category] = (label || '').split(':').map(x => x.trim())
-    const idx = budgets.findIndex(b => b.name.toLocaleLowerCase() === budgetName.toLocaleLowerCase())
+    const idx = budgets.findIndex(b => b.doc.name.toLocaleLowerCase() === budgetName.toLocaleLowerCase())
     const budget = (idx === -1 ? undefined : budgets[idx])
     return { budget, category }
   }

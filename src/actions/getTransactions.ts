@@ -17,7 +17,7 @@ const messages = defineMessages({
   }
 })
 
-type GetTransactionsArgs = { bank: Bank.Doc, account: Account.Doc, start: Date, end: Date, formatMessage: FormatMessage }
+type GetTransactionsArgs = { bank: Bank.View, account: Account.View, start: Date, end: Date, formatMessage: FormatMessage }
 export namespace getTransactions { export type Fcn = ThunkFcn<GetTransactionsArgs, string> }
 export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, account, start, end, formatMessage}) =>
   async (dispatch, getState): Promise<string> => {

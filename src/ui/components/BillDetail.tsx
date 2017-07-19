@@ -10,7 +10,7 @@ import { Bill } from '../../docs/index'
 import { showBillDialog } from '../dialogs/index'
 
 interface Props {
-  item: Bill.Doc
+  item: Bill.View
 }
 
 interface DispatchProps {
@@ -48,7 +48,7 @@ const enhance = compose<EnhancedProps, Props>(
       showBillDialog({ edit: item })
     },
     deleteMe: ({item, pushChanges}) => () => {
-      pushChanges({docs: [deleteDoc(item)]})
+      pushChanges({docs: [deleteDoc(item.doc)]})
     }
   }),
 )
@@ -56,8 +56,8 @@ const enhance = compose<EnhancedProps, Props>(
 export const BillDetail = enhance(({item, startEdit, deleteMe}) => {
   const date = Bill.getDate(item)
   return <div>
-    name: {item.name}<br/>
-    group: {item.group}<br/>
+    name: {item.doc.name}<br/>
+    group: {item.doc.group}<br/>
     date: <FormattedDate value={date}/><br/>
     <Button onClick={startEdit}>edit</Button>
     <Button onClick={deleteMe}>delete</Button>

@@ -22,7 +22,7 @@ const messages = defineMessages({
 })
 
 interface ConnectedProps {
-  banks: Bank.Doc[]
+  banks: Bank.View[]
 }
 
 interface DispatchProps {
@@ -62,7 +62,7 @@ export const Accounts = enhance(props => {
       </PageHeader>
       <ul>
         {banks.map(bank =>
-          <BankListItem key={bank._id} bank={bank}/>
+          <BankListItem key={bank.doc._id} bank={bank}/>
         )}
       </ul>
       <Button onClick={createBank}>add institution</Button>
@@ -71,17 +71,17 @@ export const Accounts = enhance(props => {
   )
 })
 
-const BankListItem = (props: { bank: Bank.Doc }) => {
+const BankListItem = (props: { bank: Bank.View }) => {
   const { bank } = props
   return (
-    <li key={bank._id}>
-      <Favico value={bank.favicon}/>
+    <li key={bank.doc._id}>
+      <Favico value={bank.doc.favicon}/>
       {' '}
-      <Link to={Bank.to.view(bank)}>
-        {bank.name}
+      <Link to={Bank.to.view(bank.doc)}>
+        {bank.doc.name}
       </Link>
       <ul>
-        {bank.accounts.map(accountId =>
+        {bank.doc.accounts.map(accountId =>
           <AccountListItem key={accountId} accountId={accountId}/>
         )}
       </ul>
@@ -99,8 +99,8 @@ const AccountListItem = connect(
     return null
   }
   return (
-    <li key={account._id}>
-      <Link to={Account.to.view(account)}>{account.name}</Link>
+    <li key={account.doc._id}>
+      <Link to={Account.to.view(account.doc)}>{account.doc.name}</Link>
     </li>
   )
 })

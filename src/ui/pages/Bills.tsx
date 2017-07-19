@@ -126,7 +126,7 @@ export const Bills = enhance((props) => {
                     <CurrencyDisplay amount={bill.doc.amount}/>
                   </Col>
                   <Col xs={1}>
-                    <Button bsStyle='link' onClick={() => showBillDialog({edit: bill.doc})}>
+                    <Button bsStyle='link' onClick={() => showBillDialog({edit: bill})}>
                       <i className='fa fa-edit'/>
                     </Button>
                   </Col>
@@ -146,8 +146,8 @@ const getGroup = (bill: BillDisplay) => {
 }
 
 const makeBillDisplayGroup = (startDate: Date) => R.pipe(
-  R.map((doc: Bill.Doc): BillDisplay => {
-    const rrule = RRule.fromString(doc.rruleString)
+  R.map((view: Bill.View): BillDisplay => {
+    const { rrule, doc } = view
     return ({
       doc,
       rrule,

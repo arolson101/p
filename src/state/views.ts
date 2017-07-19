@@ -7,15 +7,15 @@ export interface Cache<T> {
   [id: string]: T
 }
 
-export interface DocsState {
-  accounts: Cache<Account.Doc>
-  banks: Cache<Bank.Doc>
-  bills: Cache<Bill.Doc>
-  budgets: Cache<Budget.Doc>
-  categories: Cache<Category.Doc>
+export interface ViewsState {
+  accounts: Cache<Account.View>
+  banks: Cache<Bank.View>
+  bills: Cache<Bill.View>
+  budgets: Cache<Budget.View>
+  categories: Cache<Category.View>
   localdocs: Cache<LocalDoc.Doc>
   syncConnections: Cache<SyncConnection.Doc>
-  transactions: Cache<Transaction.Doc>
+  transactions: Cache<Transaction.View>
 }
 
 export const DOCS_INIT = 'docs/init'
@@ -75,7 +75,7 @@ const safeGet = async <T> (db: PouchDB.Database<any>, id: string): Promise<T | u
 type Actions<T> = DbChangesAction<T> | DocsInitAction | SetDbAction | EmptyAction
 const initialState = {}
 
-const docReducer = <T>(isDoc: (id: string) => boolean) =>
+const docReducer = <T>(isDocId: (id: string) => boolean, buildView: (doc: AnyDocument) => T) =>
   (state: Cache<T> = initialState, action: Actions<T>): Cache<T> => {
     switch (action.type) {
       case DB_SET_CURRENT:
@@ -83,21 +83,21 @@ const docReducer = <T>(isDoc: (id: string) => boolean) =>
 
       case DOCS_INIT:
         return action.docs
-          .filter(doc => isDoc(doc._id))
-          .reduce((obj, val) => ({...obj, [val._id]: val}), {})
+          .filter(doc => isDocId(doc._id))
+          .reduce((obj, val) => ({...obj, [val._id]: buildView(val)}), {})
 
       case DB_CHANGES:
-        const changes = action.changes.filter(change => isDoc(change.id))
+        const changes = action.changes.filter(change => isDocId(change.id))
         if (changes.length) {
           const nextState = { ...state }
-          for (let change of action.changes) {
+          for (let change of changes) {
             if (change.deleted) {
               delete nextState[change.id]
             } else {
               if (!change.doc) {
                 throw new Error(`change ${change.id} has no document`)
               }
-              nextState[change.id] = change.doc
+              nextState[change.id] = buildView(change.doc)
             }
           }
           return nextState
@@ -109,21 +109,23 @@ const docReducer = <T>(isDoc: (id: string) => boolean) =>
     }
   }
 
+const docIsView = (doc: AnyDocument) => doc
+
 const reducer = combineReducers({
-  accounts: docReducer(Account.isDocId),
-  banks: docReducer(Bank.isDocId),
-  bills: docReducer(Bill.isDocId),
-  budgets: docReducer(Budget.isDocId),
-  categories: docReducer(Category.isDocId),
-  localdocs: docReducer(LocalDoc.isDocId),
-  syncConnections: docReducer(SyncConnection.isDocId),
-  transactions: docReducer(Transaction.isDocId),
+  accounts: docReducer(Account.isDocId, Account.buildView),
+  banks: docReducer(Bank.isDocId, Bank.buildView),
+  bills: docReducer(Bill.isDocId, Bill.buildView),
+  budgets: docReducer(Budget.isDocId, Budget.buildView),
+  categories: docReducer(Category.isDocId, Category.buildView),
+  localdocs: docReducer(LocalDoc.isDocId, docIsView),
+  syncConnections: docReducer(SyncConnection.isDocId, docIsView),
+  transactions: docReducer(Transaction.isDocId, Transaction.buildView),
 })
 
-export interface DocsSlice {
-  docs: DocsState
+export interface ViewsSlice {
+  views: ViewsState
 }
 
-export const DocsSlice = {
-  docs: reducer
+export const ViewsSlice = {
+  views: reducer
 }

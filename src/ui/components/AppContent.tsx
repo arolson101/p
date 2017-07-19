@@ -19,7 +19,7 @@ export interface NavItem {
   icon: string
   path: string
   title: string
-  account?: Account.Doc
+  account?: Account.View
 }
 
 export interface NavGroup {
@@ -73,7 +73,7 @@ type RouteProps = RouteComponentProps<any>
 
 interface ConnectedProps {
   ThemeNav: React.StatelessComponent<NavProps>
-  accounts: Account.Doc[]
+  accounts: Account.View[]
 }
 
 interface UIState {
@@ -118,15 +118,15 @@ const enhance = compose<EnhancedProps, {}>(
 )
 
 const makeAccountList = R.pipe(
-  R.map((account: Account.Doc): NavItem => ({
-    id: account._id,
-    icon: Account.icons[account.type],
-    path: Account.to.view(account),
-    title: account.name,
+  R.map((account: Account.View): NavItem => ({
+    id: account.doc._id,
+    icon: Account.icons[account.doc.type],
+    path: Account.to.view(account.doc),
+    title: account.doc.name,
     account
   })),
   R.sortBy((item: NavItem) => item.title.toLocaleLowerCase()),
-  R.sortBy((item: NavItem) => Object.keys(Account.Type).indexOf(item.account!.type).toString())
+  R.sortBy((item: NavItem) => Object.keys(Account.Type).indexOf(item.account!.doc.type).toString())
 )
 
 export const AppContent = enhance(props => {

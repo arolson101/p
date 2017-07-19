@@ -30,8 +30,8 @@ const messages = defineMessages({
 type RouteProps = RouteComponentProps<Account.Params>
 
 interface Params {
-  bank: Bank.Doc
-  account: Account.Doc
+  bank: Bank.View
+  account: Account.View
 }
 
 interface Props extends Params {
@@ -103,7 +103,7 @@ export const AccountDeleteDialog = enhance(props => {
       </Modal.Header>
 
       <Modal.Body>
-        <FormattedMessage {...messages.text} values={{name: account.name}}/>
+        <FormattedMessage {...messages.text} values={{name: account.doc.name}}/>
         {error &&
           <Alert bsStyle='danger'>
             {error}

@@ -3,6 +3,7 @@ import * as numeral from 'numeral'
 import * as PropTypes from 'prop-types'
 import * as R from 'ramda'
 import * as React from 'react'
+import * as RRule from 'rrule-alt'
 import * as Rx from 'rxjs/Rx'
 import { Modal, DropdownButton, MenuItem, SelectCallback,
          InputGroup, PageHeader, ButtonToolbar, Button, Alert } from 'react-bootstrap'
@@ -13,7 +14,6 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHand
 import { Dispatch } from 'redux'
 import { reduxForm, formValueSelector, FormProps } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'
-import * as RRule from 'rrule-alt'
 import { saveBill, toRRule, RRuleErrorMessage } from '../../actions/index'
 import { Account, Budget, Bill } from '../../docs/index'
 import { selectBills, selectBudgets } from '../../selectors'
@@ -158,7 +158,7 @@ const messages = defineMessages({
 })
 
 interface Params {
-  edit?: Bill.Doc
+  edit?: Bill.View
 }
 
 interface Props extends Params {
@@ -169,8 +169,8 @@ interface Props extends Params {
 interface StateProps {
   monthOptions: SelectOption[]
   weekdayOptions: SelectOption[]
-  bills: Bill.Doc[]
-  budgets: Budget.Doc[]
+  bills: Bill.View[]
+  budgets: Budget.View[]
 }
 
 interface DispatchProps {
@@ -256,10 +256,10 @@ const enhance = compose<EnhancedProps, Props>(
     ['edit', 'intl'],
     ({edit, intl: { formatNumber }}) => {
       if (edit) {
-        const rrule = RRule.fromString(edit.rruleString)
+        const rrule = edit.rrule
         const initialValues: Values = {
-          ...edit,
-          amount: formatNumber(edit.amount, {style: 'currency', currency: 'USD'}),
+          ...edit.doc,
+          amount: formatNumber(edit.doc.amount, {style: 'currency', currency: 'USD'}),
           start: moment(rrule.options.dtstart).format('L'),
         } as any
 
@@ -321,8 +321,8 @@ const enhance = compose<EnhancedProps, Props>(
     validate: (values, props) => {
       const v = new Validator(values, props.intl.formatMessage)
       const { edit, bills, intl: { formatMessage } } = props
-      const otherBills = bills.filter((otherBill: Bill.Doc) => !edit || otherBill._id !== edit._id)
-      const otherNames = otherBills.map((acct) => acct.name)
+      const otherBills = bills.filter((otherBill: Bill.View) => !edit || otherBill.doc._id !== edit.doc._id)
+      const otherNames = otherBills.map((acct) => acct.doc.name)
       v.unique('name', otherNames, messages.uniqueName)
       v.date('start')
       v.date('until')
@@ -331,7 +331,7 @@ const enhance = compose<EnhancedProps, Props>(
     },
     onSubmit: async (values, dispatch, props) => {
       const { edit, onHide, saveBill, intl: { formatMessage } } = props
-      await saveBill({edit, formatMessage, values})
+      await saveBill({edit: edit && edit.doc, formatMessage, values})
       return onHide()
     }
   }),
@@ -613,7 +613,7 @@ const monthOptions = createSelector(
 )
 
 const getGroupNames = R.pipe(
-  R.map((bill: Bill.Doc): string => bill.group),
+  R.map((bill: Bill.View): string => bill.doc.group),
   R.sortBy(R.toLower),
   R.uniq,
   R.map((name: string): SelectOption => ({ label: name, value: name }))

@@ -10,9 +10,9 @@ const debugSelector = (name: string, id?: string) => {
 }
 
 export const selectBank = createSelector(
-  (state: AppState, bankId: Bank.DocId | undefined) => state.docs.banks,
+  (state: AppState, bankId: Bank.DocId | undefined) => state.views.banks,
   (state: AppState, bankId: Bank.DocId | undefined) => bankId,
-  (banks, bankId): Bank.Doc | undefined => {
+  (banks, bankId): Bank.View | undefined => {
     debugSelector('selectBank', bankId)
     const doc = bankId && banks[bankId]
     if (!doc) {
@@ -23,9 +23,9 @@ export const selectBank = createSelector(
 )
 
 export const selectBanks = createSelector(
-  (state: AppState) => state.docs.banks,
+  (state: AppState) => state.views.banks,
   (state: AppState) => state,
-  (banks, state): Bank.Doc[] => {
+  (banks, state): Bank.View[] => {
     debugSelector('selectBanks')
     return Object.keys(banks)
       .map((bankId: Bank.DocId) => selectBank(state, bankId)!)
@@ -34,25 +34,25 @@ export const selectBanks = createSelector(
 )
 
 export const selectBankAccounts = createSelector(
-  (state: AppState, bankId: Bank.DocId | undefined) => state.docs.banks,
-  (state: AppState, bankId: Bank.DocId | undefined) => state.docs.accounts,
+  (state: AppState, bankId: Bank.DocId | undefined) => state.views.banks,
+  (state: AppState, bankId: Bank.DocId | undefined) => state.views.accounts,
   (state: AppState, bankId: Bank.DocId | undefined) => bankId,
-  (banks, accounts, bankId): Account.Doc[] => {
+  (banks, accounts, bankId): Account.View[] => {
     debugSelector('selectBankAccounts', bankId)
-    const doc = bankId && banks[bankId]
-    if (!doc) {
+    const view = bankId && banks[bankId]
+    if (!view) {
       console.error(`invalid bankId: `, bankId)
     }
-    return (doc ? doc.accounts : [])
+    return (view ? view.doc.accounts : [])
       .map(accountId => accountId && accounts[accountId])
       .filter(account => !!account)
   }
 )
 
 export const selectAccount = createSelector(
-  (state: AppState, accountId: Account.DocId | undefined) => state.docs.accounts,
+  (state: AppState, accountId: Account.DocId | undefined) => state.views.accounts,
   (state: AppState, accountId: Account.DocId | undefined) => accountId,
-  (accounts, accountId): Account.Doc | undefined => {
+  (accounts, accountId): Account.View | undefined => {
     debugSelector('selectAccount', accountId)
     const doc = accountId && accounts[accountId]
     if (!doc) {
@@ -64,17 +64,17 @@ export const selectAccount = createSelector(
 )
 
 export const selectAccounts = createSelector(
-  (state: AppState) => state.docs.accounts,
-  (accounts): Account.Doc[] => {
+  (state: AppState) => state.views.accounts,
+  (accounts): Account.View[] => {
     debugSelector('selectAccounts')
     return Object.values(accounts)
   }
 )
 
 export const selectBudget = createSelector(
-  (state: AppState, budgetId: Budget.DocId | undefined) => state.docs.budgets,
+  (state: AppState, budgetId: Budget.DocId | undefined) => state.views.budgets,
   (state: AppState, budgetId: Budget.DocId | undefined) => budgetId,
-  (budgets, budgetId): Budget.Doc | undefined => {
+  (budgets, budgetId): Budget.View | undefined => {
     debugSelector('selectBudget', budgetId)
     const doc = budgetId && budgets[budgetId]
     if (!doc) {
@@ -86,18 +86,18 @@ export const selectBudget = createSelector(
 )
 
 export const selectBudgets = createSelector(
-  (state: AppState) => state.docs.budgets,
-  (budgets): Budget.Doc[] => {
+  (state: AppState) => state.views.budgets,
+  (budgets): Budget.View[] => {
     debugSelector('selectBudgets')
     return Object.values(budgets)
-      .sort(Budget.compareDoc)
+      .sort(Budget.compare)
   }
 )
 
 export const selectCategory = createSelector(
-  (state: AppState, categoryId: Category.DocId | undefined) => state.docs.categories,
+  (state: AppState, categoryId: Category.DocId | undefined) => state.views.categories,
   (state: AppState, categoryId: Category.DocId | undefined) => categoryId,
-  (categories, categoryId): Category.Doc | undefined => {
+  (categories, categoryId): Category.View | undefined => {
     debugSelector('selectCategory', categoryId)
     const doc = categoryId && categories[categoryId]
     if (!doc) {
@@ -109,42 +109,42 @@ export const selectCategory = createSelector(
 )
 
 export const selectCategories = createSelector(
-  (state: AppState) => state.docs.categories,
-  (categories): Category.Doc[] => {
+  (state: AppState) => state.views.categories,
+  (categories): Category.View[] => {
     debugSelector('selectCategories')
     return Object.values(categories)
   }
 )
 
 export const selectCategoriesForBudget = createSelector(
-  (state: AppState, budgetId: Budget.DocId | undefined) => state.docs.budgets,
-  (state: AppState, budgetId: Budget.DocId | undefined) => state.docs.categories,
+  (state: AppState, budgetId: Budget.DocId | undefined) => state.views.budgets,
+  (state: AppState, budgetId: Budget.DocId | undefined) => state.views.categories,
   (state: AppState, budgetId: Budget.DocId | undefined) => budgetId,
-  (budgets, categories, budgetId): Category.Doc[] => {
+  (budgets, categories, budgetId): Category.View[] => {
     debugSelector('selectCategoriesForBudget', budgetId)
-    const doc = budgetId && budgets[budgetId]
-    if (!doc) {
+    const view = budgetId && budgets[budgetId]
+    if (!view) {
       console.error('invalid budgetId: ', budgetId)
     }
-    return (doc ? doc.categories : [])
+    return (view ? view.doc.categories : [])
       .map(categoryId => categories[categoryId])
       .filter(category => !!category)
   }
 )
 
 export const selectBillsForCategory = createSelector(
-  (state: AppState, categoryId: Category.DocId | undefined) => state.docs.bills,
+  (state: AppState, categoryId: Category.DocId | undefined) => state.views.bills,
   (state: AppState, categoryId: Category.DocId | undefined) => categoryId,
-  (bills, categoryId): Bill.Doc[] => {
+  (bills, categoryId): Bill.View[] => {
     return Object.values(bills)
-      .filter(bill => bill.category === categoryId)
+      .filter(bill => bill.doc.category === categoryId)
   }
 )
 
 export const selectTransaction = createSelector(
-  (state: AppState, transactionId: Transaction.DocId | undefined) => state.docs.transactions,
+  (state: AppState, transactionId: Transaction.DocId | undefined) => state.views.transactions,
   (state: AppState, transactionId: Transaction.DocId | undefined) => transactionId,
-  (transactions, transactionId): Transaction.Doc | undefined => {
+  (transactions, transactionId): Transaction.View | undefined => {
     debugSelector('selectTransaction', transactionId)
     const doc = transactionId && transactions[transactionId]
     if (!doc) {
@@ -156,15 +156,15 @@ export const selectTransaction = createSelector(
 )
 
 export const selectBills = createSelector(
-  (state: AppState) => state.docs.bills,
-  (bills): Bill.Doc[] => {
+  (state: AppState) => state.views.bills,
+  (bills): Bill.View[] => {
     debugSelector('selectBills')
     return Object.values(bills)
   }
 )
 
 export const selectSync = createSelector(
-  (state: AppState, syncId: SyncConnection.DocId | undefined) => state.docs.syncConnections,
+  (state: AppState, syncId: SyncConnection.DocId | undefined) => state.views.syncConnections,
   (state: AppState, syncId: SyncConnection.DocId | undefined) => syncId,
   (syncConnections, syncId): SyncConnection.Doc | undefined => {
     debugSelector('selectSync', syncId)
@@ -178,7 +178,7 @@ export const selectSync = createSelector(
 )
 
 export const selectSyncs = createSelector(
-  (state: AppState) => state.docs.syncConnections,
+  (state: AppState) => state.views.syncConnections,
   (syncConnections): SyncConnection.Doc[] => {
     debugSelector('selectSyncs')
     return Object.values(syncConnections)

@@ -31,19 +31,17 @@ export namespace Transaction {
   export const endkeyForAccountId = (accountId: Account.DocId, time?: Date) =>
     docId({ ...accountIdParts(accountId), txId: time ? timeKey(time) : ''}) + '\uffff'
 
-  export const startkeyForAccount = (account: Account.Doc, time?: Date) => startkeyForAccountId(account._id, time)
-  export const endkeyForAccount = (account: Account.Doc, time?: Date) => endkeyForAccountId(account._id, time)
+  export const startkeyForAccount = (account: Account.View, time?: Date) => startkeyForAccountId(account.doc._id, time)
+  export const endkeyForAccount = (account: Account.View, time?: Date) => endkeyForAccountId(account.doc._id, time)
 
   export type View = {
     doc: Doc
     time: Date
-    balance: number
   }
 
-  export const buildView = (doc: Doc, balance: number) => ({
+  export const buildView = (doc: Doc) => ({
     doc,
-    time: new Date(doc.time),
-    balance
+    time: new Date(doc.time)
   })
 
   export namespace routes {
@@ -69,8 +67,8 @@ export namespace Transaction {
     return aparts
   }
 
-  const accountParts = (account: Account.Doc) => {
-    return accountIdParts(account._id)
+  const accountParts = (account: Account.View) => {
+    return accountIdParts(account.doc._id)
   }
 
   export const isDocId = (id: string): boolean => {
@@ -85,7 +83,7 @@ export namespace Transaction {
     return time.valueOf().toString() as Id
   }
 
-  export const doc = (account: Account.Doc, transaction: Transaction): Doc => {
+  export const doc = (account: Account.View, transaction: Transaction): Doc => {
     const txId = transaction.time.toString() + randomBytes(4).toString('hex') as Id
     const _id = docId({ ...accountParts(account), txId })
     return { _id, ...transaction }

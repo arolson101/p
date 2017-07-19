@@ -90,23 +90,15 @@ export namespace Account {
     endkey: 'account/\uffff',
   }
 
-  // export const buildView = (doc: Doc, cache: DocCache): View => {
-  //   const startkey = Transaction.startkeyForAccount(doc)
-  //   const endkey = Transaction.endkeyForAccount(doc)
-  //   let balance = 0
-  //   const transactions = Array.from(cache.transactions.values())
-  //     .filter(transaction => (startkey < transaction._id && transaction._id < endkey))
-  //     .map(transaction => {
-  //       balance += transaction.amount
-  //       return Transaction.buildView(transaction, balance)
-  //     })
+  export interface View {
+    doc: Doc
+    transactionsRetrieved: boolean
+  }
 
-  //   return ({
-  //     doc,
-  //     transactions,
-  //     balance
-  //   })
-  // }
+  export const buildView = (doc: Doc): View => ({
+    doc,
+    transactionsRetrieved: false
+  })
 
   export namespace routes {
     export const view = 'account/:bankId/:accountId'

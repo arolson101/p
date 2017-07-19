@@ -26,28 +26,20 @@ export namespace Bill {
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
   export const icon = 'fa fa-envelope'
 
-  // export type View = {
-  //   doc: Doc
-  //   rrule: RRule
-  //   account?: Account.Doc
-  //   budget?: Budget.Doc
-  //   category?: Category.Doc
-  // }
+  export interface View {
+    doc: Doc
+    rrule: RRule
+  }
+
+  export const buildView = (doc: Doc): View => ({
+    doc,
+    rrule: RRule.fromString(doc.rruleString)
+  })
 
   export const allDocs = {
     startkey: 'bill/',
     endkey: 'bill/\uffff',
   }
-
-  // export const buildView = (doc: Doc, docCache: DocCache): View => {
-  //   return ({
-  //     doc,
-  //     rrule: RRule.fromString(doc.rruleString),
-  //     account: doc.account && docCache.accounts.get(doc.account),
-  //     budget: doc.category && docCache.budgets.get(Category.budgetId(doc.category)),
-  //     category: doc.category && docCache.categories.get(doc.category)
-  //   })
-  // }
 
   export namespace routes {
     export const all = 'bills'
@@ -77,15 +69,14 @@ export namespace Bill {
     return { _id, ...bank }
   }
 
-  export const getDate = (bill: Doc): Date => {
-    const rrule = RRule.fromString(bill.rruleString)
-    if (!rrule) {
+  export const getDate = (bill: View): Date => {
+    if (!bill.rrule) {
       throw new Error(`bill doesn't have a rrule!`)
     }
-    if (!rrule.options.dtstart) {
+    if (!bill.rrule.options.dtstart) {
       throw new Error(`bill doesn't have a start date!`)
     }
-    const next = rrule.after(new Date(), true)
+    const next = bill.rrule.after(new Date(), true)
     return next
   }
 }

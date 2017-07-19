@@ -50,8 +50,8 @@ interface Props {
 }
 
 interface ConnectedProps {
-  bank: Bank.Doc
-  account: Account.Doc
+  bank: Bank.View
+  account: Account.View
   db: PouchDB.Database<Transaction.Doc>
 }
 
@@ -214,9 +214,9 @@ export const AccountView = enhance((props) => {
           ]}
         />
 
-        {account.name}
+        {account.doc.name}
         {' '}
-        <small>{account.number}</small>
+        <small>{account.doc.number}</small>
       </PageHeader>
 
       <div style={{flex: 1}}>

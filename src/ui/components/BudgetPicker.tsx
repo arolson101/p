@@ -11,7 +11,7 @@ import { SelectOption } from './index'
 
 interface ConnectedProps {
   options: SelectOption[]
-  budgets: Budget.Doc[]
+  budgets: Budget.View[]
 }
 
 interface Handlers {
@@ -37,7 +37,7 @@ const enhance = compose<EnhancedProps, {}>(
 
     promptTextCreator: props => (label: string): string => {
       const { budget, category } = Budget.validateNewCategory(props.budgets, label)
-      return `create category '${category}' in budget '${budget!.name}'`
+      return `create category '${category}' in budget '${budget!.doc.name}'`
     },
 
     newOptionCreator: props => (arg: { label: string, labelKey: string, valueKey: string }): SelectOption => {
@@ -68,22 +68,22 @@ export const BudgetPicker = enhance((props) => {
   )
 })
 
-const optionLabel = (budget: Budget.Doc, category: string): string => {
-  return `${budget.name}: ${category}`
+const optionLabel = (budget: Budget.View, category: string): string => {
+  return `${budget.doc.name}: ${category}`
 }
 
 const categoryOptions = createSelector(
   (state: AppState) => selectBudgets(state),
-  (state: AppState) => state.docs.categories,
-  (budgets: Budget.Doc[], categories): SelectOption[] => {
+  (state: AppState) => state.views.categories,
+  (budgets: Budget.View[], categories): SelectOption[] => {
     const options = R.flatten<SelectOption>(budgets.map(budget =>
-      budget.categories.length ? [
-        ...budget.categories
+      budget.doc.categories.length ? [
+        ...budget.doc.categories
         .map(categoryId => categories[categoryId])
         .filter(category => !!category)
         .map(category => ({
-          value: category._id,
-          label: optionLabel(budget, category.name)
+          value: category.doc._id,
+          label: optionLabel(budget, category.doc.name)
         }))
       ] : []
     ))

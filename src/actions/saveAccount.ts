@@ -8,8 +8,8 @@ let injectedIntl: InjectedIntl
 type FormatMessage = typeof injectedIntl.formatMessage
 
 interface Params {
-  bank: Bank.Doc
-  edit?: Account.Doc
+  bank: Bank.View
+  edit?: Account.View
   formatMessage: FormatMessage
   values: saveAccount.Values
 }
@@ -35,7 +35,7 @@ export const saveAccount: AppThunk<Params, Return> = ({bank, edit, formatMessage
     v.maybeThrowSubmissionError()
 
     const account = Account.doc(
-      bank,
+      bank.doc,
       {
         visible: true,
         ...edit,
@@ -46,8 +46,8 @@ export const saveAccount: AppThunk<Params, Return> = ({bank, edit, formatMessage
     const docs: AnyDocument[] = [account]
     if (!edit) {
       const nextBank: Bank.Doc = {
-        ...bank,
-        accounts: [...bank.accounts, account._id]
+        ...bank.doc,
+        accounts: [...bank.doc.accounts, account._id]
       }
       docs.push(nextBank)
     }

@@ -67,8 +67,8 @@ const messages = defineMessages({
 })
 
 interface Params {
-  edit?: Account.Doc
-  bank: Bank.Doc
+  edit?: Account.View
+  bank: Bank.View
 }
 
 interface Props extends Params {
@@ -77,7 +77,7 @@ interface Props extends Params {
 }
 
 interface ConnectedProps {
-  accounts: Account.Doc[]
+  accounts: Account.View[]
 }
 
 interface DispatchProps {
@@ -115,14 +115,14 @@ const enhance = compose<EnhancedProps, Props>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, Props>(
     (state: AppState, props): ConnectedProps => ({
-      accounts: selectBankAccounts(state, props && props.bank._id)
+      accounts: selectBankAccounts(state, props && props.bank.doc._id)
     }),
     mapDispatchToProps<DispatchProps>({ saveAccount, push })
   ),
   withPropsOnChange<any, FormProps<Values, any, any> & Props>(
     ['edit'],
     ({ edit }) => {
-      const initialValues = edit || ({
+      const initialValues: Partial<Values> = edit ? edit.doc : ({
         color: Account.generateColor(),
       })
       return { initialValues }
@@ -145,9 +145,9 @@ const enhance = compose<EnhancedProps, Props>(
     validate: ((values, props) => {
       const { edit, bank, accounts, intl: { formatMessage } } = props
       const v = new Validator(values, formatMessage)
-      const otherAccounts = accounts.filter(acct => !edit || edit._id !== acct._id)
-      const otherNames = otherAccounts.map(acct => acct.name)
-      const otherNumbers = otherAccounts.filter(acct => acct.type === v.values.type).map(acct => acct.number)
+      const otherAccounts = accounts.filter(acct => !edit || edit.doc._id !== acct.doc._id)
+      const otherNames = otherAccounts.map(acct => acct.doc.name)
+      const otherNumbers = otherAccounts.filter(acct => acct.doc.type === v.values.type).map(acct => acct.doc.number)
       v.unique('name', otherNames, messages.uniqueName)
       v.unique('number', otherNumbers, messages.uniqueNumber)
       return v.errors

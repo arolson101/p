@@ -68,8 +68,8 @@ interface Props {
 }
 
 interface ConnectedProps {
-  bank: Bank.Doc
-  accounts: Account.Doc[]
+  bank: Bank.View
+  accounts: Account.View[]
 }
 
 interface DispatchProps {
@@ -201,7 +201,7 @@ export const BankView = enhance((props) => {
             {
               message: messages.getAccounts,
               onClick: getAccountList,
-              disabled: !bank.online
+              disabled: !bank.doc.online
             },
             {
               divider: true
@@ -222,10 +222,10 @@ export const BankView = enhance((props) => {
           ]}
         />
 
-        {bank.name}
+        {bank.doc.name}
       </PageHeader>
 
-      {bank.accounts.length > 0 ? (
+      {bank.doc.accounts.length > 0 ? (
         <Table hover striped>
           <thead>
             <tr>
@@ -238,14 +238,14 @@ export const BankView = enhance((props) => {
             </tr>
           </thead>
           <tbody>
-            {accounts.filter(account => account.visible || showAll).map(account => account &&
-              <tr key={account._id} href={history.createHref({pathname: Account.to.view(account)})}>
+            {accounts.filter(account => account.doc.visible || showAll).map(account => account &&
+              <tr key={account.doc._id} href={history.createHref({pathname: Account.to.view(account.doc)})}>
                 {showAll &&
-                  <td>{account.visible}</td>
+                  <td>{account.doc.visible}</td>
                 }
-                <td>{account.type && <FormattedMessage {...Account.messages[account.type]}/>}</td>
-                <td><Link to={Account.to.view(account)}>{account.name}</Link></td>
-                <td><Link to={Account.to.view(account)}>{account.number}</Link></td>
+                <td>{account.doc.type && <FormattedMessage {...Account.messages[account.doc.type]}/>}</td>
+                <td><Link to={Account.to.view(account.doc)}>{account.doc.name}</Link></td>
+                <td><Link to={Account.to.view(account.doc)}>{account.doc.number}</Link></td>
               </tr>
             )}
           </tbody>
