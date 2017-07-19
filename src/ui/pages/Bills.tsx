@@ -7,8 +7,9 @@ import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { createSelector } from 'reselect'
-import { Bill } from '../../docs/index'
-import { selectBillViews } from '../../selectors'
+import * as RRule from 'rrule-alt'
+import { Account, Bill, Budget, Category } from '../../docs/index'
+import { selectBills } from '../../selectors'
 import { AppState, mapDispatchToProps } from '../../state/index'
 import { showBillDialog } from '../dialogs/index'
 import { CurrencyDisplay } from '../components/CurrencyDisplay'
@@ -31,8 +32,12 @@ const messages = defineMessages({
 })
 
 interface BillDisplay {
-  view: Bill.View
+  doc: Bill.Doc
+  rrule: RRule
   next: Date
+  account?: Account.Doc
+  budget?: Budget.Doc
+  category?: Category.Doc
 }
 
 interface BillDisplayGroup {
@@ -97,31 +102,31 @@ export const Bills = enhance((props) => {
           <ListGroup fill>
           {group.bills.map(bill => {
             return (
-              <ListGroupItem key={bill.view.doc.name}>
+              <ListGroupItem key={bill.doc.name}>
                 <Grid fluid>
                   <Col xs={2}>
                     <FormattedDate value={bill.next} /><br/>
-                    <small><em>{bill.view.rrule.toText()}</em></small>
+                    <small><em>{bill.rrule.toText()}</em></small>
                   </Col>
                   <Col xs={4}>
-                    <Favico value={bill.view.doc.favicon}/>
+                    <Favico value={bill.doc.favicon}/>
                     {' '}
-                    {bill.view.doc.name}<br/>
-                    <small>{bill.view.doc.notes}</small>
+                    {bill.doc.name}<br/>
+                    <small>{bill.doc.notes}</small>
                   </Col>
                   <Col xs={3}>
                     <small>
-                    {bill.view.account && bill.view.account.name}<br/>
-                    {bill.view.budget && bill.view.category &&
-                      `${bill.view.budget.name}: ${bill.view.category.name}`
+                    {bill.account && bill.account.name}<br/>
+                    {bill.budget && bill.category &&
+                      `${bill.budget.name}: ${bill.category.name}`
                     }
                     </small>
                   </Col>
                   <Col xs={2}>
-                    <CurrencyDisplay amount={bill.view.doc.amount}/>
+                    <CurrencyDisplay amount={bill.doc.amount}/>
                   </Col>
                   <Col xs={1}>
-                    <Button bsStyle='link' onClick={() => showBillDialog({edit: bill.view})}>
+                    <Button bsStyle='link' onClick={() => showBillDialog({edit: bill.doc})}>
                       <i className='fa fa-edit'/>
                     </Button>
                   </Col>
@@ -137,14 +142,20 @@ export const Bills = enhance((props) => {
 })
 
 const getGroup = (bill: BillDisplay) => {
-  return bill.view.doc.group
+  return bill.doc.group
 }
 
 const makeBillDisplayGroup = (startDate: Date) => R.pipe(
-  R.map((view: Bill.View): BillDisplay => ({
-    view,
-    next: view.rrule.after(startDate, true)
-  })),
+  R.map((doc: Bill.Doc): BillDisplay => {
+    const rrule = RRule.fromString(doc.rruleString)
+    return ({
+      doc,
+      rrule,
+      next: rrule.after(startDate, true),
+      account: undefined,
+      category: undefined,
+    })
+  }),
   R.groupBy(getGroup),
   R.mapObjIndexed((bills: BillDisplay[], name: string): BillDisplayGroup => ({
     name,
@@ -162,7 +173,7 @@ const getMonthStart = (): Date => {
 }
 
 const selectBillDisplayGroups = createSelector(
-  (state: AppState) => selectBillViews(state),
+  (state: AppState) => selectBills(state),
   (state: AppState) => getMonthStart(),
   (bills, start) => {
     return makeBillDisplayGroup(start)(bills)

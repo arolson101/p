@@ -450,7 +450,7 @@ const CategoryDisplay = ({category, showBillDialog}: { category: Category.View, 
             {/*<Link to={Bill.to.edit(bill.doc)}>*/}
             <Link to={''} onClick={(e) => {
               e.preventDefault()
-              showBillDialog({edit: bill})
+              showBillDialog({edit: bill.doc})
             }}>
               <Favico value={bill.doc.favicon}/>
               {' '}

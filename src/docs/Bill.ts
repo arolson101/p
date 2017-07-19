@@ -39,20 +39,19 @@ export namespace Bill {
     endkey: 'bill/\uffff',
   }
 
-  export const buildView = (doc: Doc, docCache: DocCache): View => {
-    return ({
-      doc,
-      rrule: RRule.fromString(doc.rruleString),
-      account: doc.account && docCache.accounts.get(doc.account),
-      budget: doc.category && docCache.budgets.get(Category.budgetId(doc.category)),
-      category: doc.category && docCache.categories.get(doc.category)
-    })
-  }
+  // export const buildView = (doc: Doc, docCache: DocCache): View => {
+  //   return ({
+  //     doc,
+  //     rrule: RRule.fromString(doc.rruleString),
+  //     account: doc.account && docCache.accounts.get(doc.account),
+  //     budget: doc.category && docCache.budgets.get(Category.budgetId(doc.category)),
+  //     category: doc.category && docCache.categories.get(doc.category)
+  //   })
+  // }
 
   export namespace routes {
     export const all = 'bills'
     export const view = 'bill/:billId'
-    export const del = 'bill/:billId/delete'
   }
 
   export namespace to {
@@ -62,10 +61,6 @@ export namespace Bill {
 
     export const view = (bill: Doc): string => {
       return '/' + bill._id
-    }
-
-    export const del = (bill: Doc): string => {
-      return '/' + bill._id + '/delete'
     }
   }
 
@@ -82,14 +77,15 @@ export namespace Bill {
     return { _id, ...bank }
   }
 
-  export const getDate = (bill: View): Date => {
-    if (!bill.rrule) {
+  export const getDate = (bill: Doc): Date => {
+    const rrule = RRule.fromString(bill.rruleString)
+    if (!rrule) {
       throw new Error(`bill doesn't have a rrule!`)
     }
-    if (!bill.rrule.options.dtstart) {
+    if (!rrule.options.dtstart) {
       throw new Error(`bill doesn't have a start date!`)
     }
-    const next = bill.rrule.after(new Date(), true)
+    const next = rrule.after(new Date(), true)
     return next
   }
 }
