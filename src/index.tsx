@@ -4,6 +4,7 @@ import { render } from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
 import { createAppStore, AppInit } from './state/index'
 import { App } from './ui/index'
+import { PStoreImports } from './imports'
 
 import { setObservableConfig } from 'recompose'
 import rxjsconfig from 'recompose/rxjsObservableConfig'
@@ -18,7 +19,7 @@ require('react-select/dist/react-select.css')
 
 setObservableConfig(rxjsconfig)
 
-const main = (element: Element) => {
+const main = (element: Element, imports: PStoreImports) => {
   const history = createHistory()
   const store = createAppStore(history)
 
@@ -40,7 +41,7 @@ const main = (element: Element) => {
     })
   }
 
-  store.dispatch(AppInit(undefined))
+  store.dispatch(AppInit(imports))
   .then(() => {
     render(
       (
@@ -58,4 +59,9 @@ if (!root) {
   throw new Error('root node not found')
 }
 
-main(root)
+import * as electron from 'electron'
+import { dbLevelcrypt } from 'levelcrypt'
+const userData = electron.remote.app.getPath('userData')
+const db = dbLevelcrypt(userData)
+
+main(root, {db})

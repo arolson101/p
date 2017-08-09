@@ -10,7 +10,7 @@ export * from './LocalDocs'
 export * from './SyncConnection'
 export * from './Transaction'
 
-export { DbInfo } from '../state/db/DbInfo'
+export { DbInfo } from '../state/db'
 
 import { Account } from './Account'
 import { Bank } from './Bank'

@@ -1,10 +1,11 @@
 import { History } from 'history'
 import { routerMiddleware } from 'react-router-redux'
-import { createStore, applyMiddleware, combineReducers, bindActionCreators, Dispatch, ThunkAction } from 'redux'
-import ReduxThunk from 'redux-thunk'
+import { createStore, applyMiddleware, combineReducers, bindActionCreators, Dispatch } from 'redux'
+import ReduxThunk, { ThunkAction } from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension'
+import { PStoreImports } from '../imports'
 
-export * from './db/index'
+export * from './db'
 export * from './dialog'
 export * from './views'
 export * from './form'
@@ -14,7 +15,7 @@ export * from './router'
 export * from './sys'
 export * from './ui'
 
-import { DbSlice, DbInit } from './db/index'
+import { DbSlice, DbInit } from './db'
 import { DialogSlice, DialogState } from './dialog'
 import { ViewsSlice } from './views'
 import { FiSlice, FiInit } from './fi'
@@ -53,14 +54,15 @@ export type ThunkFcn<Args, Ret> = (args: Args) => Promise<Ret>
 export const mapDispatchToProps = <T>(actions: { [key in keyof T]: Function }) =>
   (dispatch: Dispatch<AppState>) => bindActionCreators(actions as any, dispatch) as T
 
-export const AppInit: AppThunk<void, void> = () => async (dispatch) => {
-  type Initializer = AppThunk<void, void>
-  const initializers: Initializer[] = [
-    DbInit,
-    FiInit
-  ]
-  await Promise.all(initializers.map(init => dispatch(init(undefined))))
-}
+export const AppInit: AppThunk<PStoreImports, void> = (imports) =>
+  async (dispatch) => {
+    type Initializer = AppThunk<void, void>
+    const initializers: Initializer[] = [
+      DbInit(imports.db),
+      FiInit
+    ]
+    await Promise.all(initializers.map(init => dispatch(init(undefined))))
+  }
 
 export const createAppStore = (history: History) => {
   const store = createStore<AppState>(

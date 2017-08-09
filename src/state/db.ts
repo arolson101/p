@@ -1,23 +1,19 @@
 import * as crypto from 'crypto'
-import * as electron from 'electron'
-import * as fs from 'fs'
-import * as os from 'os'
-import * as path from 'path'
-import * as R from 'ramda'
-import { ThunkAction } from 'redux'
+import * as PouchDB from 'pouchdb'
+import { ThunkAction } from 'redux-thunk'
 import * as Rx from 'rxjs/Rx'
-import { DocCache, LocalDoc } from '../../docs/index'
-import { AppThunk } from '../index'
-import { DbInfo } from './DbInfo'
-import { incomingDelta, resolveConflict } from './delta'
-import { levelcrypt } from './levelcrypt'
-import { PouchDB } from './pouch'
-import { initDocs } from '../views'
+import { DocCache, LocalDoc } from '../docs/index'
+import { AppThunk } from './index'
+import { DbInterface, defaultDbInterface } from '../imports'
+import { incomingDelta, resolveConflict } from '../util/delta'
+import { initDocs } from './views'
 
-export { DbInfo }
+export interface DbInfo {
+  name: string
+  location: string
+}
 
-const userData = electron.remote.app.getPath('userData')
-const ext = '.db'
+// const userData = electron.remote.app.getPath('userData')
 const localInfoDocId = '_local/uid'
 
 interface LocalDbInfo {
@@ -37,11 +33,13 @@ export interface CurrentDb {
 }
 
 export interface DbState {
+  dbi: DbInterface
   files: DbInfo[]
   current?: CurrentDb
 }
 
 const initialState: DbState = {
+  dbi: defaultDbInterface,
   current: undefined,
   files: []
 }
@@ -50,6 +48,18 @@ type State = DbSlice
 type DbThunk<Args, Ret> = (args: Args) => ThunkAction<Promise<Ret>, State, any>
 type DbFcn<Args, Ret> = (args: Args) => Promise<Ret>
 type DbChangeInfo = PouchDB.ChangeInfo<{}>
+
+export const DB_SET_INTERFACE = 'db/setInterface'
+
+export interface DbSetInterfaceAction {
+  type: typeof DB_SET_INTERFACE
+  dbi: DbInterface
+}
+
+const dbSetInterface = (dbi: DbInterface): DbSetInterfaceAction => ({
+  type: DB_SET_INTERFACE,
+  dbi
+})
 
 export const DB_SET_CURRENT = 'db/setCurrent'
 
@@ -92,10 +102,10 @@ type CreateDbArgs = { name: string, password: string }
 export namespace createDb { export type Fcn = DbFcn<CreateDbArgs, DbInfo> }
 export const createDb: DbThunk<CreateDbArgs, DbInfo> = ({name, password}) =>
   async (dispatch, getState) => {
-    const location = path.join(userData, encodeURIComponent(name.trim()) + '.db')
-    const info: DbInfo = { name, location }
+    const { db: { dbi } } = getState()
+    const info: DbInfo = dbi.createDb(name)
     await dispatch(loadDb({info, password}))
-    dispatch(DbInit(undefined))
+    dispatch(DbInit(dbi))
     return info
   }
 
@@ -179,19 +189,13 @@ const safeGet = async <T> (db: PouchDB.Database<any>, id: string): Promise<T | u
   }
 }
 
-const genLocalId = (name: string): string => {
-  const hostname = os.hostname()
-  const userInfo = os.userInfo()
-  const random = crypto.randomBytes(4).toString('hex')
-  return `${hostname.substr(0, 18)}-${userInfo.username.substr(0, 18)}-${name.substr(0, 18)}-${random}`
-}
-
 type LoadDbArgs = { info: DbInfo, password: string }
 export namespace loadDb { export type Fcn = DbFcn<LoadDbArgs, void> }
 export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
   async (dispatch, getState) => {
+    const { db: { dbi } } = getState()
     console.log('db: ', info.location)
-    const db = new PouchDB(info.location, { password, adapter: 'leveldb', db: levelcrypt } as any)
+    const db = dbi.openDb(info, password)
     db.transform({incoming: incomingDelta})
 
     let localInfo: LocalDbInfo
@@ -201,7 +205,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       localInfo = {
         _id: localInfoDocId,
         key: crypto.randomBytes(32).toString('base64'),
-        localId: genLocalId(info.name),
+        localId: dbi.genLocalId(info.name),
         last: 0
       }
       await db.put(localInfo)
@@ -284,7 +288,7 @@ type DeleteDbArgs = { info: DbInfo }
 export namespace deleteDb { export type Fcn = DbFcn<DeleteDbArgs, void> }
 export const deleteDb: DbThunk<DeleteDbArgs, void> = ({info}) =>
   async (dispatch, getState) => {
-    const { db: { current } } = getState()
+    const { db: { dbi, current } } = getState()
 
     // unload db if it's the current one
     if (current && current.info.name === info.name) {
@@ -292,33 +296,15 @@ export const deleteDb: DbThunk<DeleteDbArgs, void> = ({info}) =>
     }
 
     // delete file
-    rimraf(info.location)
-    dispatch(DbInit(undefined))
+    dbi.deleteDb(info)
+    dispatch(DbInit(dbi))
   }
-
-/**
- * Remove directory recursively
- * @param {string} dir_path
- * @see http://stackoverflow.com/a/42505874/3027390
- */
-const rimraf = (dirPath: string) => {
-  if (fs.existsSync(dirPath)) {
-    fs.readdirSync(dirPath).forEach(function (entry) {
-      const entryPath = path.join(dirPath, entry)
-      if (fs.lstatSync(entryPath).isDirectory()) {
-        rimraf(entryPath)
-      } else {
-        fs.unlinkSync(entryPath)
-      }
-    })
-    fs.rmdirSync(dirPath)
-  }
-}
 
 export namespace unloadDb { export type Fcn = () => void }
 export const unloadDb = (): SetDbAction => setDb(undefined)
 
 type Actions =
+  DbSetInterfaceAction |
   DbSetFilesAction |
   SetDbAction |
   DbChangesAction<any> |
@@ -326,6 +312,9 @@ type Actions =
 
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
   switch (action.type) {
+    case DB_SET_INTERFACE:
+      return { ...state, dbi: action.dbi }
+
     case DB_SET_FILES:
       return { ...state, files: action.files }
 
@@ -363,20 +352,16 @@ export const DbSlice = {
   db: reducer
 }
 
-const isDbFilename = R.test(/\.db$/i)
-const buildInfo = (filename: string): DbInfo => ({
-  name: decodeURIComponent(path.basename(filename, ext)),
-  location: path.join(userData, filename)
-})
-const buildInfoCache = R.pipe(
-  R.filter(isDbFilename),
-  R.map(buildInfo),
-  R.sortBy((doc: DbInfo) => doc.name)
-)
-
-export const DbInit: AppThunk<void, void> = () =>
-  async (dispatch) => {
-    const files = fs.readdirSync(userData)
-    const infos = buildInfoCache(files)
+export const DbInit = (dbi: DbInterface) => (): ThunkAction<Promise<void>, DbSlice, any> =>
+  async (dispatch, getState) => {
+    dispatch(dbSetInterface(dbi))
+    const infos = dbi.listDbs()
     dispatch(dbSetFiles(infos))
   }
+
+PouchDB.plugin(require('transform-pouch'))
+PouchDB.plugin(require('pouch-resolve-conflicts'))
+
+const replicationStream = require<any>('pouchdb-replication-stream')
+PouchDB.plugin(replicationStream.plugin)
+PouchDB.adapter('writableStream', replicationStream.adapters.writableStream)

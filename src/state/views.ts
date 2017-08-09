@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux'
 import { Account, Bank, Bill, Budget, Category, LocalDoc, SyncConnection, Transaction } from '../docs/index'
 import { AppThunk, ThunkFcn } from './index'
-import { DB_CHANGES, DbChangesAction, DB_SET_CURRENT, SetDbAction, resolveConflicts } from './db/index'
+import { DB_CHANGES, DbChangesAction, DB_SET_CURRENT, SetDbAction, resolveConflicts } from './db'
 
 export interface Cache<T> {
   [id: string]: T

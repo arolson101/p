@@ -81,7 +81,7 @@ const enhance = compose<EnhancedProps, Props>(
 
       const { name, password } = values
       await createDb({name, password})
-      push(DbInfo.to.home())
+      push('/home') // push(DbInfo.to.home())
       onHide()
     }
   })

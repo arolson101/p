@@ -7,7 +7,7 @@ import { SyncConnection } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges, deleteDoc } from '../../state/index'
 import { selectSyncs } from '../../selectors'
 import { SyncProvider, syncProviders } from '../../sync/index'
-import { runSync } from '../../state/db/sync'
+import { runSync } from '../../actions'
 // import { Favico } from './forms/Favico'
 import { SyncStatus } from '../components/SyncStatus'
 

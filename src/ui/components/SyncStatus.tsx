@@ -7,7 +7,7 @@ import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'r
 import { FormProps, SubmitHandler, reduxForm } from 'redux-form'
 import { SyncConnection } from '../../docs/index'
 import { AppState, mapDispatchToProps, pushChanges } from '../../state/index'
-import { runSync } from '../../state/db/sync'
+import { runSync } from '../../actions'
 import { syncProviders } from '../../sync/index'
 import { Validator } from '../../util/index'
 import { typedFields, forms } from './forms'

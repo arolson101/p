@@ -1,4 +1,4 @@
-const randomColor = require('randomcolor')
+const randomColor = require<(options?: RandomColorOptions) => string>('randomcolor')
 import * as docURI from 'docuri'
 import { defineMessages } from 'react-intl'
 import { makeid, Lookup } from '../util/index'

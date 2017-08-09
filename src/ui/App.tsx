@@ -44,7 +44,7 @@ export const App = enhance(props => {
             {current ? (
               <Components.AppContent>
                 <Switch>
-                  <Route exact path={'/' + DbInfo.routes.home} component={Pages.Home} />
+                  <Route exact path={'/home'} component={Pages.Home} />
                   <Route exact path={'/' + Bank.routes.all} component={Pages.Accounts} />
                   <Route exact path={'/' + Bank.routes.view} component={Pages.BankViewRoute}/>
                   <Route exact path={'/' + Account.routes.view} component={Pages.AccountViewRoute}/>

@@ -96,7 +96,7 @@ const enhance = compose<EnhancedProps, Props>(
       try {
         const { password } = values
         await loadDb({info, password})
-        push(DbInfo.to.home())
+        push('/home') // push(DbInfo.to.home())
         onHide()
       } catch (error) {
         throw new SubmissionError<Values>({password: error.message})
