@@ -53,7 +53,11 @@ module.exports = {
   // devtool: "sourcemaps",
 
   resolve: {
-      extensions: [".ts", ".tsx", ".js"]
+    extensions: [".ts", ".tsx", ".js"],
+    modules: [
+      path.resolve(__dirname, "src"),
+      "node_modules",
+    ]
   },
 
   module: {
