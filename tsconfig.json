@@ -9,17 +9,29 @@
     "noUnusedLocals": false, // https://github.com/Microsoft/TypeScript/issues/11324
 
     "jsx": "react",
-    "target": "es2017",
-    "module": "es2015",
+    // "target": "es2017",
+    // "module": "es2015",
+    "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "p-store": ["projects/p-store"]
+    },
+
+    "noEmit": true,
 
     "lib": [
       "es2017",
       "dom"
     ]
   },
+  "include": [
+    "src"
+  ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "projects"
   ]
 }
