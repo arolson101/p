@@ -27,7 +27,7 @@ const enhance = compose<EnhancedProps, Props>(
     value: PropTypes.string,
     onChange: PropTypes.func
   } as PropTypes<ColorPickerProps>),
-  withHandlers<EnhancedProps, EnhancedProps>({
+  withHandlers<EnhancedProps, Handlers>({
     handleChange: ({onChange}) => (color: ColorResult) => {
       if (onChange) {
         onChange(color.hex)

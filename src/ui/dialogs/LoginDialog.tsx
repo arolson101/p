@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import { compose, setDisplayName, withState, withHandlers } from 'recompose'
 import { Dispatch } from 'redux'
-import { reduxForm, FormProps, SubmissionError } from 'redux-form'
+import { reduxForm, InjectedFormProps, SubmissionError } from 'redux-form'
 import { DbInfo } from 'core/docs'
 import { AppState, loadDb, deleteDb, setDialog, mapDispatchToProps } from 'core/state'
 import { Validator } from 'util/index'
@@ -44,7 +44,7 @@ type DispatchProps = {
   push: typeof push
 }
 
-type EnhancedProps = Props & Handlers & State & DispatchProps & IntlProps & FormProps<Values, {}, {}>
+type EnhancedProps = Props & Handlers & State & DispatchProps & IntlProps & InjectedFormProps<Values, {}>
 
 interface Values {
   password: string
@@ -73,7 +73,7 @@ const enhance = compose<EnhancedProps, Props>(
     mapDispatchToProps<DispatchProps>({ loadDb, deleteDb, push })
   ),
   withState('deleting', 'setDeleting', false),
-  withHandlers<Handlers, State & DispatchProps & Props & IntlProps>({
+  withHandlers<State & DispatchProps & Props & IntlProps, Handlers>({
     onDelete: ({ setDeleting }) => () => {
       setDeleting(true)
     },
@@ -87,7 +87,7 @@ const enhance = compose<EnhancedProps, Props>(
   }),
   reduxForm<Values, Handlers & State & DispatchProps & Props & IntlProps>({
     form: 'Password',
-    onSubmit: async (values, dispatch, props) => {
+    onSubmit: async (values: Values, dispatch, props) => {
       const { loadDb, push, intl: { formatMessage }, info, onHide } = props
       const v = new Validator(values, formatMessage)
       v.required('password')
@@ -99,7 +99,7 @@ const enhance = compose<EnhancedProps, Props>(
         push('/home') // push(DbInfo.to.home())
         onHide()
       } catch (error) {
-        throw new SubmissionError<Values>({password: error.message})
+        throw new SubmissionError({password: error.message} as any)
       }
     },
   })

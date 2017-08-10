@@ -5,7 +5,7 @@ import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import { compose, setDisplayName, withPropsOnChange, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { reduxForm, FormProps, formValueSelector } from 'redux-form'
+import { reduxForm, InjectedFormProps, formValueSelector } from 'redux-form'
 import { saveBank } from 'core/actions'
 import { Bank } from 'core/docs'
 import { AppState, FI, emptyfi, mapDispatchToProps, setDialog } from 'core/state'
@@ -99,7 +99,7 @@ interface Handlers {
   onChangeFI: (event: any, index: number) => void
 }
 
-type EnhancedProps = Handlers & FormProps<Values, any, any> & ConnectedProps & Props & InjectedIntlProps
+type EnhancedProps = Handlers & InjectedFormProps<Values, {}> & ConnectedProps & Props & InjectedIntlProps
 
 export const BankDialogStatic = {
   dialog: 'BankDialog'
@@ -136,10 +136,10 @@ const enhance = compose<EnhancedProps, Props>(
       }
     }
   ),
-  reduxForm<Values, ConnectedProps & DispatchProps & InjectedIntlProps & Props, AppState>({
+  reduxForm<Values, ConnectedProps & DispatchProps & InjectedIntlProps & Props>({
     form: 'BankDialog',
     enableReinitialize: true,
-    onSubmit: async (values, dispatch, props) => {
+    onSubmit: async (values: Values, dispatch, props) => {
       const { edit, filist, onHide, saveBank, intl: { formatMessage }, push } = props
 
       const doc = await saveBank({edit: edit && edit.doc, filist, formatMessage, values})
@@ -151,7 +151,7 @@ const enhance = compose<EnhancedProps, Props>(
       onHide()
     },
   }),
-  withHandlers<Handlers, FormProps<Values, any, any> & ConnectedProps & Props>({
+  withHandlers<InjectedFormProps<Values, {}> & ConnectedProps & Props, Handlers>({
     onChangeFI: ({ filist, change }) => (event: any, index: number) => {
       if (!change) { throw new Error('change is undefined') }
       const value = index ? filist[index - 1] : emptyfi

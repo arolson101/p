@@ -70,7 +70,7 @@ const enhance = compose<EnhancedProps, undefined>(
     }),
     mapDispatchToProps<DispatchProps>({ showBillDialog })
   ),
-  withHandlers<Handlers, ConnectedProps & ConnectedProps & DispatchProps>({
+  withHandlers<ConnectedProps & ConnectedProps & DispatchProps, Handlers>({
     createBill: ({ showBillDialog }) => () => {
       showBillDialog({})
     },
@@ -175,7 +175,7 @@ const getMonthStart = (): Date => {
 const selectBillDisplayGroups = createSelector(
   (state: AppState) => selectBills(state),
   (state: AppState) => getMonthStart(),
-  (bills, start) => {
-    return makeBillDisplayGroup(start)(bills)
+  (bills, start): BillDisplayGroup[] => {
+    return makeBillDisplayGroup(start)(bills) as any
   }
 )

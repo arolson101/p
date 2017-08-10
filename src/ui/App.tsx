@@ -44,15 +44,15 @@ export const App = enhance(props => {
             {current ? (
               <Components.AppContent>
                 <Switch>
-                  <Route exact path={'/home'} component={Pages.Home} />
-                  <Route exact path={'/' + Bank.routes.all} component={Pages.Accounts} />
+                  <Route exact path={'/home'} component={Pages.Home as any} />
+                  <Route exact path={'/' + Bank.routes.all} component={Pages.Accounts as any} />
                   <Route exact path={'/' + Bank.routes.view} component={Pages.BankViewRoute}/>
                   <Route exact path={'/' + Account.routes.view} component={Pages.AccountViewRoute}/>
                   <Route exact path={'/' + Transaction.routes.edit} component={Pages.TransactionEditRoute}/>
                   <Route exact path={'/' + Transaction.routes.view} component={Pages.TransactionViewRoute}/>
-                  <Route exact path={'/' + Bill.routes.all} component={Pages.Bills}/>
-                  <Route exact path={'/' + Budget.routes.all} component={Pages.Budgets}/>
-                  <Route exact path={'/' + SyncConnection.routes.all} component={Pages.Syncs}/>
+                  <Route exact path={'/' + Bill.routes.all} component={Pages.Bills as any}/>
+                  <Route exact path={'/' + Budget.routes.all} component={Pages.Budgets as any}/>
+                  <Route exact path={'/' + SyncConnection.routes.all} component={Pages.Syncs as any}/>
                 </Switch>
               </Components.AppContent>
             ) : (

@@ -7,7 +7,7 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 import { compose, withHandlers, withState, shallowEqual } from 'recompose'
-import { FormProps, FieldArray, FieldsProps, reduxForm, Fields } from 'redux-form'
+import { InjectedFormProps, FieldArray, FieldsProps, reduxForm, Fields } from 'redux-form'
 import { deleteBudget } from 'core/actions'
 import { Bill, Budget, Category } from 'core/docs'
 import { selectBudgets, selectCategories, selectBills, selectBillsForCategory, selectCategoriesForBudget } from 'core/selectors'
@@ -88,7 +88,7 @@ interface Handlers {
   toggleEdit: () => void
 }
 
-type EnhancedProps = Handlers & FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps & StateProps
+type EnhancedProps = Handlers & InjectedFormProps<Values, {}> & ConnectedProps & DispatchProps & IntlProps & StateProps
 
 interface CategoryValues {
   _id: Category.DocId
@@ -135,7 +135,7 @@ const enhance = compose<EnhancedProps, undefined>(
       }
       return v.errors
     },
-    onSubmit: async (values, dispatch, props) => {
+    onSubmit: async (values: Values, dispatch, props) => {
       const { budgets, pushChanges, setEditing, categoryCache, intl: { formatMessage } } = props
       const v = new Validator(values, formatMessage)
       const changes: AnyDocument[] = []
@@ -207,7 +207,7 @@ const enhance = compose<EnhancedProps, undefined>(
       setEditing(false)
     }
   }),
-  withHandlers<Handlers, FormProps<Values, {}, {}> & StateProps & ConnectedProps & DispatchProps & IntlProps>({
+  withHandlers<InjectedFormProps<Values, {}> & StateProps & ConnectedProps & DispatchProps & IntlProps, Handlers>({
     toggleEdit: ({budgets, categoryCache, initialize, setEditing, editing}) => () => {
       editing = !editing
       if (editing) {
@@ -252,7 +252,7 @@ export const Budgets = enhance(props => {
         </PageHeader>
 
         {editing &&
-          <FieldArray name='budgets' component={editBudgetList} intl={props.intl}>
+          <FieldArray name='budgets' component={editBudgetList} {...{intl: props.intl}}>
             <Button onClick={toggleEdit}>
               <FormattedMessage {...forms.cancel}/>
             </Button>
@@ -324,7 +324,7 @@ const SortableCategoryList = SortableElement(({budget, onRemove, intl}: Sortable
   <FieldArray
     name={`${budget}.categories`}
     component={editCategories}
-    intl={intl}
+    {...{intl}}
   >
     <TextField
       name={`${budget}.name`}

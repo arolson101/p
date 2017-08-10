@@ -72,7 +72,7 @@ const enhance = compose<EnhancedProps, RouteProps & Props>(
       deleting: false
     } as UIState
   }),
-  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps & Props>({
+  withHandlers<ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps & Props, Handlers>({
     confirmDelete: ({updateUI, bank, account, deleteAccount, replace, onHide}: any) => async () => {
       try {
         updateUI({error: undefined, deleting: true})

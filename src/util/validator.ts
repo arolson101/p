@@ -1,7 +1,9 @@
 import * as moment from 'moment'
 import * as numeral from 'numeral'
 import { defineMessages, InjectedIntl, FormattedMessage } from 'react-intl'
-import { SubmissionError, FormErrors, DataShape } from 'redux-form'
+import { SubmissionError, FormErrors } from 'redux-form'
+
+type DataShape = {}
 
 const messages = defineMessages({
   required: {
@@ -34,7 +36,7 @@ export class Validator<V extends DataShape> {
 
   maybeThrowSubmissionError () {
     if (!isEmpty(this.errors)) {
-      throw new SubmissionError<V>(this.errors)
+      throw new SubmissionError(this.errors as any)
     }
   }
 

@@ -43,7 +43,7 @@ const enhance = compose<EnhancedProps, Props>(
     ...props,
     date: Bill.getDate(props.item)
   })),
-  withHandlers<Handlers, MappedProps & DispatchProps & Props>({
+  withHandlers<MappedProps & DispatchProps & Props, Handlers>({
     startEdit: ({ item, showBillDialog }) => () => {
       showBillDialog({ edit: item })
     },

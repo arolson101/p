@@ -39,7 +39,7 @@ const enhance = compose<EnhancedProps, Props>(
     value: PropTypes.string,
     onChange: PropTypes.func
   } as PropTypes<IconPickerProps>),
-  withHandlers<Handlers, Props>({
+  withHandlers<Props, Handlers>({
     onMenuItem: (props) => (eventKey: EventKey) => {
       if (!props.onChange) {
         return

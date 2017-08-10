@@ -38,7 +38,7 @@ interface DispatchProps {
 
 type EnhancedProps = RouteProps & ConnectedProps & DispatchProps
 
-const enhance = compose<EnhancedProps, undefined>(
+const enhance = compose<EnhancedProps, RouteProps>(
   setDisplayName('Login'),
   onlyUpdateForPropTypes,
   setPropTypes({}),

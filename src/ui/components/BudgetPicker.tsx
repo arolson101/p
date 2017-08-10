@@ -29,7 +29,7 @@ const enhance = compose<EnhancedProps, {}>(
       budgets: selectBudgets(state)
     })
   ),
-  withHandlers<Handlers, ConnectedProps>({
+  withHandlers<ConnectedProps, Handlers>({
     isValidNewOption: props => ({label}: {label?: string}): boolean => {
       const { budget, category } = Budget.validateNewCategory(props.budgets, label)
       return !!budget && !!category

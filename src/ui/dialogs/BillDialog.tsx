@@ -12,7 +12,7 @@ import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange } from 'recompose'
 import { Dispatch } from 'redux'
-import { reduxForm, formValueSelector, FormProps } from 'redux-form'
+import { reduxForm, formValueSelector, InjectedFormProps } from 'redux-form'
 import ui, { ReduxUIProps } from 'redux-ui'
 import { saveBill, toRRule, RRuleErrorMessage } from 'core/actions'
 import { Account, Budget, Bill } from 'core/docs'
@@ -232,7 +232,7 @@ interface Values extends RRuleValues {
   showAdvanced?: boolean
 }
 
-type FormValues = FormProps<Values, {}, {}>
+type FormValues = InjectedFormProps<Values, {}>
 
 export const BillDialogStatic = {
   dialog: 'BillDialog'
@@ -329,7 +329,7 @@ const enhance = compose<EnhancedProps, Props>(
       v.numeral('amount')
       return v.errors
     },
-    onSubmit: async (values, dispatch, props) => {
+    onSubmit: async (values: Values, dispatch, props) => {
       const { edit, onHide, saveBill, intl: { formatMessage } } = props
       await saveBill({edit: edit && edit.doc, formatMessage, values})
       return onHide()
@@ -350,7 +350,7 @@ const enhance = compose<EnhancedProps, Props>(
       groups: (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)
     }
   }),
-  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedFormProps & FormValues & ConnectedProps & DispatchProps & IntlProps & Props>({
+  withHandlers<ReduxUIProps<UIState> & ConnectedFormProps & FormValues & ConnectedProps & DispatchProps & IntlProps & Props, Handlers>({
     onFrequencyChange: ({change}) => (eventKey: Frequency) => {
       change!('frequency', eventKey)
     },

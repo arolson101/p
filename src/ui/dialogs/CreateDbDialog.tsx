@@ -4,7 +4,7 @@ import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { reduxForm, FormProps } from 'redux-form'
+import { reduxForm, InjectedFormProps } from 'redux-form'
 import { DbInfo } from 'core/docs'
 import { AppState, createDb, setDialog, mapDispatchToProps } from 'core/state'
 import { Validator } from 'util/index'
@@ -46,7 +46,7 @@ interface DispatchProps {
   push: typeof push
 }
 
-type EnhancedProps = IntlProps & Props & ConnectedProps & DispatchProps & FormProps<Values, {}, {}>
+type EnhancedProps = IntlProps & Props & ConnectedProps & DispatchProps & InjectedFormProps<Values, {}>
 
 interface Values {
   name: string
@@ -73,7 +73,7 @@ const enhance = compose<EnhancedProps, Props>(
       v.equal('confirmPassword', 'password', forms.passwordsMatch)
       return v.errors
     }),
-    onSubmit: async (values, dispatch, props) => {
+    onSubmit: async (values: Values, dispatch, props) => {
       const { createDb, onHide, intl: { formatMessage } } = props
       const v = new Validator(values, formatMessage)
       v.required('name', 'password', 'confirmPassword')

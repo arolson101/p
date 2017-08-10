@@ -57,8 +57,8 @@ const getFaviconFromDocument = async (response: AxiosResponse, cancelToken?: Can
     if (child.nodeName.toLowerCase() === 'link' && (rel === 'icon' || rel === 'shortcut icon')) {
       const href = child.getAttribute('href')
       if (href) {
-        const location = URL.resolve(currentUrl, href)
-        const data = await getIconDataURI(location, cancelToken)
+        const resolvedLocation = URL.resolve(currentUrl, href)
+        const data = await getIconDataURI(resolvedLocation, cancelToken)
         if (data) {
           return data
         }

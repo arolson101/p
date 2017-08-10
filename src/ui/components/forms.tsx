@@ -77,7 +77,7 @@ interface LayoutConfig {
 
 type DontCareWhatElse = { [key: string]: any }
 
-type WrapperProps = RF.WrappedFieldProps<string> & FormField<any> & React.Props<any>
+type WrapperProps = RF.WrappedFieldProps & FormField<any> & React.Props<any>
 const Wrapper = (props: WrapperProps & DontCareWhatElse, { layout }: LayoutProps) => {
   const { input: { name }, meta: { warning, error }, label, help, children } = props
   return (
@@ -148,13 +148,15 @@ const renderInput = (props: InputFormField<any> & WrapperProps) => {
 }
 
 type TextFieldProps<V> = InputFormField<V>
-const TextField = <V extends RF.DataShape>(props: TextFieldProps<V>) => {
+const TextField = <V extends {}>(props: TextFieldProps<V>) => {
   return <RF.Field {...props} component={renderInput}/>
 }
 
+const additionalProps = (obj: object) => obj as any
+
 type PasswordFieldProps<V> = InputFormField<V>
-const PasswordField = <V extends RF.DataShape>(props: PasswordFieldProps<V>) => {
-  return <RF.Field {...props} component={renderInput} password/>
+const PasswordField = <V extends {}>(props: PasswordFieldProps<V>) => {
+  return <RF.Field {...props} component={renderInput} {...additionalProps({password: true})}/>
 }
 
 // url ------------------------------------------------------------------------
@@ -194,27 +196,28 @@ const renderUrl = enhanceUrl((props: RenderUrlProps) => {
   return renderInput(inputProps)
 })
 
-const renderFavico = (props: RF.WrappedFieldProps<any>) => {
+const renderFavico = (props: RF.WrappedFieldProps) => {
   const { input: { value, onChange } } = props
   return <RB.InputGroup.Button>
     <IconPicker value={value} onChange={onChange} />
   </RB.InputGroup.Button>
 }
 
-const UrlField = <V extends RF.DataShape>(props: UrlFieldProps<V> & RF.WrappedFieldProps<{}>) => {
+const UrlField = <V extends {}>(props: UrlFieldProps<V> & RF.WrappedFieldProps) => {
   const { favicoName } = props
   return <RF.Field {...props} component={renderUrl}
-    addonBefore={
-      <RF.Field
-        component={renderFavico}
-        name={favicoName}
-      />
-    }
+    {...additionalProps({
+      addonBefore:
+        <RF.Field
+          component={renderFavico}
+          {...additionalProps({name: favicoName})}
+        />
+    })}
   />
 }
 
 // color ----------------------------------------------------------------------
-const renderColor = (props: RF.WrappedFieldProps<any>) => {
+const renderColor = (props: RF.WrappedFieldProps) => {
   const { input: { value, onChange } } = props
   return <ColorPicker value={value} onChange={onChange as any} />
 }
@@ -223,9 +226,9 @@ interface ColorAddonFieldProps<V> {
   name: keyof V
 }
 
-const ColorAddonField = <V extends RF.DataShape>(props: ColorAddonFieldProps<V> & RF.WrappedFieldProps<{}>) => {
+const ColorAddonField = <V extends {}>(props: ColorAddonFieldProps<V> & RF.WrappedFieldProps) => {
   return <RB.InputGroup.Button>
-    <RF.Field {...props} component={renderColor}/>
+    <RF.Field {...additionalProps(props)} component={renderColor}/>
   </RB.InputGroup.Button>
 }
 
@@ -264,7 +267,7 @@ const renderSelect = (props: SelectFieldProps<any> & WrapperProps) => {
   )
 }
 
-const SelectField = injectIntl(<V extends RF.DataShape>(props: SelectFieldProps<V> & InjectedIntlProps) => {
+const SelectField = injectIntl(<V extends {}>(props: SelectFieldProps<V> & InjectedIntlProps) => {
   const { placeholderMessage, intl: { formatMessage } } = props
   let { placeholder, parse } = props
   if (placeholderMessage) {
@@ -291,8 +294,8 @@ const SelectField = injectIntl(<V extends RF.DataShape>(props: SelectFieldProps<
     }
   }
 
-  return <RF.Field {...props} component={renderSelect} placeholder={placeholder} parse={parse}/>
-}) as any as <V extends RF.DataShape>(props: SelectFieldProps<V>) => JSX.Element
+  return <RF.Field {...additionalProps(props)} component={renderSelect} placeholder={placeholder} parse={parse}/>
+}) as any as <V extends {}>(props: SelectFieldProps<V>) => JSX.Element
 
 const selectFieldParse = (value?: SelectOption): string => {
   if (!value) {
@@ -303,7 +306,7 @@ const selectFieldParse = (value?: SelectOption): string => {
 
 // account --------------------------------------------------------------------
 type AccountFieldProps<V> = FormField<V>
-const renderAccount = (props: AccountFieldProps<any> & RF.WrappedFieldProps<any>) => {
+const renderAccount = (props: AccountFieldProps<any> & RF.WrappedFieldProps) => {
   const { input } = props
   return <Wrapper {...props}>
     <AccountPicker
@@ -314,13 +317,13 @@ const renderAccount = (props: AccountFieldProps<any> & RF.WrappedFieldProps<any>
   </Wrapper>
 }
 
-const AccountField = <V extends RF.DataShape>(props: AccountFieldProps<V>) => {
+const AccountField = <V extends {}>(props: AccountFieldProps<V>) => {
   return <RF.Field component={renderAccount} {...props as any} parse={selectFieldParse}/>
 }
 
 // budget ---------------------------------------------------------------------
 type BudgetFieldProps<V> = FormField<V>
-const renderBudget = (props: BudgetFieldProps<any> & RF.WrappedFieldProps<any>) => {
+const renderBudget = (props: BudgetFieldProps<any> & RF.WrappedFieldProps) => {
   const { input } = props
   return <Wrapper {...props}>
     <BudgetPicker
@@ -331,7 +334,7 @@ const renderBudget = (props: BudgetFieldProps<any> & RF.WrappedFieldProps<any>) 
   </Wrapper>
 }
 
-const BudgetField = <V extends RF.DataShape>(props: BudgetFieldProps<V>) => {
+const BudgetField = <V extends {}>(props: BudgetFieldProps<V>) => {
   return <RF.Field component={renderBudget} {...props as any} parse={selectFieldParse}/>
 }
 
@@ -348,7 +351,7 @@ const renderDate = (props: DateFieldProps<any> & WrapperProps) => {
   )
 }
 
-const DateField = <V extends RF.DataShape>(props: DateFieldProps<V>) => {
+const DateField = <V extends {}>(props: DateFieldProps<V>) => {
   return <RF.Field {...props} component={renderDate}/>
 }
 
@@ -368,7 +371,7 @@ const renderCheckbox = (props: CheckboxFieldProps<any> & WrapperProps) => {
   )
 }
 
-const CheckboxField = <V extends RF.DataShape>(props: CheckboxFieldProps<V>) => {
+const CheckboxField = <V extends {}>(props: CheckboxFieldProps<V>) => {
   return <RF.Field {...props} component={renderCheckbox}/>
 }
 
@@ -377,21 +380,21 @@ interface CollapseFieldProps<V> extends RB.CollapseProps {
   name: keyof V
 }
 
-const renderCollapse = (props: CollapseFieldProps<any> & RF.WrappedFieldProps<any>) => {
+const renderCollapse = (props: CollapseFieldProps<any> & RF.WrappedFieldProps) => {
   const { input, meta, name, children, ...passedProps } = props
   return <RB.Collapse {...passedProps} in={!!input.value}>
     {props.children}
   </RB.Collapse>
 }
 
-const CollapseField = <V extends RF.DataShape>(props: CollapseFieldProps<V>) => {
+const CollapseField = <V extends {}>(props: CollapseFieldProps<V>) => {
   return <RF.Field {...props} component={renderCollapse}/>
 }
 
 // ----------------------------------------------------------------------------
 // formComponent --------------------------------------------------------------
 
-export type SubmitHandler<V> = RF.SubmitHandler<V, any, any>
+export type SubmitHandler<V> = RF.SubmitHandler<V, any>
 
 const normalLayout: LayoutConfig = {
   label: {},
@@ -422,7 +425,7 @@ export const FormLayout = enhanceFormLayout(({ children, ...props }) => {
   )
 })
 
-export const typedFields = <V extends RF.DataShape>() => {
+export const typedFields = <V extends {}>() => {
   return {
     Form: FormLayout,
     TextField: TextField as React.StatelessComponent<TextFieldProps<V>>,

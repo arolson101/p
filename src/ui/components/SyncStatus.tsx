@@ -4,7 +4,7 @@ import { Button } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { FormProps, SubmitHandler, reduxForm } from 'redux-form'
+import { InjectedFormProps, SubmitHandler, reduxForm } from 'redux-form'
 import { SyncConnection } from 'core/docs'
 import { AppState, mapDispatchToProps, pushChanges } from 'core/state'
 import { runSync } from 'core/actions'
@@ -39,7 +39,7 @@ interface DispatchProps {
   runSync: runSync.Fcn
 }
 
-type EnhancedProps = FormProps<Values, {}, {}> & ConnectedProps & DispatchProps & IntlProps & Props
+type EnhancedProps = InjectedFormProps<Values, {}> & ConnectedProps & DispatchProps & IntlProps & Props
 
 interface Values {
   password: string
@@ -67,7 +67,7 @@ const enhance = compose<EnhancedProps, Props>(
     //   v.required(['password'], formatMessage(forms.required))
     //   return v.errors
     // }
-    onSubmit: async (values, dispatch, props) => {
+    onSubmit: async (values: Values, dispatch, props) => {
       const { sync, pushChanges, runSync, intl: { formatMessage } } = props
       const v = new Validator(values, formatMessage)
       v.required('password')

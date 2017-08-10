@@ -51,7 +51,7 @@ const enhance = compose<EnhancedProps, undefined>(
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, runSync })
   ),
-  withHandlers<Handlers, ConnectedProps & DispatchProps & IntlProps>({
+  withHandlers<ConnectedProps & DispatchProps & IntlProps, Handlers>({
     addSync: ({ pushChanges }) => async (provider: SyncProvider<any>) => {
       try {
         const config = await provider.createConfig()

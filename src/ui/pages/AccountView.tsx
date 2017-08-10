@@ -64,9 +64,9 @@ interface DispatchProps {
 }
 
 type StreamProps = ConnectedProps & Props
-type EnhancedProps = IntlProps & ConnectedProps & HandlerProps & DispatchProps
+type EnhancedProps = IntlProps & ConnectedProps & Handlers & DispatchProps
 
-interface HandlerProps {
+interface Handlers {
   editAccount: () => void
   deleteAccount: () => void
   addTransactions: () => void
@@ -120,7 +120,7 @@ const enhance = compose<EnhancedProps, Props>(
   //     return props$.combineLatest(transactions$, (props, transactions) => ({ ...props, ...transactions }))
   //   }
   // ),
-  withHandlers<HandlerProps, ConnectedProps & DispatchProps & IntlProps>({
+  withHandlers<ConnectedProps & DispatchProps & IntlProps, Handlers>({
     editAccount: ({ showAccountDialog, bank, account: edit }) => () => {
       showAccountDialog({bank, edit})
     },

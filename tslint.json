@@ -3,7 +3,7 @@
   "rules": {
     "no-unused-variable": [true, "react"],
     "no-use-before-declare": false,
-    "no-shadowed-variable": true,
+    "no-shadowed-variable": false,
     "trailing-comma": [true, {"singleline": "never"}],
     "max-line-length": [
       true,

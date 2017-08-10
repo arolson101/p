@@ -5,7 +5,7 @@ import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange } from 'recompose'
-import { reduxForm, formValueSelector, FormProps } from 'redux-form'
+import { reduxForm, formValueSelector, InjectedFormProps } from 'redux-form'
 import { Bank, Account } from 'core/docs'
 import { Validator } from 'util/index'
 import { AppState, mapDispatchToProps, setDialog } from 'core/state'
@@ -89,7 +89,7 @@ interface ConnectedFormProps {
   type?: Account.Type
 }
 
-type EnhancedProps = FormProps<Values, any, any> & ConnectedFormProps & DispatchProps & Props & IntlProps
+type EnhancedProps = InjectedFormProps<Values, {}> & ConnectedFormProps & DispatchProps & Props & IntlProps
 
 export const AccountDialogStatic = {
   dialog: 'AccountDialog'
@@ -119,7 +119,7 @@ const enhance = compose<EnhancedProps, Props>(
     }),
     mapDispatchToProps<DispatchProps>({ saveAccount, push })
   ),
-  withPropsOnChange<any, FormProps<Values, any, any> & Props>(
+  withPropsOnChange<any, InjectedFormProps<Values, {}> & Props>(
     ['edit'],
     ({ edit }) => {
       const initialValues: Partial<Values> = edit ? edit.doc : ({
@@ -128,10 +128,10 @@ const enhance = compose<EnhancedProps, Props>(
       return { initialValues }
     }
   ),
-  reduxForm<Values, ConnectedProps & DispatchProps & InjectedIntlProps & Props, AppState>({
+  reduxForm<Values, ConnectedProps & DispatchProps & InjectedIntlProps & Props>({
     form,
     enableReinitialize: true,
-    onSubmit: async (values, dispatch, props) => {
+    onSubmit: async (values: Values, dispatch, props) => {
       const { bank, edit, saveAccount, onHide, intl: { formatMessage }, push } = props
 
       const doc = await saveAccount({formatMessage, values, bank, edit})

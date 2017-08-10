@@ -107,7 +107,7 @@ const enhance = compose<EnhancedProps, {}>(
       sidebarWidth: 250
     } as UIState
   }),
-  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & RouteProps>({
+  withHandlers<ReduxUIProps<UIState> & ConnectedProps & RouteProps, Handlers>({
     onSizeChange: ({ updateUI }) => (sidebarWidth: number) => {
       updateUI({sidebarWidth} as UIState)
     },

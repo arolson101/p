@@ -128,7 +128,7 @@ const enhance = compose<EnhancedProps, Props>(
       error: undefined
     } as UIState
   }),
-  withHandlers<Handlers, ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps & Props>({
+  withHandlers<ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps & Props, Handlers>({
     toggleEdit: ({ bank: edit, showBankDialog }) => () => {
       showBankDialog({edit})
     },
@@ -230,16 +230,16 @@ export const BankView = enhance((props) => {
           <thead>
             <tr>
               {showAll &&
-                <th width='10%'><FormattedMessage {...messages.visible}/></th>
+                <th style={{width: '10%'}}><FormattedMessage {...messages.visible}/></th>
               }
-              <th width='20%'><FormattedMessage {...messages.type}/></th>
+              <th style={{width: '20%'}}><FormattedMessage {...messages.type}/></th>
               <th><FormattedMessage {...messages.name}/></th>
               <th><FormattedMessage {...messages.number}/></th>
             </tr>
           </thead>
           <tbody>
             {accounts.filter(account => account.doc.visible || showAll).map(account => account &&
-              <tr key={account.doc._id} href={history.createHref({pathname: Account.to.view(account.doc)})}>
+              <tr key={account.doc._id} {...{href: history.createHref({pathname: Account.to.view(account.doc)})}}>
                 {showAll &&
                   <td>{account.doc.visible}</td>
                 }

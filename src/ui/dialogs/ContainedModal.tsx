@@ -7,7 +7,7 @@ type Props = ModalProps
 type EnhancedProps = DialogContainer.Context & Props
 
 const enhance = compose<EnhancedProps, Props>(
-  getContext<DialogContainer.Context, Props>(
+  getContext<DialogContainer.Context>(
     DialogContainer.ContextTypes
   ),
 )

@@ -54,7 +54,7 @@ const enhance = compose<EnhancedProps, Props<any>>(
   ),
   withQuerySyncedState('scrollTop', 'setScrollTop', 0, parseFloat),
   withQuerySyncedState('selectedIndex', 'setSelectedIndex', -1, parseFloat),
-  withHandlers<Handlers, State & ConnectedProps & RouteProps & Props<any>>({
+  withHandlers<State & ConnectedProps & RouteProps & Props<any>, Handlers>({
     onScroll: ({setScrollTop}) => ({scrollTop}: {scrollTop: number}) => {
       setScrollTop(scrollTop)
     },

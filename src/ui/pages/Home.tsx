@@ -117,7 +117,7 @@ const enhance = compose<EnhancedProps, undefined>(
     mapDispatchToProps<DispatchProps>({ deleteBudget })
   ),
   withState('month', 'setMonth', undefined),
-  withHandlers<Handlers, StateProps & ConnectedProps & DispatchProps & IntlProps>({
+  withHandlers<StateProps & ConnectedProps & DispatchProps & IntlProps, Handlers>({
     setPrevMonth: ({setMonth, month}) => () => {
       const prev = moment(month).subtract(1, 'month').toDate()
       setMonth(prev)
