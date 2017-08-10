@@ -2,7 +2,7 @@ import createHistory from 'history/createHashHistory'
 import * as React from 'react'
 import { render } from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
-import { createAppStore, AppInit, PStoreImports } from 'core'
+import { createAppStore, AppInit, ImportsState } from 'core'
 import { App } from './ui'
 
 import { setObservableConfig } from 'recompose'
@@ -18,7 +18,7 @@ require('react-select/dist/react-select.css')
 
 setObservableConfig(rxjsconfig)
 
-const main = (element: Element, imports: PStoreImports) => {
+const main = (element: Element, imports: ImportsState) => {
   const history = createHistory()
   const store = createAppStore(history)
 
@@ -62,5 +62,6 @@ import * as electron from 'electron'
 import { dbLevelcrypt } from 'levelcrypt'
 const userData = electron.remote.app.getPath('userData')
 const db = dbLevelcrypt(userData)
+const online = {}
 
-main(root, {db})
+main(root, {online, db})

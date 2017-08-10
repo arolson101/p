@@ -4,7 +4,7 @@ import { ThunkAction } from 'redux-thunk'
 import * as Rx from 'rxjs/Rx'
 import { DocCache, LocalDoc } from '../docs'
 import { AppThunk } from './'
-import { DbInterface, defaultDbInterface } from '../imports'
+import { ImportsSlice } from './imports'
 import { incomingDelta, resolveConflict } from 'util/delta'
 import { initDocs } from './views'
 
@@ -33,33 +33,19 @@ export interface CurrentDb {
 }
 
 export interface DbState {
-  dbi: DbInterface
   files: DbInfo[]
   current?: CurrentDb
 }
 
 const initialState: DbState = {
-  dbi: defaultDbInterface,
   current: undefined,
   files: []
 }
 
-type State = DbSlice
+type State = DbSlice & ImportsSlice
 type DbThunk<Args, Ret> = (args: Args) => ThunkAction<Promise<Ret>, State, any>
 type DbFcn<Args, Ret> = (args: Args) => Promise<Ret>
 type DbChangeInfo = PouchDB.ChangeInfo<{}>
-
-export const DB_SET_INTERFACE = 'db/setInterface'
-
-export interface DbSetInterfaceAction {
-  type: typeof DB_SET_INTERFACE
-  dbi: DbInterface
-}
-
-const dbSetInterface = (dbi: DbInterface): DbSetInterfaceAction => ({
-  type: DB_SET_INTERFACE,
-  dbi
-})
 
 export const DB_SET_CURRENT = 'db/setCurrent'
 
@@ -102,10 +88,10 @@ type CreateDbArgs = { name: string, password: string }
 export namespace createDb { export type Fcn = DbFcn<CreateDbArgs, DbInfo> }
 export const createDb: DbThunk<CreateDbArgs, DbInfo> = ({name, password}) =>
   async (dispatch, getState) => {
-    const { db: { dbi } } = getState()
-    const info: DbInfo = dbi.createDb(name)
+    const { imports } = getState()
+    const info: DbInfo = imports.db.createDbInfo(name)
     await dispatch(loadDb({info, password}))
-    dispatch(DbInit(dbi))
+    dispatch(DbInit())
     return info
   }
 
@@ -193,9 +179,9 @@ type LoadDbArgs = { info: DbInfo, password: string }
 export namespace loadDb { export type Fcn = DbFcn<LoadDbArgs, void> }
 export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
   async (dispatch, getState) => {
-    const { db: { dbi } } = getState()
+    const { imports } = getState()
     console.log('db: ', info.location)
-    const db = dbi.openDb(info, password)
+    const db = imports.db.openDb(info, password)
     db.transform({incoming: incomingDelta})
 
     let localInfo: LocalDbInfo
@@ -205,7 +191,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
       localInfo = {
         _id: localInfoDocId,
         key: crypto.randomBytes(32).toString('base64'),
-        localId: dbi.genLocalId(info.name),
+        localId: imports.db.genLocalId(info.name),
         last: 0
       }
       await db.put(localInfo)
@@ -288,7 +274,7 @@ type DeleteDbArgs = { info: DbInfo }
 export namespace deleteDb { export type Fcn = DbFcn<DeleteDbArgs, void> }
 export const deleteDb: DbThunk<DeleteDbArgs, void> = ({info}) =>
   async (dispatch, getState) => {
-    const { db: { dbi, current } } = getState()
+    const { db: { current }, imports } = getState()
 
     // unload db if it's the current one
     if (current && current.info.name === info.name) {
@@ -296,15 +282,14 @@ export const deleteDb: DbThunk<DeleteDbArgs, void> = ({info}) =>
     }
 
     // delete file
-    dbi.deleteDb(info)
-    dispatch(DbInit(dbi))
+    imports.db.deleteDb(info)
+    dispatch(DbInit())
   }
 
 export namespace unloadDb { export type Fcn = () => void }
 export const unloadDb = (): SetDbAction => setDb(undefined)
 
 type Actions =
-  DbSetInterfaceAction |
   DbSetFilesAction |
   SetDbAction |
   DbChangesAction<any> |
@@ -312,9 +297,6 @@ type Actions =
 
 const reducer = (state: DbState = initialState, action: Actions): DbState => {
   switch (action.type) {
-    case DB_SET_INTERFACE:
-      return { ...state, dbi: action.dbi }
-
     case DB_SET_FILES:
       return { ...state, files: action.files }
 
@@ -352,10 +334,10 @@ export const DbSlice = {
   db: reducer
 }
 
-export const DbInit = (dbi: DbInterface) => (): ThunkAction<Promise<void>, DbSlice, any> =>
+export const DbInit = (): ThunkAction<Promise<void>, State, any> =>
   async (dispatch, getState) => {
-    dispatch(dbSetInterface(dbi))
-    const infos = dbi.listDbs()
+    const { imports } = getState()
+    const infos = imports.db.listDbs()
     dispatch(dbSetFiles(infos))
   }
 

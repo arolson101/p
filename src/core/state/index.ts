@@ -3,7 +3,6 @@ import { routerMiddleware } from 'react-router-redux'
 import { createStore, applyMiddleware, combineReducers, bindActionCreators, Dispatch } from 'redux'
 import ReduxThunk, { ThunkAction } from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension'
-import { PStoreImports } from '../imports'
 
 export * from './db'
 export * from './dialog'
@@ -11,6 +10,7 @@ export * from './views'
 export * from './form'
 export * from './fi'
 export * from './i18n'
+export * from './imports'
 export * from './router'
 export * from './sys'
 export * from './ui'
@@ -24,6 +24,7 @@ import { I18nSlice } from './i18n'
 import { RouterSlice } from './router'
 import { SysSlice } from './sys'
 import { UiSlice } from './ui'
+import { ImportsSlice, ImportsState, importsInit } from './imports'
 
 export type AppState =
   DbSlice &
@@ -31,6 +32,7 @@ export type AppState =
   FiSlice &
   FormSlice &
   I18nSlice &
+  ImportsSlice &
   RouterSlice &
   SysSlice &
   UiSlice &
@@ -42,6 +44,7 @@ export const AppState = combineReducers<AppState>({
   ...FiSlice,
   ...FormSlice,
   ...I18nSlice,
+  ...ImportsSlice,
   ...RouterSlice,
   ...SysSlice,
   ...UiSlice,
@@ -54,11 +57,12 @@ export type ThunkFcn<Args, Ret> = (args: Args) => Promise<Ret>
 export const mapDispatchToProps = <T>(actions: { [key in keyof T]: Function }) =>
   (dispatch: Dispatch<AppState>) => bindActionCreators(actions as any, dispatch) as T
 
-export const AppInit: AppThunk<PStoreImports, void> = (imports) =>
+export const AppInit: AppThunk<ImportsState, void> = (imports) =>
   async (dispatch) => {
+    dispatch(importsInit(imports))
     type Initializer = AppThunk<void, void>
     const initializers: Initializer[] = [
-      DbInit(imports.db),
+      DbInit,
       FiInit
     ]
     await Promise.all(initializers.map(init => dispatch(init(undefined))))

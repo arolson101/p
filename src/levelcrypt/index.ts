@@ -2,8 +2,9 @@ import * as crypto from 'crypto'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
+import * as PouchDB from 'pouchdb'
 import * as R from 'ramda'
-import { PouchDB, DbInterface, DbInfo } from 'core/imports'
+import { DbInterface, DbInfo } from 'core'
 import { levelcrypt } from './levelcrypt'
 
 const ext = '.db'
@@ -15,7 +16,7 @@ const genLocalId = (name: string): string => {
   return `${hostname.substr(0, 18)}-${userInfo.username.substr(0, 18)}-${name.substr(0, 18)}-${random}`
 }
 
-const createDb = (userData: string) => (name: string): DbInfo => {
+const createDbInfo = (userData: string) => (name: string): DbInfo => {
   const location = path.join(userData, encodeURIComponent(name.trim()) + ext)
   const info: DbInfo = { name, location }
   return info
@@ -68,7 +69,7 @@ const listDbs = (userData: string) => (): DbInfo[] => {
 export const dbLevelcrypt = (userData: string): DbInterface => ({
   genLocalId,
   openDb: openDb(userData),
-  createDb: createDb(userData),
+  createDbInfo: createDbInfo(userData),
   deleteDb: deleteDb(userData),
   listDbs: listDbs(userData)
 })
