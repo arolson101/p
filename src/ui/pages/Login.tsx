@@ -5,9 +5,9 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
-import { DbInfo } from '../../docs/index'
-import { AppState, mapDispatchToProps } from '../../state/index'
-import { showLoginDialog, showCreateDialog } from '../dialogs/index'
+import { DbInfo } from 'core/docs'
+import { AppState, mapDispatchToProps } from 'core/state'
+import { showLoginDialog, showCreateDialog } from '../dialogs'
 
 const icons = {
   newDb: {

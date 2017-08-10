@@ -2,11 +2,11 @@ import * as crypto from 'crypto'
 // const debounce = require('lodash.debounce')
 const MemoryStream = require('memorystream') as new (arg?: any, opts?: any) => MemoryStream
 import * as zlib from 'zlib'
-import { SyncConnection } from '../docs/index'
-import { AppThunk, ThunkFcn, pushChanges } from '../state/index'
-import { syncProviders } from '../sync/index'
-import { KeyDoc, createKeyDoc, decryptMasterKeyDoc } from '../util/index'
-// import { CurrentDb } from './index'
+import { SyncConnection } from '../docs'
+import { AppThunk, ThunkFcn, pushChanges } from '../state'
+import { syncProviders } from 'sync'
+import { KeyDoc, createKeyDoc, decryptMasterKeyDoc } from 'util/index'
+// import { CurrentDb } from './'
 
 const indexFileName = 'p.key'
 

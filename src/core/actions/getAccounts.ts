@@ -1,8 +1,8 @@
 import { defineMessages, FormattedMessage } from 'react-intl'
-import { AppState, AppThunk, ThunkFcn } from '../state/index'
-import { Bank, Account } from '../docs/index'
+import { AppState, AppThunk, ThunkFcn } from '../state'
+import { Bank, Account } from '../docs'
 import { selectBankAccounts } from '../selectors'
-import { createConnection, checkLogin, toAccountType } from '../util/online'
+import { createConnection, checkLogin, toAccountType } from 'util/online'
 
 type FormatMessage = (messageDescriptor: FormattedMessage.MessageDescriptor, values?: Object) => string
 

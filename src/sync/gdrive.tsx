@@ -4,9 +4,9 @@
 import * as React from 'react'
 const MemoryStream = require('memorystream') as new (arg?: any, opts?: any) => MemoryStream
 import { defineMessages, FormattedMessage, FormattedRelative } from 'react-intl'
-import { OAuthConfig, OAuthOptions, oauthGetAccessToken, oauthRefreshToken } from '../util/index'
-import { SyncConnection, SyncConnectionToken } from '../docs/index'
-import { SyncProvider, FileInfo } from './index'
+import { OAuthConfig, OAuthOptions, oauthGetAccessToken, oauthRefreshToken } from 'util/index'
+import { SyncConnection, SyncConnectionToken } from 'core/docs'
+import { SyncProvider, FileInfo } from './'
 
 const googleDriveSyncId = 'GoogleDrive'
 const google = require<google.GoogleApis>('googleapis')

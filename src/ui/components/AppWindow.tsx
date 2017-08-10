@@ -5,10 +5,10 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
 import { goBack, goForward } from 'react-router-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
-import { DialogContainer, DialogDisplay } from '../dialogs/index'
-import { AppState, mapDispatchToProps } from '../../state/index'
-import * as Mac from '../macOS/index'
-import * as Win from '../windows/index'
+import { DialogContainer, DialogDisplay } from '../dialogs'
+import { AppState, mapDispatchToProps } from 'core/state'
+import * as Mac from '../macOS'
+import * as Win from '../windows'
 
 export interface AppWindowProps {
   title: string

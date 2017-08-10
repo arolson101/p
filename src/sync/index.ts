@@ -1,7 +1,7 @@
 import { FormattedMessage } from 'react-intl'
 import { fsSyncProvider } from './fsSync'
 import { googleDriveSyncProvider } from './gdrive'
-import { SyncConnection } from '../docs/index'
+import { SyncConnection } from 'core/docs'
 
 export interface FileInfo {
   name: string

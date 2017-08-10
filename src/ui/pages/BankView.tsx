@@ -7,12 +7,12 @@ import { withRouter, RouteComponentProps } from 'react-router'
 import { Link } from 'react-router-dom'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withState } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
-import { getAccounts } from '../../actions/index'
-import { Bank, Account } from '../../docs/index'
-import { AppState, mapDispatchToProps } from '../../state/index'
-import { selectBank, selectBankAccounts } from '../../selectors'
+import { getAccounts } from 'core/actions'
+import { Bank, Account } from 'core/docs'
+import { AppState, mapDispatchToProps } from 'core/state'
+import { selectBank, selectBankAccounts } from 'core/selectors'
 import { SettingsMenu } from '../components/SettingsMenu'
-import { showAccountDialog, showBankDialog, showBankDeleteDialog } from '../dialogs/index'
+import { showAccountDialog, showBankDialog, showBankDeleteDialog } from '../dialogs'
 
 const messages = defineMessages({
   noAccounts: {

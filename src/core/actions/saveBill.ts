@@ -6,9 +6,9 @@ import * as React from 'react'
 import { InjectedIntl, FormattedMessage } from 'react-intl'
 import { replace } from 'react-router-redux'
 import * as Rx from 'rxjs/Rx'
-import { AppThunk, ThunkFcn, FI, pushChanges } from '../state/index'
-import { Bill, Account, Budget } from '../docs/index'
-import { toRRule, RRuleErrorMessage, Validator } from '../util/index'
+import { AppThunk, ThunkFcn, FI, pushChanges } from '../state'
+import { Bill, Account, Budget } from '../docs'
+import { toRRule, RRuleErrorMessage, Validator } from 'util/index'
 
 export { toRRule, RRuleErrorMessage }
 

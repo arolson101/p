@@ -2,8 +2,8 @@ import * as docURI from 'docuri'
 import { createSelector } from 'reselect'
 import { RouteComponentProps } from 'react-router'
 import * as RRule from 'rrule-alt'
-import { AppState } from './state/index'
-import { Bank, Account, Transaction, Bill, Category, Budget, SyncConnection } from './docs/index'
+import { AppState } from './state'
+import { Bank, Account, Transaction, Bill, Category, Budget, SyncConnection } from './docs'
 
 const debugSelector = (name: string, id?: string) => {
   // console.log(`selector ${name} running for '${id}'`)

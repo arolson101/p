@@ -1,8 +1,8 @@
 import { InjectedIntl } from 'react-intl'
 import { replace } from 'react-router-redux'
-import { AppThunk, ThunkFcn, FI, pushChanges } from '../state/index'
-import { Bank } from '../docs/index'
-import { Validator } from '../util/validator'
+import { AppThunk, ThunkFcn, FI, pushChanges } from '../state'
+import { Bank } from '../docs'
+import { Validator } from 'util/validator'
 
 let injectedIntl: InjectedIntl
 type FormatMessage = typeof injectedIntl.formatMessage

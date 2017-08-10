@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { Lookup } from '../util/index'
+import { Lookup } from 'util/index'
 
 export * from './Account'
 export * from './Bank'

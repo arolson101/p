@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { storiesOf } from '@storybook/react'
-import { BankDialog } from '../src/ui/dialogs/index'
+import { BankDialog } from '../src/ui/dialogs'
 
 const action = (str: string) => () => console.log(str)
 

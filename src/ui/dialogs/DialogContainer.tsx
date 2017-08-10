@@ -2,8 +2,8 @@ import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import * as SplitPane from 'react-split-pane'
 import { compose, setDisplayName, withState, withContext } from 'recompose'
-import { Bank, Account, Budget, Bill, SyncConnection } from '../../docs/index'
-import { AppState } from '../../state/index'
+import { Bank, Account, Budget, Bill, SyncConnection } from 'core/docs'
+import { AppState } from 'core/state'
 
 interface StateProps {
   dialogContainer: any

@@ -4,11 +4,11 @@ import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers } from 'recompose'
-import { Bank, Account } from '../../docs/index'
-import { AppState, mapDispatchToProps } from '../../state/index'
+import { Bank, Account } from 'core/docs'
+import { AppState, mapDispatchToProps } from 'core/state'
 import { Favico } from '../components/Favico'
-import { selectBank, selectBanks, selectAccount } from '../../selectors'
-import { showBankDialog } from '../dialogs/index'
+import { selectBank, selectBanks, selectAccount } from 'core/selectors'
+import { showBankDialog } from '../dialogs'
 
 const messages = defineMessages({
   page: {

@@ -1,7 +1,7 @@
 import * as docURI from 'docuri'
-import { makeid, Lookup } from '../util/index'
 import * as RRule from 'rrule-alt'
-import { DocCache, Account, Budget, Category } from './index'
+import { makeid, Lookup } from 'util/index'
+import { DocCache, Account, Budget, Category } from './'
 
 export interface Bill {
   name: string

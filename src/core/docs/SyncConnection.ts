@@ -1,6 +1,6 @@
 import * as docURI from 'docuri'
 import * as moment from 'moment'
-import { makeid, Lookup, Token } from '../util/index'
+import { makeid, Lookup, Token } from 'util/index'
 
 interface SyncConnectionBase {
   provider: string

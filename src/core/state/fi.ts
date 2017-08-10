@@ -1,5 +1,5 @@
 import { FinancialInstitution, FinancialInstitutionProfile } from 'filist'
-import { AppThunk } from './index'
+import { AppThunk } from './'
 
 export interface FI extends FinancialInstitution {
   id: number // array index + 1

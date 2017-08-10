@@ -5,9 +5,9 @@ import { defineMessages, FormattedDate } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withHandlers, mapProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import ui, { ReduxUIProps } from 'redux-ui'
-import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from '../../state/index'
-import { Bill } from '../../docs/index'
-import { showBillDialog } from '../dialogs/index'
+import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from 'core/state'
+import { Bill } from 'core/docs'
+import { showBillDialog } from '../dialogs'
 
 interface Props {
   item: Bill.View

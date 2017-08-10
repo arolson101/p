@@ -1,10 +1,10 @@
 const randomColor = require<(options?: RandomColorOptions) => string>('randomcolor')
 import * as docURI from 'docuri'
 import { defineMessages } from 'react-intl'
-import { makeid, Lookup } from '../util/index'
+import { makeid, Lookup } from 'util/index'
 import { Bank } from './Bank'
 import { Transaction } from './Transaction'
-import { DocCache } from './index'
+import { DocCache } from './'
 
 export interface Account {
   name: string

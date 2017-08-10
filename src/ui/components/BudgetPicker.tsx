@@ -4,10 +4,10 @@ import * as Select from 'react-select'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName, withHandlers } from 'recompose'
-import { Budget } from '../../docs/index'
-import { selectBudgets } from '../../selectors'
-import { AppState } from '../../state/index'
-import { SelectOption } from './index'
+import { Budget } from 'core/docs'
+import { selectBudgets } from 'core/selectors'
+import { AppState } from 'core/state'
+import { SelectOption } from './'
 
 interface ConnectedProps {
   options: SelectOption[]

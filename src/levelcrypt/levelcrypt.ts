@@ -1,6 +1,6 @@
 import * as crypto from 'crypto'
 import * as levelup from 'levelup'
-import { KeyDoc, createKeyDoc, decryptMasterKeyDoc } from '../util/index'
+import { KeyDoc, createKeyDoc, decryptMasterKeyDoc } from 'util/index'
 
 const updown = require('level-updown')
 

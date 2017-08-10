@@ -6,10 +6,10 @@ import { connect, Provider } from 'react-redux'
 import { IntlProvider } from 'react-intl'
 import { compose } from 'recompose'
 import * as Redux from 'redux'
-import { DbInfo, Bank, Account, Transaction, Bill, Budget, SyncConnection } from '../docs/index'
-import { AppState, CurrentDb } from '../state/index'
-import * as Components from './components/index'
-import * as Pages from './pages/index'
+import { DbInfo, Bank, Account, Transaction, Bill, Budget, SyncConnection } from 'core/docs'
+import { AppState, CurrentDb } from 'core/state'
+import * as Components from './components'
+import * as Pages from './pages'
 
 interface Props {
   store: Redux.Store<AppState>

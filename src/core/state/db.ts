@@ -2,10 +2,10 @@ import * as crypto from 'crypto'
 import * as PouchDB from 'pouchdb'
 import { ThunkAction } from 'redux-thunk'
 import * as Rx from 'rxjs/Rx'
-import { DocCache, LocalDoc } from '../docs/index'
-import { AppThunk } from './index'
+import { DocCache, LocalDoc } from '../docs'
+import { AppThunk } from './'
 import { DbInterface, defaultDbInterface } from '../imports'
-import { incomingDelta, resolveConflict } from '../util/delta'
+import { incomingDelta, resolveConflict } from 'util/delta'
 import { initDocs } from './views'
 
 export interface DbInfo {

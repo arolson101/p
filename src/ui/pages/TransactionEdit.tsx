@@ -3,9 +3,9 @@ import { PageHeader } from 'react-bootstrap'
 import { connect } from 'react-redux'
 import { Link, RouteComponentProps } from 'react-router-dom'
 import { compose } from 'recompose'
-import { Bank, Account, Transaction } from '../../docs/index'
-import { AppState } from '../../state/index'
-import { selectBank, selectAccount, selectTransaction } from '../../selectors'
+import { Bank, Account, Transaction } from 'core/docs'
+import { AppState } from 'core/state'
+import { selectBank, selectAccount, selectTransaction } from 'core/selectors'
 import { TransactionDetail } from '../components/TransactionDetail'
 
 type RouteProps = RouteComponentProps<Transaction.Params>

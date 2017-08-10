@@ -7,7 +7,7 @@ import { AutoSizer, Dimensions, Table, Column, ColumnProps, TableCellProps,
   OnScrollCallback, Index, RowMouseEventHandlerParams } from 'react-virtualized'
 import { withRouter, RouteComponentProps } from 'react-router'
 import { compose, setDisplayName, withHandlers, setPropTypes, onlyUpdateForPropTypes } from 'recompose'
-import { AppState } from '../../state/index'
+import { AppState } from 'core/state'
 import { withQuerySyncedState } from '../enhancers/index'
 import './ListWithDetails.css'
 

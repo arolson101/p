@@ -2,9 +2,8 @@ import createHistory from 'history/createHashHistory'
 import * as React from 'react'
 import { render } from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
-import { createAppStore, AppInit } from './state/index'
-import { App } from './ui/index'
-import { PStoreImports } from './imports'
+import { createAppStore, AppInit, PStoreImports } from 'core'
+import { App } from './ui'
 
 import { setObservableConfig } from 'recompose'
 import rxjsconfig from 'recompose/rxjsObservableConfig'
@@ -35,9 +34,9 @@ const main = (element: Element, imports: PStoreImports) => {
       )
     })
 
-    module.hot.accept('./state', () => {
+    module.hot.accept('core/state', () => {
       console.log('---- redux change')
-      store.replaceReducer(require<any>('./state/index').AppState)
+      store.replaceReducer(require<any>('core/state/index').AppState)
     })
   }
 

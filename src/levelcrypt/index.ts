@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import * as R from 'ramda'
-import { PouchDB, DbInterface, DbInfo } from 'imports'
+import { PouchDB, DbInterface, DbInfo } from 'core/imports'
 import { levelcrypt } from './levelcrypt'
 
 const ext = '.db'

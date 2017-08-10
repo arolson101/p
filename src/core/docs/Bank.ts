@@ -1,7 +1,7 @@
 import * as docURI from 'docuri'
-import { makeid, Lookup } from '../util/index'
+import { makeid, Lookup } from 'util/index'
 import { Account } from './Account'
-import { DocCache } from './index'
+import { DocCache } from './'
 
 export interface Bank {
   fi?: string

@@ -1,6 +1,6 @@
 import { replace } from 'react-router-redux'
-import { AppThunk, ThunkFcn, deleteDoc, deleteId, Deletion, pushChanges } from '../state/index'
-import { Bank, Account, Budget, Transaction } from '../docs/index'
+import { AppThunk, ThunkFcn, deleteDoc, deleteId, Deletion, pushChanges } from '../state'
+import { Bank, Account, Budget, Transaction } from 'core/docs'
 import { selectBankAccounts } from '../selectors'
 
 type DeleteBankArgs = { bank: Bank.View }
