@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as React from 'react'
 import { defineMessages } from 'react-intl'
 import { SyncConnectionFS } from 'core/docs'
-import { SyncProvider, FileInfo } from './'
+import { SyncProvider, FileInfo } from 'core/sync'
 import * as electron from 'electron'
 
 const fsSyncId = 'fsSync'

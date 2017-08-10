@@ -4,7 +4,7 @@ const MemoryStream = require('memorystream') as new (arg?: any, opts?: any) => M
 import * as zlib from 'zlib'
 import { SyncConnection } from '../docs'
 import { AppThunk, ThunkFcn, pushChanges } from '../state'
-import { syncProviders } from 'sync'
+import { syncProviders } from 'core/sync'
 import { KeyDoc, createKeyDoc, decryptMasterKeyDoc } from 'util/index'
 // import { CurrentDb } from './'
 

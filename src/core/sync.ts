@@ -1,6 +1,4 @@
 import { FormattedMessage } from 'react-intl'
-import { fsSyncProvider } from './fsSync'
-import { googleDriveSyncProvider } from './gdrive'
 import { SyncConnection } from 'core/docs'
 
 export interface FileInfo {
@@ -27,7 +25,4 @@ export interface SyncProvider<Config> {
   del: (config: Config, id: string) => Promise<void>
 }
 
-export const syncProviders: SyncProvider<SyncConnection>[] = [
-  googleDriveSyncProvider,
-  fsSyncProvider
-]
+export const syncProviders: SyncProvider<SyncConnection>[] = []

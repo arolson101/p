@@ -2,7 +2,7 @@ import createHistory from 'history/createHashHistory'
 import * as React from 'react'
 import { render } from 'react-dom'
 import { AppContainer } from 'react-hot-loader'
-import { createAppStore, AppInit, ImportsState } from 'core'
+import { createAppStore, AppInit, ImportsState, syncProviders } from 'core'
 import { App } from './ui'
 
 import { setObservableConfig } from 'recompose'
@@ -59,7 +59,12 @@ if (!root) {
 }
 
 import * as electron from 'electron'
-import { dbLevelcrypt } from 'levelcrypt'
+import { dbLevelcrypt } from 'db-levelcrypt'
+import { googleDriveSyncProvider } from 'sync-gdrive'
+import { fsSyncProvider } from 'sync-fs'
+
+syncProviders.push(googleDriveSyncProvider, fsSyncProvider)
+
 const userData = electron.remote.app.getPath('userData')
 const db = dbLevelcrypt(userData)
 const online = {}

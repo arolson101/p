@@ -6,7 +6,7 @@ const MemoryStream = require('memorystream') as new (arg?: any, opts?: any) => M
 import { defineMessages, FormattedMessage, FormattedRelative } from 'react-intl'
 import { OAuthConfig, OAuthOptions, oauthGetAccessToken, oauthRefreshToken } from 'util/index'
 import { SyncConnection, SyncConnectionToken } from 'core/docs'
-import { SyncProvider, FileInfo } from './'
+import { SyncProvider, FileInfo } from 'core/sync'
 
 const googleDriveSyncId = 'GoogleDrive'
 const google = require<google.GoogleApis>('googleapis')

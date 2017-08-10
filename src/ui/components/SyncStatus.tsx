@@ -8,7 +8,7 @@ import { FormProps, SubmitHandler, reduxForm } from 'redux-form'
 import { SyncConnection } from 'core/docs'
 import { AppState, mapDispatchToProps, pushChanges } from 'core/state'
 import { runSync } from 'core/actions'
-import { syncProviders } from '../../sync'
+import { syncProviders } from 'core/sync'
 import { Validator } from 'util/index'
 import { typedFields, forms } from './forms'
 
