@@ -15,17 +15,18 @@ var externals = {
   'pouchdb': 'commonjs pouchdb',
   'leveldown': 'commonjs leveldown',
   'leveldown/package': 'commonjs leveldown/package',
+  'googleapis': 'commonjs googleapis'
 };
 
-if (__DEVELOPMENT__) {
-  fs.readdirSync(path.join(__dirname, 'node_modules'))
-    .filter(function(x) {
-      return ['.bin'].indexOf(x) === -1;
-    })
-    .forEach(function(mod) {
-      externals[mod] = 'commonjs ' + mod;
-    });
-}
+// if (__DEVELOPMENT__) {
+//   fs.readdirSync(path.join(__dirname, 'node_modules'))
+//     .filter(function(x) {
+//       return ['.bin'].indexOf(x) === -1;
+//     })
+//     .forEach(function(mod) {
+//       externals[mod] = 'commonjs ' + mod;
+//     });
+// }
 
 module.exports = {
   context: path.join(__dirname, 'src'),
@@ -70,7 +71,10 @@ module.exports = {
       },
 
       { test: /\.css$/, use: [ 'style-loader', 'css-loader' ] },
-      { test: /\.tsx?$/, loaders: ['react-hot-loader/webpack', 'awesome-typescript-loader'] },
+      { test: /\.tsx?$/, loaders: [
+        'react-hot-loader/webpack',
+        'ts-loader?configFileName=tsconfig.app.json'
+      ] },
       { test: /\.(svg|woff|woff2|ttf|eot)($|\?)/, loader: "file?name=fonts/[name].[ext]" },
       { test: /\.(png|gif|jpg)($|\?)/, loader: "file?name=images/[name].[ext]" }
     ],
@@ -85,6 +89,13 @@ module.exports = {
           // failOnHint: true
         }
       }
+    }),
+
+    new webpack.DllReferencePlugin({
+      context: __dirname,
+      name: 'electron_dll',
+      manifest: require("./app/dev_electron_dll.json"),
+      sourceType: "commonsjs2"
     }),
 
     new CopyWebpackPlugin([
@@ -126,7 +137,7 @@ module.exports = {
 
 if (__DEVELOPMENT__) {
   // module.exports.entry.p.push('webpack/hot/only-dev-server')
-  // module.exports.entry.p.push('react-hot-loader/patch')
+  module.exports.entry.p.push('react-hot-loader/patch')
   module.exports.entry.p.push('react-dev-utils/webpackHotDevClient')
 	module.exports.plugins.push(new webpack.NamedModulesPlugin())
 } else {

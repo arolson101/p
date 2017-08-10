@@ -1,6 +1,7 @@
 dump.json
 node_modules
 app/p.*
+app/*dll*
 app/lib
 app/fonts
 app/images

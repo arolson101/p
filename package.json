@@ -5,6 +5,7 @@
   "scripts": {
     "client": "cross-env NODE_ENV=development electron app --js-flags=\"--harmony\" --remote-debugging-port=9222",
     "start": "concurrently \"npm run server\" \"npm run client\"",
+    "postinstall": "webpack --config webpack.config.dll.ts",
     "prod": "cross-env NODE_ENV=production webpack && electron app --js-flags=\"--harmony\"",
     "server": "cross-env NODE_ENV=development nodemon --watch webpack.config.js --exec \"webpack-dev-server --hot --inline\"",
     "storybook": "start-storybook -p 9001 -c .storybook",
@@ -157,6 +158,7 @@
     "source-map-loader": "^0.2.1",
     "style-loader": "^0.18.2",
     "ts-loader": "^2.3.2",
+    "ts-node": "^3.3.0",
     "tslint": "^5.6.0",
     "tslint-config-standard": "^6.0.1",
     "tslint-loader": "^3.5.3",
