@@ -8,8 +8,9 @@
     "postinstall": "webpack --config webpack.config.dll.ts",
     "prod": "cross-env NODE_ENV=production webpack && electron app --js-flags=\"--harmony\"",
     "server": "cross-env NODE_ENV=development nodemon --watch webpack.config.js --exec \"webpack-dev-server --hot --inline\"",
-    "storybook": "start-storybook -p 9001 -c .storybook",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "storybook": "start-storybook -p 6006",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-storybook": "build-storybook"
   },
   "build": {
     "appId": "com.example.p",
@@ -29,6 +30,7 @@
     "autobind-decorator": "^2.1.0",
     "axios": "^0.16.2",
     "bootstrap": "^3.3.7",
+    "commander": "^2.11.0",
     "docuri": "^4.2.2",
     "electron-oauth2": "^3.0.0",
     "font-awesome": "^4.7.0",
@@ -166,6 +168,7 @@
     "uglify-js": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
     "webpack": "^3.5.3",
     "webpack-dev-server": "^2.7.1",
-    "webpack-hot-middleware": "^2.18.2"
+    "webpack-hot-middleware": "^2.18.2",
+    "@kadira/storybook": "^2.21.0"
   }
 }
