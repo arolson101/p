@@ -4,7 +4,7 @@
 import * as React from 'react'
 const MemoryStream = require('memorystream') as new (arg?: any, opts?: any) => MemoryStream
 import { defineMessages, FormattedMessage, FormattedRelative } from 'react-intl'
-import { OAuthConfig, OAuthOptions, oauthGetAccessToken, oauthRefreshToken } from 'util/index'
+import { OAuthConfig, OAuthOptions, OAuthInterface } from 'util/index'
 import { SyncConnection, SyncConnectionToken } from 'core/docs'
 import { SyncProvider, FileInfo } from 'core/sync'
 
@@ -208,9 +208,9 @@ const toFileInfo = (file: GFile): FileInfo => ({
   isFolder: (file.mimeType === mimeTypes.folder)
 })
 
-const createConfig = (): Promise<SyncConnectionToken> => {
+const createConfig = (oi: OAuthInterface) => (): Promise<SyncConnectionToken> => {
   return new Promise<SyncConnectionToken>(async (resolve, reject) => {
-    const token = await oauthGetAccessToken(googleDriveConfig, googleDriveOptions)
+    const token = await oi.oauthGetAccessToken(googleDriveConfig, googleDriveOptions)
     resolve({
       provider: googleDriveSyncId,
       password: '',
@@ -229,8 +229,8 @@ const configNeedsUpdate = (config: SyncConnectionToken): boolean => {
   return SyncConnection.isExpired(config)
 }
 
-const updateConfig = async (config: SyncConnectionToken): Promise<SyncConnectionToken> => {
-  const token = await oauthRefreshToken(googleDriveConfig, config.token.refresh_token)
+const updateConfig = (oi: OAuthInterface) => async (config: SyncConnectionToken): Promise<SyncConnectionToken> => {
+  const token = await oi.oauthRefreshToken(googleDriveConfig, config.token.refresh_token)
   return { ...config, token }
 }
 
@@ -274,13 +274,13 @@ const del = async (config: SyncConnectionToken, id: string): Promise<void> => {
   await deleteFile(drive, id)
 }
 
-export const googleDriveSyncProvider: SyncProvider<SyncConnectionToken> = {
+export const googleDriveSyncProvider = (oi: OAuthInterface): SyncProvider<SyncConnectionToken> => ({
   id: googleDriveSyncId,
   title: messages.title,
 
-  createConfig,
+  createConfig: createConfig(oi),
   configNeedsUpdate,
-  updateConfig,
+  updateConfig: updateConfig(oi),
   drawConfig,
 
   mkdir,
@@ -288,4 +288,4 @@ export const googleDriveSyncProvider: SyncProvider<SyncConnectionToken> = {
   get,
   put,
   del
-}
+})

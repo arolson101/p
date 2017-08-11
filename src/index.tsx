@@ -62,8 +62,9 @@ import * as electron from 'electron'
 import { dbLevelcrypt } from 'db-levelcrypt'
 import { googleDriveSyncProvider } from 'sync-gdrive'
 import { fsSyncProvider } from 'sync-fs'
+import { oauthElectron } from 'oauth-electron'
 
-syncProviders.push(googleDriveSyncProvider, fsSyncProvider)
+syncProviders.push(googleDriveSyncProvider(oauthElectron), fsSyncProvider)
 
 const userData = electron.remote.app.getPath('userData')
 const db = dbLevelcrypt(userData)
