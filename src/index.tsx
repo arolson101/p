@@ -20,7 +20,7 @@ setObservableConfig(rxjsconfig)
 
 const main = (element: Element, imports: ImportsState) => {
   const history = createHistory()
-  const store = createAppStore(history)
+  const store = createAppStore(history, imports)
 
   if (module.hot) {
     module.hot.accept('./ui', () => {
@@ -40,7 +40,7 @@ const main = (element: Element, imports: ImportsState) => {
     })
   }
 
-  store.dispatch(AppInit(imports))
+  store.dispatch(AppInit(undefined))
   .then(() => {
     render(
       (

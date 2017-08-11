@@ -10,8 +10,9 @@ import createHistory from 'history/createHashHistory'
 import * as moment from 'moment'
 import { withKnobs, select } from '@storybook/addon-knobs'
 
+const imports = { db: {} as any, online: {} }
 const history = createHistory()
-const store = createAppStore(history)
+const store = createAppStore(history, imports)
 let value = moment().format('L')
 
 const stories = storiesOf('Knobs', module)

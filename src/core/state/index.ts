@@ -57,9 +57,8 @@ export type ThunkFcn<Args, Ret> = (args: Args) => Promise<Ret>
 export const mapDispatchToProps = <T>(actions: { [key in keyof T]: Function }) =>
   (dispatch: Dispatch<AppState>) => bindActionCreators(actions as any, dispatch) as T
 
-export const AppInit: AppThunk<ImportsState, void> = (imports) =>
+export const AppInit: AppThunk<void, void> = () =>
   async (dispatch) => {
-    dispatch(importsInit(imports))
     type Initializer = AppThunk<void, void>
     const initializers: Initializer[] = [
       DbInit,
@@ -68,12 +67,15 @@ export const AppInit: AppThunk<ImportsState, void> = (imports) =>
     await Promise.all(initializers.map(init => dispatch(init(undefined))))
   }
 
-export const createAppStore = (history: History) => {
+export const createAppStore = (history: History, imports: ImportsState) => {
   const store = createStore<AppState>(
     AppState,
     composeWithDevTools(
       applyMiddleware(ReduxThunk, routerMiddleware(history))
     )
   )
+
+  store.dispatch(importsInit(imports))
+
   return store
 }
