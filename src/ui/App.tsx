@@ -40,7 +40,7 @@ export const App = enhance(props => {
       <IntlProvider locale={locale}>
         <ConnectedRouter history={history}>
           <Components.AppWindow>
-            <Route exact path='/' component={Pages.Login}/>
+            <Route exact path='/' component={Pages.LoginRoute}/>
             {current ? (
               <Components.AppContent>
                 <Switch>

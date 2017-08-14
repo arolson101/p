@@ -25,8 +25,6 @@ const messages = defineMessages({
   },
 })
 
-type RouteProps = RouteComponentProps<any>
-
 interface ConnectedProps {
   files: DbInfo[]
 }
@@ -36,24 +34,11 @@ interface DispatchProps {
   showCreateDialog: typeof showCreateDialog
 }
 
-type EnhancedProps = RouteProps & ConnectedProps & DispatchProps
-
-const enhance = compose<EnhancedProps, RouteProps>(
-  setDisplayName('Login'),
-  onlyUpdateForPropTypes,
-  setPropTypes({}),
-  withRouter,
-  connect<ConnectedProps, DispatchProps, RouteProps>(
-    (state: AppState): ConnectedProps => ({
-      files: state.db.files
-    }),
-    mapDispatchToProps<DispatchProps>({ showLoginDialog, showCreateDialog })
-  ),
-)
+type EnhancedProps = ConnectedProps & DispatchProps
 
 const wellStyles = {maxWidth: 400, margin: '0 auto 50px', padding: '50px'}
 
-export const Login = enhance(({ files, showLoginDialog, showCreateDialog }) => (
+export const LoginComponent = ({ files, showLoginDialog, showCreateDialog }: EnhancedProps) => (
   <div>
     <div className='well' style={wellStyles}>
       <ButtonGroup vertical block bsSize='large'>
@@ -82,4 +67,14 @@ export const Login = enhance(({ files, showLoginDialog, showCreateDialog }) => (
       </ButtonGroup>
     </div>
   </div>
-))
+)
+
+export const LoginRoute = compose<EnhancedProps, RouteComponentProps<any>>(
+  withRouter,
+  connect<ConnectedProps, DispatchProps, {}>(
+    (state: AppState): ConnectedProps => ({
+      files: state.db.files
+    }),
+    mapDispatchToProps<DispatchProps>({ showLoginDialog, showCreateDialog })
+  ),
+)(LoginComponent)
