@@ -27,8 +27,6 @@ const messages = defineMessages({
   }
 })
 
-type RouteProps = RouteComponentProps<Account.Params>
-
 interface Params {
   bank: Bank.View
   account: Account.View
@@ -56,23 +54,22 @@ interface Handlers {
   confirmDelete: () => void
 }
 
-type EnhancedProps = Handlers & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps & Props
+type EnhancedProps = Handlers & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & Props
 
-const enhance = compose<EnhancedProps, RouteProps & Props>(
+const enhance = compose<EnhancedProps, Props>(
   setDisplayName('AccountDelete'),
-  withRouter,
-  connect<ConnectedProps, DispatchProps, RouteProps & Props>(
+  connect<ConnectedProps, DispatchProps, Props>(
     (state: AppState, props): ConnectedProps => ({
     }),
     mapDispatchToProps<DispatchProps>({ deleteAccount, replace })
   ),
-  ui<UIState, ConnectedProps & DispatchProps & RouteProps & Props, {}>({
+  ui<UIState, ConnectedProps & DispatchProps & Props, {}>({
     state: {
       error: undefined,
       deleting: false
     } as UIState
   }),
-  withHandlers<ReduxUIProps<UIState> & ConnectedProps & DispatchProps & RouteProps & Props, Handlers>({
+  withHandlers<ReduxUIProps<UIState> & ConnectedProps & DispatchProps & Props, Handlers>({
     confirmDelete: ({updateUI, bank, account, deleteAccount, replace, onHide}: any) => async () => {
       try {
         updateUI({error: undefined, deleting: true})
