@@ -46,6 +46,14 @@ module.exports = function (config, env) {
         //   }),
     )
 
+    config.externals = {
+        'jsdom': 'window',
+        'cheerio': 'window',
+        'react/lib/ExecutionEnvironment': true,
+        'react/lib/ReactContext': 'window',
+        'react/addons': true,
+    }
+
     // config.externals = {
     //     'ws': true,
     //     'sqlite3': 'commonjs cross-sqlcipher',

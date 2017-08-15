@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { storiesOf } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
-import { WithNotes } from '@storybook/addon-notes'
 import { DatePicker } from '../src/ui/components/DatePicker'
 import { IntlProvider } from 'react-intl'
 import { Provider } from 'react-redux'
@@ -13,6 +12,9 @@ import { LoginComponent } from 'ui/pages/Login'
 import { AccountDeleteDialog } from 'ui/dialogs/AccountDeleteDialog'
 import { DbInfo, Account, Bank } from 'core'
 import 'bootstrap/dist/css/bootstrap.css'
+import { specs, describe, it } from 'storybook-addon-specifications'
+import { mount } from 'enzyme'
+import * as expect from 'expect'
 
 const imports = { db: {} as any, online: {} }
 const history = createHistory()
@@ -35,19 +37,17 @@ stories.add('Login', () => {
   const files = filesOptions[filesKey]
 
   return (
-    <WithNotes notes='login dialog'>
-      <Provider store={store}>
-        <IntlProvider locale={'en'}>
-          <div>
-            <LoginComponent
-              files={files}
-              showLoginDialog={action('showLoginDialog') as any}
-              showCreateDialog={action('showCreateDialog') as any}
-            />
-          </div>
-        </IntlProvider>
-      </Provider>
-    </WithNotes>
+    <Provider store={store}>
+      <IntlProvider locale={'en'}>
+        <div>
+          <LoginComponent
+            files={files}
+            showLoginDialog={action('showLoginDialog') as any}
+            showCreateDialog={action('showCreateDialog') as any}
+          />
+        </div>
+      </IntlProvider>
+    </Provider>
   )
 })
 
@@ -73,7 +73,17 @@ const bank: Bank.View = {
   }
 }
 
-stories.add('AccountDeleteDialog', () => {
+const storyName = 'AccountDeleteDialog'
+
+stories.addDecorator(getStory => (
+  <Provider store={store}>
+    <IntlProvider locale={'en'}>
+      {getStory()}
+    </IntlProvider>
+  </Provider>
+))
+
+stories.add(storyName, () => {
   const filesOptions: { [key: string]: DbInfo[] } = {
     emptyFiles: [],
     oneFile: [dummyDbInfo('one file')],
@@ -83,20 +93,23 @@ stories.add('AccountDeleteDialog', () => {
   const filesKey = select('files', filesKeys, filesKeys[Object.values(filesOptions).indexOf(filesOptions.oneFile)])
   const files = filesOptions[filesKey]
 
-  return (
-    <WithNotes notes='login dialog'>
-      <Provider store={store}>
-        <IntlProvider locale={'en'}>
-          <div>
-            <AccountDeleteDialog
-              show
-              onHide={action('onHide')}
-              bank={bank}
-              account={account}
-            />
-          </div>
-        </IntlProvider>
-      </Provider>
-    </WithNotes>
+  const story = (
+    <AccountDeleteDialog
+      show
+      onHide={action('onHide')}
+      bank={bank}
+      account={account}
+      {...{store}}
+    />
   )
+
+  specs(() => describe(storyName, () => {
+    it('should do something', () => {
+      let output = mount(story)
+      console.log(output)
+      expect(output.text()).toContain('foo')
+    })
+  }))
+
+  return story
 })
