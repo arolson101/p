@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Modal, Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router'
 import { replace } from 'react-router-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers } from 'recompose'
 import { deleteBank } from 'core'
@@ -58,7 +57,6 @@ type EnhancedProps = Handlers & State & ConnectedProps & DispatchProps & Props
 
 const enhance = compose<EnhancedProps, Props>(
   setDisplayName('BankDelete'),
-  withRouter,
   connect<ConnectedProps, DispatchProps, Props>(
     (state: AppState, props) => ({
     }),
