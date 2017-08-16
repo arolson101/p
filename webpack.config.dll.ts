@@ -122,7 +122,6 @@ const coreLibs = [
   'redux-devtools-extension',
   'redux-form',
   'redux-thunk',
-  'redux-ui',
   'redux',
   'reselect',
   'rrule-alt',
