@@ -4,8 +4,7 @@ import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
 import { replace } from 'react-router-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
-import ui, { ReduxUIProps } from 'redux-ui'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers } from 'recompose'
 import { deleteBank } from 'core'
 import { DbInfo, Bank } from 'core/docs'
 import { AppState, mapDispatchToProps, setDialog } from 'core/state'
@@ -44,16 +43,18 @@ interface DispatchProps {
   replace: (path: string) => void
 }
 
-interface UIState {
+interface State {
   error?: string
+  setError: (error?: string) => void
   deleting?: boolean
+  setDeleting: (deleting: boolean) => void
 }
 
 interface Handlers {
   confirmDelete: () => void
 }
 
-type EnhancedProps = Handlers & ReduxUIProps<UIState> & ConnectedProps & DispatchProps & Props
+type EnhancedProps = Handlers & State & ConnectedProps & DispatchProps & Props
 
 const enhance = compose<EnhancedProps, Props>(
   setDisplayName('BankDelete'),
@@ -63,29 +64,27 @@ const enhance = compose<EnhancedProps, Props>(
     }),
     mapDispatchToProps<DispatchProps>({ deleteBank, replace })
   ),
-  ui<UIState, ConnectedProps, {}>({
-    state: {
-      error: undefined,
-      deleting: false
-    } as UIState
-  }),
-  withHandlers<ReduxUIProps<UIState> & ConnectedProps & DispatchProps & Props, Handlers>({
-    confirmDelete: ({updateUI, bank, deleteBank, replace, onHide}) => async () => {
+  withState('error', 'setError', undefined),
+  withState('deleting', 'setDeleting', false),
+  withHandlers<State & ConnectedProps & DispatchProps & Props, Handlers>({
+    confirmDelete: ({setError, setDeleting, bank, deleteBank, replace, onHide}) => async () => {
       try {
-        updateUI({error: undefined, deleting: true})
+        setError(undefined)
+        setDeleting(true)
         replace(Bank.to.all())
         await deleteBank({bank})
-        updateUI({deleting: false})
+        setDeleting(false)
         onHide()
       } catch (err) {
-        updateUI({error: err.message, deleting: false})
+        setError(err.message)
+        setDeleting(false)
       }
     }
   })
 )
 
 export const BankDeleteDialog = enhance(props => {
-  const { show, onHide, bank, ui: { error, deleting }, replace, confirmDelete } = props
+  const { show, onHide, bank, error, deleting, replace, confirmDelete } = props
   return (
     <ContainedModal
       show={show}

@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
 import * as SplitPane from 'react-split-pane'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers, withContext } from 'recompose'
-import ui, { ReduxUIProps } from 'redux-ui'
 import { Bank, Account, Budget, Bill, SyncConnection } from 'core/docs'
 import { selectAccounts } from 'core/selectors'
 import { AppState } from 'core/state'
@@ -76,8 +75,9 @@ interface ConnectedProps {
   accounts: Account.View[]
 }
 
-interface UIState {
+interface State {
   sidebarWidth: number
+  setSidebarWidth: (sidebarWidth: number) => void
 }
 
 interface Handlers {
@@ -85,7 +85,7 @@ interface Handlers {
   onNavClick: (item: NavItem) => void
 }
 
-type EnhancedProps = Handlers & ConnectedProps & RouteProps & ReduxUIProps<UIState>
+type EnhancedProps = Handlers & ConnectedProps & RouteProps & State
 
 const enhance = compose<EnhancedProps, {}>(
   setDisplayName('AppContent'),
@@ -100,16 +100,10 @@ const enhance = compose<EnhancedProps, {}>(
       accounts: selectAccounts(state)
     })
   ),
-  ui<UIState, ConnectedProps & RouteProps, {}>({
-    key: 'AppContent',
-    persist: true,
-    state: {
-      sidebarWidth: 250
-    } as UIState
-  }),
-  withHandlers<ReduxUIProps<UIState> & ConnectedProps & RouteProps, Handlers>({
-    onSizeChange: ({ updateUI }) => (sidebarWidth: number) => {
-      updateUI({sidebarWidth} as UIState)
+  withState('sidebarWidth', 'setSidebarWidth', 250),
+  withHandlers<State & ConnectedProps & RouteProps, Handlers>({
+    onSizeChange: ({ setSidebarWidth }) => (sidebarWidth: number) => {
+      setSidebarWidth(sidebarWidth)
     },
     onNavClick: ({ history }) => (item: NavItem) => {
       history.push(item.path)
@@ -130,7 +124,7 @@ const makeAccountList = R.pipe(
 )
 
 export const AppContent = enhance(props => {
-  const { accounts, ThemeNav, children, onSizeChange, onNavClick, location: { pathname }, ui: { sidebarWidth } } = props
+  const { accounts, ThemeNav, children, onSizeChange, onNavClick, location: { pathname }, sidebarWidth } = props
 
   const accountGroup: NavGroup = { title: 'accounts', items: makeAccountList(accounts) }
   const groups = [appGroup, accountGroup]

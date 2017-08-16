@@ -10,10 +10,9 @@ import { Modal, DropdownButton, MenuItem, SelectCallback,
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange, withState } from 'recompose'
 import { Dispatch } from 'redux'
 import { reduxForm, formValueSelector, InjectedFormProps } from 'redux-form'
-import ui, { ReduxUIProps } from 'redux-ui'
 import { saveBill, toRRule, RRuleErrorMessage } from 'core/actions'
 import { Account, Budget, Bill } from 'core/docs'
 import { selectBills, selectBudgets } from 'core/selectors'
@@ -188,8 +187,9 @@ interface ConnectedFormProps {
   rrule?: RRule
 }
 
-interface UIState {
+interface State {
   groups: SelectOption[]
+  setGroups: (groups: SelectOption[]) => void
 }
 
 interface Handlers {
@@ -199,7 +199,7 @@ interface Handlers {
 }
 
 type EnhancedProps = Handlers
-  & ReduxUIProps<UIState>
+  & State
   & ConnectedFormProps
   & FormValues
   & ConnectedProps
@@ -345,12 +345,8 @@ const enhance = compose<EnhancedProps, Props>(
       rrule: rruleSelector(state),
     })
   ),
-  ui<UIState, ConnectedFormProps & FormValues & ConnectedProps & DispatchProps & IntlProps & Props, {}>({
-    state: {
-      groups: (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)
-    }
-  }),
-  withHandlers<ReduxUIProps<UIState> & ConnectedFormProps & FormValues & ConnectedProps & DispatchProps & IntlProps & Props, Handlers>({
+  withState('groups', 'setGroups', (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)),
+  withHandlers<State & ConnectedFormProps & FormValues & ConnectedProps & DispatchProps & IntlProps & Props, Handlers>({
     onFrequencyChange: ({change}) => (eventKey: Frequency) => {
       change!('frequency', eventKey)
     },
@@ -370,7 +366,7 @@ const { Form, TextField, UrlField, SelectField, DateField, CollapseField,
   CheckboxField, AccountField, BudgetField } = typedFields<Values>()
 
 export const BillDialog = enhance((props) => {
-  const { edit, ui: { groups }, monthOptions, weekdayOptions, handleSubmit,
+  const { edit, groups, monthOptions, weekdayOptions, handleSubmit,
     frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, show, onHide, reset } = props
   const { formatMessage } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle

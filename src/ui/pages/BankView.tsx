@@ -6,7 +6,6 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
 import { Link } from 'react-router-dom'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withState } from 'recompose'
-import ui, { ReduxUIProps } from 'redux-ui'
 import { getAccounts } from 'core/actions'
 import { Bank, Account } from 'core/docs'
 import { AppState, mapDispatchToProps } from 'core/state'
@@ -79,12 +78,17 @@ interface DispatchProps {
   showBankDeleteDialog: typeof showBankDeleteDialog
 }
 
-interface UIState {
+interface State {
   showAll?: boolean
+  setShowAll: (showAll: boolean) => void
   showModal?: boolean
+  setShowModal: (showModal: boolean) => void
   working?: boolean
+  setWorking: (working: boolean) => void
   error?: string
+  setError: (error?: string) => void
   message?: string
+  setMessage: (message?: string) => void
 }
 
 interface Handlers {
@@ -97,7 +101,7 @@ interface Handlers {
 }
 
 type EnhancedProps = Handlers
-  & ReduxUIProps<UIState>
+  & State
   & ConnectedProps
   & DispatchProps
   & IntlProps
@@ -119,42 +123,38 @@ const enhance = compose<EnhancedProps, Props>(
     }),
     mapDispatchToProps<DispatchProps>({ getAccounts, showBankDialog, showAccountDialog, showBankDeleteDialog })
   ),
-  ui<UIState, ConnectedProps & DispatchProps & IntlProps & RouteProps & Props, {}>({
-    state: {
-      showAll: false,
-      showModal: false,
-      working: false,
-      message: undefined,
-      error: undefined
-    } as UIState
-  }),
-  withHandlers<ReduxUIProps<UIState> & ConnectedProps & DispatchProps & IntlProps & RouteProps & Props, Handlers>({
+  withState('showAll', 'setShowAll', false),
+  withState('showModal', 'setShowModal', false),
+  withState('working', 'setWorking', false),
+  withState('error', 'setError', undefined),
+  withState('message', 'setMessage', undefined),
+  withHandlers<State & ConnectedProps & DispatchProps & IntlProps & RouteProps & Props, Handlers>({
     toggleEdit: ({ bank: edit, showBankDialog }) => () => {
       showBankDialog({edit})
     },
 
-    toggleShowAll: ({ ui: { showAll }, updateUI }) => () => {
-      updateUI({showAll: !showAll})
+    toggleShowAll: ({ showAll, setShowAll }) => () => {
+      setShowAll(!showAll)
     },
 
-    getAccountList: ({ updateUI, getAccounts, bank, intl: { formatMessage } }) => async () => {
-      updateUI({
-        message: undefined,
-        error: undefined,
-        working: true,
-        showModal: true
-      })
+    getAccountList: ({ setMessage, setError, setWorking, setShowModal, getAccounts, bank, intl: { formatMessage } }) => async () => {
+      setMessage(undefined)
+      setError(undefined),
+      setWorking(true),
+      setShowModal(true)
       try {
         const message = await getAccounts({bank, formatMessage})
-        updateUI({ working: false, message })
+        setWorking(false)
+        setMessage(message)
       } catch (ex) {
-        updateUI({ working: false, error: ex.message })
+        setWorking(false)
+        setError(ex.message)
       }
     },
 
-    hideModal: ({ ui: { working }, updateUI }) => () => {
+    hideModal: ({ working, setShowModal }) => () => {
       if (!working) {
-        updateUI({showModal: false})
+        setShowModal(false)
       }
     },
 
@@ -175,7 +175,7 @@ export const BankViewRoute = (props: RouteComponentProps<Bank.Params>) =>
 
 export const BankView = enhance((props) => {
   const { bank, accounts, history, toggleShowAll, hideModal, getAccountList, toggleEdit, createAccount, deleteBank } = props
-  const { ui: { working, showModal, message, error, showAll } } = props
+  const { working, showModal, message, error, showAll } = props
   return (
     <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
 

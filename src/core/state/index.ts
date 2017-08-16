@@ -13,7 +13,6 @@ export * from './i18n'
 export * from './imports'
 export * from './router'
 export * from './sys'
-export * from './ui'
 
 import { DbSlice, DbInit } from './db'
 import { DialogSlice, DialogState } from './dialog'
@@ -23,7 +22,6 @@ import { FormSlice } from './form'
 import { I18nSlice } from './i18n'
 import { RouterSlice } from './router'
 import { SysSlice } from './sys'
-import { UiSlice } from './ui'
 import { ImportsSlice, ImportsState, importsInit } from './imports'
 
 export type AppState =
@@ -35,7 +33,6 @@ export type AppState =
   ImportsSlice &
   RouterSlice &
   SysSlice &
-  UiSlice &
   ViewsSlice
 
 export const AppState = combineReducers<AppState>({
@@ -47,7 +44,6 @@ export const AppState = combineReducers<AppState>({
   ...ImportsSlice,
   ...RouterSlice,
   ...SysSlice,
-  ...UiSlice,
   ...ViewsSlice,
 })
 
