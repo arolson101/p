@@ -36,6 +36,8 @@ interface Props extends Params {
 }
 
 interface ConnectedProps {
+  error?: Error
+  deleting?: boolean
 }
 
 interface DispatchProps {
@@ -43,46 +45,24 @@ interface DispatchProps {
   replace: (location: string) => void
 }
 
-interface State {
-  error?: string
-  setError: (error?: string) => void
-  deleting?: boolean
-  setDeleting: (deleting: boolean) => void
-}
-
 interface Handlers {
   confirmDelete: () => void
 }
 
-type EnhancedProps = Handlers & State & ConnectedProps & DispatchProps & Props
+type EnhancedProps = Handlers & ConnectedProps & DispatchProps & Props
 
 const enhance = compose<EnhancedProps, Props>(
-  setDisplayName('AccountDelete'),
-  connect<ConnectedProps, DispatchProps, Props>(
-    (state: AppState, props): ConnectedProps => ({
-    }),
-    mapDispatchToProps<DispatchProps>({ deleteAccount, replace })
-  ),
-  withState('error', 'setError', undefined),
-  withState('deleting', 'setDeleting', false),
-  withHandlers<State & ConnectedProps & DispatchProps & Props, Handlers>({
-    confirmDelete: ({bank, account, deleteAccount, replace, onHide, setError, setDeleting}) => async () => {
-      try {
-        setError(undefined)
-        setDeleting(true)
+  withHandlers<ConnectedProps & DispatchProps & Props, Handlers>({
+    confirmDelete: ({bank, account, deleteAccount, replace, onHide}) => async () => {
+      const success = await deleteAccount({bank, account})
+      if (success) {
         replace(Bank.to.view(bank.doc))
-        await deleteAccount({bank, account})
-        setDeleting(false)
-        onHide()
-      } catch (err) {
-        setError(err.message)
-        setDeleting(false)
       }
     }
   })
 )
 
-export const AccountDeleteDialog = enhance(props => {
+export const AccountDeleteDialogComponent = enhance(props => {
   const { show, onHide, account, error, deleting, confirmDelete } = props
   return (
     <ContainedModal
@@ -126,7 +106,15 @@ export const AccountDeleteDialog = enhance(props => {
       </Modal.Footer>
     </ContainedModal>
   )
-})
+}) as React.ComponentClass<EnhancedProps>
+
+export const AccountDeleteDialog = connect<ConnectedProps, DispatchProps, Props>(
+  (state: AppState, props): ConnectedProps => ({
+    error: state.ui.accountDelete.error,
+    deleting: state.ui.accountDelete.deleting,
+  }),
+  mapDispatchToProps<DispatchProps>({ deleteAccount, replace })
+)(AccountDeleteDialogComponent)
 
 export const AccountDeleteDialogStatic = {
   dialog: 'AccountDeleteDialog'

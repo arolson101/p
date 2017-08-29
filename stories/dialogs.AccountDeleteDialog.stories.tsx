@@ -3,55 +3,47 @@ import * as expect from 'expect'
 import * as React from 'react'
 import { IntlProvider } from 'react-intl'
 import { Provider } from 'react-redux'
-import { action } from '@storybook/addon-actions'
 import { withKnobs, select } from '@storybook/addon-knobs'
 
 import { DbInfo, Account, Bank } from 'core'
-import { AccountDeleteDialog } from 'ui/dialogs/AccountDeleteDialog'
+import { AccountDeleteDialogComponent } from 'ui/dialogs/AccountDeleteDialog'
 
-import { storiesOf2, dummyAppStore, dummyDbInfo } from './storybook'
+import { action, storiesOf2, dummyAppStore, dummyDbInfo, dummyAccountView } from './storybook'
 import { specs, describe, it } from 'storybook-addon-specifications'
+import * as Sinon from 'sinon'
 
 const store = dummyAppStore()
 
 const stories = storiesOf2(`Dialogs`, module)
 stories.addDecorator(withKnobs)
 
-const account: Account.View = {
-  doc: {
-    _id: 'account/asdf/asdf' as Account.DocId,
-    name: 'account name',
-    color: 'blue',
-    type: Account.Type.CHECKING,
-    number: 'account number',
-    visible: true,
-    bankid: 'bank id',
-    key: 'account key',
-  },
-  transactionsRetrieved: false
-}
-
-const bank: Bank.View = {
-  doc: {
-    _id: 'bank/asdf' as Bank.DocId,
-    name: 'asdf',
-    accounts: [account.doc._id]
-  }
-}
-
+// stories.addDecorator(getStory => (
+//   <Provider store={store}>
+//     <IntlProvider locale={'en'}>
+//       {getStory()}
+//     </IntlProvider>
+//   </Provider>
+// ))
 stories.addDecorator(getStory => (
-  <Provider store={store}>
-    <IntlProvider locale={'en'}>
-      {getStory()}
-    </IntlProvider>
-  </Provider>
+  <IntlProvider locale={'en'}>
+    {getStory()}
+  </IntlProvider>
 ))
 
 stories.add('AccountDeleteDialog', () => {
+  // const dispatch = Sinon.stub(store, 'dispatch')
+  // dispatch.callsFake(action('dispatch'))
+
+  const { account, bank } = dummyAccountView()
   const story = (
-    <AccountDeleteDialog
+    <AccountDeleteDialogComponent
       show
+      deleting
+      error={new Error('error message')}
       onHide={action('onHide')}
+      confirmDelete={action('confirmDelete')}
+      deleteAccount={action('deleteAccount')}
+      replace={action('replace')}
       bank={bank}
       account={account}
       {...{store}}
@@ -60,9 +52,9 @@ stories.add('AccountDeleteDialog', () => {
 
   specs(() => describe('No dbs', () => {
     it('should do something', () => {
-      let output = mount(story)
-      console.log(output)
-      expect(output.text()).toContain('foo')
+      // let output = mount(story)
+      // console.log(output)
+      // expect(output.text()).toContain('foo')
     })
   }))
 
