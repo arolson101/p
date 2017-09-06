@@ -23,7 +23,6 @@ interface Params {
 }
 
 interface Props extends Params {
-  show: boolean
   onHide: () => void
 }
 
@@ -111,17 +110,11 @@ export const LoginDialog = enhance((props) => {
   if (!props.info) {
     return null as any
   }
-  const { show, onHide, reset, handleSubmit, deleting, onCancelDelete,
+  const { onHide, reset, handleSubmit, deleting, onCancelDelete,
     onDelete, onDeleteConfirmed, intl: { formatMessage }, submitting } = props
 
   return (
-    <ContainedModal
-      show={show}
-      onHide={onHide}
-      onExited={reset}
-      backdrop='static'
-      bsSize='large'
-    >
+    <div>
       <Modal.Header closeButton={!submitting}>
         <Modal.Title>
           {props.info.name}
@@ -187,6 +180,6 @@ export const LoginDialog = enhance((props) => {
         </Form>
       )}
 
-    </ContainedModal>
+    </div>
   )
 })

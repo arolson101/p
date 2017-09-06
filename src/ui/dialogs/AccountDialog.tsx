@@ -72,7 +72,6 @@ interface Params {
 }
 
 interface Props extends Params {
-  show: boolean
   onHide: () => void
 }
 
@@ -108,7 +107,6 @@ const enhance = compose<EnhancedProps, Props>(
   onlyUpdateForPropTypes,
   setPropTypes<Props>({
     edit: PropTypes.object,
-    show: PropTypes.bool.isRequired,
     bank: PropTypes.object.isRequired,
     onHide: PropTypes.func.isRequired
   }),
@@ -161,17 +159,11 @@ const enhance = compose<EnhancedProps, Props>(
 )
 
 export const AccountDialog = enhance((props) => {
-  const { edit, type, handleSubmit, onHide, show, reset } = props
+  const { edit, type, handleSubmit, onHide, reset } = props
   const { formatMessage } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle
   return (
-    <ContainedModal
-      show={show}
-      onHide={onHide}
-      onExited={reset}
-      backdrop='static'
-      bsSize='large'
-    >
+    <div>
       <Modal.Header closeButton>
         <Modal.Title>
           <FormattedMessage {...title}/>
@@ -234,7 +226,7 @@ export const AccountDialog = enhance((props) => {
           </ButtonToolbar>
         </Modal.Footer>
       </Form>
-    </ContainedModal>
+    </div>
   )
 })
 

@@ -161,7 +161,6 @@ interface Params {
 }
 
 interface Props extends Params {
-  show: boolean
   onHide: () => void
 }
 
@@ -248,7 +247,6 @@ const enhance = compose<EnhancedProps, Props>(
   onlyUpdateForPropTypes,
   setPropTypes<Props>({
     edit: PropTypes.object,
-    show: PropTypes.bool.isRequired,
     onHide: PropTypes.func.isRequired
   }),
   injectIntl,
@@ -367,7 +365,7 @@ const { Form, TextField, UrlField, SelectField, DateField, CollapseField,
 
 export const BillDialog = enhance((props) => {
   const { edit, groups, monthOptions, weekdayOptions, handleSubmit,
-    frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, show, onHide, reset } = props
+    frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, onHide, reset } = props
   const { formatMessage } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle
 
@@ -377,13 +375,7 @@ export const BillDialog = enhance((props) => {
   const text = rrule ? rrule.toText() : ''
 
   return (
-    <ContainedModal
-      show={show}
-      onHide={onHide}
-      onExited={reset}
-      backdrop='static'
-      bsSize='large'
-    >
+    <div>
       <Modal.Header closeButton>
         <Modal.Title>
           <FormattedMessage {...title}/>
@@ -567,7 +559,7 @@ export const BillDialog = enhance((props) => {
         </Modal.Footer>
 
       </Form>
-    </ContainedModal>
+    </div>
   )
 })
 

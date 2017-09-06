@@ -31,7 +31,6 @@ interface Params {
 }
 
 interface Props extends Params {
-  show: boolean
   onHide: () => void
 }
 
@@ -46,14 +45,14 @@ interface DispatchProps {
 }
 
 interface Handlers {
-  confirmDelete: () => void
+  handleDelete: () => void
 }
 
-type EnhancedProps = Handlers & ConnectedProps & DispatchProps & Props
+type EnhancedProps = ConnectedProps & DispatchProps & Props
 
-const enhance = compose<EnhancedProps, Props>(
+const enhance = compose<EnhancedProps & Handlers, EnhancedProps>(
   withHandlers<ConnectedProps & DispatchProps & Props, Handlers>({
-    confirmDelete: ({bank, account, deleteAccount, replace, onHide}) => async () => {
+    handleDelete: ({bank, account, deleteAccount, replace, onHide}) => async () => {
       const success = await deleteAccount({bank, account})
       if (success) {
         replace(Bank.to.view(bank.doc))
@@ -63,14 +62,9 @@ const enhance = compose<EnhancedProps, Props>(
 )
 
 export const AccountDeleteDialogComponent = enhance(props => {
-  const { show, onHide, account, error, deleting, confirmDelete } = props
+  const { onHide, account, error, deleting, handleDelete } = props
   return (
-    <ContainedModal
-      show={show}
-      onHide={onHide}
-      backdrop='static'
-      bsSize='large'
-    >
+    <div>
       <Modal.Header closeButton>
         <Modal.Title>
           <FormattedMessage {...messages.title}/>
@@ -81,7 +75,7 @@ export const AccountDeleteDialogComponent = enhance(props => {
         <FormattedMessage {...messages.text} values={{name: account.doc.name}}/>
         {error &&
           <Alert bsStyle='danger'>
-            {error}
+            {error.message}
           </Alert>
         }
       </Modal.Body>
@@ -97,16 +91,16 @@ export const AccountDeleteDialogComponent = enhance(props => {
           </Button>
           <Button
             bsStyle='danger'
-            onClick={confirmDelete}
+            onClick={handleDelete}
             disabled={deleting}
           >
             <FormattedMessage {...messages.confirm}/>
           </Button>
         </ButtonToolbar>
       </Modal.Footer>
-    </ContainedModal>
+    </div>
   )
-}) as React.ComponentClass<EnhancedProps>
+})
 
 export const AccountDeleteDialog = connect<ConnectedProps, DispatchProps, Props>(
   (state: AppState, props): ConnectedProps => ({

@@ -30,7 +30,6 @@ interface Params {
 }
 
 interface Props extends Params {
-  show: boolean
   onHide: () => void
 }
 
@@ -82,14 +81,9 @@ const enhance = compose<EnhancedProps, Props>(
 )
 
 export const BankDeleteDialog = enhance(props => {
-  const { show, onHide, bank, error, deleting, replace, confirmDelete } = props
+  const { onHide, bank, error, deleting, replace, confirmDelete } = props
   return (
-    <ContainedModal
-      show={show}
-      onHide={onHide}
-      backdrop='static'
-      bsSize='large'
-    >
+    <div>
       <Modal.Header closeButton>
         <Modal.Title>
           <FormattedMessage {...messages.title}/>
@@ -123,7 +117,7 @@ export const BankDeleteDialog = enhance(props => {
           </Button>
         </ButtonToolbar>
       </Modal.Footer>
-    </ContainedModal>
+    </div>
   )
 })
 

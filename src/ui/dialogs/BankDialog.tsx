@@ -82,7 +82,6 @@ interface Params {
 }
 
 interface Props extends Params {
-  show: boolean
   onHide: () => void
 }
 
@@ -117,7 +116,6 @@ const enhance = compose<EnhancedProps, Props>(
   onlyUpdateForPropTypes,
   setPropTypes<Props>({
     edit: PropTypes.object,
-    show: PropTypes.bool.isRequired,
     onHide: PropTypes.func.isRequired
   }),
   connect<ConnectedProps, {}, Props>(
@@ -168,17 +166,11 @@ const enhance = compose<EnhancedProps, Props>(
 
 export const BankDialog = enhance((props) => {
   const { edit, handleSubmit, onChangeFI, filist, reset } = props
-  const { show, onHide } = props
+  const { onHide } = props
   const title = edit ? messages.editTitle : messages.createTitle
 
   return (
-    <ContainedModal
-      show={show}
-      onHide={onHide}
-      onExited={reset}
-      backdrop='static'
-      bsSize='large'
-    >
+    <div>
       <Modal.Header closeButton>
         <Modal.Title>
           <FormattedMessage {...title}/>
@@ -276,6 +268,6 @@ export const BankDialog = enhance((props) => {
           </ButtonToolbar>
         </Modal.Footer>
       </Form>
-    </ContainedModal>
+    </div>
   )
 })

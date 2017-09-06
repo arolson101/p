@@ -33,7 +33,6 @@ const messages = defineMessages({
 })
 
 interface Props {
-  show: boolean
   onHide: () => void
 }
 
@@ -90,15 +89,9 @@ const enhance = compose<EnhancedProps, Props>(
 const { Form, TextField, PasswordField } = typedFields<Values>()
 
 export const CreateDbDialog = enhance((props) => {
-  const { show, reset, handleSubmit, onHide, intl: { formatMessage } } = props
+  const { reset, handleSubmit, onHide, intl: { formatMessage } } = props
   return (
-    <ContainedModal
-      show={show}
-      onHide={onHide}
-      onExited={reset}
-      backdrop='static'
-      bsSize='large'
-    >
+    <div>
       <Modal.Header closeButton>
         <Modal.Title>
           <FormattedMessage {...messages.title}/>
@@ -139,6 +132,6 @@ export const CreateDbDialog = enhance((props) => {
           </ButtonToolbar>
         </Modal.Footer>
       </Form>
-    </ContainedModal>
+    </div>
   )
 })
