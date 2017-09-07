@@ -46,6 +46,7 @@ export const LoginComponent = ({ files, showLoginDialog, showCreateDialog }: Enh
             <Button
               block
               key={file.name}
+              id='open'
               onClick={() => showLoginDialog({info: file})}
             >
               <i {...icons.openDb}/>
@@ -57,6 +58,7 @@ export const LoginComponent = ({ files, showLoginDialog, showCreateDialog }: Enh
         <br/>
         <Button
           block
+          id='new'
           onClick={showCreateDialog}
         >
           <i {...icons.openDb}/>

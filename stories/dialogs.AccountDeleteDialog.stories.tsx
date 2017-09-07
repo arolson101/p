@@ -1,32 +1,19 @@
-import { mount } from 'enzyme'
-import * as expect from 'expect'
 import * as React from 'react'
-import { IntlProvider } from 'react-intl'
-import { Provider } from 'react-redux'
 import { specs, describe, it } from 'storybook-addon-specifications'
+import { mountIntl, expect, stub, action, storiesOfIntl, dummyAccountView } from './storybook'
 
 import { DbInfo, Account, Bank } from 'core'
 import { AccountDeleteDialogComponent } from 'ui/dialogs/AccountDeleteDialog'
 
-import { stub, action, storiesOf, dummyAppStore, dummyDbInfo, dummyAccountView, mountIntl } from './storybook'
+const stories = storiesOfIntl(`Dialogs/AccountDeleteDialog`, module)
 
-const store = dummyAppStore()
-
-const stories = storiesOf(`Dialogs/AccountDeleteDialog`, module)
-
-stories.addDecorator(getStory => (
-  <IntlProvider locale={'en'}>
-    {getStory()}
-  </IntlProvider>
-))
-
-const dummyProps = <T extends Function>(action: (name: string) => T) => {
+const dummyProps = <T extends Function>(functor: (name: string) => T) => {
   const { account, bank } = dummyAccountView()
 
   return {
-    onHide: action('onHide'),
-    deleteAccount: action('deleteAccount'),
-    replace: action('replace'),
+    onHide: functor('onHide'),
+    deleteAccount: functor('deleteAccount'),
+    replace: functor('replace'),
     bank: bank,
     account: account,
   }
@@ -41,7 +28,7 @@ stories.add('normal', () => {
   specs(() => describe('normal', () => {
     it('clicking cancel should hide dialog', () => {
       const props = dummyProps(stub)
-      const output = mount(story(props), mountIntl)
+      const output = mountIntl(story(props))
       const cancel = output.find('.btn-default')
       expect(cancel).toExist()
       cancel.simulate('click')
@@ -50,7 +37,7 @@ stories.add('normal', () => {
 
     it('clicking submit should delete', () => {
       const props = dummyProps(stub)
-      const output = mount(story(props), mountIntl)
+      const output = mountIntl(story(props))
       const del = output.find('.btn-danger')
       expect(del).toExist()
       del.simulate('click')
@@ -71,7 +58,7 @@ stories.add('deleting', () => {
   specs(() => describe('deleting', () => {
     it('buttons are disabled while deleting', () => {
       const props = dummyProps(stub)
-      const output = mount(story(props), mountIntl)
+      const output = mountIntl(story(props))
       const del = output.find('.btn-danger')
       const cancel = output.find('.btn-default')
       expect(cancel).toExist()
@@ -97,7 +84,7 @@ stories.add('with error', () => {
   specs(() => describe('with error', () => {
     it('should contain error text', () => {
       const props = dummyProps(stub)
-      const output = mount(story(props), mountIntl)
+      const output = mountIntl(story(props))
       expect(output.text()).toContain(error.message)
     })
   }))

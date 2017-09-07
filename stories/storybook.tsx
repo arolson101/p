@@ -1,3 +1,4 @@
+import * as Enzyme from 'enzyme'
 import * as expect from 'expect'
 import * as React from 'react'
 import { IntlProvider, intlShape } from 'react-intl'
@@ -15,7 +16,6 @@ import { DbInfo, Account, Bank } from 'core'
 
 export { action }
 export { expect }
-export { mount } from 'enzyme'
 export { specs, describe, it } from 'storybook-addon-specifications'
 export { storiesOf }
 
@@ -30,10 +30,24 @@ const messages = new Proxy({}, {
   }
 })
 
+export const storiesOfIntl = (name: string, mod: NodeModule): Story => {
+  const stories = storiesOf(name, mod)
+
+  stories.addDecorator(getStory => (
+    <IntlProvider locale={'en'}>
+      {getStory()}
+    </IntlProvider>
+  ))
+
+  return stories
+}
+
 const intlProvider = new IntlProvider({ locale: 'en-US', messages }, {})
 const { intl } = intlProvider.getChildContext()
 
-export const mountIntl = { context: { intl }, childContextTypes: { intl: intlShape }}
+const mountIntlProps = { context: { intl }, childContextTypes: { intl: intlShape }}
+
+export const mountIntl: typeof Enzyme.mount = (node: any, options: any) => Enzyme.mount(node, mountIntlProps)
 
 export const dummyDbInfo = (name: string): DbInfo => ({name, location: `location://${name}`})
 
