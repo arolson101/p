@@ -6,19 +6,19 @@ import configureStore from 'redux-mock-store'
 import * as Sinon from 'sinon'
 import { action } from '@storybook/addon-actions'
 import { Story, storiesOf } from '@storybook/react'
+import * as expect from 'expect'
 
 import 'bootstrap/dist/css/bootstrap.css'
 
 import { createAppStore, AppInit, ImportsState, syncProviders } from 'core'
 import createHistory from 'history/createHashHistory'
 import { DbInfo, Account, Bank } from 'core'
-
 export { action }
-export { expect } from 'chai'
+export { expect }
 export { specs, describe, it } from 'storybook-addon-specifications'
 export { storiesOf }
 
-export const stub = () => Sinon.stub()
+export const stub = () => expect.createSpy()
 
 const messages = new Proxy({}, {
   get: function getter (target, key) {

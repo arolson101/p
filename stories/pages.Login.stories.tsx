@@ -1,4 +1,3 @@
-/* tslint:disable:no-unused-expression */
 import * as React from 'react'
 import { specs, describe, it } from 'storybook-addon-specifications'
 import { mountIntl, expect, stub, action, storiesOfIntl, dummyDbInfo } from './storybook'
@@ -30,9 +29,9 @@ stories.add('No files', () => {
       const props = dummyProps(stub)
       const output = mountIntl(story(props))
       const newdb = output.find('button#new')
-      expect(newdb).to.exist
+      expect(newdb).toExist()
       newdb.simulate('click')
-      expect(props.showCreateDialog.calledOnce).to.be.true
+      expect(props.showCreateDialog.calls.length).toBe(1)
     })
   }))
 
@@ -53,10 +52,10 @@ stories.add('One file', () => {
       const props = dummyProps(stub)
       const output = mountIntl(story(props))
       const open = output.find('button#open').first()
-      expect(open).to.exist
+      expect(open).toExist()
       open.simulate('click')
-      expect(props.showLoginDialog.calledOnce).to.be.true
-      expect(props.showLoginDialog.lastCall.args[0]).to.have.property('info', files[0])
+      expect(props.showLoginDialog.calls.length).toBe(1)
+      expect(props.showLoginDialog.getLastCall().arguments[0]).toInclude({info: files[0]})
     })
   }))
 
@@ -78,10 +77,10 @@ stories.add('Multiple files', () => {
       const output = mountIntl(story(props))
       for (let i = 0; i < files.length; i++) {
         const open = output.find('button#open').at(i)
-        expect(open).to.exist
+        expect(open).toExist()
         open.simulate('click')
-        expect(props.showLoginDialog.callCount).to.equal(i + 1)
-        expect(props.showLoginDialog.lastCall.args[0]).to.have.property('info', files[i])
+        expect(props.showLoginDialog.calls.length).toBe(i + 1)
+        expect(props.showLoginDialog.getLastCall().arguments[0]).toInclude({info: files[i]})
       }
     })
   }))
