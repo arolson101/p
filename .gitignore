@@ -5,5 +5,5 @@ app/*dll*
 app/lib
 app/fonts
 app/images
-*.log*
+./*.log*
 test

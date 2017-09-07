@@ -1,9 +1,10 @@
 import * as expect from 'expect'
 import * as React from 'react'
-import { IntlProvider } from 'react-intl'
+import { IntlProvider, intlShape } from 'react-intl'
 import { Provider } from 'react-redux'
 import configureStore from 'redux-mock-store'
-import { action as addonAction } from '@storybook/addon-actions'
+import * as Sinon from 'sinon'
+import { action } from '@storybook/addon-actions'
 import { Story, storiesOf } from '@storybook/react'
 
 import 'bootstrap/dist/css/bootstrap.css'
@@ -12,15 +13,27 @@ import { createAppStore, AppInit, ImportsState, syncProviders } from 'core'
 import createHistory from 'history/createHashHistory'
 import { DbInfo, Account, Bank } from 'core'
 
-export { specs, describe, it } from 'storybook-addon-specifications'
-export { mount } from 'enzyme'
+export { action }
 export { expect }
+export { mount } from 'enzyme'
+export { specs, describe, it } from 'storybook-addon-specifications'
+export { storiesOf }
 
-export const storiesOf2 = (name: string, module: NodeModule) => {
-  return storiesOf(name, module)
-}
+export const stub = () => Sinon.stub()
 
-export const action = addonAction as any
+const messages = new Proxy({}, {
+  get: function getter (target, key) {
+    if (key === '__esModule') {
+      return false
+    }
+    return key
+  }
+})
+
+const intlProvider = new IntlProvider({ locale: 'en-US', messages }, {})
+const { intl } = intlProvider.getChildContext()
+
+export const mountIntl = { context: { intl }, childContextTypes: { intl: intlShape }}
 
 export const dummyDbInfo = (name: string): DbInfo => ({name, location: `location://${name}`})
 
