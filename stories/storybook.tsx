@@ -1,5 +1,4 @@
 import * as Enzyme from 'enzyme'
-import * as expect from 'expect'
 import * as React from 'react'
 import { IntlProvider, intlShape } from 'react-intl'
 import { Provider } from 'react-redux'
@@ -15,7 +14,7 @@ import createHistory from 'history/createHashHistory'
 import { DbInfo, Account, Bank } from 'core'
 
 export { action }
-export { expect }
+export { expect } from 'chai'
 export { specs, describe, it } from 'storybook-addon-specifications'
 export { storiesOf }
 

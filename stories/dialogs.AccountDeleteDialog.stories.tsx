@@ -1,3 +1,4 @@
+/* tslint:disable:no-unused-expression */
 import * as React from 'react'
 import { specs, describe, it } from 'storybook-addon-specifications'
 import { mountIntl, expect, stub, action, storiesOfIntl, dummyAccountView } from './storybook'
@@ -30,18 +31,18 @@ stories.add('normal', () => {
       const props = dummyProps(stub)
       const output = mountIntl(story(props))
       const cancel = output.find('.btn-default')
-      expect(cancel).toExist()
+      expect(cancel).to.exist
       cancel.simulate('click')
-      expect(props.onHide.calledOnce).toBeTruthy()
+      expect(props.onHide.calledOnce).to.be.true
     })
 
     it('clicking submit should delete', () => {
       const props = dummyProps(stub)
       const output = mountIntl(story(props))
       const del = output.find('.btn-danger')
-      expect(del).toExist()
+      expect(del).to.exist
       del.simulate('click')
-      expect(props.deleteAccount.calledOnce).toBeTruthy()
+      expect(props.deleteAccount.calledOnce).to.be.true
     })
   }))
 
@@ -61,12 +62,12 @@ stories.add('deleting', () => {
       const output = mountIntl(story(props))
       const del = output.find('.btn-danger')
       const cancel = output.find('.btn-default')
-      expect(cancel).toExist()
+      expect(cancel).to.exist
       cancel.simulate('click')
-      expect(del).toExist()
+      expect(del).to.exist
       del.simulate('click')
-      expect(props.onHide.notCalled).toBeTruthy()
-      expect(props.deleteAccount.notCalled).toBeTruthy()
+      expect(props.onHide.notCalled).to.be.true
+      expect(props.deleteAccount.notCalled).to.be.true
     })
   }))
 
@@ -85,7 +86,7 @@ stories.add('with error', () => {
     it('should contain error text', () => {
       const props = dummyProps(stub)
       const output = mountIntl(story(props))
-      expect(output.text()).toContain(error.message)
+      expect(output.text()).to.contain(error.message)
     })
   }))
 
