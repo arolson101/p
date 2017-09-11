@@ -14,7 +14,7 @@ module.exports = function (config, env) {
         include: [/stories/, /components/, /src/],
         loaders: [
             'react-hot-loader/webpack',
-            'ts-loader?configFileName=tsconfig.app.json'
+            'ts-loader?configFile=tsconfig.app.json'
         ]
     })
 
