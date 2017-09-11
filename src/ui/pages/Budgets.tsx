@@ -418,7 +418,9 @@ const categoryTotal = (category: Category.View, allBills: Bill.View[]): number =
 const BudgetDisplay = connect(
   (state: AppState, props: { budget: Budget.View, showBillDialog: showBillDialogType }) => ({
     categories: selectCategoriesForBudget(state, props.budget.doc._id),
-    allBills: selectBills(state)
+    allBills: selectBills(state),
+    showBillDialog: props.showBillDialog,
+    budget: props.budget
   })
 )(props => {
   const { budget, categories, allBills, showBillDialog } = props
@@ -445,7 +447,9 @@ const BudgetDisplay = connect(
 
 const CategoryDisplay = connect(
   (state: AppState, props: { category: Category.View, showBillDialog: showBillDialogType }) => ({
-    bills: selectBillsForCategory(state, props.category.doc._id)
+    bills: selectBillsForCategory(state, props.category.doc._id),
+    category: props.category,
+    showBillDialog: props.showBillDialog
   })
 )(props => {
   const { bills, category, showBillDialog } = props

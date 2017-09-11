@@ -27,7 +27,7 @@ declare module NodeJS {
 }
 
 interface NodeModule {
-  hot: __WebpackModuleApi.Hot
+  hot?: __WebpackModuleApi.Hot
 }
 
 declare const __DEVELOPMENT__: boolean
@@ -36,9 +36,10 @@ declare const __TEST__: boolean
 type PropTypes2<T, R extends React.Validator<any>> = { [K in keyof T]: R }
 type PropTypes<T> = PropTypes2<T, React.Validator<any>>
 
-type TDocument<T, ID> = PouchDB.Core.Document<T>
-                        & { _id: ID; _rev?: string, _deleted?: boolean }
-                        & PouchDB.Core.GetMeta
+type TDocument<T, ID> = PouchDB.Core.NewDocument<T>
+                        & { _id: ID }
+                        & Partial<PouchDB.Core.RevisionIdMeta>
+                        & Partial<PouchDB.Core.ChangesMeta>
 type AnyDocument = TDocument<{}, string>
 type ChangeSet = Set<AnyDocument>
 

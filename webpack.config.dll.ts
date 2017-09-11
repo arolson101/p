@@ -56,7 +56,7 @@ const configurator = (dirname: string, config: Config, dev: boolean = true): web
       { test: /\.css$/, use: [ 'style-loader', 'css-loader' ] },
       { test: /\.tsx?$/, loaders: [
         'react-hot-loader/webpack',
-        'ts-loader?configFileName=tsconfig.app.json'
+        'ts-loader?configFile=tsconfig.app.json'
       ] },
       { test: /\.(svg|woff|woff2|ttf|eot)($|\?)/, loader: 'file?name=fonts/[name].[ext]' },
       { test: /\.(png|gif|jpg)($|\?)/, loader: 'file?name=images/[name].[ext]' }
