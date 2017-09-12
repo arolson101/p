@@ -1,11 +1,11 @@
+import { expect } from 'chai'
 import * as Enzyme from 'enzyme'
 import * as React from 'react'
 import { IntlProvider, intlShape } from 'react-intl'
 import { Provider } from 'react-redux'
+import * as Sinon from 'sinon'
 import { action } from '@storybook/addon-actions'
 import { Story, storiesOf } from '@storybook/react'
-import * as expect from 'expect'
-
 import 'bootstrap/dist/css/bootstrap.css'
 
 import { createAppStore, AppInit, ImportsState, syncProviders } from 'core'
@@ -16,7 +16,7 @@ export { expect }
 export { specs, describe, it } from 'storybook-addon-specifications'
 export { storiesOf }
 
-export const stub = () => expect.createSpy()
+export const stub = () => Sinon.stub()
 
 const messages = new Proxy({}, {
   get: function getter (target, key) {
