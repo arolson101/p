@@ -10,7 +10,7 @@ export interface Category {
 export namespace Category {
   export type Id = ':categoryId' | 'create' | makeid
   export type DocId = 'category/:budgetId/:categoryId'
-  export type Doc = PouchDB.Core.Document<Category> & { _id: DocId; _rev?: string }
+  export type Doc = TDocument<Category, DocId>
   export interface Params { budgetId: Budget.Id, categoryId: Id }
   export const docId = docURI.route<Params, DocId>('category/:budgetId/:categoryId')
   export type Cache = Lookup<DocId, Doc>

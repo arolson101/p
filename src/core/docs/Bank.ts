@@ -29,7 +29,7 @@ export interface Bank {
 export namespace Bank {
   export type Id = ':bankId' | 'create' | makeid
   export type DocId = 'bank/:bankId'
-  export type Doc = PouchDB.Core.Document<Bank> & { _id: DocId; _rev?: string }
+  export type Doc = TDocument<Bank, DocId>
   export interface Params { bankId: Id }
   export const docId = docURI.route<Params, DocId>('bank/:bankId')
   export type Cache = Lookup<DocId, Doc>

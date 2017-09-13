@@ -19,7 +19,7 @@ export interface Bill {
 export namespace Bill {
   export type Id = ':billId' | 'create' | makeid
   export type DocId = 'bill/:billId'
-  export type Doc = PouchDB.Core.Document<Bill> & { _id: DocId; _rev?: string }
+  export type Doc = TDocument<Bill, DocId>
   export interface Params { billId: Id }
   export const docId = docURI.route<Params, DocId>('bill/:billId')
   export type Cache = Lookup<DocId, Doc>
