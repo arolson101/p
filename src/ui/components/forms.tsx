@@ -380,14 +380,14 @@ interface CollapseFieldProps<V> extends RB.CollapseProps {
   name: keyof V
 }
 
-const renderCollapse = (props: CollapseFieldProps<any> & RF.WrappedFieldProps) => {
+const renderCollapse = (props: CollapseFieldProps<any> & RF.WrappedFieldProps & React.Props<any>) => {
   const { input, meta, name, children, ...passedProps } = props
   return <RB.Collapse {...passedProps} in={!!input.value}>
     {props.children}
   </RB.Collapse>
 }
 
-const CollapseField = <V extends {}>(props: CollapseFieldProps<V>) => {
+const CollapseField = <V extends {}>(props: CollapseFieldProps<V> & React.Props<any>) => {
   return <RF.Field {...props} component={renderCollapse}/>
 }
 
