@@ -13,6 +13,7 @@ import { saveAccount } from 'core/actions'
 import { selectBankAccounts } from 'core/selectors'
 import { typedFields, forms } from '../components/forms'
 import { ContainedModal } from './ContainedModal'
+import { Form as Form2, Text, FormFieldProps } from 'react-form'
 
 const messages = defineMessages({
   createTitle: {
@@ -75,7 +76,7 @@ interface Props extends Params {
   onHide: () => void
 }
 
-interface ConnectedProps {
+interface StateProps {
   accounts: Account.View[]
 }
 
@@ -88,7 +89,8 @@ interface ConnectedFormProps {
   type?: Account.Type
 }
 
-type EnhancedProps = InjectedFormProps<Values, {}> & ConnectedFormProps & DispatchProps & Props & IntlProps
+type ConnectedProps = StateProps & DispatchProps & Props
+type EnhancedProps = InjectedFormProps<Values, {}> & ConnectedFormProps & ConnectedProps & IntlProps
 
 export const AccountDialogStatic = {
   dialog: 'AccountDialog'
@@ -102,7 +104,7 @@ const form = 'AccountDialog'
 const { Form, TextField, SelectField, ColorAddon } = typedFields<Values>()
 const valueSelector = formValueSelector(form)
 
-const enhance = compose<EnhancedProps, Props>(
+const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName('AccountDialog'),
   onlyUpdateForPropTypes,
   setPropTypes<Props>({
@@ -111,12 +113,6 @@ const enhance = compose<EnhancedProps, Props>(
     onHide: PropTypes.func.isRequired
   }),
   injectIntl,
-  connect<ConnectedProps, DispatchProps, Props>(
-    (state: AppState, props): ConnectedProps => ({
-      accounts: selectBankAccounts(state, props && props.bank.doc._id)
-    }),
-    mapDispatchToProps<DispatchProps>({ saveAccount, push })
-  ),
   withPropsOnChange<any, InjectedFormProps<Values, {}> & Props>(
     ['edit'],
     ({ edit }) => {
@@ -126,39 +122,60 @@ const enhance = compose<EnhancedProps, Props>(
       return { initialValues }
     }
   ),
-  reduxForm<Values, ConnectedProps & DispatchProps & InjectedIntlProps & Props>({
-    form,
-    enableReinitialize: true,
-    onSubmit: async (values: Values, dispatch, props) => {
-      const { bank, edit, saveAccount, onHide, intl: { formatMessage }, push } = props
+  // reduxForm<Values, StateProps & DispatchProps & InjectedIntlProps & Props>({
+  //   form,
+  //   enableReinitialize: true,
+  //   onSubmit: async (values: Values, dispatch, props) => {
+  //     const { bank, edit, saveAccount, onHide, intl: { formatMessage }, push } = props
 
-      const doc = await saveAccount({formatMessage, values, bank, edit})
+  //     const doc = await saveAccount({formatMessage, values, bank, edit})
 
-      if (!edit) {
-        push(Account.to.view(doc))
-      }
+  //     if (!edit) {
+  //       push(Account.to.view(doc))
+  //     }
 
-      onHide()
-    },
-    validate: ((values, props) => {
-      const { edit, bank, accounts, intl: { formatMessage } } = props
-      const v = new Validator(values, formatMessage)
-      const otherAccounts = accounts.filter(acct => !edit || edit.doc._id !== acct.doc._id)
-      const otherNames = otherAccounts.map(acct => acct.doc.name)
-      const otherNumbers = otherAccounts.filter(acct => acct.doc.type === v.values.type).map(acct => acct.doc.number)
-      v.unique('name', otherNames, messages.uniqueName)
-      v.unique('number', otherNumbers, messages.uniqueNumber)
-      return v.errors
-    })
-  }),
-  connect<ConnectedFormProps, {}, Props & IntlProps>(
-    (state: AppState): ConnectedFormProps => ({
-      type: valueSelector(state, 'type')
-    })
-  )
+  //     onHide()
+  //   },
+  //   validate: ((values, props) => {
+  //     const { edit, bank, accounts, intl: { formatMessage } } = props
+  //     const v = new Validator(values, formatMessage)
+  //     const otherAccounts = accounts.filter(acct => !edit || edit.doc._id !== acct.doc._id)
+  //     const otherNames = otherAccounts.map(acct => acct.doc.name)
+  //     const otherNumbers = otherAccounts.filter(acct => acct.doc.type === v.values.type).map(acct => acct.doc.number)
+  //     v.unique('name', otherNames, messages.uniqueName)
+  //     v.unique('number', otherNumbers, messages.uniqueNumber)
+  //     return v.errors
+  //   })
+  // }),
+  // connect<ConnectedFormProps, {}, Props & IntlProps>(
+  //   (state: AppState): ConnectedFormProps => ({
+  //     type: valueSelector(state, 'type')
+  //   })
+  // )
 )
 
-export const AccountDialog = enhance((props) => {
+import { FormField } from 'react-form'
+
+function CustomInput ({field, ...rest}: FormFieldProps) {
+  return (
+    <FormField field={field}>
+      {({ setValue, getValue, setTouched }) => {
+        return (
+          <input
+            value={getValue()}
+            onChange={e => setValue(e.target.value)}
+            onBlur={() => setTouched()}
+          />
+        )
+      }}
+    </FormField>
+  )
+}
+
+export namespace AccountDialogComponent {
+  export type Props = ConnectedProps
+}
+export const AccountDialogComponent = enhance((props) => {
   const { edit, type, handleSubmit, onHide, reset } = props
   const { formatMessage } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle
@@ -170,6 +187,28 @@ export const AccountDialog = enhance((props) => {
         </Modal.Title>
       </Modal.Header>
 
+    <Form2
+      onSubmit={(values) => {
+        console.log('Success!', values)
+      }}
+      validate={({ name }) => {
+        return {
+          name: !name ? 'A name is required' : undefined
+        }
+      }}
+    >
+
+      {({submitForm}) => {
+        return (
+          <form onSubmit={submitForm}>
+            <CustomInput field='name' />
+            <button type='submit'>Submit</button>
+          </form>
+        )
+      }}
+
+    </Form2>
+{/*
       <Form horizontal onSubmit={handleSubmit}>
         <Modal.Body>
           <TextField
@@ -225,10 +264,17 @@ export const AccountDialog = enhance((props) => {
             </Button>
           </ButtonToolbar>
         </Modal.Footer>
-      </Form>
+      </Form> */}
     </div>
   )
 })
+
+export const AccountDialog = connect<StateProps, DispatchProps, Props>(
+  (state: AppState, props): StateProps => ({
+    accounts: selectBankAccounts(state, props && props.bank.doc._id)
+  }),
+  mapDispatchToProps<DispatchProps>({ saveAccount, push })
+)(AccountDialogComponent)
 
 const typeOptions = Object
   .keys(Account.Type)

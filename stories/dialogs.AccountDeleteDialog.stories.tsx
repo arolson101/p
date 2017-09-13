@@ -13,7 +13,7 @@ const dummyProps = <T extends Function>(functor: (name: string) => T) => {
 
   return {
     onHide: functor('onHide'),
-    deleteAccount: functor('deleteAccount'),
+    deleteAccount: functor('deleteAccount') as any,
     replace: functor('replace'),
     bank: bank,
     account: account,
@@ -21,7 +21,7 @@ const dummyProps = <T extends Function>(functor: (name: string) => T) => {
 }
 
 stories.add('normal', () => {
-  const story = (props: any) =>
+  const story = (props: AccountDeleteDialogComponent.Props) =>
     <AccountDeleteDialogComponent
       {...props}
     />

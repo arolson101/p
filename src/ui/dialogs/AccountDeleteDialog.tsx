@@ -34,7 +34,7 @@ interface Props extends Params {
   onHide: () => void
 }
 
-interface ConnectedProps {
+interface StateProps {
   error?: Error
   deleting?: boolean
 }
@@ -48,10 +48,11 @@ interface Handlers {
   handleDelete: () => void
 }
 
-type EnhancedProps = ConnectedProps & DispatchProps & Props
+type ConnectedProps = StateProps & DispatchProps & Props
+type EnhancedProps = ConnectedProps & Handlers
 
-const enhance = compose<EnhancedProps & Handlers, EnhancedProps>(
-  withHandlers<ConnectedProps & DispatchProps & Props, Handlers>({
+const enhance = compose<EnhancedProps, ConnectedProps>(
+  withHandlers<StateProps & DispatchProps & Props, Handlers>({
     handleDelete: ({bank, account, deleteAccount, replace, onHide}) => async () => {
       const success = await deleteAccount({bank, account})
       if (success) {
@@ -61,6 +62,9 @@ const enhance = compose<EnhancedProps & Handlers, EnhancedProps>(
   })
 )
 
+export namespace AccountDeleteDialogComponent {
+  export type Props = ConnectedProps
+}
 export const AccountDeleteDialogComponent = enhance(props => {
   const { onHide, account, error, deleting, handleDelete } = props
   return (
@@ -102,8 +106,8 @@ export const AccountDeleteDialogComponent = enhance(props => {
   )
 })
 
-export const AccountDeleteDialog = connect<ConnectedProps, DispatchProps, Props>(
-  (state: AppState, props): ConnectedProps => ({
+export const AccountDeleteDialog = connect<StateProps, DispatchProps, Props>(
+  (state: AppState, props): StateProps => ({
     error: state.ui.accountDelete.error,
     deleting: state.ui.accountDelete.deleting,
   }),

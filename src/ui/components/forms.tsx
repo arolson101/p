@@ -8,6 +8,7 @@ import { compose, mapPropsStream, withContext } from 'recompose'
 import * as RF from 'redux-form'
 import { createSelector } from 'reselect'
 import * as Rx from 'rxjs/Rx'
+import * as RF2 from 'react-form'
 import { getFaviconStream } from 'util/index'
 import { mapDispatchToProps } from 'core/state'
 import { AccountPicker } from './AccountPicker'
@@ -118,6 +119,49 @@ interface InputFormField<V> extends FormField<V> /*, RB.FormControlProps*/ {
   max?: number
   disabled?: boolean
 }
+
+// const Text2 = ({field, ...rest}: RF2.FormFieldProps) => {
+//   return (
+//     <RF2.FormField field={field}>
+//       {(props: RF2.BoundFormAPI & InputFormField<any> & WrapperProps) => {
+//         const { input, meta, label, help, rows, setValue, getValue, setTouched,
+//           password, addonBefore, addonAfter, ...passedProps } = props
+
+//         const formControl = (
+//           <RB.FormControl
+//             componentClass={rows ? 'textarea' : undefined}
+//             type={password ? 'password' : undefined}
+//             rows={rows}
+//             {...passedProps}
+//             {...input}
+//             value={getValue()}
+//             onChange={e => setValue(e.target.value)}
+//             onBlur={() => setTouched()}
+//           />
+//         )
+
+//         return (
+//           <Wrapper {...props}>
+//             {(addonBefore || addonAfter) ? (
+//               <RB.InputGroup>
+//                 {addonBefore}
+//                 {formControl}
+//                 {addonAfter}
+//               </RB.InputGroup>
+//             ) : (
+//               formControl
+//             )}
+//           </Wrapper>
+//         )
+
+//         {/* return (
+//           <RB.FormControl
+//           />
+//         ) */}
+//       }}
+//     </RF2.FormField>
+//   )
+// }
 
 const renderInput = (props: InputFormField<any> & WrapperProps) => {
   const { input, meta, label, help, rows,
