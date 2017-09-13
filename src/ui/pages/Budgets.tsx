@@ -422,7 +422,7 @@ const BudgetDisplay = connect(
     showBillDialog: props.showBillDialog,
     budget: props.budget
   })
-)(props => {
+)((props) => {
   const { budget, categories, allBills, showBillDialog } = props
   return <Panel header={
     <h1>
