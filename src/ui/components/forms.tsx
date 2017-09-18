@@ -107,6 +107,37 @@ const Wrapper = (props: WrapperProps & DontCareWhatElse, { layout }: LayoutProps
 
 (Wrapper as any).contextTypes = { layout: PropTypes.object }
 
+type Wrapper2Props = FormField<any> & React.Props<any>
+const Wrapper2 = (props: Wrapper2Props & RF2.BoundFormAPI, { layout }: LayoutProps) => {
+  console.log('wrapper')
+  const { label, help, children } = props
+  const error = props.getError()
+  return (
+    <RB.FormGroup
+      controlId={name}
+      validationState={error ? 'error' : undefined}
+    >
+      <RB.Col componentClass={RB.ControlLabel} {...layout.label}>
+        {label &&
+          <FormattedMessage {...label}/>
+        }
+      </RB.Col>
+      <RB.Col {...layout.control}>
+        {children}
+        {/*<RB.FormControl.Feedback/>*/}
+        {help &&
+          <RB.HelpBlock><FormattedMessage {...help}/></RB.HelpBlock>
+        }
+        {(error) &&
+          <RB.HelpBlock>{error}</RB.HelpBlock>
+        }
+      </RB.Col>
+    </RB.FormGroup>
+  )
+}
+
+(Wrapper2 as any).contextTypes = { layout: PropTypes.object }
+
 // input ----------------------------------------------------------------------
 interface InputFormField<V> extends FormField<V> /*, RB.FormControlProps*/ {
   autoFocus?: boolean
@@ -119,49 +150,6 @@ interface InputFormField<V> extends FormField<V> /*, RB.FormControlProps*/ {
   max?: number
   disabled?: boolean
 }
-
-// const Text2 = ({field, ...rest}: RF2.FormFieldProps) => {
-//   return (
-//     <RF2.FormField field={field}>
-//       {(props: RF2.BoundFormAPI & InputFormField<any> & WrapperProps) => {
-//         const { input, meta, label, help, rows, setValue, getValue, setTouched,
-//           password, addonBefore, addonAfter, ...passedProps } = props
-
-//         const formControl = (
-//           <RB.FormControl
-//             componentClass={rows ? 'textarea' : undefined}
-//             type={password ? 'password' : undefined}
-//             rows={rows}
-//             {...passedProps}
-//             {...input}
-//             value={getValue()}
-//             onChange={e => setValue(e.target.value)}
-//             onBlur={() => setTouched()}
-//           />
-//         )
-
-//         return (
-//           <Wrapper {...props}>
-//             {(addonBefore || addonAfter) ? (
-//               <RB.InputGroup>
-//                 {addonBefore}
-//                 {formControl}
-//                 {addonAfter}
-//               </RB.InputGroup>
-//             ) : (
-//               formControl
-//             )}
-//           </Wrapper>
-//         )
-
-//         {/* return (
-//           <RB.FormControl
-//           />
-//         ) */}
-//       }}
-//     </RF2.FormField>
-//   )
-// }
 
 const renderInput = (props: InputFormField<any> & WrapperProps) => {
   const { input, meta, label, help, rows,
@@ -191,6 +179,60 @@ const renderInput = (props: InputFormField<any> & WrapperProps) => {
   )
 }
 
+const renderInput2 = (props: TextField2Props<any> & InputFormField<any> & Wrapper2Props) => (api: RF2.BoundFormAPI) => {
+  const { label, help, rows,
+    password, addonBefore, addonAfter, ...passedProps } = props
+  const { setValue, getValue, setTouched } = api
+
+  const formControl = (
+    <RB.FormControl
+      componentClass={rows ? 'textarea' : undefined}
+      type={password ? 'password' : undefined}
+      rows={rows}
+      {...passedProps}
+      value={getValue()}
+      onChange={e => {
+        console.log('onchange')
+        setValue((e.target as any).value)
+      }}
+      onBlur={() => setTouched()}
+    />
+  )
+
+  return (
+    <Wrapper2 {...props} {...api}>
+      {(addonBefore || addonAfter) ? (
+        <RB.InputGroup>
+          {addonBefore}
+          {formControl}
+          {addonAfter}
+        </RB.InputGroup>
+      ) : (
+        formControl
+      )}
+    </Wrapper2>
+  )
+}
+
+type TextField2Props<V> = InputFormField<V>
+const TextField2 = <V extends {}>(props: TextField2Props<V>) => {
+  console.log('TextField2')
+  return (
+    <RF2.FormField field={props.name}>
+      {renderInput2(props)}
+    </RF2.FormField>
+  )
+}
+
+type PasswordField2Props<V> = InputFormField<V>
+const PasswordField2 = <V extends {}>(props: PasswordFieldProps<V>) => {
+  return (
+    <RF2.FormField field={props.name}>
+      {renderInput2({...props, password: true})}
+    </RF2.FormField>
+  )
+}
+
 type TextFieldProps<V> = InputFormField<V>
 const TextField = <V extends {}>(props: TextFieldProps<V>) => {
   return <RF.Field {...props} component={renderInput}/>
@@ -210,6 +252,10 @@ interface UrlFieldProps<V> extends FormField<V> {
 
 type RenderUrlProps = UrlFieldProps<any> & WrapperProps & {
   change: typeof RF.change
+}
+
+type RenderUrlProps2 = UrlFieldProps<any> & Wrapper2Props & {
+  setValue: (value: string) => void
 }
 
 const enhanceUrl = compose(
@@ -235,9 +281,34 @@ const enhanceUrl = compose(
   ),
 )
 
+const enhanceUrl2 = compose(
+  mapPropsStream(
+    (props$: Rx.Observable<RenderUrlProps2>) => {
+      const changeIcon$ = props$
+        .pluck<RenderUrlProps2, string>('input', 'value')
+        .distinctUntilChanged()
+        .debounceTime(500)
+        .do((url) => console.log(`getting favicon for ${url}`))
+        .switchMap(getFaviconStream)
+        .withLatestFrom(props$, (icon, props) => {
+          const { setValue, favicoName } = props
+          console.log('change favicon to ', icon)
+          setValue(icon || '')
+        })
+
+      return props$.merge(changeIcon$.ignoreElements())
+    }
+  ),
+)
+
 const renderUrl = enhanceUrl((props: RenderUrlProps) => {
   const { favicoName, change, ...inputProps } = props
   return renderInput(inputProps)
+})
+
+const renderUrl2 = (api: RF2.BoundFormAPI) => enhanceUrl2((props: RenderUrlProps2) => {
+  const { favicoName, setValue, ...inputProps } = props
+  return renderInput2(inputProps)(api)
 })
 
 const renderFavico = (props: RF.WrappedFieldProps) => {
@@ -258,6 +329,31 @@ const UrlField = <V extends {}>(props: UrlFieldProps<V> & RF.WrappedFieldProps) 
         />
     })}
   />
+}
+
+const UrlField2 = <V extends {}>(props: UrlFieldProps<V> & Wrapper2Props) => {
+  const { name, favicoName } = props
+  return (
+    <RF2.FormField field={name}>
+      {api =>
+        <Wrapper2 {...props} {...api}>
+          <RB.InputGroup>
+            <RF2.FormField field={favicoName}>
+              {api2 =>
+                <RB.InputGroup.Addon>asdf</RB.InputGroup.Addon>
+              }
+            </RF2.FormField>
+            <RB.FormControl
+              type='text'
+              value={api.getValue()}
+              onChange={e => api.setValue((e as any).target.value)}
+              onBlur={() => api.setTouched()}
+            />
+          </RB.InputGroup>
+        </Wrapper2>
+      }
+    </RF2.FormField>
+  )
 }
 
 // color ----------------------------------------------------------------------
@@ -469,12 +565,36 @@ export const FormLayout = enhanceFormLayout(({ children, ...props }) => {
   )
 })
 
+interface FormLayoutProps extends RF2.FormProps {
+  horizontal: boolean
+}
+const enhanceFormLayout2 = compose<FormLayoutProps, FormLayoutProps>(
+  withContext<{ layout: LayoutConfig }, RB.FormProps>(
+    { layout: PropTypes.object },
+    ({ horizontal }) => ({
+      layout: (horizontal ? horizontalLayout : normalLayout)
+    })
+  )
+)
+
+export const FormLayout2 = enhanceFormLayout2(({ children, ...props }) => {
+  return (
+    <RF2.Form {...props} component={RB.Form}>
+      {children}
+    </RF2.Form>
+  )
+})
+
 export const typedFields = <V extends {}>() => {
   return {
     Form: FormLayout,
+    Form2: FormLayout2,
+    TextField2: TextField2 as React.StatelessComponent<TextFieldProps<V>>,
     TextField: TextField as React.StatelessComponent<TextFieldProps<V>>,
     PasswordField: PasswordField as React.StatelessComponent<PasswordFieldProps<V>>,
+    PasswordField2: PasswordField2 as React.StatelessComponent<PasswordFieldProps<V>>,
     UrlField: UrlField as React.StatelessComponent<UrlFieldProps<V>>,
+    UrlField2: UrlField2 as React.StatelessComponent<UrlFieldProps<V>>,
     SelectField: SelectField as React.StatelessComponent<SelectFieldProps<V>>,
     CheckboxField: CheckboxField as React.StatelessComponent<CheckboxFieldProps<V>>,
     DateField: DateField as React.StatelessComponent<DateFieldProps<V>>,

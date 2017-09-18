@@ -31,7 +31,7 @@ declare module 'react-form' {
     preSubmit?: (values: FormValues, state: FormState, props: any, instance: any) => FormValues
     onSubmit?: (values: FormValues, state: FormState, props: any, instance: any) => void
     postSubmit?: (values: FormValues, state: FormState, props: any, instance: any) => void
-    component?: string | false | React.Component<any>
+    component?: string | false | React.ComponentType<any>
 
     children?: (props: FormAPI) => React.ReactNode
   }
@@ -59,9 +59,9 @@ declare module 'react-form' {
     setValue: (value: FieldValue, noTouch?: boolean) => void
     getValue: <T extends FieldValue>(fallback?: T) => T
     setNestedError: (value: FieldValue) => void
-    getError: (field: string) => string | undefined
+    getError: () => string | undefined
     setTouched: (value?: boolean) => void
-    getTouched: (field: string) => boolean
+    getTouched: () => boolean
     addValue: <T extends FieldValue>(value: T) => void
     removeValue: (index: number) => void
     swapValues: (i: number, j: number) => void
