@@ -66,6 +66,12 @@ interface FormField<V> {
   help?: FormattedMessage.MessageDescriptor
 }
 
+interface FormField2 {
+  name: string
+  label: FormattedMessage.MessageDescriptor
+  help?: FormattedMessage.MessageDescriptor
+}
+
 interface LayoutProps {
   layout: LayoutConfig
 }
@@ -107,9 +113,8 @@ const Wrapper = (props: WrapperProps & DontCareWhatElse, { layout }: LayoutProps
 
 (Wrapper as any).contextTypes = { layout: PropTypes.object }
 
-type Wrapper2Props = FormField<any> & React.Props<any>
+type Wrapper2Props = FormField2 & React.Props<any>
 const Wrapper2 = (props: Wrapper2Props & RF2.BoundFormAPI, { layout }: LayoutProps) => {
-  console.log('wrapper')
   const { label, help, children } = props
   const error = props.getError()
   return (
@@ -151,6 +156,18 @@ interface InputFormField<V> extends FormField<V> /*, RB.FormControlProps*/ {
   disabled?: boolean
 }
 
+interface InputFormField2 extends FormField2 /*, RB.FormControlProps*/ {
+  autoFocus?: boolean
+  rows?: number
+  password?: boolean
+  addonBefore?: React.ReactNode
+  addonAfter?: React.ReactNode
+  type?: string
+  min?: number
+  max?: number
+  disabled?: boolean
+}
+
 const renderInput = (props: InputFormField<any> & WrapperProps) => {
   const { input, meta, label, help, rows,
     password, addonBefore, addonAfter, ...passedProps } = props
@@ -179,7 +196,7 @@ const renderInput = (props: InputFormField<any> & WrapperProps) => {
   )
 }
 
-const renderInput2 = (props: TextField2Props<any> & InputFormField<any> & Wrapper2Props) => (api: RF2.BoundFormAPI) => {
+const renderInput2 = (props: TextField2Props & InputFormField<any> & Wrapper2Props) => (api: RF2.BoundFormAPI) => {
   const { label, help, rows,
     password, addonBefore, addonAfter, ...passedProps } = props
   const { setValue, getValue, setTouched } = api
@@ -190,7 +207,7 @@ const renderInput2 = (props: TextField2Props<any> & InputFormField<any> & Wrappe
       type={password ? 'password' : undefined}
       rows={rows}
       {...passedProps}
-      value={getValue()}
+      value={getValue('')}
       onChange={e => {
         console.log('onchange')
         setValue((e.target as any).value)
@@ -214,24 +231,52 @@ const renderInput2 = (props: TextField2Props<any> & InputFormField<any> & Wrappe
   )
 }
 
-type TextField2Props<V> = InputFormField<V>
-const TextField2 = <V extends {}>(props: TextField2Props<V>) => {
-  console.log('TextField2')
+type TextField2Props = InputFormField2
+const TextField2 = (props: TextField2Props) => {
   return (
     <RF2.FormField field={props.name}>
-      {renderInput2(props)}
+      {api => {
+        const { label, help, rows,
+          password, addonBefore, addonAfter, ...passedProps } = props
+        const { setValue, getValue, setTouched } = api
+
+        const formControl = (
+          <RB.FormControl
+            componentClass={rows ? 'textarea' : undefined}
+            type={password ? 'password' : undefined}
+            rows={rows}
+            {...passedProps}
+            value={getValue('')}
+            onChange={e => {
+              console.log('onchange')
+              setValue((e.target as any).value)
+            }}
+            onBlur={() => setTouched()}
+          />
+        )
+
+        return (
+          <Wrapper2 {...props} {...api}>
+            {(addonBefore || addonAfter) ? (
+              <RB.InputGroup>
+                {addonBefore}
+                {formControl}
+                {addonAfter}
+              </RB.InputGroup>
+            ) : (
+              formControl
+            )}
+          </Wrapper2>
+        )
+      }
+    }
     </RF2.FormField>
   )
 }
 
-type PasswordField2Props<V> = InputFormField<V>
-const PasswordField2 = <V extends {}>(props: PasswordFieldProps<V>) => {
-  return (
-    <RF2.FormField field={props.name}>
-      {renderInput2({...props, password: true})}
-    </RF2.FormField>
-  )
-}
+type PasswordField2Props = TextField2Props
+const PasswordField2 = <V extends {}>(props: PasswordField2Props) =>
+  <TextField2 password {...props} />
 
 type TextFieldProps<V> = InputFormField<V>
 const TextField = <V extends {}>(props: TextFieldProps<V>) => {
@@ -248,6 +293,10 @@ const PasswordField = <V extends {}>(props: PasswordFieldProps<V>) => {
 // url ------------------------------------------------------------------------
 interface UrlFieldProps<V> extends FormField<V> {
   favicoName: keyof V
+}
+
+interface UrlFieldProps2 extends FormField2 {
+  favicoName: string
 }
 
 type RenderUrlProps = UrlFieldProps<any> & WrapperProps & {
@@ -281,24 +330,35 @@ const enhanceUrl = compose(
   ),
 )
 
-const enhanceUrl2 = compose(
-  mapPropsStream(
-    (props$: Rx.Observable<RenderUrlProps2>) => {
-      const changeIcon$ = props$
-        .pluck<RenderUrlProps2, string>('input', 'value')
-        .distinctUntilChanged()
-        .debounceTime(500)
-        .do((url) => console.log(`getting favicon for ${url}`))
-        .switchMap(getFaviconStream)
-        .withLatestFrom(props$, (icon, props) => {
-          const { setValue, favicoName } = props
+interface EnhancedUrlProps {
+  getValue: RF2.BoundFormAPI['getValue']
+  setValue: RF2.BoundFormAPI['setValue']
+  getLinkedValue: RF2.BoundFormAPI['getValue']
+}
+const enhanceUrl2 = mapPropsStream(
+  (props$: Rx.Observable<EnhancedUrlProps>) => {
+    console.log('EnhanceUrl2')
+    const changeIcon$ = props$
+      // .pluck<RenderUrlProps2, string>('getValue')
+      .map((props) => {
+        const val = props.getLinkedValue('')
+        console.log('val: ', val)
+        return val
+      })
+      .distinctUntilChanged()
+      .debounceTime(500)
+      .do((url) => console.log(`getting favicon for ${url}`))
+      .switchMap(getFaviconStream)
+      .withLatestFrom(props$, (icon, props) => {
+        const { setValue, getValue } = props
+        if (getValue('') !== icon) {
           console.log('change favicon to ', icon)
           setValue(icon || '')
-        })
+        }
+      })
 
-      return props$.merge(changeIcon$.ignoreElements())
-    }
-  ),
+    return props$.merge(changeIcon$.ignoreElements())
+  }
 )
 
 const renderUrl = enhanceUrl((props: RenderUrlProps) => {
@@ -331,21 +391,29 @@ const UrlField = <V extends {}>(props: UrlFieldProps<V> & RF.WrappedFieldProps) 
   />
 }
 
-const UrlField2 = <V extends {}>(props: UrlFieldProps<V> & Wrapper2Props) => {
+const UrlField2 = (props: UrlFieldProps2 & Wrapper2Props) => {
   const { name, favicoName } = props
+  console.log('UrlField2')
+  type Foo = React.Props<any> & { getLinkedValue: (dflt: string) => string }
+
+  const Xasdf = enhanceUrl2((props: React.Props<any> & EnhancedUrlProps) =>
+    <RF2.FormField field={favicoName}>
+      {api2 => {
+        console.log(props)
+        return <RB.InputGroup.Addon>foo </RB.InputGroup.Addon>
+      }}
+    </RF2.FormField>
+  ) as React.ComponentClass<EnhancedUrlProps>
+
   return (
     <RF2.FormField field={name}>
       {api =>
         <Wrapper2 {...props} {...api}>
           <RB.InputGroup>
-            <RF2.FormField field={favicoName}>
-              {api2 =>
-                <RB.InputGroup.Addon>asdf</RB.InputGroup.Addon>
-              }
-            </RF2.FormField>
+            <Xasdf getLinkedValue={api.getValue} getValue={api.getValue} setValue={api.setValue} />
             <RB.FormControl
               type='text'
-              value={api.getValue()}
+              value={api.getValue('')}
               onChange={e => api.setValue((e as any).target.value)}
               onBlur={() => api.setTouched()}
             />

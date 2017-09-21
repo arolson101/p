@@ -16,6 +16,11 @@ export { expect }
 export { specs, describe, it } from 'storybook-addon-specifications'
 export { storiesOf }
 
+import { setObservableConfig } from 'recompose'
+import rxjsconfig from 'recompose/rxjsObservableConfig'
+
+setObservableConfig(rxjsconfig)
+
 export const stub = () => Sinon.stub()
 
 const messages = new Proxy({}, {
