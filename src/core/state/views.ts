@@ -18,14 +18,14 @@ export interface ViewsState {
   transactions: Cache<Transaction.View>
 }
 
-export const DOCS_INIT = 'docs/init'
+export const DOCS_SET = 'docs/set'
 export interface DocsInitAction {
-  type: typeof DOCS_INIT
+  type: typeof DOCS_SET
   docs: AnyDocument[]
 }
 
-const docsInit = (docs: AnyDocument[]): DocsInitAction => ({
-  type: DOCS_INIT,
+export const setDocs = (docs: AnyDocument[]): DocsInitAction => ({
+  type: DOCS_SET,
   docs,
 })
 
@@ -59,7 +59,7 @@ export const initDocs: AppThunk<InitDocsArgs, void> = ({db}) =>
     docs.push(...localDocs)
     resolveConflicts(db, ...docs)
 
-    dispatch(docsInit(docs))
+    dispatch(setDocs(docs))
   }
 
 const safeGet = async <T> (db: PouchDB.Database<any>, id: string): Promise<T | undefined> => {
@@ -81,7 +81,7 @@ const docReducer = <T>(isDocId: (id: string) => boolean, buildView: (doc: AnyDoc
       case DB_SET_CURRENT:
         return initialState
 
-      case DOCS_INIT:
+      case DOCS_SET:
         return action.docs
           .filter(doc => isDocId(doc._id))
           .reduce((obj, val) => ({...obj, [val._id]: buildView(val)}), {})

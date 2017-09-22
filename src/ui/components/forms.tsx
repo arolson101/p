@@ -3,7 +3,7 @@ import * as React from 'react'
 import * as RB from 'react-bootstrap'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import * as ReactSelect from 'react-select'
+import ReactSelect from 'react-select'
 import 'react-select/dist/react-select.css'
 import { compose, mapPropsStream, withContext } from 'recompose'
 import * as RF from 'redux-form'
@@ -515,7 +515,7 @@ const fixSelectProps2 = {
 }
 
 const SelectField2 = enhanceSelectField2(props => {
-  const Component: typeof ReactSelect.Creatable = props.createable ? ReactSelect.Creatable : (ReactSelect as any).default
+  const Component: typeof ReactSelect.Creatable = props.createable ? ReactSelect.Creatable : ReactSelect
   const { placeholderMessage, intl: { formatMessage } } = props
   const placeholder = props.placeholderMessage ? props.intl.formatMessage(props.placeholderMessage) : props.placeholder
 
@@ -578,6 +578,20 @@ const AccountField = <V extends {}>(props: AccountFieldProps<V>) => {
   return <RF.Field component={renderAccount} {...props as any} parse={selectFieldParse}/>
 }
 
+const AccountField2 = <V extends {}>(props: AccountFieldProps<V>) => {
+  return <RF2.FormField field={props.name}>
+    {api =>
+      <Wrapper2 {...props} {...api}>
+        <AccountPicker
+          onChange={value => api.setValue(value as any)}
+          value={api.getValue('')}
+          {...fixSelectProps2}
+        />
+      </Wrapper2>
+    }
+  </RF2.FormField>
+}
+
 // budget ---------------------------------------------------------------------
 type BudgetFieldProps<V> = FormField<V>
 const renderBudget = (props: BudgetFieldProps<any> & RF.WrappedFieldProps) => {
@@ -593,6 +607,20 @@ const renderBudget = (props: BudgetFieldProps<any> & RF.WrappedFieldProps) => {
 
 const BudgetField = <V extends {}>(props: BudgetFieldProps<V>) => {
   return <RF.Field component={renderBudget} {...props as any} parse={selectFieldParse}/>
+}
+
+const BudgetField2 = <V extends {}>(props: BudgetFieldProps<V>) => {
+  return <RF2.FormField field={props.name}>
+    {api =>
+      <Wrapper2 {...props} {...api}>
+        <BudgetPicker
+          onChange={value => api.setValue(value as any)}
+          value={api.getValue('')}
+          {...fixSelectProps2}
+        />
+      </Wrapper2>
+    }
+  </RF2.FormField>
 }
 
 // date -----------------------------------------------------------------------
@@ -759,7 +787,9 @@ export const typedFields = <V extends {}>() => {
     DateField: DateField as React.StatelessComponent<DateFieldProps<V>>,
     DateField2: DateField2 as React.StatelessComponent<DateFieldProps<V>>,
     AccountField: AccountField as React.StatelessComponent<AccountFieldProps<V>>,
+    AccountField2: AccountField2 as React.StatelessComponent<AccountFieldProps<V>>,
     BudgetField: BudgetField as React.StatelessComponent<BudgetFieldProps<V>>,
+    BudgetField2: BudgetField2 as React.StatelessComponent<BudgetFieldProps<V>>,
     CollapseField: CollapseField as React.StatelessComponent<CollapseFieldProps<V>>,
     CollapseField2: CollapseField2 as React.StatelessComponent<CollapseFieldProps<V>>,
     ColorAddon: ColorAddonField as React.StatelessComponent<ColorAddonFieldProps<V>>,

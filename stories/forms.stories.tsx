@@ -2,7 +2,7 @@
 import * as React from 'react'
 import { defineMessages } from 'react-intl'
 import { specs, describe, it } from 'storybook-addon-specifications'
-import { mountIntl, expect, stub, action, storiesOfIntl, dummyAccountView } from './storybook'
+import { Provider, mountIntl, expect, stub, action, storiesOfIntl, dummyStore, dummyBankDocs, dummyBudgetDocs } from './storybook'
 
 import { typedFields } from 'ui/components/forms'
 
@@ -50,10 +50,24 @@ const messages = defineMessages({
   dateMessage: {
     id: 'Forms.Stories.dateMessage',
     defaultMessage: 'Date'
+  },
+  accountMessage: {
+    id: 'Forms.Stories.accountMessage',
+    defaultMessage: 'Account'
+  },
+  budgetMessage: {
+    id: 'Forms.Stories.budgetMessage',
+    defaultMessage: 'Budget'
   }
 })
 
 const stories = storiesOfIntl(`Forms`, module)
+const store = dummyStore(
+  ...dummyBankDocs('bank 1', ['account 1a', 'account 1b']),
+  ...dummyBankDocs('bank 2', ['account 2a']),
+  ...dummyBudgetDocs('budget 1'),
+  ...dummyBudgetDocs('budget 2')
+)
 
 interface Values {
   text: string
@@ -67,10 +81,13 @@ interface Values {
   selectMultiple: string
   checkbox: boolean
   date: string
+  account: string
+  budget: string
 }
 
 const { Form, Form2, TextField2, UrlField2, PasswordField2,
-  ColorAddon2, SelectField2, CheckboxField2, CollapseField2, DateField2 } = typedFields<Values>()
+  ColorAddon2, SelectField2, CheckboxField2, CollapseField2, DateField2,
+  AccountField2, BudgetField2 } = typedFields<Values>()
 
 const opt = (i: number) => ({value: `option ${i}`, label: `Option #${i}`})
 const selectOptions = [opt(1), opt(2), opt(3)]
@@ -78,22 +95,27 @@ const selectCreateableOptions = [...selectOptions]
 const selectMultipleOptions = [...selectOptions]
 
 stories.add('normal', () => {
-  return <Form2 horizontal onSubmit={action('onSubmit')}>
-    {api =>
-      <Form onSubmit={api.submitForm}>
-        <TextField2 name='text' label={messages.text}/>
-        <PasswordField2 name='text' label={messages.password}/>
-        <UrlField2 name='url' favicoName='favico' label={messages.url}/>
-        <TextField2 name='textWithColor' label={messages.textWithColor} addonBefore={<ColorAddon2 name='color'/>} />
-        <SelectField2 name='select' options={selectOptions} label={messages.select} placeholderMessage={messages.selectPlaceholder}/>
-        <SelectField2 createable name='selectCreateable' options={selectCreateableOptions} label={messages.selectCreateable} />
-        <SelectField2 multi name='selectMultiple' options={selectMultipleOptions} label={messages.selectMultiple} />
-        <CheckboxField2 name='checkbox' label={messages.checkbox} message={messages.checkboxMessage}/>
-        <CollapseField2 name='checkbox'>
-          <div>collapsed data</div>
-        </CollapseField2>
-        <DateField2 name='date' label={messages.dateMessage}/>
-      </Form>
-    }
-  </Form2>
+  // console.log('store', store.getState())
+  return <Provider store={store}>
+    <Form2 horizontal onSubmit={action('onSubmit')}>
+      {api =>
+        <Form onSubmit={api.submitForm}>
+          <TextField2 name='text' label={messages.text}/>
+          <PasswordField2 name='text' label={messages.password}/>
+          <UrlField2 name='url' favicoName='favico' label={messages.url}/>
+          <TextField2 name='textWithColor' label={messages.textWithColor} addonBefore={<ColorAddon2 name='color'/>} />
+          <SelectField2 name='select' options={selectOptions} label={messages.select} placeholderMessage={messages.selectPlaceholder}/>
+          <SelectField2 createable name='selectCreateable' options={selectCreateableOptions} label={messages.selectCreateable} />
+          <SelectField2 multi name='selectMultiple' options={selectMultipleOptions} label={messages.selectMultiple} />
+          <CheckboxField2 name='checkbox' label={messages.checkbox} message={messages.checkboxMessage}/>
+          <CollapseField2 name='checkbox'>
+            <div>collapsed data</div>
+          </CollapseField2>
+          <DateField2 name='date' label={messages.dateMessage}/>
+          <AccountField2 name='account' label={messages.accountMessage}/>
+          <BudgetField2 name='budget' label={messages.budgetMessage}/>
+        </Form>
+      }
+    </Form2>
+  </Provider>
 })

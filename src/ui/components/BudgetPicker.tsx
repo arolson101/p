@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import * as Select from 'react-select'
+import Select from 'react-select'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName, withHandlers } from 'recompose'
@@ -19,9 +19,9 @@ interface Handlers {
   promptTextCreator: (label: string) => string
 }
 
-type EnhancedProps = Handlers & ConnectedProps
+type EnhancedProps = Handlers & ConnectedProps & Select.ReactSelectProps
 
-const enhance = compose<EnhancedProps, {}>(
+const enhance = compose<EnhancedProps, Select.ReactSelectProps>(
   setDisplayName('BudgetPicker'),
   connect<ConnectedProps, {}, {}>(
     (state: AppState): ConnectedProps => ({
