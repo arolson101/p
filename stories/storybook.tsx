@@ -7,6 +7,7 @@ import * as Sinon from 'sinon'
 import { action } from '@storybook/addon-actions'
 import { Story, storiesOf } from '@storybook/react'
 import 'bootstrap/dist/css/bootstrap.css'
+import 'font-awesome/css/font-awesome.css'
 
 import { createAppStore, AppInit, ImportsState, syncProviders } from 'core'
 import createHistory from 'history/createHashHistory'

@@ -16,6 +16,7 @@ import { BudgetPicker } from './BudgetPicker'
 import { ColorPicker } from './ColorPicker'
 import { DatePicker, DatePickerProps } from './DatePicker'
 import { IconPicker } from './IconPicker'
+import { Favico } from './Favico'
 
 import './forms.css'
 
@@ -303,10 +304,6 @@ type RenderUrlProps = UrlFieldProps<any> & WrapperProps & {
   change: typeof RF.change
 }
 
-type RenderUrlProps2 = UrlFieldProps<any> & Wrapper2Props & {
-  setValue: (value: string) => void
-}
-
 const enhanceUrl = compose(
   connect(
     undefined,
@@ -331,29 +328,22 @@ const enhanceUrl = compose(
 )
 
 interface EnhancedUrlProps {
-  getValue: RF2.BoundFormAPI['getValue']
-  setValue: RF2.BoundFormAPI['setValue']
-  getLinkedValue: RF2.BoundFormAPI['getValue']
+  url: string
+  favico: string
+  setFavico: RF2.BoundFormAPI['setValue']
 }
-const enhanceUrl2 = mapPropsStream(
+const enhanceUrl2 = mapPropsStream<EnhancedUrlProps, EnhancedUrlProps>(
   (props$: Rx.Observable<EnhancedUrlProps>) => {
-    console.log('EnhanceUrl2')
     const changeIcon$ = props$
-      // .pluck<RenderUrlProps2, string>('getValue')
-      .map((props) => {
-        const val = props.getLinkedValue('')
-        console.log('val: ', val)
-        return val
-      })
+      .pluck<EnhancedUrlProps, string>('url')
       .distinctUntilChanged()
       .debounceTime(500)
-      .do((url) => console.log(`getting favicon for ${url}`))
       .switchMap(getFaviconStream)
       .withLatestFrom(props$, (icon, props) => {
-        const { setValue, getValue } = props
-        if (getValue('') !== icon) {
-          console.log('change favicon to ', icon)
-          setValue(icon || '')
+        icon = icon || ''
+        const { url, favico, setFavico } = props
+        if (favico !== icon) {
+          setFavico(icon)
         }
       })
 
@@ -364,11 +354,6 @@ const enhanceUrl2 = mapPropsStream(
 const renderUrl = enhanceUrl((props: RenderUrlProps) => {
   const { favicoName, change, ...inputProps } = props
   return renderInput(inputProps)
-})
-
-const renderUrl2 = (api: RF2.BoundFormAPI) => enhanceUrl2((props: RenderUrlProps2) => {
-  const { favicoName, setValue, ...inputProps } = props
-  return renderInput2(inputProps)(api)
 })
 
 const renderFavico = (props: RF.WrappedFieldProps) => {
@@ -393,24 +378,27 @@ const UrlField = <V extends {}>(props: UrlFieldProps<V> & RF.WrappedFieldProps) 
 
 const UrlField2 = (props: UrlFieldProps2 & Wrapper2Props) => {
   const { name, favicoName } = props
-  console.log('UrlField2')
-  type Foo = React.Props<any> & { getLinkedValue: (dflt: string) => string }
 
-  const Xasdf = enhanceUrl2((props: React.Props<any> & EnhancedUrlProps) =>
-    <RF2.FormField field={favicoName}>
-      {api2 => {
-        console.log(props)
-        return <RB.InputGroup.Addon>foo </RB.InputGroup.Addon>
-      }}
-    </RF2.FormField>
-  ) as React.ComponentClass<EnhancedUrlProps>
+  const FavicoAddon = enhanceUrl2(props =>
+    <RB.InputGroup.Addon>
+      <Favico value={props.favico}/>
+    </RB.InputGroup.Addon>
+  )
 
   return (
     <RF2.FormField field={name}>
       {api =>
         <Wrapper2 {...props} {...api}>
           <RB.InputGroup>
-            <Xasdf getLinkedValue={api.getValue} getValue={api.getValue} setValue={api.setValue} />
+            <RF2.FormField field={favicoName}>
+              {favicoApi =>
+                <FavicoAddon
+                  url={api.getValue('')}
+                  favico={favicoApi.getValue('')}
+                  setFavico={favicoApi.setValue}
+                />
+              }
+            </RF2.FormField>
             <RB.FormControl
               type='text'
               value={api.getValue('')}
