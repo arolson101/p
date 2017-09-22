@@ -4,6 +4,7 @@ import * as RB from 'react-bootstrap'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import * as ReactSelect from 'react-select'
+import 'react-select/dist/react-select.css'
 import { compose, mapPropsStream, withContext } from 'recompose'
 import * as RF from 'redux-form'
 import { createSelector } from 'reselect'
@@ -428,6 +429,18 @@ const ColorAddonField = <V extends {}>(props: ColorAddonFieldProps<V> & RF.Wrapp
   </RB.InputGroup.Button>
 }
 
+const ColorAddonField2 = <V extends {}>(props: ColorAddonFieldProps<V>) =>
+  <RF2.FormField field={props.name}>
+    {api =>
+      <RB.InputGroup.Button>
+        <ColorPicker
+          value={api.getValue('')}
+          onChange={value => api.setValue(value)}
+        />
+      </RB.InputGroup.Button>
+    }
+  </RF2.FormField>
+
 // select ---------------------------------------------------------------------
 export interface SelectOption {
   value: any
@@ -492,6 +505,32 @@ const SelectField = injectIntl(<V extends {}>(props: SelectFieldProps<V> & Injec
 
   return <RF.Field {...additionalProps(props)} component={renderSelect} placeholder={placeholder} parse={parse}/>
 }) as any as <V extends {}>(props: SelectFieldProps<V>) => JSX.Element
+
+const enhanceSelectField2 = compose<SelectFieldProps<string> & InjectedIntlProps, SelectFieldProps<string>>(
+  injectIntl,
+)
+
+const fixSelectProps2 = {
+  menuContainerStyle: { zIndex: 5 }, // https://github.com/JedWatson/react-select/issues/1076
+  onBlur: noop, // https://github.com/erikras/redux-form/issues/1185
+}
+
+const SelectField2 = enhanceSelectField2(props => {
+  const Component: typeof ReactSelect.Creatable = props.createable ? ReactSelect.Creatable : (ReactSelect as any).default
+  return <RF2.FormField field={props.name}>
+    {api =>
+      <Wrapper2 {...props} {...api}>
+        <Component
+          {...props}
+          {...fixSelectProps2}
+          onChange={value => api.setValue(selectFieldParse(value as any))}
+          onBlur={() => api.setTouched()}
+          value={api.getValue()}
+        />
+      </Wrapper2>
+    }
+  </RF2.FormField>
+}) as any
 
 const selectFieldParse = (value?: SelectOption): string => {
   if (!value) {
@@ -652,11 +691,13 @@ export const typedFields = <V extends {}>() => {
     UrlField: UrlField as React.StatelessComponent<UrlFieldProps<V>>,
     UrlField2: UrlField2 as React.StatelessComponent<UrlFieldProps<V>>,
     SelectField: SelectField as React.StatelessComponent<SelectFieldProps<V>>,
+    SelectField2: SelectField2 as React.StatelessComponent<SelectFieldProps<V>>,
     CheckboxField: CheckboxField as React.StatelessComponent<CheckboxFieldProps<V>>,
     DateField: DateField as React.StatelessComponent<DateFieldProps<V>>,
     AccountField: AccountField as React.StatelessComponent<AccountFieldProps<V>>,
     BudgetField: BudgetField as React.StatelessComponent<BudgetFieldProps<V>>,
     CollapseField: CollapseField as React.StatelessComponent<CollapseFieldProps<V>>,
     ColorAddon: ColorAddonField as React.StatelessComponent<ColorAddonFieldProps<V>>,
+    ColorAddon2: ColorAddonField2 as React.StatelessComponent<ColorAddonFieldProps<V>>,
   }
 }
