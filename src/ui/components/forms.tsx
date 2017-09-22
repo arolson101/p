@@ -516,17 +516,35 @@ const fixSelectProps2 = {
 
 const SelectField2 = enhanceSelectField2(props => {
   const Component: typeof ReactSelect.Creatable = props.createable ? ReactSelect.Creatable : (ReactSelect as any).default
-  let { placeholderMessage, placeholder, intl: { formatMessage } } = props
-  if (placeholderMessage) {
-    placeholder = formatMessage(placeholderMessage)
+  const { placeholderMessage, intl: { formatMessage } } = props
+  const placeholder = props.placeholderMessage ? props.intl.formatMessage(props.placeholderMessage) : props.placeholder
+
+  const valueOf = (value?: SelectOption): string => {
+    if (!value) {
+      return ''
+    }
+    return (value as any)[props.valueKey || 'value']
   }
+
+  const parse = (value: any) => {
+    if (value && props.multi) {
+      return (value as SelectOption[])
+        .sort((a, b) => props.options.indexOf(a) - props.options.indexOf(b))
+        .map(valueOf)
+        .join(props.delimiter || ',')
+    } else {
+      return valueOf(value)
+    }
+  }
+
   return <RF2.FormField field={props.name}>
     {api =>
       <Wrapper2 {...props} {...api}>
         <Component
           {...props}
           {...fixSelectProps2}
-          onChange={value => api.setValue(selectFieldParse(value as any))}
+          placeholder={placeholder}
+          onChange={value => api.setValue(parse(value))}
           onBlur={() => api.setTouched()}
           value={api.getValue()}
         />
@@ -539,6 +557,7 @@ const selectFieldParse = (value?: SelectOption): string => {
   if (!value) {
     return ''
   }
+  console.log('value', value)
   return value.value
 }
 
@@ -591,6 +610,19 @@ const renderDate = (props: DateFieldProps<any> & WrapperProps) => {
 
 const DateField = <V extends {}>(props: DateFieldProps<V>) => {
   return <RF.Field {...props} component={renderDate}/>
+}
+
+const DateField2 = <V extends {}>(props: DateFieldProps<V>) => {
+  return <RF2.FormField field={props.name}>
+    {api =>
+      <Wrapper2 {...props} {...api}>
+        <DatePicker
+          onChange={value => api.setValue(value)}
+          value={api.getValue('')}
+        />
+      </Wrapper2>
+    }
+  </RF2.FormField>
 }
 
 // checkbox -------------------------------------------------------------------
@@ -725,6 +757,7 @@ export const typedFields = <V extends {}>() => {
     CheckboxField: CheckboxField as React.StatelessComponent<CheckboxFieldProps<V>>,
     CheckboxField2: CheckboxField2 as React.StatelessComponent<CheckboxFieldProps<V>>,
     DateField: DateField as React.StatelessComponent<DateFieldProps<V>>,
+    DateField2: DateField2 as React.StatelessComponent<DateFieldProps<V>>,
     AccountField: AccountField as React.StatelessComponent<AccountFieldProps<V>>,
     BudgetField: BudgetField as React.StatelessComponent<BudgetFieldProps<V>>,
     CollapseField: CollapseField as React.StatelessComponent<CollapseFieldProps<V>>,
