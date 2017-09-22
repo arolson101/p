@@ -512,11 +512,14 @@ const enhanceSelectField2 = compose<SelectFieldProps<string> & InjectedIntlProps
 
 const fixSelectProps2 = {
   menuContainerStyle: { zIndex: 5 }, // https://github.com/JedWatson/react-select/issues/1076
-  onBlur: noop, // https://github.com/erikras/redux-form/issues/1185
 }
 
 const SelectField2 = enhanceSelectField2(props => {
   const Component: typeof ReactSelect.Creatable = props.createable ? ReactSelect.Creatable : (ReactSelect as any).default
+  let { placeholderMessage, placeholder, intl: { formatMessage } } = props
+  if (placeholderMessage) {
+    placeholder = formatMessage(placeholderMessage)
+  }
   return <RF2.FormField field={props.name}>
     {api =>
       <Wrapper2 {...props} {...api}>
@@ -530,7 +533,7 @@ const SelectField2 = enhanceSelectField2(props => {
       </Wrapper2>
     }
   </RF2.FormField>
-}) as any
+}) as any as <V extends {}>(props: SelectFieldProps<V>) => JSX.Element
 
 const selectFieldParse = (value?: SelectOption): string => {
   if (!value) {
@@ -610,6 +613,22 @@ const CheckboxField = <V extends {}>(props: CheckboxFieldProps<V>) => {
   return <RF.Field {...props} component={renderCheckbox}/>
 }
 
+const CheckboxField2 = <V extends {}>(props: CheckboxFieldProps<V>) => {
+  return <RF2.FormField field={props.name}>
+    {api =>
+      <Wrapper2 {...props} {...api}>
+        <RB.Checkbox
+          onChange={e => api.setValue((e.target as any).checked)}
+          checked={api.getValue(false)}
+          onBlur={() => api.setTouched()}
+        >
+          <FormattedMessage {...props.message}/>
+        </RB.Checkbox>
+      </Wrapper2>
+    }
+  </RF2.FormField>
+}
+
 // Collapse -------------------------------------------------------------------
 interface CollapseFieldProps<V> extends RB.CollapseProps {
   name: keyof V
@@ -624,6 +643,17 @@ const renderCollapse = (props: CollapseFieldProps<any> & RF.WrappedFieldProps & 
 
 const CollapseField = <V extends {}>(props: CollapseFieldProps<V> & React.Props<any>) => {
   return <RF.Field {...props} component={renderCollapse}/>
+}
+
+const CollapseField2 = <V extends {}>(props: CollapseFieldProps<V> & React.Props<any>) => {
+  const { children, ...passedProps } = props
+  return <RF2.FormField field={props.name}>
+    {api =>
+      <RB.Collapse {...passedProps} in={api.getValue(false)}>
+        {props.children}
+      </RB.Collapse>
+    }
+  </RF2.FormField>
 }
 
 // ----------------------------------------------------------------------------
@@ -693,10 +723,12 @@ export const typedFields = <V extends {}>() => {
     SelectField: SelectField as React.StatelessComponent<SelectFieldProps<V>>,
     SelectField2: SelectField2 as React.StatelessComponent<SelectFieldProps<V>>,
     CheckboxField: CheckboxField as React.StatelessComponent<CheckboxFieldProps<V>>,
+    CheckboxField2: CheckboxField2 as React.StatelessComponent<CheckboxFieldProps<V>>,
     DateField: DateField as React.StatelessComponent<DateFieldProps<V>>,
     AccountField: AccountField as React.StatelessComponent<AccountFieldProps<V>>,
     BudgetField: BudgetField as React.StatelessComponent<BudgetFieldProps<V>>,
     CollapseField: CollapseField as React.StatelessComponent<CollapseFieldProps<V>>,
+    CollapseField2: CollapseField2 as React.StatelessComponent<CollapseFieldProps<V>>,
     ColorAddon: ColorAddonField as React.StatelessComponent<ColorAddonFieldProps<V>>,
     ColorAddon2: ColorAddonField2 as React.StatelessComponent<ColorAddonFieldProps<V>>,
   }

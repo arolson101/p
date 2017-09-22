@@ -1,5 +1,5 @@
 declare module 'react-form' {
-  export type FieldValue = string | number
+  export type FieldValue = string | number | boolean
   export interface FormValues {
     [key: string]: FieldValue
   }

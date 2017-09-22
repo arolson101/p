@@ -156,22 +156,6 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
 
 import { FormField } from 'react-form'
 
-function CustomInput ({field, ...rest}: FormFieldProps) {
-  return (
-    <FormField field={field}>
-      {({ setValue, getValue, setTouched }) => {
-        return (
-          <input
-            value={getValue()}
-            onChange={e => setValue(e.target.value)}
-            onBlur={() => setTouched()}
-          />
-        )
-      }}
-    </FormField>
-  )
-}
-
 export namespace AccountDialogComponent {
   export type Props = ConnectedProps
 }
@@ -201,7 +185,6 @@ export const AccountDialogComponent = enhance((props) => {
       {({submitForm}) => {
         return (
           <form onSubmit={submitForm}>
-            <CustomInput field='name' />
             <button type='submit'>Submit</button>
           </form>
         )

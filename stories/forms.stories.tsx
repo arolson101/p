@@ -30,6 +30,14 @@ const messages = defineMessages({
   selectCreateable: {
     id: 'Forms.Stories.selectCreateable',
     defaultMessage: 'Createable Select'
+  },
+  checkbox: {
+    id: 'Forms.Stories.checkbox',
+    defaultMessage: 'Checkbox'
+  },
+  checkboxMessage: {
+    id: 'Forms.Stories.checkboxMessage',
+    defaultMessage: 'Checkbox message'
   }
 })
 
@@ -44,9 +52,11 @@ interface Values {
   color: string
   select: string
   selectCreateable: string
+  checkbox: boolean
 }
 
-const { Form, Form2, TextField2, UrlField2, PasswordField2, ColorAddon2, SelectField2 } = typedFields<Values>()
+const { Form, Form2, TextField2, UrlField2, PasswordField2,
+  ColorAddon2, SelectField2, CheckboxField2, CollapseField2 } = typedFields<Values>()
 
 const opt = (i: number) => ({value: `option ${i}`, label: `Option #${i}`})
 const selectOptions = [opt(1), opt(2), opt(3)]
@@ -62,6 +72,10 @@ stories.add('normal', () => {
         <TextField2 name='textWithColor' label={messages.textWithColor} addonBefore={<ColorAddon2 name='color'/>} />
         <SelectField2 name='select' options={selectOptions} label={messages.select}/>
         <SelectField2 createable name='selectCreateable' options={selectCreateableOptions} label={messages.selectCreateable} />
+        <CheckboxField2 name='checkbox' label={messages.checkbox} message={messages.checkboxMessage}/>
+        <CollapseField2 name='checkbox'>
+          <div>collapsed data</div>
+        </CollapseField2>
       </Form>
     }
   </Form2>
