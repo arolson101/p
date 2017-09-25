@@ -198,38 +198,6 @@ const renderInput = (props: InputFormField<any> & WrapperProps) => {
   )
 }
 
-const renderInput2 = (props: TextField2Props & InputFormField<any> & Wrapper2Props) => (api: RF2.BoundFormAPI) => {
-  const { label, help, rows,
-    password, addonBefore, addonAfter, ...passedProps } = props
-  const { setValue, getValue, setTouched } = api
-
-  const formControl = (
-    <RB.FormControl
-      componentClass={rows ? 'textarea' : undefined}
-      type={password ? 'password' : undefined}
-      rows={rows}
-      {...passedProps}
-      value={getValue('')}
-      onChange={e => setValue((e.target as any).value)}
-      onBlur={() => setTouched()}
-    />
-  )
-
-  return (
-    <Wrapper2 {...props} {...api}>
-      {(addonBefore || addonAfter) ? (
-        <RB.InputGroup>
-          {addonBefore}
-          {formControl}
-          {addonAfter}
-        </RB.InputGroup>
-      ) : (
-        formControl
-      )}
-    </Wrapper2>
-  )
-}
-
 type TextField2Props = InputFormField2
 const TextField2 = (props: TextField2Props) => {
   return (
@@ -634,15 +602,30 @@ const DateField = <V extends {}>(props: DateFieldProps<V>) => {
 }
 
 const DateField2 = <V extends {}>(props: DateFieldProps<V>) => {
+  const { addonBefore, addonAfter } = props
   return <RF2.FormField field={props.name}>
-    {api =>
-      <Wrapper2 {...props} {...api}>
+    {api => {
+      const component = (
         <DatePicker
           onChange={value => api.setValue(value)}
           value={api.getValue('')}
         />
-      </Wrapper2>
-    }
+      )
+
+      return (
+        <Wrapper2 {...props} {...api}>
+          {(addonBefore || addonAfter) ? (
+            <RB.InputGroup>
+              {addonBefore}
+              {component}
+              {addonAfter}
+            </RB.InputGroup>
+          ) : (
+            component
+          )}
+        </Wrapper2>
+      )
+    }}
   </RF2.FormField>
 }
 

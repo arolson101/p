@@ -10,9 +10,8 @@ import { Modal, DropdownButton, MenuItem, SelectCallback,
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange, withState } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withPropsOnChange, withState } from 'recompose'
 import { Dispatch } from 'redux'
-import { reduxForm, formValueSelector, InjectedFormProps } from 'redux-form'
 import { saveBill, toRRule, RRuleErrorMessage } from 'core/actions'
 import { Account, Budget, Bill } from 'core/docs'
 import { selectBills, selectBudgets } from 'core/selectors'
@@ -189,17 +188,9 @@ interface State {
   setGroups: (groups: SelectOption[]) => void
 }
 
-interface Handlers {
-  onFrequencyChange: SelectCallback
-  onEndTypeChange: SelectCallback
-  filterEndDate: (date: Date) => boolean
-}
-
 type ConnectedProps = StateProps & DispatchProps & Props
-type EnhancedProps = Handlers
-  & State
+type EnhancedProps = State
   & ConnectedFormProps
-  & FormValues
   & ConnectedProps
   & IntlProps
 
@@ -208,13 +199,13 @@ type EndType = 'endDate' | 'endCount'
 
 interface RRuleValues {
   frequency: Frequency
-  start?: string
-  end?: EndType
-  until?: string
-  count?: number
-  interval?: number
-  byweekday?: string
-  bymonth?: string
+  start: string
+  end: EndType
+  until: string
+  count: number
+  interval: number
+  byweekday: string
+  bymonth: string
 }
 
 interface Values extends RRuleValues {
@@ -229,8 +220,6 @@ interface Values extends RRuleValues {
   showAdvanced?: boolean
 }
 
-type FormValues = InjectedFormProps<Values, {}>
-
 export const BillDialogStatic = {
   dialog: 'BillDialog'
 }
@@ -238,7 +227,6 @@ export const BillDialogStatic = {
 export const showBillDialog = (params: Params) => setDialog(BillDialogStatic.dialog, params)
 
 const form = 'BillDialog'
-const valueSelector = formValueSelector(form)
 
 const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName(form),
@@ -248,123 +236,73 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
     onHide: PropTypes.func.isRequired
   }),
   injectIntl,
-  withPropsOnChange<any, IntlProps & Props>(
-    ['edit', 'intl'],
-    ({edit, intl: { formatNumber }}) => {
-      if (edit) {
-        const rrule = edit.rrule
-        const initialValues: Values = {
-          ...edit.doc,
-          amount: formatNumber(edit.doc.amount, {style: 'currency', currency: 'USD'}),
-          start: moment(rrule.options.dtstart).format('L'),
-        } as any
-
-        const opts = rrule.origOptions
-        if (opts.freq === RRule.MONTHLY) {
-          initialValues.frequency = 'months'
-        } else if (opts.freq === RRule.WEEKLY) {
-          initialValues.frequency = 'weeks'
-        } else if (opts.freq === RRule.MONTHLY) {
-          initialValues.frequency = 'months'
-        } else if (opts.freq === RRule.YEARLY) {
-          initialValues.frequency = 'years'
-        }
-
-        if (opts.interval) {
-          initialValues.interval = opts.interval
-        }
-        if (Array.isArray(opts.byweekday)) {
-          initialValues.byweekday = opts.byweekday.map((str: RRule.WeekdayStr) => dayMap[str]).join(',')
-          initialValues.showAdvanced = true
-        }
-        if (Array.isArray(opts.bymonth)) {
-          initialValues.bymonth = opts.bymonth.join(',')
-          initialValues.showAdvanced = true
-        }
-
-        initialValues.end = 'endCount'
-        if (opts.until) {
-          initialValues.until = moment(opts.until).format('L')
-          initialValues.count = 0
-          initialValues.end = 'endDate'
-        } else if (typeof opts.count === 'number') {
-          initialValues.count = opts.count
-          initialValues.until = ''
-        }
-
-        return { initialValues }
-      }
-    }
-  ),
-  reduxForm<Values, ConnectedProps & DispatchProps & IntlProps & Props>({
-    form,
-    enableReinitialize: true,
-    initialValues: {
-      start: moment().format('L'),
-      frequency: 'months',
-      interval: 1,
-      end: 'endCount'
-    },
-    validate: (values, props) => {
-      const v = new Validator(values, props.intl.formatMessage)
-      const { edit, bills, intl: { formatMessage } } = props
-      const otherBills = bills.filter((otherBill: Bill.View) => !edit || otherBill.doc._id !== edit.doc._id)
-      const otherNames = otherBills.map((acct) => acct.doc.name)
-      v.unique('name', otherNames, messages.uniqueName)
-      v.date('start')
-      v.date('until')
-      v.numeral('amount')
-      return v.errors
-    },
-    onSubmit: async (values: Values, dispatch, props) => {
-      const { edit, onHide, saveBill, intl: { formatMessage } } = props
-      await saveBill({edit: edit && edit.doc, formatMessage, values})
-      return onHide()
-    }
-  }),
-  connect<ConnectedFormProps, {}, FormValues & ConnectedProps & DispatchProps & IntlProps & Props>(
-    (state: AppState, props): ConnectedFormProps => ({
-      start: valueSelector(state, 'start'),
-      interval: valueSelector(state, 'interval'),
-      count: valueSelector(state, 'count'),
-      frequency: valueSelector(state, 'frequency'),
-      end: valueSelector(state, 'end'),
-      rrule: rruleSelector(state),
-    })
-  ),
   withState('groups', 'setGroups', (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)),
-  withHandlers<State & ConnectedFormProps & FormValues & ConnectedProps & DispatchProps & IntlProps & Props, Handlers>({
-    onFrequencyChange: ({change}) => (eventKey: Frequency) => {
-      change!('frequency', eventKey)
-    },
-    onEndTypeChange: ({change}) => (eventKey: EndType) => {
-      change!('end', eventKey)
-    },
-    filterEndDate: ({start}) => (date: Date): boolean => {
-      if (start) {
-        return moment(start, 'L').isBefore(date)
-      }
-      return false
-    },
-  })
 )
 
-const { Form, TextField, UrlField, SelectField, DateField, CollapseField,
-  CheckboxField, AccountField, BudgetField } = typedFields<Values>()
+const { Form2, TextField2, UrlField2, SelectField2, DateField2, CollapseField2,
+  CheckboxField2, AccountField2, BudgetField2 } = typedFields<Values>()
 
 export namespace BillDialogComponent {
   export type Props = ConnectedProps
 }
 export const BillDialogComponent = enhance((props) => {
-  const { edit, groups, monthOptions, weekdayOptions, handleSubmit,
-    frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, onHide, reset } = props
-  const { formatMessage } = props.intl
+  const { edit, groups, monthOptions, weekdayOptions,
+    frequency, interval, end, onHide } = props
+  const { formatMessage, formatNumber } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle
 
   const endDate = moment().add(2, 'year')
   const maxGenerated = 200
-  const generatedValues = rrule ? rrule.all((date, index) => endDate.isAfter(date) && index < maxGenerated) : []
-  const text = rrule ? rrule.toText() : ''
+
+  let defaultValues: Partial<Values>
+  if (edit) {
+    const rrule = edit.rrule
+    defaultValues = {
+      ...edit.doc as any,
+      amount: formatNumber(edit.doc.amount, {style: 'currency', currency: 'USD'}),
+      start: moment(rrule.options.dtstart).format('L'),
+    }
+
+    const opts = rrule.origOptions
+    if (opts.freq === RRule.MONTHLY) {
+      defaultValues.frequency = 'months'
+    } else if (opts.freq === RRule.WEEKLY) {
+      defaultValues.frequency = 'weeks'
+    } else if (opts.freq === RRule.MONTHLY) {
+      defaultValues.frequency = 'months'
+    } else if (opts.freq === RRule.YEARLY) {
+      defaultValues.frequency = 'years'
+    }
+
+    if (opts.interval) {
+      defaultValues.interval = opts.interval
+    }
+    if (Array.isArray(opts.byweekday)) {
+      defaultValues.byweekday = opts.byweekday.map((str: RRule.WeekdayStr) => dayMap[str]).join(',')
+      defaultValues.showAdvanced = true
+    }
+    if (Array.isArray(opts.bymonth)) {
+      defaultValues.bymonth = opts.bymonth.join(',')
+      defaultValues.showAdvanced = true
+    }
+
+    defaultValues.end = 'endCount'
+    if (opts.until) {
+      defaultValues.until = moment(opts.until).format('L')
+      defaultValues.count = 0
+      defaultValues.end = 'endDate'
+    } else if (typeof opts.count === 'number') {
+      defaultValues.count = opts.count
+      defaultValues.until = ''
+    }
+  } else {
+    defaultValues = {
+      start: moment().format('L'),
+      frequency: 'months',
+      interval: 1,
+      end: 'endCount'
+    }
+  }
 
   return (
     <div>
@@ -374,183 +312,232 @@ export const BillDialogComponent = enhance((props) => {
         </Modal.Title>
       </Modal.Header>
 
-      <Form horizontal onSubmit={handleSubmit}>
-        <Modal.Body>
-          <TextField
-            autoFocus
-            name='name'
-            label={messages.name}
-          />
-          <SelectField
-            createable
-            name='group'
-            options={groups}
-            label={messages.group}
-            promptTextCreator={(label: string) => 'create group ' + label}
-            placeholder=''
-          />
-          <UrlField
-            name='web'
-            favicoName='favicon'
-            label={messages.web}
-          />
-          <TextField
-            name='notes'
-            label={messages.notes}
-          />
-
-          <hr/>
-          <TextField
-            name='amount'
-            label={messages.amount}
-          />
-          <AccountField
-            name='account'
-            label={messages.account}
-          />
-          <BudgetField
-            name='category'
-            label={messages.budget}
-          />
-
-          <hr/>
-          <p><em><FormattedMessage {...messages.frequencyHeader} values={{rule: text}}/></em></p>
-          <DateField
-            name='start'
-            label={messages.start}
-            highlightDates={generatedValues}
-          />
-          {end !== 'endDate' &&
-            <TextField
-              name='count'
-              type='number'
-              min={0}
-              label={messages.end}
-              addonBefore={
-                <DropdownButton
-                  componentClass={InputGroup.Button}
-                  id='count-addon-end'
-                  title={formatMessage(messages[end])}
-                >
-                  {['endCount', 'endDate'].map((et: EndType) =>
-                    <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
-                      <FormattedMessage {...messages[et]} values={{interval: interval.toString()}}/>
-                    </MenuItem>
-                  )}
-                </DropdownButton>
-              }
-              addonAfter={
-                <InputGroup.Addon>
-                  <FormattedMessage {...messages.times}/>
-                </InputGroup.Addon>
-              }
-            />
+      <Form2
+        horizontal
+        defaultValues={defaultValues}
+        validate={(values) => {
+          const v = new Validator(values, props.intl.formatMessage)
+          const { edit, bills, intl: { formatMessage } } = props
+          const otherBills = bills.filter((otherBill: Bill.View) => !edit || otherBill.doc._id !== edit.doc._id)
+          const otherNames = otherBills.map((acct) => acct.doc.name)
+          v.unique('name', otherNames, messages.uniqueName)
+          v.date('start')
+          v.date('until')
+          v.numeral('amount')
+          return v.errors
+        }}
+        onSubmit={async (values, state, api, instance) => {
+          const { edit, onHide, saveBill, intl: { formatMessage } } = props
+          const v = new Validator(values, formatMessage)
+          v.required('name')
+          if (v.hasErrors) {
+            state.errors = v.errors
+            instance.setAllTouched()
+            return
           }
-          {end === 'endDate' &&
-            <DateField
-              name='until'
-              label={messages.end}
-              addonBefore={
-                <DropdownButton
-                  componentClass={InputGroup.Button}
-                  id='count-addon-end'
-                  title={formatMessage(messages[end])}
-                >
-                  {['endCount', 'endDate'].map((et: EndType) =>
-                    <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
-                      <FormattedMessage {...messages[et]} values={{interval: interval.toString()}}/>
-                    </MenuItem>
-                  )}
-                </DropdownButton>
-              }
-              placeholderText={formatMessage(messages.endDatePlaceholder)}
-              filterDate={filterEndDate}
-            />
-          }
-          <TextField
-            name='interval'
-            label={messages.interval}
-            type='number'
-            min={0}
-            addonBefore={
-              <InputGroup.Addon>
-                <FormattedMessage {...messages.every}/>
-              </InputGroup.Addon>
-            }
-            addonAfter={
-              <DropdownButton
-                pullRight
-                componentClass={InputGroup.Button}
-                id='interval-addon-frequency'
-                title={formatMessage(messages[frequency], {interval: interval.toString()})}
-              >
-                {['days', 'weeks', 'months', 'years'].map((cf: Frequency) =>
-                  <MenuItem key={cf} eventKey={cf} onSelect={onFrequencyChange} active={frequency === cf}>
-                    <FormattedMessage {...messages[cf]} values={{interval: interval.toString()}}/>
-                  </MenuItem>
-                )}
-              </DropdownButton>
-            }
-          />
 
-          <CheckboxField name='showAdvanced' label={messages.advanced} message={messages.advancedMessage}/>
-          <CollapseField name='showAdvanced'>
-            <div>
-              <SelectField
-                name='byweekday'
-                label={messages.byweekday}
-                multi
-                joinValues
-                delimiter=','
-                simpleValue
-                options={weekdayOptions}
+          await saveBill({edit: edit && edit.doc, formatMessage, values})
+          return onHide()
+        }}
+      >
+        {api => {
+          const { start, interval, count, frequency, end } = api.values
+          console.assert(end)
+          const rrule = rruleSelector(api.values)
+          const generatedValues = rrule ? rrule.all((date, index) => endDate.isAfter(date) && index < maxGenerated) : []
+          const text = rrule ? rrule.toText() : ''
+
+          const onFrequencyChange: SelectCallback = (eventKey: any) => {
+            api.setValue('frequency', eventKey as Frequency)
+          }
+          const onEndTypeChange: SelectCallback = (eventKey: any) => {
+            api.setValue('end', eventKey as EndType)
+          }
+          const filterEndDate = (date: Date): boolean => {
+            if (start) {
+              return moment(start, 'L').isBefore(date)
+            }
+            return false
+          }
+
+          return <div>
+            <Modal.Body>
+              <TextField2
+                autoFocus
+                name='name'
+                label={messages.name}
+              />
+              <SelectField2
+                createable
+                name='group'
+                options={groups}
+                label={messages.group}
+                promptTextCreator={(label: string) => 'create group ' + label}
+                placeholder=''
+              />
+              <UrlField2
+                name='web'
+                favicoName='favicon'
+                label={messages.web}
+              />
+              <TextField2
+                name='notes'
+                label={messages.notes}
               />
 
-              <SelectField
-                name='bymonth'
-                label={messages.bymonth}
-                multi
-                joinValues
-                delimiter=','
-                simpleValue
-                options={monthOptions}
+              <hr/>
+              <TextField2
+                name='amount'
+                label={messages.amount}
               />
-            </div>
-          </CollapseField>
+              <AccountField2
+                name='account'
+                label={messages.account}
+              />
+              <BudgetField2
+                name='category'
+                label={messages.budget}
+              />
 
-          {/*__DEVELOPMENT__ &&
-            <div>{rrule ? rrule.toString() : ''}</div>
-          */}
-          {rrule && generatedValues.length > 0 && !moment(rrule.origOptions.dtstart).isSame(generatedValues[0]) &&
-            <Alert bsStyle='danger'>
-              <FormattedMessage {...messages.startExcluded}/>
-            </Alert>
-          }
-        </Modal.Body>
+              <hr/>
+              <p><em><FormattedMessage {...messages.frequencyHeader} values={{rule: text}}/></em></p>
+              <DateField2
+                name='start'
+                label={messages.start}
+                highlightDates={generatedValues}
+              />
+              {end !== 'endDate' &&
+                <TextField2
+                  name='count'
+                  type='number'
+                  min={0}
+                  label={messages.end}
+                  addonBefore={
+                    <DropdownButton
+                      componentClass={InputGroup.Button}
+                      id='count-addon-end'
+                      title={formatMessage(messages[end])}
+                    >
+                      {['endCount', 'endDate'].map((et: EndType) =>
+                        <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
+                          <FormattedMessage {...messages[et]} values={{interval: interval.toString()}}/>
+                        </MenuItem>
+                      )}
+                    </DropdownButton>
+                  }
+                  addonAfter={
+                    <InputGroup.Addon>
+                      <FormattedMessage {...messages.times}/>
+                    </InputGroup.Addon>
+                  }
+                />
+              }
+              {end === 'endDate' &&
+                <DateField2
+                  name='until'
+                  label={messages.end}
+                  addonBefore={
+                    <DropdownButton
+                      componentClass={InputGroup.Button}
+                      id='count-addon-end'
+                      title={formatMessage(messages[end])}
+                    >
+                      {['endCount', 'endDate'].map((et: EndType) =>
+                        <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
+                          <FormattedMessage {...messages[et]} values={{interval: interval.toString()}}/>
+                        </MenuItem>
+                      )}
+                    </DropdownButton>
+                  }
+                  placeholderText={formatMessage(messages.endDatePlaceholder)}
+                  filterDate={filterEndDate}
+                />
+              }
+              <TextField2
+                name='interval'
+                label={messages.interval}
+                type='number'
+                min={0}
+                addonBefore={
+                  <InputGroup.Addon>
+                    <FormattedMessage {...messages.every}/>
+                  </InputGroup.Addon>
+                }
+                addonAfter={
+                  <DropdownButton
+                    pullRight
+                    componentClass={InputGroup.Button}
+                    id='interval-addon-frequency'
+                    title={formatMessage(messages[frequency], {interval: interval.toString()})}
+                  >
+                    {['days', 'weeks', 'months', 'years'].map((cf: Frequency) =>
+                      <MenuItem key={cf} eventKey={cf} onSelect={onFrequencyChange} active={frequency === cf}>
+                        <FormattedMessage {...messages[cf]} values={{interval: interval.toString()}}/>
+                      </MenuItem>
+                    )}
+                  </DropdownButton>
+                }
+              />
 
-        <Modal.Footer>
-          <ButtonToolbar className='pull-right'>
-            <Button
-              type='button'
-              onClick={onHide}
-            >
-              <FormattedMessage {...forms.cancel}/>
-            </Button>
-            <Button
-              type='submit'
-              bsStyle='primary'
-              id='open-dropdown'
-            >
-              {edit ? (
-                <FormattedMessage {...forms.save}/>
-              ) : (
-                <FormattedMessage {...forms.create}/>
-              )}
-            </Button>
-          </ButtonToolbar>
-        </Modal.Footer>
+              <CheckboxField2 name='showAdvanced' label={messages.advanced} message={messages.advancedMessage}/>
+              <CollapseField2 name='showAdvanced'>
+                <div>
+                  <SelectField2
+                    name='byweekday'
+                    label={messages.byweekday}
+                    multi
+                    joinValues
+                    delimiter=','
+                    simpleValue
+                    options={weekdayOptions}
+                  />
 
-      </Form>
+                  <SelectField2
+                    name='bymonth'
+                    label={messages.bymonth}
+                    multi
+                    joinValues
+                    delimiter=','
+                    simpleValue
+                    options={monthOptions}
+                  />
+                </div>
+              </CollapseField2>
+
+              {/*__DEVELOPMENT__ &&
+                <div>{rrule ? rrule.toString() : ''}</div>
+              */}
+              {rrule && generatedValues.length > 0 && !moment(rrule.origOptions.dtstart).isSame(generatedValues[0]) &&
+                <Alert bsStyle='danger'>
+                  <FormattedMessage {...messages.startExcluded}/>
+                </Alert>
+              }
+            </Modal.Body>
+
+            <Modal.Footer>
+              <ButtonToolbar className='pull-right'>
+                <Button
+                  type='button'
+                  onClick={onHide}
+                >
+                  <FormattedMessage {...forms.cancel}/>
+                </Button>
+                <Button
+                  type='submit'
+                  bsStyle='primary'
+                  id='open-dropdown'
+                >
+                  {edit ? (
+                    <FormattedMessage {...forms.save}/>
+                  ) : (
+                    <FormattedMessage {...forms.create}/>
+                  )}
+                </Button>
+              </ButtonToolbar>
+            </Modal.Footer>
+          </div>
+        }}
+      </Form2>
     </div>
   )
 })
@@ -609,20 +596,11 @@ const getGroupNames = R.pipe(
   R.map((name: string): SelectOption => ({ label: name, value: name }))
 )
 
-const rruleSelector = createSelector(
-  (state: AppState) => valueSelector(state, 'frequency') as Frequency,
-  (state: AppState) => valueSelector(state, 'start') as string,
-  (state: AppState) => valueSelector(state, 'end') as EndType,
-  (state: AppState) => valueSelector(state, 'until') as string,
-  (state: AppState) => valueSelector(state, 'count') as number,
-  (state: AppState) => valueSelector(state, 'interval') as number,
-  (state: AppState) => valueSelector(state, 'byweekday') as string,
-  (state: AppState) => valueSelector(state, 'bymonth') as string,
-  (frequency, start, end, until, count, interval, byweekday, bymonth): RRule | undefined => {
-    const rrule = toRRule({frequency, start, end, until, count, interval, byweekday, bymonth})
-    if (rrule instanceof RRuleErrorMessage) {
-      return undefined
-    }
-    return rrule
+const rruleSelector = (values: Values): RRule | undefined => {
+  const { frequency, start, end, until, count, interval, byweekday, bymonth } = values
+  const rrule = toRRule({frequency, start, end, until, count, interval, byweekday, bymonth})
+  if (rrule instanceof RRuleErrorMessage) {
+    return undefined
   }
-)
+  return rrule
+}

@@ -1,16 +1,22 @@
 // tslint:disable:no-unused-expression
 import * as React from 'react'
 import { specs, describe, it } from 'storybook-addon-specifications'
-import { mountIntl, expect, stub, action, storiesOfIntl, dummyAccountView } from './storybook'
+import { mountIntl, expect, stub, action, storiesOfIntl,
+  dummyStore, dummyBankDocs, dummyBudgetDocs, Provider } from './storybook'
 
 import { DbInfo, Account, Bank } from 'core'
 import { BillDialogComponent } from 'ui/dialogs/BillDialog'
 
 const stories = storiesOfIntl(`Dialogs/BillDialog`, module)
 
-const dummyProps = <T extends Function>(functor: (name: string) => T) => {
-  const { account, bank } = dummyAccountView()
+const store = dummyStore(
+  ...dummyBankDocs('bank 1', ['account 1a', 'account 1b']),
+  ...dummyBankDocs('bank 2', ['account 2a']),
+  ...dummyBudgetDocs('budget 1'),
+  ...dummyBudgetDocs('budget 2')
+)
 
+const dummyProps = <T extends Function>(functor: (name: string) => T) => {
   return {
     onHide: functor('onHide'),
     saveBill: functor('saveBill'),
@@ -23,9 +29,11 @@ const dummyProps = <T extends Function>(functor: (name: string) => T) => {
 
 stories.add('normal', () => {
   const story = (props: BillDialogComponent.Props) =>
-    <BillDialogComponent
-      {...props}
-    />
+    <Provider store={store}>
+      <BillDialogComponent
+        {...props}
+      />
+    </Provider>
 
   specs(() => describe('normal', () => {
     it('clicking cancel should hide dialog', () => {

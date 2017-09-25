@@ -12,8 +12,8 @@ declare module 'react-form' {
     [key: string]: boolean
   }
 
-  export interface FormState {
-    values: FormValues
+  export interface FormState<V = FormValues> {
+    values: V
     errors: FormErrors
     nestedErrors: FormErrors
     touched: FormTouched
@@ -35,18 +35,18 @@ declare module 'react-form' {
   }
 
   export interface FormProps<V = FormValues> extends FormPropsBase<V> {
-    children?: (props: FormAPI) => React.ReactNode
+    children?: (props: FormAPI<V>) => React.ReactNode
   }
 
-  interface BaseFormAPI {
-    setAllValues: (values: FormValues, noTouch?: boolean) => void
+  interface BaseFormAPI<V = FormValues> extends FormState<V> {
+    setAllValues: (values: V, noTouch?: boolean) => void
     setAllTouched: (value?: boolean) => void
     resetForm: () => void
     submitForm: () => void
   }
 
-  export interface FormAPI extends BaseFormAPI {
-    setValue: (field: string, value: FieldValue, noTouch?: boolean) => void
+  export interface FormAPI<V = FormValues> extends BaseFormAPI<V> {
+    setValue: <K extends keyof V>(field: K, value: V[K], noTouch?: boolean) => void
     getValue: <T extends FieldValue>(field: string, fallback?: T) => T
     setNestedError: (field: string, value: FieldValue) => void
     getError: (field: string) => string | undefined
@@ -57,7 +57,7 @@ declare module 'react-form' {
     swapValues: (field: string, i: number, j: number) => void
   }
 
-  export interface BoundFormAPI extends BaseFormAPI {
+  export interface BoundFormAPI<V = FormValues> extends BaseFormAPI<V> {
     setValue: (value: FieldValue, noTouch?: boolean) => void
     getValue: <T extends FieldValue>(fallback?: T) => T
     setNestedError: (value: FieldValue) => void
