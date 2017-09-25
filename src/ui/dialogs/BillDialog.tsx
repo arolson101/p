@@ -175,8 +175,6 @@ interface DispatchProps {
   saveBill: saveBill.Fcn
 }
 
-type ConnectedProps = StateProps & DispatchProps
-
 interface ConnectedFormProps {
   start: Date
   interval: number
@@ -197,13 +195,13 @@ interface Handlers {
   filterEndDate: (date: Date) => boolean
 }
 
+type ConnectedProps = StateProps & DispatchProps & Props
 type EnhancedProps = Handlers
   & State
   & ConnectedFormProps
   & FormValues
   & ConnectedProps
   & IntlProps
-  & Props
 
 type Frequency = 'days' | 'weeks' | 'months' | 'years'
 type EndType = 'endDate' | 'endCount'
@@ -242,7 +240,7 @@ export const showBillDialog = (params: Params) => setDialog(BillDialogStatic.dia
 const form = 'BillDialog'
 const valueSelector = formValueSelector(form)
 
-const enhance = compose<EnhancedProps, Props>(
+const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName(form),
   onlyUpdateForPropTypes,
   setPropTypes<Props>({
@@ -297,15 +295,6 @@ const enhance = compose<EnhancedProps, Props>(
         return { initialValues }
       }
     }
-  ),
-  connect<StateProps, DispatchProps, IntlProps & Props>(
-    (state: AppState): StateProps => ({
-      bills: selectBills(state),
-      budgets: selectBudgets(state),
-      monthOptions: monthOptions(state),
-      weekdayOptions: weekdayOptions(state),
-    }),
-    mapDispatchToProps<DispatchProps>({ saveBill })
   ),
   reduxForm<Values, ConnectedProps & DispatchProps & IntlProps & Props>({
     form,
@@ -363,7 +352,10 @@ const enhance = compose<EnhancedProps, Props>(
 const { Form, TextField, UrlField, SelectField, DateField, CollapseField,
   CheckboxField, AccountField, BudgetField } = typedFields<Values>()
 
-export const BillDialog = enhance((props) => {
+export namespace BillDialogComponent {
+  export type Props = ConnectedProps
+}
+export const BillDialogComponent = enhance((props) => {
   const { edit, groups, monthOptions, weekdayOptions, handleSubmit,
     frequency, interval, end, filterEndDate, onFrequencyChange, onEndTypeChange, rrule, onHide, reset } = props
   const { formatMessage } = props.intl
@@ -562,6 +554,16 @@ export const BillDialog = enhance((props) => {
     </div>
   )
 })
+
+export const BillDialog = connect<StateProps, DispatchProps, Props>(
+  (state: AppState): StateProps => ({
+    bills: selectBills(state),
+    budgets: selectBudgets(state),
+    monthOptions: monthOptions(state),
+    weekdayOptions: weekdayOptions(state),
+  }),
+  mapDispatchToProps<DispatchProps>({ saveBill })
+)(BillDialogComponent)
 
 const dayMap = {
   SU: 0,
