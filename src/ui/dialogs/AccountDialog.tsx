@@ -13,7 +13,6 @@ import { saveAccount } from 'core/actions'
 import { selectBankAccounts } from 'core/selectors'
 import { typedFields, forms } from '../components/forms'
 import { ContainedModal } from './ContainedModal'
-import { Form as Form2, Text, FormFieldProps } from 'react-form'
 
 const messages = defineMessages({
   createTitle: {
@@ -101,7 +100,7 @@ export const showAccountDialog = (params: Params) => setDialog(AccountDialogStat
 type Values = saveAccount.Values
 
 const form = 'AccountDialog'
-const { Form, TextField, SelectField, ColorAddon } = typedFields<Values>()
+const { Form2, TextField2, SelectField2, ColorAddon2 } = typedFields<Values, EnhancedProps>()
 const valueSelector = formValueSelector(form)
 
 const enhance = compose<EnhancedProps, ConnectedProps>(
@@ -171,36 +170,39 @@ export const AccountDialogComponent = enhance((props) => {
         </Modal.Title>
       </Modal.Header>
 
-    <Form2
-      onSubmit={(values) => {
-        console.log('Success!', values)
-      }}
-      validate={({ name }) => {
-        return {
-          name: !name ? 'A name is required' : undefined
-        }
-      }}
-    >
+      <Form2
+        horizontal
+        onSubmit={async (values, state, props, instance) => {
+          const { bank, edit, saveAccount, onHide, intl: { formatMessage }, push } = props
 
-      {({submitForm}) => {
-        return (
-          <form onSubmit={submitForm}>
-            <button type='submit'>Submit</button>
-          </form>
-        )
-      }}
+          const doc = await saveAccount({formatMessage, values, bank, edit})
 
-    </Form2>
-{/*
-      <Form horizontal onSubmit={handleSubmit}>
+          if (!edit) {
+            push(Account.to.view(doc))
+          }
+
+          onHide()
+        }}
+
+        validate={(values, state, props, instance) => {
+          const { edit, bank, accounts, intl: { formatMessage } } = props
+          const v = new Validator(values, formatMessage)
+          const otherAccounts = accounts.filter(acct => !edit || edit.doc._id !== acct.doc._id)
+          const otherNames = otherAccounts.map(acct => acct.doc.name)
+          const otherNumbers = otherAccounts.filter(acct => acct.doc.type === v.values.type).map(acct => acct.doc.number)
+          v.unique('name', otherNames, messages.uniqueName)
+          v.unique('number', otherNumbers, messages.uniqueNumber)
+          return v.errors
+        }}
+      >
         <Modal.Body>
-          <TextField
+          <TextField2
             name='name'
             label={messages.name}
-            addonBefore={<ColorAddon name='color'/>}
+            addonBefore={<ColorAddon2 name='color'/>}
             autoFocus
           />
-          <SelectField
+          <SelectField2
             name='type'
             options={typeOptions}
             clearable={false}
@@ -208,18 +210,18 @@ export const AccountDialogComponent = enhance((props) => {
             valueRenderer={accountTypeRenderer}
             label={messages.type}
           />
-          <TextField
+          <TextField2
             name='number'
             label={messages.number}
           />
           {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
-            <TextField
+            <TextField2
               name='bankid'
               label={messages.bankid}
             />
           }
           {(type === Account.Type.CREDITCARD) &&
-            <TextField
+            <TextField2
               name='key'
               label={messages.key}
             />
@@ -247,7 +249,7 @@ export const AccountDialogComponent = enhance((props) => {
             </Button>
           </ButtonToolbar>
         </Modal.Footer>
-      </Form> */}
+      </Form2>
     </div>
   )
 })

@@ -19,20 +19,22 @@ declare module 'react-form' {
     touched: FormTouched
   }
 
-  export interface FormProps {
-    defaultValues?: FormValues
-    loadState?: (props: any, instance: any) => FormState | undefined
-    preValidate?: (values: FormValues, state: FormState, props: any, instance: any) => FormValues
-    validate?: (values: FormValues, state: FormState, props: any, instance: any) => FormErrors
-    onValidationFail?: (values: FormValues, state: FormState, props: any, instance: any) => void
-    onChange?: (state: FormState, props: any, initial: boolean, instance: any) => void
-    saveState?: (state: FormState, props: any, instance: any) => void
-    willUnmount?: (state: FormState, props: any, instance: any) => void
-    preSubmit?: (values: FormValues, state: FormState, props: any, instance: any) => FormValues
-    onSubmit?: (values: FormValues, state: FormState, props: any, instance: any) => void
-    postSubmit?: (values: FormValues, state: FormState, props: any, instance: any) => void
+  export interface FormPropsBase<V = FormValues, P = any> {
+    defaultValues?: V
+    loadState?: (props: P, instance: any) => FormState | undefined
+    preValidate?: (values: V, state: FormState, props: P, instance: any) => V
+    validate?: (values: V, state: FormState, props: P, instance: any) => FormErrors
+    onValidationFail?: (values: V, state: FormState, props: P, instance: any) => void
+    onChange?: (state: FormState, props: P, initial: boolean, instance: any) => void
+    saveState?: (state: FormState, props: P, instance: any) => void
+    willUnmount?: (state: FormState, props: P, instance: any) => void
+    preSubmit?: (values: V, state: FormState, props: P, instance: any) => V
+    onSubmit?: (values: V, state: FormState, props: P, instance: any) => void
+    postSubmit?: (values: V, state: FormState, props: P, instance: any) => void
     component?: string | false | React.ComponentType<any>
+  }
 
+  export interface FormProps<V = FormValues> extends FormPropsBase<V> {
     children?: (props: FormAPI) => React.ReactNode
   }
 

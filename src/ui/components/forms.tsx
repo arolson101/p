@@ -750,8 +750,8 @@ export const FormLayout = enhanceFormLayout(({ children, ...props }) => {
   )
 })
 
-interface FormLayoutProps extends RF2.FormProps {
-  horizontal: boolean
+interface FormLayoutProps<V = any, P = any> extends RF2.FormPropsBase<V, P>, React.Props<any> {
+  horizontal?: boolean
 }
 const enhanceFormLayout2 = compose<FormLayoutProps, FormLayoutProps>(
   withContext<{ layout: LayoutConfig }, RB.FormProps>(
@@ -762,18 +762,28 @@ const enhanceFormLayout2 = compose<FormLayoutProps, FormLayoutProps>(
   )
 )
 
-export const FormLayout2 = enhanceFormLayout2(({ children, ...props }) => {
+export const FormLayout2 = enhanceFormLayout2(({ children, horizontal, ...props }) => {
   return (
-    <RF2.Form {...props} component={RB.Form}>
-      {children}
+    <RF2.Form {...props}>
+      {api =>
+        <RB.Form
+          horizontal={horizontal}
+          onSubmit={e => {
+            e.preventDefault()
+            api.submitForm()
+          }}
+        >
+          {children}
+        </RB.Form>
+      }
     </RF2.Form>
   )
 })
 
-export const typedFields = <V extends {}>() => {
+export const typedFields = <V extends {}, P extends {} = any>() => {
   return {
     Form: FormLayout,
-    Form2: FormLayout2,
+    Form2: FormLayout2 as React.ComponentClass<FormLayoutProps<V, P>>,
     TextField2: TextField2 as React.StatelessComponent<TextFieldProps<V>>,
     TextField: TextField as React.StatelessComponent<TextFieldProps<V>>,
     PasswordField: PasswordField as React.StatelessComponent<PasswordFieldProps<V>>,
