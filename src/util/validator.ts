@@ -26,12 +26,16 @@ type FormatMessage = typeof injectedIntl.formatMessage
 export class Validator<V extends DataShape> {
   values: V
   formatMessage: FormatMessage
-  errors: FormErrors<V>
+  errors: any // FormErrors<V>
 
   constructor (values: V, formatMessage: FormatMessage, errors: FormErrors<V> = {}) {
     this.values = values
     this.formatMessage = formatMessage
     this.errors = errors
+  }
+
+  get hasErrors () {
+    return !isEmpty(this.errors)
   }
 
   maybeThrowSubmissionError () {

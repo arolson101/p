@@ -210,10 +210,7 @@ const renderInput2 = (props: TextField2Props & InputFormField<any> & Wrapper2Pro
       rows={rows}
       {...passedProps}
       value={getValue('')}
-      onChange={e => {
-        console.log('onchange')
-        setValue((e.target as any).value)
-      }}
+      onChange={e => setValue((e.target as any).value)}
       onBlur={() => setTouched()}
     />
   )
@@ -249,10 +246,7 @@ const TextField2 = (props: TextField2Props) => {
             rows={rows}
             {...passedProps}
             value={getValue('')}
-            onChange={e => {
-              console.log('onchange')
-              setValue((e.target as any).value)
-            }}
+            onChange={e => setValue((e.target as any).value)}
             onBlur={() => setTouched()}
           />
         )
@@ -557,7 +551,6 @@ const selectFieldParse = (value?: SelectOption): string => {
   if (!value) {
     return ''
   }
-  console.log('value', value)
   return value.value
 }
 
@@ -750,7 +743,7 @@ export const FormLayout = enhanceFormLayout(({ children, ...props }) => {
   )
 })
 
-interface FormLayoutProps<V = any, P = any> extends RF2.FormPropsBase<V, P>, React.Props<any> {
+interface FormLayoutProps<V = any> extends RF2.FormPropsBase<V>, React.Props<any> {
   horizontal?: boolean
 }
 const enhanceFormLayout2 = compose<FormLayoutProps, FormLayoutProps>(
@@ -780,10 +773,10 @@ export const FormLayout2 = enhanceFormLayout2(({ children, horizontal, ...props 
   )
 })
 
-export const typedFields = <V extends {}, P extends {} = any>() => {
+export const typedFields = <V extends {}>() => {
   return {
     Form: FormLayout,
-    Form2: FormLayout2 as React.ComponentClass<FormLayoutProps<V, P>>,
+    Form2: FormLayout2 as React.ComponentClass<FormLayoutProps<V>>,
     TextField2: TextField2 as React.StatelessComponent<TextFieldProps<V>>,
     TextField: TextField as React.StatelessComponent<TextFieldProps<V>>,
     PasswordField: PasswordField as React.StatelessComponent<PasswordFieldProps<V>>,

@@ -4,8 +4,7 @@ import * as React from 'react'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, withPropsOnChange } from 'recompose'
-import { reduxForm, formValueSelector, InjectedFormProps } from 'redux-form'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import { Bank, Account } from 'core/docs'
 import { Validator } from 'util/index'
 import { AppState, mapDispatchToProps, setDialog } from 'core/state'
@@ -89,7 +88,7 @@ interface ConnectedFormProps {
 }
 
 type ConnectedProps = StateProps & DispatchProps & Props
-type EnhancedProps = InjectedFormProps<Values, {}> & ConnectedFormProps & ConnectedProps & IntlProps
+type EnhancedProps = ConnectedFormProps & ConnectedProps & IntlProps
 
 export const AccountDialogStatic = {
   dialog: 'AccountDialog'
@@ -100,8 +99,7 @@ export const showAccountDialog = (params: Params) => setDialog(AccountDialogStat
 type Values = saveAccount.Values
 
 const form = 'AccountDialog'
-const { Form2, TextField2, SelectField2, ColorAddon2 } = typedFields<Values, EnhancedProps>()
-const valueSelector = formValueSelector(form)
+const { Form2, TextField2, SelectField2, ColorAddon2 } = typedFields<Values>()
 
 const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName('AccountDialog'),
@@ -112,45 +110,6 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
     onHide: PropTypes.func.isRequired
   }),
   injectIntl,
-  withPropsOnChange<any, InjectedFormProps<Values, {}> & Props>(
-    ['edit'],
-    ({ edit }) => {
-      const initialValues: Partial<Values> = edit ? edit.doc : ({
-        color: Account.generateColor(),
-      })
-      return { initialValues }
-    }
-  ),
-  // reduxForm<Values, StateProps & DispatchProps & InjectedIntlProps & Props>({
-  //   form,
-  //   enableReinitialize: true,
-  //   onSubmit: async (values: Values, dispatch, props) => {
-  //     const { bank, edit, saveAccount, onHide, intl: { formatMessage }, push } = props
-
-  //     const doc = await saveAccount({formatMessage, values, bank, edit})
-
-  //     if (!edit) {
-  //       push(Account.to.view(doc))
-  //     }
-
-  //     onHide()
-  //   },
-  //   validate: ((values, props) => {
-  //     const { edit, bank, accounts, intl: { formatMessage } } = props
-  //     const v = new Validator(values, formatMessage)
-  //     const otherAccounts = accounts.filter(acct => !edit || edit.doc._id !== acct.doc._id)
-  //     const otherNames = otherAccounts.map(acct => acct.doc.name)
-  //     const otherNumbers = otherAccounts.filter(acct => acct.doc.type === v.values.type).map(acct => acct.doc.number)
-  //     v.unique('name', otherNames, messages.uniqueName)
-  //     v.unique('number', otherNumbers, messages.uniqueNumber)
-  //     return v.errors
-  //   })
-  // }),
-  // connect<ConnectedFormProps, {}, Props & IntlProps>(
-  //   (state: AppState): ConnectedFormProps => ({
-  //     type: valueSelector(state, 'type')
-  //   })
-  // )
 )
 
 import { FormField } from 'react-form'
@@ -159,8 +118,7 @@ export namespace AccountDialogComponent {
   export type Props = ConnectedProps
 }
 export const AccountDialogComponent = enhance((props) => {
-  const { edit, type, handleSubmit, onHide, reset } = props
-  const { formatMessage } = props.intl
+  const { edit, accounts, type, onHide, intl: { formatMessage } } = props
   const title = edit ? messages.editTitle : messages.createTitle
   return (
     <div>
@@ -172,20 +130,27 @@ export const AccountDialogComponent = enhance((props) => {
 
       <Form2
         horizontal
-        onSubmit={async (values, state, props, instance) => {
+        defaultValues={edit ? edit.doc : {
+          color: Account.generateColor()
+        }}
+        onSubmit={async (values, state, api, instance) => {
           const { bank, edit, saveAccount, onHide, intl: { formatMessage }, push } = props
+          const v = new Validator(values, formatMessage)
+          v.required('name', 'number')
+          if (v.hasErrors) {
+            state.errors = v.errors
+            instance.setAllTouched()
+            return
+          }
 
           const doc = await saveAccount({formatMessage, values, bank, edit})
-
-          if (!edit) {
+          if (!edit && doc) {
             push(Account.to.view(doc))
           }
 
           onHide()
         }}
-
-        validate={(values, state, props, instance) => {
-          const { edit, bank, accounts, intl: { formatMessage } } = props
+        validate={(values) => {
           const v = new Validator(values, formatMessage)
           const otherAccounts = accounts.filter(acct => !edit || edit.doc._id !== acct.doc._id)
           const otherNames = otherAccounts.map(acct => acct.doc.name)

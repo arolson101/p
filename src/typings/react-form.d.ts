@@ -19,18 +19,18 @@ declare module 'react-form' {
     touched: FormTouched
   }
 
-  export interface FormPropsBase<V = FormValues, P = any> {
-    defaultValues?: V
-    loadState?: (props: P, instance: any) => FormState | undefined
-    preValidate?: (values: V, state: FormState, props: P, instance: any) => V
-    validate?: (values: V, state: FormState, props: P, instance: any) => FormErrors
-    onValidationFail?: (values: V, state: FormState, props: P, instance: any) => void
-    onChange?: (state: FormState, props: P, initial: boolean, instance: any) => void
-    saveState?: (state: FormState, props: P, instance: any) => void
-    willUnmount?: (state: FormState, props: P, instance: any) => void
-    preSubmit?: (values: V, state: FormState, props: P, instance: any) => V
-    onSubmit?: (values: V, state: FormState, props: P, instance: any) => void
-    postSubmit?: (values: V, state: FormState, props: P, instance: any) => void
+  export interface FormPropsBase<V = FormValues, P = FormProps> {
+    defaultValues?: Partial<V>
+    loadState?: (props: P, instance: FormAPI) => FormState | undefined
+    preValidate?: (values: V, state: FormState, props: P, instance: FormAPI) => V
+    validate?: (values: V, state: FormState, props: P, instance: FormAPI) => FormErrors
+    onValidationFail?: (values: V, state: FormState, props: P, instance: FormAPI) => void
+    onChange?: (state: FormState, props: P, initial: boolean, instance: FormAPI) => void
+    saveState?: (state: FormState, props: P, instance: FormAPI) => void
+    willUnmount?: (state: FormState, props: P, instance: FormAPI) => void
+    preSubmit?: (values: V, state: FormState, props: P, instance: FormAPI) => V
+    onSubmit?: (values: V, state: FormState, props: P, instance: FormAPI) => void
+    postSubmit?: (values: V, state: FormState, props: P, instance: FormAPI) => void
     component?: string | false | React.ComponentType<any>
   }
 
