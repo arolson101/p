@@ -743,7 +743,7 @@ export const FormLayout = enhanceFormLayout(({ children, ...props }) => {
   )
 })
 
-interface FormLayoutProps<V = any> extends RF2.FormPropsBase<V>, React.Props<any> {
+interface FormLayoutProps<V = any> extends RF2.FormProps<V> {
   horizontal?: boolean
 }
 const enhanceFormLayout2 = compose<FormLayoutProps, FormLayoutProps>(
@@ -766,7 +766,7 @@ export const FormLayout2 = enhanceFormLayout2(({ children, horizontal, ...props 
             api.submitForm()
           }}
         >
-          {children}
+          {typeof children === 'function' && children(api)}
         </RB.Form>
       }
     </RF2.Form>

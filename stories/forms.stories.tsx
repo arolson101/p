@@ -102,21 +102,25 @@ stories.add('normal', () => {
       console.log('onsubmit form2', props)
       action('onSubmit')(values)
     }}>
-      <TextField2 name='text' label={messages.text}/>
-      <PasswordField2 name='text' label={messages.password}/>
-      <UrlField2 name='url' favicoName='favico' label={messages.url}/>
-      <TextField2 name='textWithColor' label={messages.textWithColor} addonBefore={<ColorAddon2 name='color'/>} />
-      <SelectField2 name='select' options={selectOptions} label={messages.select} placeholderMessage={messages.selectPlaceholder}/>
-      <SelectField2 createable name='selectCreateable' options={selectCreateableOptions} label={messages.selectCreateable} />
-      <SelectField2 multi name='selectMultiple' options={selectMultipleOptions} label={messages.selectMultiple} />
-      <CheckboxField2 name='checkbox' label={messages.checkbox} message={messages.checkboxMessage}/>
-      <CollapseField2 name='checkbox'>
-        <div>collapsed data</div>
-      </CollapseField2>
-      <DateField2 name='date' label={messages.dateMessage}/>
-      <AccountField2 name='account' label={messages.accountMessage}/>
-      <BudgetField2 name='budget' label={messages.budgetMessage}/>
-      <Button type='submit'>submit</Button>
+      {api =>
+        <div>
+          <TextField2 name='text' label={messages.text}/>
+          <PasswordField2 name='text' label={messages.password}/>
+          <UrlField2 name='url' favicoName='favico' label={messages.url}/>
+          <TextField2 name='textWithColor' label={messages.textWithColor} addonBefore={<ColorAddon2 name='color'/>} />
+          <SelectField2 name='select' options={selectOptions} label={messages.select} placeholderMessage={messages.selectPlaceholder}/>
+          <SelectField2 createable name='selectCreateable' options={selectCreateableOptions} label={messages.selectCreateable} />
+          <SelectField2 multi name='selectMultiple' options={selectMultipleOptions} label={messages.selectMultiple} />
+          <CheckboxField2 name='checkbox' label={messages.checkbox} message={messages.checkboxMessage}/>
+          <CollapseField2 name='checkbox'>
+            <div>collapsed data</div>
+          </CollapseField2>
+          <DateField2 name='date' label={messages.dateMessage}/>
+          <AccountField2 name='account' label={messages.accountMessage}/>
+          <BudgetField2 name='budget' label={messages.budgetMessage}/>
+          <Button type='submit'>submit</Button>
+        </div>
+      }
     </Form2>
   </Provider>
 })

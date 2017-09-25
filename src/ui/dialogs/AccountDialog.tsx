@@ -160,60 +160,64 @@ export const AccountDialogComponent = enhance((props) => {
           return v.errors
         }}
       >
-        <Modal.Body>
-          <TextField2
-            name='name'
-            label={messages.name}
-            addonBefore={<ColorAddon2 name='color'/>}
-            autoFocus
-          />
-          <SelectField2
-            name='type'
-            options={typeOptions}
-            clearable={false}
-            optionRenderer={accountTypeRenderer}
-            valueRenderer={accountTypeRenderer}
-            label={messages.type}
-          />
-          <TextField2
-            name='number'
-            label={messages.number}
-          />
-          {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
-            <TextField2
-              name='bankid'
-              label={messages.bankid}
-            />
-          }
-          {(type === Account.Type.CREDITCARD) &&
-            <TextField2
-              name='key'
-              label={messages.key}
-            />
-          }
-        </Modal.Body>
+        {api =>
+          <div>
+            <Modal.Body>
+              <TextField2
+                name='name'
+                label={messages.name}
+                addonBefore={<ColorAddon2 name='color'/>}
+                autoFocus
+              />
+              <SelectField2
+                name='type'
+                options={typeOptions}
+                clearable={false}
+                optionRenderer={accountTypeRenderer}
+                valueRenderer={accountTypeRenderer}
+                label={messages.type}
+              />
+              <TextField2
+                name='number'
+                label={messages.number}
+              />
+              {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
+                <TextField2
+                  name='bankid'
+                  label={messages.bankid}
+                />
+              }
+              {(type === Account.Type.CREDITCARD) &&
+                <TextField2
+                  name='key'
+                  label={messages.key}
+                />
+              }
+            </Modal.Body>
 
-        <Modal.Footer>
-          <ButtonToolbar className='pull-right'>
-            <Button
-              type='button'
-              onClick={onHide}
-            >
-              <FormattedMessage {...forms.cancel}/>
-            </Button>
-            <Button
-              type='submit'
-              bsStyle='primary'
-              id='open-dropdown'
-            >
-              {edit ? (
-                <FormattedMessage {...forms.save}/>
-              ) : (
-                <FormattedMessage {...forms.create}/>
-              )}
-            </Button>
-          </ButtonToolbar>
-        </Modal.Footer>
+            <Modal.Footer>
+              <ButtonToolbar className='pull-right'>
+                <Button
+                  type='button'
+                  onClick={onHide}
+                >
+                  <FormattedMessage {...forms.cancel}/>
+                </Button>
+                <Button
+                  type='submit'
+                  bsStyle='primary'
+                  id='open-dropdown'
+                >
+                  {edit ? (
+                    <FormattedMessage {...forms.save}/>
+                  ) : (
+                    <FormattedMessage {...forms.create}/>
+                  )}
+                </Button>
+              </ButtonToolbar>
+            </Modal.Footer>
+          </div>
+        }
       </Form2>
     </div>
   )
