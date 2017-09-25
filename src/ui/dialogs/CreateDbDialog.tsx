@@ -4,7 +4,6 @@ import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { reduxForm, InjectedFormProps } from 'redux-form'
 import { DbInfo } from 'core/docs'
 import { AppState, createDb, setDialog, mapDispatchToProps } from 'core/state'
 import { Validator } from 'util/index'
@@ -36,7 +35,7 @@ interface Props {
   onHide: () => void
 }
 
-interface ConnectedProps {
+interface StateProps {
   files: DbInfo[]
 }
 
@@ -45,7 +44,8 @@ interface DispatchProps {
   push: typeof push
 }
 
-type EnhancedProps = IntlProps & Props & ConnectedProps & DispatchProps & InjectedFormProps<Values, {}>
+type ConnectedProps = StateProps & DispatchProps & Props
+type EnhancedProps = IntlProps & ConnectedProps
 
 interface Values {
   name: string
@@ -53,43 +53,15 @@ interface Values {
   confirmPassword: string
 }
 
-const enhance = compose<EnhancedProps, Props>(
+const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName('CreateForm'),
-  connect<ConnectedProps, DispatchProps, Props & IntlProps>(
-    (state: AppState) => ({
-      files: state.db.files
-    }),
-    mapDispatchToProps<DispatchProps>({ createDb, push })
-  ),
   injectIntl,
-  reduxForm<Values, ConnectedProps & DispatchProps & Props & IntlProps>({
-    form: 'CreateForm',
-    validate: ((values, props) => {
-      const { files, intl: { formatMessage } } = props
-      const v = new Validator(values, formatMessage)
-      const names = files.map(info => info.name)
-      v.unique('name', names, messages.uniqueName)
-      v.equal('confirmPassword', 'password', forms.passwordsMatch)
-      return v.errors
-    }),
-    onSubmit: async (values: Values, dispatch, props) => {
-      const { createDb, onHide, intl: { formatMessage } } = props
-      const v = new Validator(values, formatMessage)
-      v.required('name', 'password', 'confirmPassword')
-      v.maybeThrowSubmissionError()
-
-      const { name, password } = values
-      await createDb({name, password})
-      push('/home') // push(DbInfo.to.home())
-      onHide()
-    }
-  })
 )
 
-const { Form, TextField, PasswordField } = typedFields<Values>()
+const { Form2, TextField2, PasswordField2 } = typedFields<Values>()
 
-export const CreateDbDialog = enhance((props) => {
-  const { reset, handleSubmit, onHide, intl: { formatMessage } } = props
+export const CreateDbDialogComponent = enhance((props) => {
+  const { onHide, intl: { formatMessage } } = props
   return (
     <div>
       <Modal.Header closeButton>
@@ -98,40 +70,76 @@ export const CreateDbDialog = enhance((props) => {
         </Modal.Title>
       </Modal.Header>
 
-      <Form horizontal onSubmit={handleSubmit}>
-        <Modal.Body>
-          <TextField
-            name='name'
-            autoFocus
-            label={messages.name}
-          />
-          <PasswordField
-            name='password'
-            label={forms.password}
-          />
-          <PasswordField
-            name='confirmPassword'
-            label={forms.confirmPassword}
-          />
-        </Modal.Body>
+      <Form2
+        horizontal
+        validate={(values) => {
+          const { files, intl: { formatMessage } } = props
+          const v = new Validator(values, formatMessage)
+          const names = files.map(info => info.name)
+          v.unique('name', names, messages.uniqueName)
+          v.equal('confirmPassword', 'password', forms.passwordsMatch)
+          return v.errors
+        }}
+        onSubmit={async (values, state, api, instance) => {
+          const { createDb, onHide, intl: { formatMessage } } = props
+          const v = new Validator(values, formatMessage)
+          v.required('name', 'password', 'confirmPassword')
+          if (v.hasErrors) {
+            state.errors = v.errors
+            instance.setAllTouched()
+            return
+          }
 
-        <Modal.Footer>
-          <ButtonToolbar className='pull-right'>
-            <Button
-              type='button'
-              onClick={onHide}
-            >
-              <FormattedMessage {...forms.cancel}/>
-            </Button>
-            <Button
-              type='submit'
-              bsStyle='primary'
-            >
-              <FormattedMessage {...forms.create}/>
-            </Button>
-          </ButtonToolbar>
-        </Modal.Footer>
-      </Form>
+          const { name, password } = values
+          await createDb({name, password})
+          push('/home') // push(DbInfo.to.home())
+          onHide()
+        }}
+      >
+        {props =>
+          <div>
+            <Modal.Body>
+              <TextField2
+                name='name'
+                autoFocus
+                label={messages.name}
+              />
+              <PasswordField2
+                name='password'
+                label={forms.password}
+              />
+              <PasswordField2
+                name='confirmPassword'
+                label={forms.confirmPassword}
+              />
+            </Modal.Body>
+
+            <Modal.Footer>
+              <ButtonToolbar className='pull-right'>
+                <Button
+                  type='button'
+                  onClick={onHide}
+                >
+                  <FormattedMessage {...forms.cancel}/>
+                </Button>
+                <Button
+                  type='submit'
+                  bsStyle='primary'
+                >
+                  <FormattedMessage {...forms.create}/>
+                </Button>
+              </ButtonToolbar>
+            </Modal.Footer>
+          </div>
+        }
+      </Form2>
     </div>
   )
 })
+
+export const CreateDbDialog = connect<StateProps, DispatchProps, Props>(
+  (state: AppState) => ({
+    files: state.db.files
+  }),
+  mapDispatchToProps<DispatchProps>({ createDb, push })
+)(CreateDbDialogComponent)

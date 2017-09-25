@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import { compose, setDisplayName, withState, withHandlers } from 'recompose'
 import { Dispatch } from 'redux'
-import { reduxForm, InjectedFormProps, SubmissionError } from 'redux-form'
 import { DbInfo } from 'core/docs'
 import { AppState, loadDb, deleteDb, setDialog, mapDispatchToProps } from 'core/state'
 import { Validator } from 'util/index'
@@ -27,6 +26,8 @@ interface Props extends Params {
 }
 
 interface State {
+  submitting: boolean
+  setSubmitting: (submitting: boolean) => void
   deleting: boolean
   setDeleting: (deleting: boolean) => void
 }
@@ -43,7 +44,8 @@ type DispatchProps = {
   push: typeof push
 }
 
-type EnhancedProps = Props & Handlers & State & DispatchProps & IntlProps & InjectedFormProps<Values, {}>
+type ConnectedProps = Props & DispatchProps
+type EnhancedProps = Handlers & State & ConnectedProps & IntlProps
 
 interface Values {
   password: string
@@ -64,13 +66,10 @@ const messages = defineMessages({
   }
 })
 
-const enhance = compose<EnhancedProps, Props>(
+const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName('LoginDialog'),
   injectIntl,
-  connect<{}, DispatchProps, Props>(
-    () => ({}),
-    mapDispatchToProps<DispatchProps>({ loadDb, deleteDb, push })
-  ),
+  withState('submitting', 'setSubmitting', false),
   withState('deleting', 'setDeleting', false),
   withHandlers<State & DispatchProps & Props & IntlProps, Handlers>({
     onDelete: ({ setDeleting }) => () => {
@@ -84,34 +83,16 @@ const enhance = compose<EnhancedProps, Props>(
       onHide()
     }
   }),
-  reduxForm<Values, Handlers & State & DispatchProps & Props & IntlProps>({
-    form: 'Password',
-    onSubmit: async (values: Values, dispatch, props) => {
-      const { loadDb, push, intl: { formatMessage }, info, onHide } = props
-      const v = new Validator(values, formatMessage)
-      v.required('password')
-      v.maybeThrowSubmissionError()
-
-      try {
-        const { password } = values
-        await loadDb({info, password})
-        push('/home') // push(DbInfo.to.home())
-        onHide()
-      } catch (error) {
-        throw new SubmissionError({password: error.message} as any)
-      }
-    },
-  })
 )
 
-const { Form, PasswordField } = typedFields<Values>()
+const { Form2, PasswordField2 } = typedFields<Values>()
 
-export const LoginDialog = enhance((props) => {
+export const LoginDialogComponent = enhance(props => {
   if (!props.info) {
     return null as any
   }
-  const { onHide, reset, handleSubmit, deleting, onCancelDelete,
-    onDelete, onDeleteConfirmed, intl: { formatMessage }, submitting } = props
+  const { onHide, deleting, onCancelDelete,
+    onDelete, onDeleteConfirmed, intl: { formatMessage }, setSubmitting, submitting } = props
 
   return (
     <div>
@@ -143,43 +124,77 @@ export const LoginDialog = enhance((props) => {
           </ButtonToolbar>
         </Modal.Footer>
       ] : (
-        <Form horizontal onSubmit={handleSubmit}>
-          <Modal.Body>
-            <PasswordField
-              autoFocus
-              name='password'
-              label={forms.password}
-              disabled={submitting}
-            />
-          </Modal.Body>
+        <Form2
+          horizontal
+          onSubmit={async (values, state, api, instance) => {
+            const { loadDb, push, intl: { formatMessage }, info, onHide } = props
+            const v = new Validator(values, formatMessage)
+            v.required('password')
+            if (v.hasErrors) {
+              state.errors = v.errors
+              instance.setAllTouched()
+              return
+            }
 
-          <Modal.Footer>
-            <ButtonToolbar className='pull-right'>
-              <Button
-                onClick={onDelete}
-              >
-                <FormattedMessage {...messages.deleteDb}/>
-              </Button>
+            try {
+              const { password } = values
+              setSubmitting(true)
+              await loadDb({info, password})
+              setSubmitting(false)
+              push('/home') // push(DbInfo.to.home())
+              onHide()
+            } catch (error) {
+              setSubmitting(false)
+              state.errors = {password: error.message}
+              instance.setAllTouched()
+              return
+            }
+          }}
+        >
+          {api =>
+            <div>
+              <Modal.Body>
+                <PasswordField2
+                  autoFocus
+                  name='password'
+                  label={forms.password}
+                  disabled={submitting}
+                />
+              </Modal.Body>
 
-              <Button
-                type='button'
-                onClick={onHide}
-                disabled={submitting}
-              >
-                <FormattedMessage {...forms.cancel}/>
-              </Button>
-              <Button
-                type='submit'
-                bsStyle='primary'
-                disabled={submitting}
-              >
-                <FormattedMessage {...forms.login}/>
-              </Button>
-            </ButtonToolbar>
-          </Modal.Footer>
-        </Form>
+              <Modal.Footer>
+                <ButtonToolbar className='pull-right'>
+                  <Button
+                    onClick={onDelete}
+                  >
+                    <FormattedMessage {...messages.deleteDb}/>
+                  </Button>
+
+                  <Button
+                    type='button'
+                    onClick={onHide}
+                    disabled={submitting}
+                  >
+                    <FormattedMessage {...forms.cancel}/>
+                  </Button>
+                  <Button
+                    type='submit'
+                    bsStyle='primary'
+                    disabled={submitting}
+                  >
+                    <FormattedMessage {...forms.login}/>
+                  </Button>
+                </ButtonToolbar>
+              </Modal.Footer>
+            </div>
+          }
+        </Form2>
       )}
-
     </div>
   )
 })
+
+export const LoginDialog = connect<{}, DispatchProps, Props>(
+  () => ({}),
+  mapDispatchToProps<DispatchProps>({ loadDb, deleteDb, push })
+)(LoginDialogComponent)

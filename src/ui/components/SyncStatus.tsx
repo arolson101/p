@@ -4,7 +4,6 @@ import { Button } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { InjectedFormProps, SubmitHandler, reduxForm } from 'redux-form'
 import { SyncConnection } from 'core/docs'
 import { AppState, mapDispatchToProps, pushChanges } from 'core/state'
 import { runSync } from 'core/actions'
@@ -39,13 +38,13 @@ interface DispatchProps {
   runSync: runSync.Fcn
 }
 
-type EnhancedProps = InjectedFormProps<Values, {}> & ConnectedProps & DispatchProps & IntlProps & Props
+type EnhancedProps = ConnectedProps & DispatchProps & IntlProps & Props
 
 interface Values {
   password: string
 }
 
-const { Form, TextField } = typedFields<any>()
+const { Form2, TextField2 } = typedFields<any>()
 
 const enhance = compose<EnhancedProps, Props>(
   setDisplayName('AccountForm'),
@@ -59,27 +58,10 @@ const enhance = compose<EnhancedProps, Props>(
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, runSync })
   ),
-  reduxForm<Values, ConnectedProps & DispatchProps & Props & IntlProps>({
-    form: 'SyncStatus',
-    // validate: (values: Values, props) => {
-    //   const v = new Validator(values)
-    //   const { intl: { formatMessage } } = props
-    //   v.required(['password'], formatMessage(forms.required))
-    //   return v.errors
-    // }
-    onSubmit: async (values: Values, dispatch, props) => {
-      const { sync, pushChanges, runSync, intl: { formatMessage } } = props
-      const v = new Validator(values, formatMessage)
-      v.required('password')
-      v.maybeThrowSubmissionError()
-      const nextSync = SyncConnection.inputPassword(sync, values.password)
-      await pushChanges({docs: [nextSync]})
-      await runSync({config: nextSync})
-    }
-  })
 )
 
-export const SyncStatus = enhance(({ sync, handleSubmit }) => {
+export const SyncStatus = enhance(props => {
+  const { sync } = props
   const provider = syncProviders.find(p => p.id === sync.provider)
   if (!provider) {
     return <div>no provider</div>
@@ -93,10 +75,29 @@ export const SyncStatus = enhance(({ sync, handleSubmit }) => {
         <div>
           {config}<br/>
           <FormattedMessage {... (sync.password ? messages.badPassword : messages.needsPassword)}/>
-          <Form onSubmit={handleSubmit}>
-            <TextField name='password' label={messages.password} />
-            <Button type='submit'>submit</Button>
-          </Form>
+          <Form2
+            onSubmit={async (values, state, api, instance) => {
+              const { sync, pushChanges, runSync, intl: { formatMessage } } = props
+              const v = new Validator(values, formatMessage)
+              v.required('password')
+              if (v.hasErrors) {
+                state.errors = v.errors
+                instance.setAllTouched()
+                return
+              }
+
+              const nextSync = SyncConnection.inputPassword(sync, values.password)
+              await pushChanges({docs: [nextSync]})
+              await runSync({config: nextSync})
+            }}
+          >
+            {api =>
+              <div>
+                <TextField2 name='password' label={messages.password} />
+                <Button type='submit'>submit</Button>
+              </div>
+            }
+          </Form2>
         </div>
       )
     case 'ERROR':
