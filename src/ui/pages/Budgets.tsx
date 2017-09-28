@@ -62,7 +62,7 @@ const messages = defineMessages({
   },
   uniqueCategory: {
     id: 'Budgets.uniqueCategory',
-    defaultMessage: 'Category name already used in this budget'
+    defaultMessage: 'Category "{name}" already used in this budget'
   },
 })
 
@@ -227,7 +227,7 @@ export const BudgetsComponent = enhance(props => {
     >
       {api => {
         const field = ['budgets']
-        const error = api.getError(field)
+        console.log('values', api.values)
         return (
           <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
             <PageHeader>
@@ -244,18 +244,24 @@ export const BudgetsComponent = enhance(props => {
 
             {editing &&
               <div>
-                {error &&
-                  <Alert bsStyle='danger'>{error}</Alert>
-                }
                 <SortableBudgetList
                   lockAxis='y'
                   helperClass='sortableHelper'
                   budgets={api.values.budgets}
                   field={field}
-                  onSortEnd={(sort) => api.swapValues(field, sort.oldIndex, sort.newIndex)}
+                  onSortEnd={(sort) => {
+                    if (sort.newIndex !== sort.oldIndex) {
+                      api.swapValues(field, sort.oldIndex, sort.newIndex)
+                    }
+                  }}
                   api={api}
                 />
-                <Button onClick={() => api.addValue<Partial<Budget>>(field, {})}>
+                <Button
+                  onClick={() => {
+                    console.log('add budget')
+                    api.addValue<Partial<Budget>>(field, {})
+                  }}
+                >
                   <i className={Budget.icon}/>
                   {' '}
                   <FormattedMessage {...messages.addBudget}/>
@@ -293,6 +299,8 @@ export const Budgets = connect<StateProps, DispatchProps, Props>(
   mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget, showBillDialog })
 )(BudgetsComponent)
 
+const keyForField = (field: FieldSpec) => (Array.isArray(field) ? `[${field.join('.')}` : field)
+
 interface SortableBudgetListProps {
   field: FieldSpec
   budgets: BudgetValues[]
@@ -302,7 +310,7 @@ const SortableBudgetList = SortableContainer<SortableBudgetListProps>(({budgets,
   <div>
     {budgets.map((budget, index) =>
       <SortableBudget
-        key={budget._id}
+        key={keyForField([...field, index])}
         index={index}
         budget={budget}
         field={[...field, index]}
@@ -327,7 +335,12 @@ const SortableBudget = SortableElement<SortableBudgetProps>(({budget, field, api
         <InputGroup.Button>
           <Button
             bsStyle='danger'
-            onClick={() => api.removeValue(field.slice(0, -1), field[field.length - 1] as number)}
+            onClick={() => {
+              const f = field.slice(0, -1)
+              const v = field[field.length - 1] as number
+              console.log('remove', f, v)
+              api.removeValue(f, v)
+            }}
           >
             <i className='fa fa-trash-o fa-lg'/>
           </Button>
@@ -335,19 +348,29 @@ const SortableBudget = SortableElement<SortableBudgetProps>(({budget, field, api
       }
     />
   )
+  const categoriesField = [...field, 'categories']
   return (
-    <Panel header={header} key={budget.name}>
+    <Panel header={header} key={keyForField(field)}>
       <SortableCategoriesList
         helperClass='sortableHelper'
         lockToContainerEdges
         lockAxis='y'
         categories={budget.categories}
-        field={[...field, 'categories']}
-        onSortEnd={(sort) => api.swapValues([...field, 'categories'], sort.oldIndex, sort.newIndex)}
+        field={categoriesField}
+        onSortEnd={(sort) => {
+          if (sort.newIndex !== sort.oldIndex) {
+            api.swapValues(categoriesField, sort.oldIndex, sort.newIndex)
+          }
+        }}
         api={api}
       />
       <ButtonToolbar>
-        <Button onClick={() => api.addValue([...field, 'categories'], {})}>
+        <Button
+          onClick={() => {
+            console.log('add category')
+            api.addValue(categoriesField, {})
+          }}
+        >
           <i className='fa fa-plus'/> add category
         </Button>
       </ButtonToolbar>
@@ -360,25 +383,19 @@ interface SortableCategoriesListProps {
   api: FormAPI<Values>
   field: FieldSpec
 }
-const SortableCategoriesList = SortableContainer<SortableCategoriesListProps>(({api, categories, field}) => {
-  const error = api.getError(field)
-  return <ListGroup fill>
+const SortableCategoriesList = SortableContainer<SortableCategoriesListProps>(({api, categories, field}) =>
+  <ListGroup fill>
     {categories.map((category, index) =>
       <SortableCategory
-        key={category.name}
+        key={keyForField([...field, index])}
         index={index}
         category={category}
         field={[...field, index]}
         api={api}
       />
     )}
-    {error &&
-      <ListGroupItem>
-        <Alert bsStyle='danger'>{error}</Alert>
-      </ListGroupItem>
-    }
   </ListGroup>
-})
+)
 
 interface SortableCategoryProps {
   category: CategoryValues
@@ -396,7 +413,12 @@ const SortableCategory = SortableElement<SortableCategoryProps>(({category, api,
           <InputGroup.Button>
             <Button
               bsStyle='danger'
-              onClick={() => api.removeValue(field.slice(0, -1), field[field.length - 1] as number)}
+              onClick={() => {
+                const f = field.slice(0, -1)
+                const v = field[field.length - 1] as number
+                console.log('remove', f, v)
+                api.removeValue(f, v)
+              }}
             >
               <i className='fa fa-minus'/>
             </Button>

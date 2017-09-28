@@ -103,7 +103,7 @@ export class Validator<V extends DataShape> {
           if (!(i in errArray)) {
             errArray[i] = {}
           }
-          errArray[i][subkey] = this.formatMessage(message)
+          errArray[i][subkey] = this.formatMessage(message, {[subkey]: value})
         }
       }
     }
