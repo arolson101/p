@@ -68,7 +68,9 @@ const messages = defineMessages({
 
 type showBillDialogType = typeof showBillDialog
 
-interface ConnectedProps {
+interface Props {}
+
+interface StateProps {
   budgets: Budget.View[]
   categoryCache: Cache<Category.View>
 }
@@ -79,12 +81,13 @@ interface DispatchProps {
   showBillDialog: showBillDialogType
 }
 
-interface StateProps {
+interface LocalStateProps {
   editing: boolean
   setEditing: (editing: boolean) => void
 }
 
-type EnhancedProps = ConnectedProps & DispatchProps & IntlProps & StateProps
+type ConnectedProps = StateProps & DispatchProps & Props
+type EnhancedProps = ConnectedProps & IntlProps & LocalStateProps
 
 interface CategoryValues {
   _id: Category.DocId
@@ -102,22 +105,15 @@ interface Values {
   budgets: BudgetValues[]
 }
 
-const enhance = compose<EnhancedProps, {}>(
+const enhance = compose<EnhancedProps, ConnectedProps>(
   injectIntl,
-  connect<ConnectedProps, DispatchProps, IntlProps>(
-    (state: AppState): ConnectedProps => ({
-      budgets: selectBudgets(state),
-      categoryCache: state.views.categories
-    }),
-    mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget, showBillDialog })
-  ),
-  withState('editing', 'setEditing', false)
+  withState('editing', 'setEditing', true)
 )
 
-export namespace Budgets {
-  export type Props = {}
+export namespace BudgetsComponent {
+  export type Props = ConnectedProps
 }
-export const Budgets = enhance(props => {
+export const BudgetsComponent = enhance(props => {
   const { budgets, categoryCache, editing, setEditing, showBillDialog } = props
   const { Form2 } = typedFields<Values>()
 
@@ -289,6 +285,14 @@ export const Budgets = enhance(props => {
   )
 })
 
+export const Budgets = connect<StateProps, DispatchProps, Props>(
+  (state: AppState): StateProps => ({
+    budgets: selectBudgets(state),
+    categoryCache: state.views.categories
+  }),
+  mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget, showBillDialog })
+)(BudgetsComponent)
+
 interface SortableBudgetListProps {
   field: FieldSpec
   budgets: BudgetValues[]
@@ -296,59 +300,59 @@ interface SortableBudgetListProps {
 }
 const SortableBudgetList = SortableContainer<SortableBudgetListProps>(({budgets, field, api}) =>
   <div>
-    {budgets.map((budget, index: number) =>
-      <SortableCategoryList
+    {budgets.map((budget, index) =>
+      <SortableBudget
         key={budget._id}
         index={index}
         budget={budget}
-        field={field}
+        field={[...field, index]}
         api={api}
       />
     )}
   </div>
 )
 
-interface SortableCategoryListProps {
+interface SortableBudgetProps {
   field: FieldSpec
-  index: number
   budget: BudgetValues
   api: FormAPI<Values>
 }
-const SortableCategoryList = SortableElement<SortableCategoryListProps>(({budget, field, index, api}): any => {
+const SortableBudget = SortableElement<SortableBudgetProps>(({budget, field, api}): any => {
   const { TextField2 } = typedFields<Budget>()
-  return budget.categories.map((category, categoryIdx) => {
-    const header = (
-      <TextField2
-        name={[field, index, 'name'] as any}
-        label={messages.budget}
-        addonAfter={
-          <InputGroup.Button>
-            <Button bsStyle='danger' onClick={() => api.removeValue(field, index)}>
-              <i className='fa fa-trash-o fa-lg'/>
-            </Button>
-          </InputGroup.Button>
-        }
-      />
-    )
-    return (
-      <Panel header={header}>
-        <SortableCategoriesList
-          helperClass='sortableHelper'
-          lockToContainerEdges
-          lockAxis='y'
-          categories={budget.categories}
-          field={[...field, index]}
-          onSortEnd={(sort) => api.swapValues([...field, index], sort.oldIndex, sort.newIndex)}
-          api={api}
-        />
-        <ButtonToolbar>
-          <Button onClick={() => api.addValue([...field, index], {})}>
-            <i className='fa fa-plus'/> add category
+  const header = (
+    <TextField2
+      name={[field, 'name'] as any}
+      label={messages.budget}
+      addonAfter={
+        <InputGroup.Button>
+          <Button
+            bsStyle='danger'
+            onClick={() => api.removeValue(field.slice(0, -1), field[field.length - 1] as number)}
+          >
+            <i className='fa fa-trash-o fa-lg'/>
           </Button>
-        </ButtonToolbar>
-      </Panel>
-    )
-  })
+        </InputGroup.Button>
+      }
+    />
+  )
+  return (
+    <Panel header={header} key={budget.name}>
+      <SortableCategoriesList
+        helperClass='sortableHelper'
+        lockToContainerEdges
+        lockAxis='y'
+        categories={budget.categories}
+        field={[...field, 'categories']}
+        onSortEnd={(sort) => api.swapValues([...field, 'categories'], sort.oldIndex, sort.newIndex)}
+        api={api}
+      />
+      <ButtonToolbar>
+        <Button onClick={() => api.addValue([...field, 'categories'], {})}>
+          <i className='fa fa-plus'/> add category
+        </Button>
+      </ButtonToolbar>
+    </Panel>
+  )
 })
 
 interface SortableCategoriesListProps {
@@ -364,7 +368,7 @@ const SortableCategoriesList = SortableContainer<SortableCategoriesListProps>(({
         key={category.name}
         index={index}
         category={category}
-        field={field}
+        field={[...field, index]}
         api={api}
       />
     )}
@@ -380,25 +384,27 @@ interface SortableCategoryProps {
   category: CategoryValues
   api: FormAPI<Values>
   field: FieldSpec
-  index: number
 }
-const SortableCategory = SortableElement<SortableCategoryProps>(({category, api, field, index}) => {
+const SortableCategory = SortableElement<SortableCategoryProps>(({category, api, field}) => {
   const { TextField2 } = typedFields<CategoryValues>()
   return (
     <ListGroupItem>
       <TextField2
-        name={[...field, index, 'name'] as any}
+        name={[...field, 'name'] as any}
         label={messages.category}
         addonAfter={
           <InputGroup.Button>
-            <Button bsStyle='danger' onClick={() => api.removeValue(field, index)}>
+            <Button
+              bsStyle='danger'
+              onClick={() => api.removeValue(field.slice(0, -1), field[field.length - 1] as number)}
+            >
               <i className='fa fa-minus'/>
             </Button>
           </InputGroup.Button>
         }
       />
       <TextField2
-        name={[...field, index, 'amount'] as any}
+        name={[...field, 'amount'] as any}
         label={messages.targetAmount}
       />
     </ListGroupItem>

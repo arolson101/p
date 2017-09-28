@@ -6,8 +6,8 @@ import { specs, describe, it } from 'storybook-addon-specifications'
 import { mountIntl, expect, stub, action, storiesOfIntl,
   dummyStore, dummyBankDocs, dummyBudgetDocs, Provider } from './storybook'
 
-import { DbInfo, Account, Bank } from 'core'
-import { Budgets } from 'ui/pages/Budgets'
+import { DbInfo, Account, Bank, selectBudgets } from 'core'
+import { BudgetsComponent } from 'ui/pages/Budgets'
 
 const stories = storiesOfIntl(`Pages/Budgets`, module)
 
@@ -19,21 +19,21 @@ const store = dummyStore(
 )
 
 const dummyProps = <T extends Function>(functor: (name: string) => T) => {
+  const state = store.getState()
   return {
-    // onHide: functor('onHide'),
-    // saveBill: functor('saveBill'),
-    // monthOptions: [],
-    // weekdayOptions: [],
-    // bills: [],
-    // budgets: []
+    budgets: selectBudgets(state),
+    categoryCache: state.views.categories,
+    pushChanges: functor('pushChanges') as any,
+    deleteBudget: functor('deleteBudget') as any,
+    showBillDialog: functor('showBillDialog') as any
   }
 }
 
 stories.add('normal', () => {
-  const story = (props: Budgets.Props) =>
+  const story = (props: BudgetsComponent.Props) =>
     <Provider store={store}>
       <Router history={createMemoryHistory()}>
-        <Budgets {...props} />
+        <BudgetsComponent {...props} />
       </Router>
     </Provider>
 
@@ -54,5 +54,5 @@ stories.add('normal', () => {
     })
   }))
 
-  return story(dummyProps(action) as any)
+  return story(dummyProps(action))
 })
