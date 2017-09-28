@@ -2,12 +2,12 @@ import * as numeral from 'numeral'
 import * as R from 'ramda'
 import * as React from 'react'
 import { Row, Grid, Col, Alert, Panel, InputGroup, ButtonToolbar, Button, PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
+import { FormAPI, FieldSpec } from 'react-form'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
-import { compose, withHandlers, withState, shallowEqual } from 'recompose'
-import { InjectedFormProps, FieldArray, FieldsProps, reduxForm, Fields } from 'redux-form'
+import { compose, withState, shallowEqual } from 'recompose'
 import { deleteBudget } from 'core/actions'
 import { Bill, Budget, Category } from 'core/docs'
 import { selectBudgets, selectCategories, selectBills, selectBillsForCategory, selectCategoriesForBudget } from 'core/selectors'
@@ -84,11 +84,7 @@ interface StateProps {
   setEditing: (editing: boolean) => void
 }
 
-interface Handlers {
-  toggleEdit: () => void
-}
-
-type EnhancedProps = Handlers & InjectedFormProps<Values, {}> & ConnectedProps & DispatchProps & IntlProps & StateProps
+type EnhancedProps = ConnectedProps & DispatchProps & IntlProps & StateProps
 
 interface CategoryValues {
   _id: Category.DocId
@@ -106,9 +102,7 @@ interface Values {
   budgets: BudgetValues[]
 }
 
-const { Form, TextField } = typedFields<any>()
-
-const enhance = compose<EnhancedProps, undefined>(
+const enhance = compose<EnhancedProps, {}>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps>(
     (state: AppState): ConnectedProps => ({
@@ -117,260 +111,261 @@ const enhance = compose<EnhancedProps, undefined>(
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, deleteBudget, showBillDialog })
   ),
-  withState('editing', 'setEditing', false),
-  reduxForm<Values, StateProps & ConnectedProps & DispatchProps & IntlProps>({
-    form: 'BudgetForm',
-    validate: (values, props: any) => {
-      const { intl: { formatMessage } } = props
-      const v = new Validator(values, formatMessage)
-      v.arrayUnique('budgets', 'name', messages.uniqueBudget)
-      for (let i = 0; values.budgets && i < values.budgets.length; i++) {
-        const vi = v.arraySubvalidator<BudgetValues>('budgets', i)
-        vi.arrayUnique('categories', 'name', formatMessage(messages.uniqueCategory))
-        const budget = values.budgets[i]
-        for (let j = 0; budget && budget.categories && j < budget.categories.length; j++) {
-          const ci = vi.arraySubvalidator<Category>('categories', j)
-          ci.numeral('amount')
-        }
-      }
-      return v.errors
-    },
-    onSubmit: async (values: Values, dispatch, props) => {
-      const { budgets, pushChanges, setEditing, categoryCache, intl: { formatMessage } } = props
-      const v = new Validator(values, formatMessage)
-      const changes: AnyDocument[] = []
-
-      // TODO: delete removed category/budget docs
-
-      for (let i = 0; values.budgets && i < values.budgets.length; i++) {
-        const bv = v.arraySubvalidator<BudgetValues>('budgets', i)
-        bv.required('name')
-        const bvalues = values.budgets[i]
-        if (bvalues) {
-          const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
-          let nextBudget: Budget.Doc = lastBudget
-            ? lastBudget.doc
-            : Budget.doc({name: bvalues.name, categories: [], sortOrder: i})
-
-          nextBudget = {
-            ...nextBudget,
-            name: bvalues.name,
-            sortOrder: i
-          }
-
-          const categories = (bvalues.categories || []).map(bc => {
-            const amount = numeral(bc.amount).value() || 0
-            if (!bc) {
-              return '' as Category.DocId
-            }
-            if (bc._id && lastBudget) {
-              const existingCategory: Category.Doc | undefined = categoryCache[bc._id] && categoryCache[bc._id].doc
-              if (!existingCategory) {
-                throw new Error('existing category id ' + bc._id + ' not found')
-              }
-              const nextCategory: Category.Doc = {
-                ...existingCategory,
-                ...bc,
-                amount
-              }
-              if (!shallowEqual(existingCategory, nextCategory)) {
-                changes.push(nextCategory)
-              }
-              return existingCategory._id
-            } else {
-              const newCategory = Category.doc(nextBudget, {name: bc.name, amount})
-              changes.push(newCategory)
-              return newCategory._id
-            }
-          })
-
-          if (!R.equals(categories, nextBudget.categories)) {
-            nextBudget = { ...nextBudget, categories }
-          }
-
-          if (!lastBudget || !shallowEqual(lastBudget, nextBudget)) {
-            changes.push(nextBudget)
-          }
-        }
-        const categories = values.budgets[i].categories
-        for (let c = 0; categories && c < categories.length; c++) {
-          const cv = bv.arraySubvalidator<Category>('categories', c)
-          cv.required('name')
-        }
-      }
-      v.maybeThrowSubmissionError()
-
-      if (changes.length) {
-        await pushChanges({docs: changes})
-      }
-
-      setEditing(false)
-    }
-  }),
-  withHandlers<InjectedFormProps<Values, {}> & StateProps & ConnectedProps & DispatchProps & IntlProps, Handlers>({
-    toggleEdit: ({budgets, categoryCache, initialize, setEditing, editing}) => () => {
-      editing = !editing
-      if (editing) {
-        const values: Values = {
-          budgets: budgets.map((budget): BudgetValues => ({
-            name: budget.doc.name,
-            _id: budget.doc._id,
-            categories: budget.doc.categories
-              .map(categoryId => categoryCache[categoryId])
-              .filter(category => !!category)
-              .map((category): CategoryValues => ({
-                name: category.doc.name,
-                _id: category.doc._id,
-                amount: category.doc.amount
-              }))
-          }))
-        }
-        initialize!(values)
-      }
-      setEditing(editing)
-    }
-  })
+  withState('editing', 'setEditing', false)
 )
 
+export namespace Budgets {
+  export type Props = {}
+}
 export const Budgets = enhance(props => {
-  const { budgets, categoryCache, handleSubmit, editing, toggleEdit, showBillDialog } = props
+  const { budgets, categoryCache, editing, setEditing, showBillDialog } = props
+  const { Form2 } = typedFields<Values>()
+
+  let defaultValues: Partial<Values> = {}
+  if (editing) {
+    defaultValues = {
+      budgets: budgets.map((budget): BudgetValues => ({
+        name: budget.doc.name,
+        _id: budget.doc._id,
+        categories: budget.doc.categories
+          .map(categoryId => categoryCache[categoryId])
+          .filter(category => !!category)
+          .map((category): CategoryValues => ({
+            name: category.doc.name,
+            _id: category.doc._id,
+            amount: category.doc.amount
+          }))
+      }))
+    }
+  }
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+    <Form2
+      defaultValues={defaultValues}
+      validate={(values: Values) => {
+        const { intl: { formatMessage } } = props
+        const v = new Validator(values, formatMessage)
+        v.arrayUnique('budgets', 'name', messages.uniqueBudget)
+        for (let i = 0; values.budgets && i < values.budgets.length; i++) {
+          const vi = v.arraySubvalidator<BudgetValues>('budgets', i)
+          vi.arrayUnique('categories', 'name', messages.uniqueCategory)
+          const budget = values.budgets[i]
+          for (let j = 0; budget && budget.categories && j < budget.categories.length; j++) {
+            const ci = vi.arraySubvalidator<Category>('categories', j)
+            ci.numeral('amount')
+          }
+        }
+        return v.errors
+      }}
+      onSubmit={async (values: Values, state, api, instance) => {
+        const { budgets, pushChanges, setEditing, categoryCache, intl: { formatMessage } } = props
+        const v = new Validator(values, formatMessage)
+        const changes: AnyDocument[] = []
 
-        <PageHeader>
-          <SettingsMenu
-            items={[
-              {
-                message: messages.editBudget,
-                onClick: toggleEdit
-              },
-            ]}
-          />
-          <FormattedMessage {...messages.page}/>
-        </PageHeader>
+        // TODO: delete removed category/budget docs
 
-        {editing &&
-          <FieldArray name='budgets' component={editBudgetList} {...{intl: props.intl}}>
-            <Button onClick={toggleEdit}>
-              <FormattedMessage {...forms.cancel}/>
-            </Button>
-            <Button type='submit' bsStyle='primary'>
-              <FormattedMessage {...forms.save}/>
-            </Button>
-          </FieldArray>
+        for (let i = 0; values.budgets && i < values.budgets.length; i++) {
+          const bv = v.arraySubvalidator<BudgetValues>('budgets', i)
+          bv.required('name')
+          const bvalues = values.budgets[i]
+          if (bvalues) {
+            const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
+            let nextBudget: Budget.Doc = lastBudget
+              ? lastBudget.doc
+              : Budget.doc({name: bvalues.name, categories: [], sortOrder: i})
+
+            nextBudget = {
+              ...nextBudget,
+              name: bvalues.name,
+              sortOrder: i
+            }
+
+            const categories = (bvalues.categories || []).map(bc => {
+              const amount = numeral(bc.amount).value() || 0
+              if (!bc) {
+                return '' as Category.DocId
+              }
+              if (bc._id && lastBudget) {
+                const existingCategory: Category.Doc | undefined = categoryCache[bc._id] && categoryCache[bc._id].doc
+                if (!existingCategory) {
+                  throw new Error('existing category id ' + bc._id + ' not found')
+                }
+                const nextCategory: Category.Doc = {
+                  ...existingCategory,
+                  ...bc,
+                  amount
+                }
+                if (!shallowEqual(existingCategory, nextCategory)) {
+                  changes.push(nextCategory)
+                }
+                return existingCategory._id
+              } else {
+                const newCategory = Category.doc(nextBudget, {name: bc.name, amount})
+                changes.push(newCategory)
+                return newCategory._id
+              }
+            })
+
+            if (!R.equals(categories, nextBudget.categories)) {
+              nextBudget = { ...nextBudget, categories }
+            }
+
+            if (!lastBudget || !shallowEqual(lastBudget, nextBudget)) {
+              changes.push(nextBudget)
+            }
+          }
+          const categories = values.budgets[i].categories
+          for (let c = 0; categories && c < categories.length; c++) {
+            const cv = bv.arraySubvalidator<Category>('categories', c)
+            cv.required('name')
+          }
+        }
+        v.maybeThrowSubmissionError()
+
+        if (changes.length) {
+          await pushChanges({docs: changes})
         }
 
-        {!editing && budgets.map(budget =>
-          <BudgetDisplay
-            key={budget.doc._id}
-            budget={budget}
-            showBillDialog={showBillDialog}
-          />
-        )}
-      </div>
-    </Form>
+        setEditing(false)
+      }}
+    >
+      {api => {
+        const field = ['budgets']
+        const error = api.getError(field)
+        return (
+          <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+            <PageHeader>
+              <SettingsMenu
+                items={[
+                  {
+                    message: messages.editBudget,
+                    onClick: () => setEditing(!editing)
+                  },
+                ]}
+              />
+              <FormattedMessage {...messages.page}/>
+            </PageHeader>
+
+            {editing &&
+              <div>
+                {error &&
+                  <Alert bsStyle='danger'>{error}</Alert>
+                }
+                <SortableBudgetList
+                  lockAxis='y'
+                  helperClass='sortableHelper'
+                  budgets={api.values.budgets}
+                  field={field}
+                  onSortEnd={(sort) => api.swapValues(field, sort.oldIndex, sort.newIndex)}
+                  api={api}
+                />
+                <Button onClick={() => api.addValue<Partial<Budget>>(field, {})}>
+                  <i className={Budget.icon}/>
+                  {' '}
+                  <FormattedMessage {...messages.addBudget}/>
+                </Button>
+                <ButtonToolbar className='pull-right'>
+                  <Button onClick={() => setEditing(false)}>
+                    <FormattedMessage {...forms.cancel}/>
+                  </Button>
+                  <Button type='submit' bsStyle='primary'>
+                    <FormattedMessage {...forms.save}/>
+                  </Button>
+                </ButtonToolbar>
+              </div>
+            }
+
+            {!editing && budgets.map(budget =>
+              <BudgetDisplay
+                key={budget.doc._id}
+                budget={budget}
+                showBillDialog={showBillDialog}
+              />
+            )}
+          </div>
+        )
+      }}
+    </Form2>
   )
 })
 
-const editBudgetList = (props: any) => {
-  const { children, fields, meta: { error }, intl } = props
-  return (
-    <div>
-      {error &&
-        <Alert bsStyle='danger'>{error}</Alert>
-      }
-      <SortableBudgetList
-        lockAxis='y'
-        helperClass='sortableHelper'
-        fields={fields}
-        intl={intl}
-        onSortEnd={(sort) => {
-          fields.move(sort.oldIndex, sort.newIndex)
-        }}
-      />
-      <Button onClick={() => fields.push()}>
-        <i className={Budget.icon}/>
-        {' '}
-        <FormattedMessage {...messages.addBudget}/>
-      </Button>
-      <ButtonToolbar className='pull-right'>
-        {children}
-      </ButtonToolbar>
-    </div>
-  )
+interface SortableBudgetListProps {
+  field: FieldSpec
+  budgets: BudgetValues[]
+  api: FormAPI<Values>
 }
-
-const SortableBudgetList = SortableContainer(({fields, intl}: {fields: FieldsProps<any>} & IntlProps) =>
+const SortableBudgetList = SortableContainer<SortableBudgetListProps>(({budgets, field, api}) =>
   <div>
-    {fields.map((budget: string, index: number) =>
+    {budgets.map((budget, index: number) =>
       <SortableCategoryList
-        key={`${budget}.categories`}
+        key={budget._id}
         index={index}
         budget={budget}
-        onRemove={() => fields.remove(index)}
-        intl={intl}
+        field={field}
+        api={api}
       />
     )}
   </div>
 )
 
 interface SortableCategoryListProps {
-  budget: string
-  onRemove: () => void
+  field: FieldSpec
+  index: number
+  budget: BudgetValues
+  api: FormAPI<Values>
 }
-const SortableCategoryList = SortableElement(({budget, onRemove, intl}: SortableCategoryListProps & IntlProps) =>
-  <FieldArray
-    name={`${budget}.categories`}
-    component={editCategories}
-    {...{intl}}
-  >
-    <TextField
-      name={`${budget}.name`}
-      label={messages.budget}
-      addonAfter={
-        <InputGroup.Button>
-          <Button bsStyle='danger' onClick={onRemove}>
-            <i className='fa fa-trash-o fa-lg'/>
-          </Button>
-        </InputGroup.Button>
-      }
-    />
-  </FieldArray>
-)
-
-const editCategories = (props: any & IntlProps) => {
-  const { fields, children, meta: { error }, intl } = props
-  return (
-    <Panel header={children}>
-      <SortableCategoriesList
-        helperClass='sortableHelper'
-        lockToContainerEdges
-        lockAxis='y'
-        error={error}
-        fields={fields}
-        intl={intl}
-        onSortEnd={(sort) => {
-          fields.move(sort.oldIndex, sort.newIndex)
-        }}
+const SortableCategoryList = SortableElement<SortableCategoryListProps>(({budget, field, index, api}): any => {
+  const { TextField2 } = typedFields<Budget>()
+  return budget.categories.map((category, categoryIdx) => {
+    const header = (
+      <TextField2
+        name={[field, index, 'name'] as any}
+        label={messages.budget}
+        addonAfter={
+          <InputGroup.Button>
+            <Button bsStyle='danger' onClick={() => api.removeValue(field, index)}>
+              <i className='fa fa-trash-o fa-lg'/>
+            </Button>
+          </InputGroup.Button>
+        }
       />
-      <ButtonToolbar>
-        <Button onClick={() => fields.push()}><i className='fa fa-plus'/> add category</Button>
-      </ButtonToolbar>
-    </Panel>
-  )
-}
+    )
+    return (
+      <Panel header={header}>
+        <SortableCategoriesList
+          helperClass='sortableHelper'
+          lockToContainerEdges
+          lockAxis='y'
+          categories={budget.categories}
+          field={[...field, index]}
+          onSortEnd={(sort) => api.swapValues([...field, index], sort.oldIndex, sort.newIndex)}
+          api={api}
+        />
+        <ButtonToolbar>
+          <Button onClick={() => api.addValue([...field, index], {})}>
+            <i className='fa fa-plus'/> add category
+          </Button>
+        </ButtonToolbar>
+      </Panel>
+    )
+  })
+})
 
-const SortableCategoriesList = SortableContainer(({error, fields, intl}: {error?: string, fields: FieldsProps<any>} & IntlProps) =>
-  <ListGroup fill>
-    {fields.map((category: string, index: number) =>
+interface SortableCategoriesListProps {
+  categories: CategoryValues[]
+  api: FormAPI<Values>
+  field: FieldSpec
+}
+const SortableCategoriesList = SortableContainer<SortableCategoriesListProps>(({api, categories, field}) => {
+  const error = api.getError(field)
+  return <ListGroup fill>
+    {categories.map((category, index) =>
       <SortableCategory
-        key={category}
+        key={category.name}
         index={index}
         category={category}
-        intl={intl}
-        onRemove={() => fields.remove(index)}
+        field={field}
+        api={api}
       />
     )}
     {error &&
@@ -379,31 +374,36 @@ const SortableCategoriesList = SortableContainer(({error, fields, intl}: {error?
       </ListGroupItem>
     }
   </ListGroup>
-)
+})
 
-type SortableCategoryProps = IntlProps & {
-  category: string
-  onRemove (): void
+interface SortableCategoryProps {
+  category: CategoryValues
+  api: FormAPI<Values>
+  field: FieldSpec
+  index: number
 }
-const SortableCategory = SortableElement(({category, onRemove, intl: { formatMessage }}: SortableCategoryProps) =>
-  <ListGroupItem key={category}>
-    <TextField
-      name={`${category}.name`}
-      label={messages.category}
-      addonAfter={
-        <InputGroup.Button>
-          <Button bsStyle='danger' onClick={onRemove}>
-            <i className='fa fa-minus'/>
-          </Button>
-        </InputGroup.Button>
-      }
-    />
-    <TextField
-      name={`${category}.amount`}
-      label={messages.targetAmount}
-    />
-  </ListGroupItem>
-)
+const SortableCategory = SortableElement<SortableCategoryProps>(({category, api, field, index}) => {
+  const { TextField2 } = typedFields<CategoryValues>()
+  return (
+    <ListGroupItem>
+      <TextField2
+        name={[...field, index, 'name'] as any}
+        label={messages.category}
+        addonAfter={
+          <InputGroup.Button>
+            <Button bsStyle='danger' onClick={() => api.removeValue(field, index)}>
+              <i className='fa fa-minus'/>
+            </Button>
+          </InputGroup.Button>
+        }
+      />
+      <TextField2
+        name={[...field, index, 'amount'] as any}
+        label={messages.targetAmount}
+      />
+    </ListGroupItem>
+  )
+})
 
 const budgetTotal = (categories: Category.View[], allBills: Bill.View[]): number => {
   return categories.reduce((val, category) => val + categoryTotal(category, allBills), 0)

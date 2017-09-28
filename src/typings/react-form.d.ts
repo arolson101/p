@@ -1,5 +1,8 @@
 declare module 'react-form' {
   export type FieldValue = string | number | boolean
+  export type FieldSpecElement = string | number
+  export type FieldSpecArray = Array<FieldSpecElement>
+  export type FieldSpec = FieldSpecArray | string
   export interface FormValues {
     [key: string]: FieldValue
   }
@@ -47,14 +50,14 @@ declare module 'react-form' {
 
   export interface FormAPI<V = FormValues> extends BaseFormAPI<V> {
     setValue: <K extends keyof V>(field: K, value: V[K], noTouch?: boolean) => void
-    getValue: <T extends FieldValue>(field: string, fallback?: T) => T
-    setNestedError: (field: string, value: FieldValue) => void
-    getError: (field: string) => string | undefined
-    setTouched: (field: string, value?: boolean) => void
-    getTouched: (field: string) => boolean
-    addValue: <T extends FieldValue>(field: string, value: T) => void
-    removeValue: (field: string, index: number) => void
-    swapValues: (field: string, i: number, j: number) => void
+    getValue: <T extends FieldValue>(field: FieldSpec, fallback?: T) => T
+    setNestedError: (field: FieldSpec, value: FieldValue) => void
+    getError: (field: FieldSpec) => string | undefined
+    setTouched: (field: FieldSpec, value?: boolean) => void
+    getTouched: (field: FieldSpec) => boolean
+    addValue: <T = any>(field: FieldSpec, value: T) => void
+    removeValue: (field: FieldSpec, index: number) => void
+    swapValues: (field: FieldSpec, i: number, j: number) => void
   }
 
   export interface BoundFormAPI<V = FormValues> extends BaseFormAPI<V> {
