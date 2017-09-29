@@ -58,7 +58,7 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
   injectIntl,
 )
 
-const { Form2, TextField2, PasswordField2 } = typedFields<Values>()
+const { Form, TextField, PasswordField } = typedFields<Values>()
 
 export const CreateDbDialogComponent = enhance((props) => {
   const { onHide, intl: { formatMessage } } = props
@@ -70,7 +70,7 @@ export const CreateDbDialogComponent = enhance((props) => {
         </Modal.Title>
       </Modal.Header>
 
-      <Form2
+      <Form
         horizontal
         validate={(values) => {
           const { files, intl: { formatMessage } } = props
@@ -99,16 +99,16 @@ export const CreateDbDialogComponent = enhance((props) => {
         {props =>
           <div>
             <Modal.Body>
-              <TextField2
+              <TextField
                 name='name'
                 autoFocus
                 label={messages.name}
               />
-              <PasswordField2
+              <PasswordField
                 name='password'
                 label={forms.password}
               />
-              <PasswordField2
+              <PasswordField
                 name='confirmPassword'
                 label={forms.confirmPassword}
               />
@@ -132,7 +132,7 @@ export const CreateDbDialogComponent = enhance((props) => {
             </Modal.Footer>
           </div>
         }
-      </Form2>
+      </Form>
     </div>
   )
 })

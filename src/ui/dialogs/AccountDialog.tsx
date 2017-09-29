@@ -99,7 +99,7 @@ export const showAccountDialog = (params: Params) => setDialog(AccountDialogStat
 type Values = saveAccount.Values
 
 const form = 'AccountDialog'
-const { Form2, TextField2, SelectField2, ColorAddon2 } = typedFields<Values>()
+const { Form, TextField, SelectField, ColorAddon } = typedFields<Values>()
 
 const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName('AccountDialog'),
@@ -128,7 +128,7 @@ export const AccountDialogComponent = enhance((props) => {
         </Modal.Title>
       </Modal.Header>
 
-      <Form2
+      <Form
         horizontal
         defaultValues={edit ? edit.doc : {
           color: Account.generateColor()
@@ -163,13 +163,13 @@ export const AccountDialogComponent = enhance((props) => {
         {api =>
           <div>
             <Modal.Body>
-              <TextField2
+              <TextField
                 name='name'
                 label={messages.name}
-                addonBefore={<ColorAddon2 name='color'/>}
+                addonBefore={<ColorAddon name='color'/>}
                 autoFocus
               />
-              <SelectField2
+              <SelectField
                 name='type'
                 options={typeOptions}
                 clearable={false}
@@ -177,18 +177,18 @@ export const AccountDialogComponent = enhance((props) => {
                 valueRenderer={accountTypeRenderer}
                 label={messages.type}
               />
-              <TextField2
+              <TextField
                 name='number'
                 label={messages.number}
               />
               {(type === Account.Type.CHECKING || type === Account.Type.SAVINGS) &&
-                <TextField2
+                <TextField
                   name='bankid'
                   label={messages.bankid}
                 />
               }
               {(type === Account.Type.CREDITCARD) &&
-                <TextField2
+                <TextField
                   name='key'
                   label={messages.key}
                 />
@@ -218,7 +218,7 @@ export const AccountDialogComponent = enhance((props) => {
             </Modal.Footer>
           </div>
         }
-      </Form2>
+      </Form>
     </div>
   )
 })

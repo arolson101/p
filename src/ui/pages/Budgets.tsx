@@ -110,12 +110,13 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
   withState('editing', 'setEditing', true)
 )
 
+const { Form, TextField } = typedFields<Values>()
+
 export namespace BudgetsComponent {
   export type Props = ConnectedProps
 }
 export const BudgetsComponent = enhance(props => {
   const { budgets, categoryCache, editing, setEditing, showBillDialog } = props
-  const { Form2 } = typedFields<Values>()
 
   let defaultValues: Partial<Values> = {}
   if (editing) {
@@ -136,7 +137,7 @@ export const BudgetsComponent = enhance(props => {
   }
 
   return (
-    <Form2
+    <Form
       defaultValues={defaultValues}
       validate={(values: Values) => {
         const { intl: { formatMessage } } = props
@@ -231,7 +232,6 @@ export const BudgetsComponent = enhance(props => {
     >
       {api => {
         const field = ['budgets']
-        console.log('values', api.values)
         return (
           <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
             <PageHeader>
@@ -262,7 +262,6 @@ export const BudgetsComponent = enhance(props => {
                 />
                 <Button
                   onClick={() => {
-                    console.log('add budget')
                     api.addValue<Partial<Budget>>(field, {})
                   }}
                 >
@@ -291,7 +290,7 @@ export const BudgetsComponent = enhance(props => {
           </div>
         )
       }}
-    </Form2>
+    </Form>
   )
 })
 
@@ -330,9 +329,8 @@ interface SortableBudgetProps {
   api: FormAPI<Values>
 }
 const SortableBudget = SortableElement<SortableBudgetProps>(({budget, field, api}): any => {
-  const { TextField2 } = typedFields<Budget>()
   const header = (
-    <TextField2
+    <TextField
       name={[field, 'name'] as any}
       label={messages.budget}
       addonAfter={
@@ -342,7 +340,6 @@ const SortableBudget = SortableElement<SortableBudgetProps>(({budget, field, api
             onClick={() => {
               const f = field.slice(0, -1)
               const v = field[field.length - 1] as number
-              console.log('remove', f, v)
               api.removeValue(f, v)
             }}
           >
@@ -371,7 +368,6 @@ const SortableBudget = SortableElement<SortableBudgetProps>(({budget, field, api
       <ButtonToolbar>
         <Button
           onClick={() => {
-            console.log('add category')
             api.addValue(categoriesField, {})
           }}
         >
@@ -407,10 +403,9 @@ interface SortableCategoryProps {
   field: FieldSpec
 }
 const SortableCategory = SortableElement<SortableCategoryProps>(({category, api, field}) => {
-  const { TextField2 } = typedFields<CategoryValues>()
   return (
     <ListGroupItem>
-      <TextField2
+      <TextField
         name={[...field, 'name'] as any}
         label={messages.category}
         addonAfter={
@@ -420,7 +415,6 @@ const SortableCategory = SortableElement<SortableCategoryProps>(({category, api,
               onClick={() => {
                 const f = field.slice(0, -1)
                 const v = field[field.length - 1] as number
-                console.log('remove', f, v)
                 api.removeValue(f, v)
               }}
             >
@@ -429,7 +423,7 @@ const SortableCategory = SortableElement<SortableCategoryProps>(({category, api,
           </InputGroup.Button>
         }
       />
-      <TextField2
+      <TextField
         name={[...field, 'amount'] as any}
         label={messages.targetAmount}
       />

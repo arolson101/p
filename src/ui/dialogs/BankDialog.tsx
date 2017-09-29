@@ -5,13 +5,12 @@ import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import { compose, setDisplayName, withPropsOnChange, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
-import { reduxForm, InjectedFormProps, formValueSelector } from 'redux-form'
 import { saveBank } from 'core/actions'
 import { Bank } from 'core/docs'
 import { AppState, FI, emptyfi, mapDispatchToProps, setDialog } from 'core/state'
 import { formatAddress } from 'util/index'
 import { Validator } from 'util/index'
-import { typedFields, forms, SubmitHandler } from '../components/forms'
+import { typedFields, forms } from '../components/forms'
 import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({
@@ -105,7 +104,7 @@ export const showBankDialog = (params: Params) => setDialog(BankDialogStatic.dia
 
 type Values = saveBank.Values
 
-const { Form2, TextField2, PasswordField2, UrlField2, SelectField2, CheckboxField2, CollapseField2 } = typedFields<Values>()
+const { Form, TextField, PasswordField, UrlField, SelectField, CheckboxField, CollapseField } = typedFields<Values>()
 
 const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName('BankDialog'),
@@ -139,7 +138,7 @@ export const BankDialogComponent = enhance((props) => {
         </Modal.Title>
       </Modal.Header>
 
-      <Form2
+      <Form
         horizontal
         defaultValues={defaultValues}
         onSubmit={async (values, state, api, instance) => {
@@ -158,7 +157,7 @@ export const BankDialogComponent = enhance((props) => {
           <div>
             <Modal.Body>
               <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
-                <SelectField2
+                <SelectField
                   autofocus
                   name='fi'
                   label={messages.fi}
@@ -179,54 +178,54 @@ export const BankDialogComponent = enhance((props) => {
                   help={messages.fiHelp}
                   placeholderMessage={messages.fiPlaceholder}
                 />
-                <TextField2
+                <TextField
                   name='name'
                   label={messages.name}
                 />
-                <UrlField2
+                <UrlField
                   name='web'
                   favicoName='favicon'
                   label={messages.web}
                 />
-                <TextField2
+                <TextField
                   name='address'
                   rows={4}
                   label={messages.address}
                 />
-                <TextField2
+                <TextField
                   name='notes'
                   rows={4}
                   label={messages.notes}
                 />
-                <CheckboxField2
+                <CheckboxField
                   name='online'
                   label={messages.online}
                   message={messages.online}
                 />
-                <CollapseField2 name='online'>
+                <CollapseField name='online'>
                   <div>
-                    <TextField2
+                    <TextField
                       name='username'
                       label={messages.username}
                     />
-                    <PasswordField2
+                    <PasswordField
                       name='password'
                       label={messages.password}
                     />
-                    <TextField2
+                    <TextField
                       name='fid'
                       label={messages.fid}
                     />
-                    <TextField2
+                    <TextField
                       name='org'
                       label={messages.org}
                     />
-                    <TextField2
+                    <TextField
                       name='ofx'
                       label={messages.ofx}
                     />
                   </div>
-                </CollapseField2>
+                </CollapseField>
               </div>
             </Modal.Body>
 
@@ -253,7 +252,7 @@ export const BankDialogComponent = enhance((props) => {
             </Modal.Footer>
           </div>
         }
-      </Form2>
+      </Form>
     </div>
   )
 })

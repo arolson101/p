@@ -85,7 +85,7 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
   }),
 )
 
-const { Form2, PasswordField2 } = typedFields<Values>()
+const { Form, PasswordField } = typedFields<Values>()
 
 export const LoginDialogComponent = enhance(props => {
   if (!props.info) {
@@ -124,7 +124,7 @@ export const LoginDialogComponent = enhance(props => {
           </ButtonToolbar>
         </Modal.Footer>
       ] : (
-        <Form2
+        <Form
           horizontal
           onSubmit={async (values, state, api, instance) => {
             try {
@@ -154,7 +154,7 @@ export const LoginDialogComponent = enhance(props => {
           {api =>
             <div>
               <Modal.Body>
-                <PasswordField2
+                <PasswordField
                   autoFocus
                   name='password'
                   label={forms.password}
@@ -188,7 +188,7 @@ export const LoginDialogComponent = enhance(props => {
               </Modal.Footer>
             </div>
           }
-        </Form2>
+        </Form>
       )}
     </div>
   )

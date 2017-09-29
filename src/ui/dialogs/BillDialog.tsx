@@ -239,8 +239,8 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
   withState('groups', 'setGroups', (props: ConnectedProps): SelectOption[] => getGroupNames(props.bills)),
 )
 
-const { Form2, TextField2, UrlField2, SelectField2, DateField2, CollapseField2,
-  CheckboxField2, AccountField2, BudgetField2 } = typedFields<Values>()
+const { Form, TextField, UrlField, SelectField, DateField, CollapseField,
+  CheckboxField, AccountField, BudgetField } = typedFields<Values>()
 
 export namespace BillDialogComponent {
   export type Props = ConnectedProps
@@ -312,7 +312,7 @@ export const BillDialogComponent = enhance((props) => {
         </Modal.Title>
       </Modal.Header>
 
-      <Form2
+      <Form
         horizontal
         defaultValues={defaultValues}
         validate={(values) => {
@@ -362,12 +362,12 @@ export const BillDialogComponent = enhance((props) => {
 
           return <div>
             <Modal.Body>
-              <TextField2
+              <TextField
                 autoFocus
                 name='name'
                 label={messages.name}
               />
-              <SelectField2
+              <SelectField
                 createable
                 name='group'
                 options={groups}
@@ -375,39 +375,39 @@ export const BillDialogComponent = enhance((props) => {
                 promptTextCreator={(label: string) => 'create group ' + label}
                 placeholder=''
               />
-              <UrlField2
+              <UrlField
                 name='web'
                 favicoName='favicon'
                 label={messages.web}
               />
-              <TextField2
+              <TextField
                 name='notes'
                 label={messages.notes}
               />
 
               <hr/>
-              <TextField2
+              <TextField
                 name='amount'
                 label={messages.amount}
               />
-              <AccountField2
+              <AccountField
                 name='account'
                 label={messages.account}
               />
-              <BudgetField2
+              <BudgetField
                 name='category'
                 label={messages.budget}
               />
 
               <hr/>
               <p><em><FormattedMessage {...messages.frequencyHeader} values={{rule: text}}/></em></p>
-              <DateField2
+              <DateField
                 name='start'
                 label={messages.start}
                 highlightDates={generatedValues}
               />
               {end !== 'endDate' &&
-                <TextField2
+                <TextField
                   name='count'
                   type='number'
                   min={0}
@@ -433,7 +433,7 @@ export const BillDialogComponent = enhance((props) => {
                 />
               }
               {end === 'endDate' &&
-                <DateField2
+                <DateField
                   name='until'
                   label={messages.end}
                   addonBefore={
@@ -453,7 +453,7 @@ export const BillDialogComponent = enhance((props) => {
                   filterDate={filterEndDate}
                 />
               }
-              <TextField2
+              <TextField
                 name='interval'
                 label={messages.interval}
                 type='number'
@@ -479,10 +479,10 @@ export const BillDialogComponent = enhance((props) => {
                 }
               />
 
-              <CheckboxField2 name='showAdvanced' label={messages.advanced} message={messages.advancedMessage}/>
-              <CollapseField2 name='showAdvanced'>
+              <CheckboxField name='showAdvanced' label={messages.advanced} message={messages.advancedMessage}/>
+              <CollapseField name='showAdvanced'>
                 <div>
-                  <SelectField2
+                  <SelectField
                     name='byweekday'
                     label={messages.byweekday}
                     multi
@@ -492,7 +492,7 @@ export const BillDialogComponent = enhance((props) => {
                     options={weekdayOptions}
                   />
 
-                  <SelectField2
+                  <SelectField
                     name='bymonth'
                     label={messages.bymonth}
                     multi
@@ -502,7 +502,7 @@ export const BillDialogComponent = enhance((props) => {
                     options={monthOptions}
                   />
                 </div>
-              </CollapseField2>
+              </CollapseField>
 
               {/*__DEVELOPMENT__ &&
                 <div>{rrule ? rrule.toString() : ''}</div>
@@ -537,7 +537,7 @@ export const BillDialogComponent = enhance((props) => {
             </Modal.Footer>
           </div>
         }}
-      </Form2>
+      </Form>
     </div>
   )
 })

@@ -86,9 +86,9 @@ interface Values {
   budget: string
 }
 
-const { Form, Form2, TextField2, UrlField2, PasswordField2,
-  ColorAddon2, SelectField2, CheckboxField2, CollapseField2, DateField2,
-  AccountField2, BudgetField2 } = typedFields<Values>()
+const { Form, TextField, UrlField, PasswordField,
+  ColorAddon, SelectField, CheckboxField, CollapseField, DateField,
+  AccountField, BudgetField } = typedFields<Values>()
 
 const opt = (i: number) => ({value: `option ${i}`, label: `Option #${i}`})
 const selectOptions = [opt(1), opt(2), opt(3)]
@@ -98,29 +98,29 @@ const selectMultipleOptions = [...selectOptions]
 stories.add('normal', () => {
   // console.log('store', store.getState())
   return <Provider store={store}>
-    <Form2 horizontal onSubmit={(values, state, props, instance) => {
+    <Form horizontal onSubmit={(values, state, props, instance) => {
       console.log('onsubmit form2', props)
       action('onSubmit')(values)
     }}>
       {api =>
         <div>
-          <TextField2 name='text' label={messages.text}/>
-          <PasswordField2 name='text' label={messages.password}/>
-          <UrlField2 name='url' favicoName='favico' label={messages.url}/>
-          <TextField2 name='textWithColor' label={messages.textWithColor} addonBefore={<ColorAddon2 name='color'/>} />
-          <SelectField2 name='select' options={selectOptions} label={messages.select} placeholderMessage={messages.selectPlaceholder}/>
-          <SelectField2 createable name='selectCreateable' options={selectCreateableOptions} label={messages.selectCreateable} />
-          <SelectField2 multi name='selectMultiple' options={selectMultipleOptions} label={messages.selectMultiple} />
-          <CheckboxField2 name='checkbox' label={messages.checkbox} message={messages.checkboxMessage}/>
-          <CollapseField2 name='checkbox'>
+          <TextField name='text' label={messages.text}/>
+          <PasswordField name='text' label={messages.password}/>
+          <UrlField name='url' favicoName='favico' label={messages.url}/>
+          <TextField name='textWithColor' label={messages.textWithColor} addonBefore={<ColorAddon name='color'/>} />
+          <SelectField name='select' options={selectOptions} label={messages.select} placeholderMessage={messages.selectPlaceholder}/>
+          <SelectField createable name='selectCreateable' options={selectCreateableOptions} label={messages.selectCreateable} />
+          <SelectField multi name='selectMultiple' options={selectMultipleOptions} label={messages.selectMultiple} />
+          <CheckboxField name='checkbox' label={messages.checkbox} message={messages.checkboxMessage}/>
+          <CollapseField name='checkbox'>
             <div>collapsed data</div>
-          </CollapseField2>
-          <DateField2 name='date' label={messages.dateMessage}/>
-          <AccountField2 name='account' label={messages.accountMessage}/>
-          <BudgetField2 name='budget' label={messages.budgetMessage}/>
+          </CollapseField>
+          <DateField name='date' label={messages.dateMessage}/>
+          <AccountField name='account' label={messages.accountMessage}/>
+          <BudgetField name='budget' label={messages.budgetMessage}/>
           <Button type='submit'>submit</Button>
         </div>
       }
-    </Form2>
+    </Form>
   </Provider>
 })

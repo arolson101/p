@@ -44,7 +44,7 @@ interface Values {
   password: string
 }
 
-const { Form2, TextField2 } = typedFields<any>()
+const { Form, TextField } = typedFields<any>()
 
 const enhance = compose<EnhancedProps, Props>(
   setDisplayName('AccountForm'),
@@ -75,7 +75,7 @@ export const SyncStatus = enhance(props => {
         <div>
           {config}<br/>
           <FormattedMessage {... (sync.password ? messages.badPassword : messages.needsPassword)}/>
-          <Form2
+          <Form
             onSubmit={async (values, state, api, instance) => {
               try {
                 const { sync, pushChanges, runSync, intl: { formatMessage } } = props
@@ -93,11 +93,11 @@ export const SyncStatus = enhance(props => {
           >
             {api =>
               <div>
-                <TextField2 name='password' label={messages.password} />
+                <TextField name='password' label={messages.password} />
                 <Button type='submit'>submit</Button>
               </div>
             }
-          </Form2>
+          </Form>
         </div>
       )
     case 'ERROR':
