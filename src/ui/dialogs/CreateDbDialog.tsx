@@ -81,19 +81,19 @@ export const CreateDbDialogComponent = enhance((props) => {
           return v.errors
         }}
         onSubmit={async (values, state, api, instance) => {
-          const { createDb, onHide, intl: { formatMessage } } = props
-          const v = new Validator(values, formatMessage)
-          v.required('name', 'password', 'confirmPassword')
-          if (v.hasErrors) {
-            state.errors = v.errors
-            instance.setAllTouched()
-            return
-          }
+          try {
+            const { createDb, onHide, intl: { formatMessage } } = props
+            const v = new Validator(values, formatMessage)
+            v.required('name', 'password', 'confirmPassword')
+            v.maybeThrowSubmissionError()
 
-          const { name, password } = values
-          await createDb({name, password})
-          push('/home') // push(DbInfo.to.home())
-          onHide()
+            const { name, password } = values
+            await createDb({name, password})
+            push('/home') // push(DbInfo.to.home())
+            onHide()
+          } catch (err) {
+            Validator.setErrors(err, state, instance)
+          }
         }}
       >
         {props =>

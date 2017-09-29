@@ -127,27 +127,27 @@ export const LoginDialogComponent = enhance(props => {
         <Form2
           horizontal
           onSubmit={async (values, state, api, instance) => {
-            const { loadDb, push, intl: { formatMessage }, info, onHide } = props
-            const v = new Validator(values, formatMessage)
-            v.required('password')
-            if (v.hasErrors) {
-              state.errors = v.errors
-              instance.setAllTouched()
-              return
-            }
-
             try {
-              const { password } = values
-              setSubmitting(true)
-              await loadDb({info, password})
-              setSubmitting(false)
-              push('/home') // push(DbInfo.to.home())
-              onHide()
-            } catch (error) {
-              setSubmitting(false)
-              state.errors = {password: error.message}
-              instance.setAllTouched()
-              return
+              const { loadDb, push, intl: { formatMessage }, info, onHide } = props
+              const v = new Validator(values, formatMessage)
+              v.required('password')
+              v.maybeThrowSubmissionError()
+
+              try {
+                const { password } = values
+                setSubmitting(true)
+                await loadDb({info, password})
+                setSubmitting(false)
+                push('/home') // push(DbInfo.to.home())
+                onHide()
+              } catch (error) {
+                setSubmitting(false)
+                state.errors = {password: error.message}
+                instance.setAllTouched()
+                return
+              }
+            } catch (err) {
+              Validator.setErrors(err, state, instance)
             }
           }}
         >

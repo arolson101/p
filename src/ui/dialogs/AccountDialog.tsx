@@ -134,21 +134,21 @@ export const AccountDialogComponent = enhance((props) => {
           color: Account.generateColor()
         }}
         onSubmit={async (values, state, api, instance) => {
-          const { bank, edit, saveAccount, onHide, intl: { formatMessage }, push } = props
-          const v = new Validator(values, formatMessage)
-          v.required('name', 'number')
-          if (v.hasErrors) {
-            state.errors = v.errors
-            instance.setAllTouched()
-            return
-          }
+          try {
+            const { bank, edit, saveAccount, onHide, intl: { formatMessage }, push } = props
+            const v = new Validator(values, formatMessage)
+            v.required('name', 'number')
+            v.maybeThrowSubmissionError()
 
-          const doc = await saveAccount({formatMessage, values, bank, edit})
-          if (!edit && doc) {
-            push(Account.to.view(doc))
-          }
+            const doc = await saveAccount({formatMessage, values, bank, edit})
+            if (!edit && doc) {
+              push(Account.to.view(doc))
+            }
 
-          onHide()
+            onHide()
+          } catch (err) {
+            Validator.setErrors(err, state, instance)
+          }
         }}
         validate={(values) => {
           const v = new Validator(values, formatMessage)

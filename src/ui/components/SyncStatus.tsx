@@ -77,18 +77,18 @@ export const SyncStatus = enhance(props => {
           <FormattedMessage {... (sync.password ? messages.badPassword : messages.needsPassword)}/>
           <Form2
             onSubmit={async (values, state, api, instance) => {
-              const { sync, pushChanges, runSync, intl: { formatMessage } } = props
-              const v = new Validator(values, formatMessage)
-              v.required('password')
-              if (v.hasErrors) {
-                state.errors = v.errors
-                instance.setAllTouched()
-                return
-              }
+              try {
+                const { sync, pushChanges, runSync, intl: { formatMessage } } = props
+                const v = new Validator(values, formatMessage)
+                v.required('password')
+                v.maybeThrowSubmissionError()
 
-              const nextSync = SyncConnection.inputPassword(sync, values.password)
-              await pushChanges({docs: [nextSync]})
-              await runSync({config: nextSync})
+                const nextSync = SyncConnection.inputPassword(sync, values.password)
+                await pushChanges({docs: [nextSync]})
+                await runSync({config: nextSync})
+              } catch (err) {
+                Validator.setErrors(err, state, instance)
+              }
             }}
           >
             {api =>

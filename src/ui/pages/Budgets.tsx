@@ -154,75 +154,79 @@ export const BudgetsComponent = enhance(props => {
         return v.errors
       }}
       onSubmit={async (values: Values, state, api, instance) => {
-        const { budgets, pushChanges, setEditing, categoryCache, intl: { formatMessage } } = props
-        const v = new Validator(values, formatMessage)
-        const changes: AnyDocument[] = []
+        try {
+          const { budgets, pushChanges, setEditing, categoryCache, intl: { formatMessage } } = props
+          const v = new Validator(values, formatMessage)
+          const changes: AnyDocument[] = []
 
-        // TODO: delete removed category/budget docs
+          // TODO: delete removed category/budget docs
 
-        for (let i = 0; values.budgets && i < values.budgets.length; i++) {
-          const bv = v.arraySubvalidator<BudgetValues>('budgets', i)
-          bv.required('name')
-          const bvalues = values.budgets[i]
-          if (bvalues) {
-            const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
-            let nextBudget: Budget.Doc = lastBudget
-              ? lastBudget.doc
-              : Budget.doc({name: bvalues.name, categories: [], sortOrder: i})
+          for (let i = 0; values.budgets && i < values.budgets.length; i++) {
+            const bv = v.arraySubvalidator<BudgetValues>('budgets', i)
+            bv.required('name')
+            const bvalues = values.budgets[i]
+            if (bvalues) {
+              const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
+              let nextBudget: Budget.Doc = lastBudget
+                ? lastBudget.doc
+                : Budget.doc({name: bvalues.name, categories: [], sortOrder: i})
 
-            nextBudget = {
-              ...nextBudget,
-              name: bvalues.name,
-              sortOrder: i
-            }
-
-            const categories = (bvalues.categories || []).map(bc => {
-              const amount = numeral(bc.amount).value() || 0
-              if (!bc) {
-                return '' as Category.DocId
+              nextBudget = {
+                ...nextBudget,
+                name: bvalues.name,
+                sortOrder: i
               }
-              if (bc._id && lastBudget) {
-                const existingCategory: Category.Doc | undefined = categoryCache[bc._id] && categoryCache[bc._id].doc
-                if (!existingCategory) {
-                  throw new Error('existing category id ' + bc._id + ' not found')
+
+              const categories = (bvalues.categories || []).map(bc => {
+                const amount = numeral(bc.amount).value() || 0
+                if (!bc) {
+                  return '' as Category.DocId
                 }
-                const nextCategory: Category.Doc = {
-                  ...existingCategory,
-                  ...bc,
-                  amount
+                if (bc._id && lastBudget) {
+                  const existingCategory: Category.Doc | undefined = categoryCache[bc._id] && categoryCache[bc._id].doc
+                  if (!existingCategory) {
+                    throw new Error('existing category id ' + bc._id + ' not found')
+                  }
+                  const nextCategory: Category.Doc = {
+                    ...existingCategory,
+                    ...bc,
+                    amount
+                  }
+                  if (!shallowEqual(existingCategory, nextCategory)) {
+                    changes.push(nextCategory)
+                  }
+                  return existingCategory._id
+                } else {
+                  const newCategory = Category.doc(nextBudget, {name: bc.name, amount})
+                  changes.push(newCategory)
+                  return newCategory._id
                 }
-                if (!shallowEqual(existingCategory, nextCategory)) {
-                  changes.push(nextCategory)
-                }
-                return existingCategory._id
-              } else {
-                const newCategory = Category.doc(nextBudget, {name: bc.name, amount})
-                changes.push(newCategory)
-                return newCategory._id
+              })
+
+              if (!R.equals(categories, nextBudget.categories)) {
+                nextBudget = { ...nextBudget, categories }
               }
-            })
 
-            if (!R.equals(categories, nextBudget.categories)) {
-              nextBudget = { ...nextBudget, categories }
+              if (!lastBudget || !shallowEqual(lastBudget, nextBudget)) {
+                changes.push(nextBudget)
+              }
             }
-
-            if (!lastBudget || !shallowEqual(lastBudget, nextBudget)) {
-              changes.push(nextBudget)
+            const categories = values.budgets[i].categories
+            for (let c = 0; categories && c < categories.length; c++) {
+              const cv = bv.arraySubvalidator<Category>('categories', c)
+              cv.required('name')
             }
           }
-          const categories = values.budgets[i].categories
-          for (let c = 0; categories && c < categories.length; c++) {
-            const cv = bv.arraySubvalidator<Category>('categories', c)
-            cv.required('name')
+          v.maybeThrowSubmissionError()
+
+          if (changes.length) {
+            await pushChanges({docs: changes})
           }
-        }
-        v.maybeThrowSubmissionError()
 
-        if (changes.length) {
-          await pushChanges({docs: changes})
+          setEditing(false)
+        } catch (err) {
+          Validator.setErrors(err, state, instance)
         }
-
-        setEditing(false)
       }}
     >
       {api => {

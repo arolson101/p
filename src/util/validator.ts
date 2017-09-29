@@ -1,5 +1,6 @@
 import * as moment from 'moment'
 import * as numeral from 'numeral'
+import { FormAPI, FormState } from 'react-form'
 import { defineMessages, InjectedIntl, FormattedMessage } from 'react-intl'
 import { SubmissionError, FormErrors } from 'redux-form'
 
@@ -23,6 +24,15 @@ const messages = defineMessages({
 let injectedIntl: InjectedIntl
 type FormatMessage = typeof injectedIntl.formatMessage
 
+class ErrorWrapper extends Error {
+  errors: any
+
+  constructor (errors: any) {
+    super()
+    this.errors = errors
+  }
+}
+
 export class Validator<V extends DataShape> {
   values: V
   formatMessage: FormatMessage
@@ -34,13 +44,22 @@ export class Validator<V extends DataShape> {
     this.errors = errors
   }
 
+  static setErrors (err: Error, state: FormState, instance: FormAPI) {
+    if (err instanceof ErrorWrapper) {
+      state.errors = err.errors
+      instance.setAllTouched()
+    } else {
+      console.error(err)
+    }
+  }
+
   get hasErrors () {
     return !isEmpty(this.errors)
   }
 
   maybeThrowSubmissionError () {
-    if (!isEmpty(this.errors)) {
-      throw new SubmissionError(this.errors as any)
+    if (this.hasErrors) {
+      throw new ErrorWrapper(this.errors)
     }
   }
 

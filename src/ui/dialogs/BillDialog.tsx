@@ -327,17 +327,17 @@ export const BillDialogComponent = enhance((props) => {
           return v.errors
         }}
         onSubmit={async (values, state, api, instance) => {
-          const { edit, onHide, saveBill, intl: { formatMessage } } = props
-          const v = new Validator(values, formatMessage)
-          v.required('name')
-          if (v.hasErrors) {
-            state.errors = v.errors
-            instance.setAllTouched()
-            return
-          }
+          try {
+            const { edit, onHide, saveBill, intl: { formatMessage } } = props
+            const v = new Validator(values, formatMessage)
+            v.required('name')
+            v.maybeThrowSubmissionError()
 
-          await saveBill({edit: edit && edit.doc, formatMessage, values})
-          return onHide()
+            await saveBill({edit: edit && edit.doc, formatMessage, values})
+            return onHide()
+          } catch (err) {
+            Validator.setErrors(err, state, instance)
+          }
         }}
       >
         {api => {
