@@ -2,6 +2,7 @@ var webpack = require("webpack");
 var fs = require("fs");
 var path = require("path");
 var CopyWebpackPlugin = require('copy-webpack-plugin');
+var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'development'
@@ -142,6 +143,12 @@ if (__DEVELOPMENT__) {
 	module.exports.plugins.push(new webpack.NamedModulesPlugin())
 } else {
   module.exports.devtool = "sourcemaps"
+
+  // module.exports.plugins.push(new BundleAnalyzerPlugin()),
+  // module.exports.plugins.push(new webpack.optimize.DedupePlugin()), //dedupe similar code
+  // module.exports.plugins.push(new webpack.optimize.UglifyJsPlugin()), //minify everything
+  // module.exports.plugins.push(new webpack.optimize.AggressiveMergingPlugin())//Merge chunks
+
 	// module.exports.plugins.push(new webpack.optimize.UglifyJsPlugin({
 	// 	compress: {
 	// 		warnings: false

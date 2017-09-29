@@ -1,7 +1,6 @@
 import * as moment from 'moment'
 import * as numeral from 'numeral'
 import * as PropTypes from 'prop-types'
-import * as R from 'ramda'
 import * as React from 'react'
 import { InjectedIntl, FormattedMessage } from 'react-intl'
 import { replace } from 'react-router-redux'
