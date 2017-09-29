@@ -506,7 +506,12 @@ const SelectField2 = enhanceSelectField2(props => {
           {...props}
           {...fixSelectProps2}
           placeholder={placeholder}
-          onChange={value => api.setValue(parse(value))}
+          onChange={value => {
+            api.setValue(parse(value))
+            if (props.onChange) {
+              props.onChange(value)
+            }
+          }}
           onBlur={() => api.setTouched()}
           value={api.getValue()}
         />

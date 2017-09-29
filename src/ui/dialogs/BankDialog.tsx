@@ -4,7 +4,7 @@ import { Modal, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
-import { compose, setDisplayName, withPropsOnChange, withHandlers, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { compose, setDisplayName, withPropsOnChange, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { reduxForm, InjectedFormProps, formValueSelector } from 'redux-form'
 import { saveBank } from 'core/actions'
 import { Bank } from 'core/docs'
@@ -94,12 +94,8 @@ interface DispatchProps {
   push: (path: string) => void
 }
 
-interface Handlers {
-  onChangeFI: (event: any, index: number) => void
-}
-
 type ConnectedProps = StateProps & DispatchProps & Props
-type EnhancedProps = Handlers & ConnectedProps & Props & InjectedIntlProps
+type EnhancedProps = ConnectedProps & Props & InjectedIntlProps
 
 export const BankDialogStatic = {
   dialog: 'BankDialog'
@@ -119,26 +115,13 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
     edit: PropTypes.object,
     onHide: PropTypes.func.isRequired
   }),
-  withHandlers<InjectedFormProps<Values, {}> & StateProps & Props, Handlers>({
-    onChangeFI: ({ filist, change }) => (event: any, index: number) => {
-      if (!change) { throw new Error('change is undefined') }
-      const value = index ? filist[index - 1] : emptyfi
-      change('name', value.name)
-      change('web', value.profile.siteURL)
-      change('favicon', '')
-      change('address', formatAddress(value))
-      change('fid', value.fid)
-      change('org', value.org)
-      change('ofx', value.ofx)
-    },
-  }),
 )
 
 export namespace BankDialogComponent {
   export type Props = ConnectedProps
 }
 export const BankDialogComponent = enhance((props) => {
-  const { edit, onChangeFI, filist } = props
+  const { edit, filist } = props
   const { onHide } = props
   const title = edit ? messages.editTitle : messages.createTitle
 
@@ -182,7 +165,17 @@ export const BankDialogComponent = enhance((props) => {
                   options={filist as any}
                   labelKey='name'
                   valueKey='id'
-                  onChange={onChangeFI as any}
+                  onChange={(newValue: FI | null) => {
+                    console.log('onChange', newValue)
+                    const value = newValue || emptyfi
+                    api.setValue('name', value.name)
+                    api.setValue('web', value.profile.siteURL)
+                    api.setValue('favicon', '')
+                    api.setValue('address', formatAddress(value))
+                    api.setValue('fid', value.fid)
+                    api.setValue('org', value.org)
+                    api.setValue('ofx', value.ofx)
+                  }}
                   help={messages.fiHelp}
                   placeholderMessage={messages.fiPlaceholder}
                 />

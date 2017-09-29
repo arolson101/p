@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 import * as Enzyme from 'enzyme'
+import { FinancialInstitution, FinancialInstitutionProfile } from 'filist'
 import * as React from 'react'
 import { IntlProvider, intlShape } from 'react-intl'
 import { Provider } from 'react-redux'
@@ -9,7 +10,7 @@ import { Story, storiesOf } from '@storybook/react'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'font-awesome/css/font-awesome.css'
 
-import { createAppStore, AppInit, ImportsState, syncProviders, setDocs } from 'core'
+import { createAppStore, AppInit, ImportsState, syncProviders, setDocs, FI } from 'core'
 import createHistory from 'history/createHashHistory'
 import { DbInfo, Account, Bank, Budget, Category } from 'core'
 export { action }
@@ -126,3 +127,53 @@ export const dummyBudgetDocs = (budgetName: string) => {
   const { budget, categories } = dummyBudget(budgetName)
   return [budget, ...categories]
 }
+
+const dummyFI = (name: string, id: number): FI => {
+  const profile: FinancialInstitutionProfile = {
+    address1: name + ' address1',
+    address2: name + ' address2',
+    address3: name + ' address3',
+    city: name + 'City',
+    state: name + 'State',
+    zip: name + 'ZIP',
+    country: name + 'Country',
+    email: name + '@' + name + '.com',
+    customerServicePhone: '',
+    technicalSupportPhone: '',
+    fax: '',
+    financialInstitutionName: '',
+    siteURL: `http://www.${name.replace(/\s+/, '')}.com/`
+  }
+
+  return {
+    name,
+    fid: name.toUpperCase() + 'FID',
+    org: name.toUpperCase() + 'ORG',
+    ofx: `http://ofx.${name.replace(/\s+/, '')}.com/`,
+    profile: profile,
+    id
+  }
+}
+
+export const dummyFiList = (): FI[] => [
+  dummyFI('First Bank', 1),
+  dummyFI('Second Bank', 2),
+  dummyFI('Third Bank', 3),
+  dummyFI('Fourth Bank', 4),
+  dummyFI('Fifth Bank', 5),
+  dummyFI('Sixth Bank', 6),
+  dummyFI('Seventh Bank', 7),
+  dummyFI('Eighth Bank', 8),
+  dummyFI('Ninth Bank', 9),
+  dummyFI('Tenth Bank', 10),
+  dummyFI('Eleventh Bank', 11),
+  dummyFI('Twelveth Bank', 12),
+  dummyFI('Thirteenth Bank', 13),
+  dummyFI('Fourteenth Bank', 14),
+  dummyFI('Fifteenth Bank', 15),
+  dummyFI('Sixteenth Bank', 16),
+  dummyFI('Seventeenth Bank', 17),
+  dummyFI('Eighteenth Bank', 18),
+  dummyFI('Ninteenth Bank', 19),
+  dummyFI('Twentieth Bank', 20),
+]
