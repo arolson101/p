@@ -33,6 +33,7 @@
     "docuri": "^4.2.2",
     "electron-oauth2": "^3.0.0",
     "font-awesome": "^4.7.0",
+    "framework7-react": "^0.9.2-6-beta",
     "google-auth-library": "^0.11.0",
     "googleapis": "^21.3.0",
     "jsondiffpatch": "^0.2.4",
