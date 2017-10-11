@@ -8,7 +8,7 @@
     "postinstall": "webpack --config webpack.config.dll.ts",
     "prod": "cross-env NODE_ENV=production webpack && electron app --js-flags=\"--harmony\"",
     "server": "cross-env NODE_ENV=development nodemon --watch webpack.config.js --exec webpack-dev-server --hot --inline",
-    "storybook": "start-storybook -p 6006",
+    "storybook": "start-storybook -p 6006 -s ./node_modules",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-storybook": "build-storybook"
   },
@@ -80,6 +80,8 @@
     "reselect": "^3.0.1",
     "rrule-alt": "^2.2.5",
     "rxjs": "^5.4.3",
+    "semantic-ui-css": "^2.2.12",
+    "semantic-ui-react": "^0.74.2",
     "transform-pouch": "^1.1.3",
     "uuid": "^3.1.0",
     "victory": "^0.23.1"

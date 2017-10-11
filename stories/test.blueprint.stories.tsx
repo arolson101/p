@@ -1,8 +1,7 @@
 import * as React from 'react'
 import { Intent, Spinner } from '@blueprintjs/core'
 import { DateInput } from '@blueprintjs/datetime'
-import '@blueprintjs/core/dist/blueprint.css'
-import '@blueprintjs/datetime/dist/blueprint-datetime.css'
+import { Helmet } from 'react-helmet'
 
 import { mountIntl, expect, stub, action, storiesOfIntl,
   dummyStore, dummyBankDocs, dummyBudgetDocs, Provider } from './storybook'
@@ -11,6 +10,10 @@ const stories = storiesOfIntl(`Toolkits`, module)
 
 const App = () => (
   <div>
+    <Helmet>
+      <link rel='stylesheet' type='text/css' href='@blueprintjs/core/dist/blueprint.css'/>
+      <link rel='stylesheet' type='text/css' href='@blueprintjs/datetime/dist/blueprint-datetime.css'/>
+    </Helmet>
     <div className='pt-button-group .modifier'>
       <a className='pt-button pt-icon-database' role='button'>Queries</a>
       <a className='pt-button pt-icon-function' role='button'>Functions</a>

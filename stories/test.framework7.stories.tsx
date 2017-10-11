@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Helmet } from 'react-helmet'
 import { Framework7App, Statusbar, Views, View, Page, Pages, Toolbar, Link } from './framework7'
 
 import { mountIntl, expect, stub, action, storiesOfIntl,
@@ -29,6 +30,12 @@ const App = () => (
       }
     ]}
   >
+    <Helmet>
+      <link rel='stylesheet' type='text/css' href='framework7-react/dist/umd/css/framework7.ios.min.css'/>
+      <link rel='stylesheet' type='text/css' href='framework7-react/dist/umd/css/framework7.ios.colors.min.css'/>
+      <link rel='stylesheet' type='text/css' href='framework7-react/dist/umd/css/my-app.css'/>
+    </Helmet>
+
     <Statusbar />
     {/* Views */}
     <Views>
