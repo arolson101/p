@@ -83,7 +83,8 @@ class FocusableFormControl extends React.Component<FormControlProps, any> {
   control: any
 
   focus () {
-    ReactDOM.findDOMNode<HTMLInputElement>(this.control).focus()
+    const node = ReactDOM.findDOMNode(this.control) as HTMLInputElement
+    node.focus()
   }
 
   @autobind

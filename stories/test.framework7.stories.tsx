@@ -4,7 +4,7 @@ import { Framework7App, Statusbar, Views, View, Page, Pages, Toolbar, Link } fro
 import { mountIntl, expect, stub, action, storiesOfIntl,
   dummyStore, dummyBankDocs, dummyBudgetDocs, Provider } from './storybook'
 
-const stories = storiesOfIntl(`Framework7`, module)
+const stories = storiesOfIntl(`Toolkits`, module)
 
 export const About = () => (
   <Page name='about'>...</Page>
@@ -17,7 +17,6 @@ export const Login = () => (
 
 const App = () => (
   <Framework7App
-    {...{style: {height: '100%'}}}
     themeType='ios'
     routes={[
       {
@@ -56,6 +55,6 @@ const App = () => (
   </Framework7App>
 )
 
-stories.add('normal', () => {
+stories.add('Framework7', () => {
   return <App/>
 })
