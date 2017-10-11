@@ -1,17 +1,35 @@
 import * as React from 'react'
-import { Framework7App, Statusbar, Views, View, Page, Pages, Toolbar, Link } from 'framework7-react'
+import { Framework7App, Statusbar, Views, View, Page, Pages, Toolbar, Link } from './framework7'
 
 import { mountIntl, expect, stub, action, storiesOfIntl,
   dummyStore, dummyBankDocs, dummyBudgetDocs, Provider } from './storybook'
 
 const stories = storiesOfIntl(`Framework7`, module)
 
-import 'framework7-react/dist/umd/css/framework7.ios.min.css'
-import 'framework7-react/dist/umd/css/framework7.ios.colors.min.css'
-import 'framework7-react/dist/umd/css/my-app.css'
+export const About = () => (
+  <Page name='about'>...</Page>
+)
+
+// Create Component for Login page
+export const Login = () => (
+  <Page name='login'>...</Page>
+)
 
 const App = () => (
-  <Framework7App themeType='ios' routes={[]}>
+  <Framework7App
+    {...{style: {height: '100%'}}}
+    themeType='ios'
+    routes={[
+      {
+        path: '/about/',
+        component: About
+      },
+      {
+        path: '/login/',
+        component: Login
+      }
+    ]}
+  >
     <Statusbar />
     {/* Views */}
     <Views>
