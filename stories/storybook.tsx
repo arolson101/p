@@ -20,9 +20,12 @@ export { storiesOf }
 export { Provider }
 
 import { setObservableConfig } from 'recompose'
-import rxjsconfig from 'recompose/rxjsObservableConfig'
+import { from } from 'rxjs/observable/from'
 
-setObservableConfig(rxjsconfig)
+setObservableConfig({
+  fromESObservable: from,
+  toESObservable: stream => stream
+})
 
 export const stub = () => Sinon.stub()
 

@@ -51,6 +51,7 @@ export const AppWindow = enhance((props) => {
   return <div>
     <Helmet
       link={[
+        {rel: 'stylesheet', type: 'text/css', href: 'lib/css/bootstrap.css'},
         {rel: 'stylesheet', type: 'text/css', href: 'lib/css/font-awesome.css'},
       ]}
     />

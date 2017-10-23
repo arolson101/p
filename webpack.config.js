@@ -76,8 +76,8 @@ module.exports = {
         'react-hot-loader/webpack',
         'ts-loader?configFile=tsconfig.app.json'
       ] },
-      { test: /\.(svg|woff|woff2|ttf|eot)($|\?)/, loader: "file?name=fonts/[name].[ext]" },
-      { test: /\.(png|gif|jpg)($|\?)/, loader: "file?name=images/[name].[ext]" }
+      { test: /\.(svg|woff|woff2|ttf|eot)($|\?)/, loader: "file-loader?name=fonts/[name].[ext]" },
+      { test: /\.(png|gif|jpg)($|\?)/, loader: "file-loader?name=images/[name].[ext]" }
     ],
   },
 
@@ -92,12 +92,12 @@ module.exports = {
       }
     }),
 
-    new webpack.DllReferencePlugin({
-      context: __dirname,
-      name: 'electron_dll',
-      manifest: require("./app/dev_electron_dll.json"),
-      sourceType: "commonsjs2"
-    }),
+    // new webpack.DllReferencePlugin({
+    //   context: __dirname,
+    //   name: 'electron_dll',
+    //   manifest: require("./app/dev_electron_dll.json"),
+    //   sourceType: "commonsjs2"
+    // }),
 
     new CopyWebpackPlugin([
       { from: '../node_modules/bootstrap/dist', to: 'lib' },

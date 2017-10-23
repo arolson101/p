@@ -6,12 +6,15 @@ import { createAppStore, AppInit, ImportsState, syncProviders } from 'core'
 import { App } from './ui'
 
 import { setObservableConfig } from 'recompose'
-import rxjsconfig from 'recompose/rxjsObservableConfig'
+import { from } from 'rxjs/observable/from'
 
 // require('bootstrap/dist/css/bootstrap.css')
 // require('font-awesome/css/font-awesome.css')
 
-setObservableConfig(rxjsconfig)
+setObservableConfig({
+  fromESObservable: from,
+  toESObservable: stream => stream
+})
 
 const main = (element: Element, imports: ImportsState) => {
   const history = createHistory()
