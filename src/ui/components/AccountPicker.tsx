@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import Select from 'react-select'
+import { default as Select, ReactSelectProps } from 'react-select'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName } from 'recompose'
@@ -13,9 +13,9 @@ interface ConnectedProps {
   options: SelectOption[]
 }
 
-type EnhancedProps = ConnectedProps & Select.ReactSelectProps
+type EnhancedProps = ConnectedProps & ReactSelectProps
 
-const enhance = compose<EnhancedProps, Select.ReactSelectProps>(
+const enhance = compose<EnhancedProps, ReactSelectProps>(
   setDisplayName('AccountPicker'),
   connect<ConnectedProps, {}, {}>(
     (state: AppState): ConnectedProps => ({

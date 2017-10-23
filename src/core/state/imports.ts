@@ -1,4 +1,4 @@
-import PouchDB from 'pouchdb'
+import * as PouchDB from 'pouchdb'
 import { DbInfo } from './db'
 
 export interface ImportsState {

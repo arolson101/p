@@ -89,12 +89,12 @@ const configurator = (dirname: string, config: Config, dev: boolean = true): web
     ...(dev ? [
       new webpack.NamedModulesPlugin()
     ] : [
-      new webpack.optimize.UglifyJsPlugin({
-        compress: {
-          warnings: false
-        },
-        test: /\.jsx?($|\?)/i
-      })
+      // new webpack.optimize.UglifyJsPlugin({
+      //   compress: {
+      //     warnings: false
+      //   },
+      //   test: /\.jsx?($|\?)/i
+      // })
     ])
   ],
 })
@@ -137,7 +137,6 @@ const electronLibs = [
   'levelup',
   'lodash.debounce',
   'randomcolor',
-  'react-addons-perf', // dev?
   'react-bootstrap',
   'react-color',
   'react-datepicker',
@@ -146,7 +145,6 @@ const electronLibs = [
   'react-desktop/windows',
   'react-dev-utils/webpackHotDevClient', // dev
   'react-dom',
-  'react-dom/lib/ReactPerf', // dev
   'react-helmet',
   'react-hot-loader', // dev
   'react-hot-loader/patch', // dev

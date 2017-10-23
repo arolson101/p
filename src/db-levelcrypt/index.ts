@@ -2,7 +2,7 @@ import * as crypto from 'crypto'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
-import PouchDB from 'pouchdb'
+import * as PouchDB from 'pouchdb'
 import * as R from 'ramda'
 import { DbInterface, DbInfo } from 'core'
 import { levelcrypt } from './levelcrypt'
@@ -54,15 +54,12 @@ const buildInfo = (userData: string) => (filename: string): DbInfo => ({
   name: decodeURIComponent(path.basename(filename, ext)),
   location: path.join(userData, filename)
 })
-const buildInfoCache = (userData: string) => R.pipe(
-  R.filter(isDbFilename),
-  R.map(buildInfo(userData)),
-  R.sortBy((doc: DbInfo) => doc.name)
-)
 
 const listDbs = (userData: string) => (): DbInfo[] => {
-  const files = fs.readdirSync(userData)
-  const infos = buildInfoCache(userData)(files)
+  const infos = fs.readdirSync(userData)
+    .filter(isDbFilename)
+    .map(buildInfo(userData))
+    .sort((a,b) => a.name.localeCompare(b.name))
   return infos
 }
 

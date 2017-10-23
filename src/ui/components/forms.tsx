@@ -3,7 +3,7 @@ import * as React from 'react'
 import * as RB from 'react-bootstrap'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
-import ReactSelect from 'react-select'
+import { default as ReactSelect, Creatable, ReactCreatableSelectProps } from 'react-select'
 import 'react-select/dist/react-select.css'
 import { compose, mapPropsStream, withContext } from 'recompose'
 import { createSelector } from 'reselect'
@@ -249,7 +249,7 @@ export interface SelectOption {
   disabled?: boolean
 }
 
-type SelectFieldProps<V> = FormField<V> & ReactSelect.ReactCreatableSelectProps & {
+type SelectFieldProps<V> = FormField<V> & ReactCreatableSelectProps & {
   createable?: boolean
   parse?: (value: any) => any
   format?: (value: any) => string
@@ -262,7 +262,7 @@ const fixSelectProps = {
 }
 
 const SelectField = <V extends {}>(props: SelectFieldProps<V>) => {
-  const Component: typeof ReactSelect.Creatable = props.createable ? ReactSelect.Creatable : ReactSelect
+  const Component: typeof Creatable = props.createable ? Creatable : ReactSelect
 
   const valueOf = (value?: SelectOption): string => {
     if (!value) {

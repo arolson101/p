@@ -8,10 +8,6 @@ import { App } from './ui'
 import { setObservableConfig } from 'recompose'
 import rxjsconfig from 'recompose/rxjsObservableConfig'
 
-if (__DEVELOPMENT__) {
-  global.Perf = require<PerfAPI>('react-addons-perf')
-}
-
 // require('bootstrap/dist/css/bootstrap.css')
 // require('font-awesome/css/font-awesome.css')
 
