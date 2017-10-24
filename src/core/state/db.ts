@@ -1,5 +1,5 @@
 import * as crypto from 'crypto'
-import * as PouchDB from 'pouchdb'
+import PouchDB from 'pouchdb'
 import { ThunkAction } from 'redux-thunk'
 import * as Rx from 'rxjs/Rx'
 import { DocCache, LocalDoc } from '../docs'
