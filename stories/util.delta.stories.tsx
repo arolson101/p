@@ -32,10 +32,10 @@ stories.add('delta', () => {
 
       const b2 = incomingDelta({ ...copy(a2), b: 'b2' }, timer.increment)
       const b3 = incomingDelta({ ...copy(b2), a: 'b3' }, timer.increment)
-      const b4 = resolveConflict(a3, b3)
+      const c = resolveConflict(a3, b3)
 
-      expect(b4).to.have.property('a', 'b3')
-      expect(b4).to.have.property('b', 'b2')
+      expect(c).to.have.property('a', 'b3')
+      expect(c).to.have.property('b', 'b2')
     })
 
     it('array conflicts keep both elements', () => {
@@ -46,10 +46,22 @@ stories.add('delta', () => {
 
       const b2 = incomingDelta({ ...copy(a2), b: [...a2.b, 'b2'] }, timer.increment)
       const b3 = incomingDelta({ ...copy(b2), a: [...b2.a, 'b3'] }, timer.increment)
-      const b4 = resolveConflict(a3, b3)
+      const c = resolveConflict(a3, b3)
 
-      expect(b4).to.have.property('a').to.eql(['a', 'a2', 'b3', 'a3'])
-      expect(b4).to.have.property('b').to.eql(['b', 'b2'])
+      expect(c).to.have.property('a').to.eql(['a', 'a2', 'b3', 'a3'])
+      expect(c).to.have.property('b').to.eql(['b', 'b2'])
+    })
+
+    it('change array element order', () => {
+      const timer = new Timer()
+      const a = incomingDelta({_id: 'a', a: [1, 2, 3, 4, 5]}, timer.increment)
+      const a2 = incomingDelta({ ...copy(a), a: [2, 1, 3, 4, 5] }, timer.increment)
+      const a3 = incomingDelta({ ...copy(a2), a: [3, 2, 1, 4, 5] }, timer.increment)
+
+      const b2 = incomingDelta({ ...copy(a), a: [5, 4, 1, 2, 3] }, timer.increment)
+      const c = resolveConflict(a3, b2)
+
+      expect(c).to.have.property('a').to.eql([5, 4, 3, 2, 1])
     })
   }))
 
