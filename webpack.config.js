@@ -86,6 +86,7 @@ module.exports = {
       options: {
         tslint: {
           // typeCheck: true,
+          // tsConfigFile: 'tsconfig.app.json'
           // emitErrors: true,
           // failOnHint: true
         }
