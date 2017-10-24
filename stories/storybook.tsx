@@ -1,9 +1,12 @@
 import { expect } from 'chai'
 import * as Enzyme from 'enzyme'
+import * as Adapter from 'enzyme-adapter-react-16'
 import { FinancialInstitution, FinancialInstitutionProfile } from 'filist'
 import * as React from 'react'
 import { IntlProvider, intlShape } from 'react-intl'
 import { Provider } from 'react-redux'
+import { setObservableConfig } from 'recompose'
+import { from } from 'rxjs/observable/from'
 import * as Sinon from 'sinon'
 import { action } from '@storybook/addon-actions'
 import { Story, storiesOf } from '@storybook/react'
@@ -19,13 +22,12 @@ export { specs, describe, it } from 'storybook-addon-specifications'
 export { storiesOf }
 export { Provider }
 
-import { setObservableConfig } from 'recompose'
-import { from } from 'rxjs/observable/from'
-
 setObservableConfig({
   fromESObservable: from,
   toESObservable: stream => stream
 })
+
+Enzyme.configure({ adapter: new Adapter() })
 
 export const stub = () => Sinon.stub()
 
