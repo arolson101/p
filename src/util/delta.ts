@@ -1,8 +1,8 @@
-import * as jsondiffpatch from 'jsondiffpatch'
+import { DiffPatcher, Delta as JSONDelta } from 'jsondiffpatch/src/diffpatcher'
 import * as R from 'ramda'
 import * as zlib from 'zlib'
 
-type Doc = PouchDB.Core.IdMeta & { [key: string]: any }
+type Doc<T> = PouchDB.Core.IdMeta & { [key: string]: any } & T
 type CompressedJson = '<compressed json>'
 
 interface Delta {
@@ -15,9 +15,11 @@ interface NakedDoc {
   [key: string]: any
 }
 
-type VersionedDoc = Doc & {
+type VersionedDoc<T> = Doc<T> & {
   $deltas: Delta[]
 }
+
+const diffPatcher = new DiffPatcher()
 
 const nakedDoc = (doc: any): NakedDoc => {
   const ret = {} as NakedDoc
@@ -29,33 +31,35 @@ const nakedDoc = (doc: any): NakedDoc => {
   return ret
 }
 
-const stringToBuffer = (str: CompressedJson) => new Buffer(str, 'base64')
-const bufferToString = (buffer: Buffer) => buffer.toString('base64') as CompressedJson
+const CJSONToBuffer = (str: CompressedJson) => new Buffer(str, 'base64')
+const bufferToCJSON = (buffer: Buffer) => buffer.toString('base64') as CompressedJson
 
 const dehydrate = R.pipe(
-  JSON.stringify as (obj: jsondiffpatch.Delta<NakedDoc, NakedDoc>) => string,
+  JSON.stringify as (obj: JSONDelta) => string,
   zlib.deflateSync,
-  bufferToString
+  bufferToCJSON
 )
 
 const hydrate = R.pipe(
-  stringToBuffer,
+  CJSONToBuffer,
   zlib.inflateSync,
   R.toString,
-  JSON.parse as (str: string) => jsondiffpatch.Delta<NakedDoc, NakedDoc>
+  JSON.parse as (str: string) => JSONDelta,
 )
 
 const rebuildObject = R.reduce(
   (next: NakedDoc, change: Delta) => {
     const delta = hydrate(change.d)
-    return jsondiffpatch.patch(next, delta)
+    return diffPatcher.patch(next, delta)
   },
   {} as NakedDoc
 )
 
-export const incomingDelta = (idoc: Doc): VersionedDoc => {
-  const t = new Date().valueOf()
-  const doc = idoc as VersionedDoc
+const now = () => new Date().valueOf()
+
+export const incomingDelta = <T>(idoc: Doc<T>, timeFcn = now): VersionedDoc<T> => {
+  const t = timeFcn()
+  const doc = idoc as VersionedDoc<T>
 
   if (!doc.$deltas) {
     doc.$deltas = []
@@ -64,14 +68,14 @@ export const incomingDelta = (idoc: Doc): VersionedDoc => {
   let next = nakedDoc(doc)
   let prev = rebuildObject(doc.$deltas)
 
-  const delta = jsondiffpatch.diff(prev, next)
+  const delta = diffPatcher.diff(prev, next)
   if (delta) {
-    const d = dehydrate(delta)
+    const d = dehydrate(delta) as any
     doc.$deltas.push({t, d})
     // console.log(`doc ${doc._id}: updated: `, doc)
   }
 
-  return doc as VersionedDoc
+  return doc as VersionedDoc<T>
 }
 
 const mergeDeltas = (a: Delta[], b: Delta[]): Delta[] =>
@@ -81,7 +85,7 @@ const mergeDeltas = (a: Delta[], b: Delta[]): Delta[] =>
     R.sort((d1: Delta, d2: Delta) => d1.t - d2.t)
   )([a, b])
 
-export const resolveConflict = (a: VersionedDoc, b: VersionedDoc): VersionedDoc => {
+export const resolveConflict = <T>(a: VersionedDoc<any>, b: VersionedDoc<any>): VersionedDoc<T> => {
   const $deltas = mergeDeltas(a.$deltas || [], b.$deltas || [])
   const merged = rebuildObject($deltas)
   const ret = {
@@ -94,12 +98,3 @@ export const resolveConflict = (a: VersionedDoc, b: VersionedDoc): VersionedDoc 
   // console.log('resolved conflict: ', a, b, ret)
   return ret
 }
-
-// const copy = (a: any) => { return ({...a, $deltas: [...a.$deltas]})}
-// const a = incomingDelta({_id: 'a', a: 'a', b: 'b'})
-// const a2 = incomingDelta({ ...copy(a), a: 'a2' })
-// const a3 = incomingDelta({ ...copy(a2), a: 'a3' })
-
-// const b2 = incomingDelta({ ...copy(a2), b: 'b2' })
-// const b3 = incomingDelta({ ...copy(b2), a: 'b3' })
-// resolveConflict(a3, b3)
