@@ -35,6 +35,7 @@ declare module 'react-form' {
     onSubmit?: (values: V, state: FormState, props: P, instance: FormAPI) => void
     postSubmit?: (values: V, state: FormState, props: P, instance: FormAPI) => void
     component?: string | false | React.ComponentType<any>
+    render?: (props: FormAPI<V>) => React.ReactNode
   }
 
   export interface FormProps<V = FormValues> extends FormPropsBase<V> {
@@ -84,13 +85,22 @@ declare module 'react-form' {
   }
 
   export interface FormFieldProps extends ComponentBaseProps {
+    render?: (props: FormAPI) => any
     children?: (props: FormAPI) => any
   }
   export interface BoundFormFieldProps extends ComponentBaseProps {
     field: string
+    render?: (props: BoundFormAPI) => any
     children?: (props: BoundFormAPI) => any
   }
-  export class FormField extends React.Component<BoundFormFieldProps> {}
+  export interface FormFieldProps2 {
+    field: string
+    fieldApi?: BoundFormAPI
+  }
+  export interface FieldComponentProps {
+    fieldApi: BoundFormAPI
+  }
+  export class FormField extends React.Component<FormFieldProps2> {}
 
   export interface TextProps extends ComponentBaseProps {}
   export class Text extends React.Component<TextProps> {}

@@ -1,6 +1,7 @@
 import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import * as RB from 'react-bootstrap'
+import * as RF from 'react-form'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { default as ReactSelect, Creatable, ReactCreatableSelectProps } from 'react-select'
@@ -8,7 +9,6 @@ import 'react-select/dist/react-select.css'
 import { compose, mapPropsStream, withContext } from 'recompose'
 import { createSelector } from 'reselect'
 import * as Rx from 'rxjs/Rx'
-import * as RF from 'react-form'
 import { getFaviconStream } from 'util/index'
 import { mapDispatchToProps } from 'core/state'
 import { AccountPicker } from './AccountPicker'
@@ -75,8 +75,11 @@ interface LayoutConfig {
   nolabel: RB.ColProps
 }
 
-type WrapperProps = FormField & RF.BoundFormAPI & React.Props<any>
-const Wrapper = (props: WrapperProps, { layout }: LayoutProps) => {
+type WrapperProps = RF.BoundFormAPI & React.Props<any> & {
+  label: FormattedMessage.MessageDescriptor
+  help?: FormattedMessage.MessageDescriptor
+}
+const Wrapper: React.SFC<WrapperProps> = (props: WrapperProps, { layout }: LayoutProps) => {
   const { label, help, children } = props
   const error = props.getError()
   return (
@@ -103,7 +106,7 @@ const Wrapper = (props: WrapperProps, { layout }: LayoutProps) => {
   )
 }
 
-(Wrapper as any).contextTypes = { layout: PropTypes.object }
+Wrapper.contextTypes = { layout: PropTypes.object }
 
 // input ----------------------------------------------------------------------
 interface TextFieldProps<V = any> extends FormField /*, RB.FormControlProps*/ {
@@ -118,47 +121,48 @@ interface TextFieldProps<V = any> extends FormField /*, RB.FormControlProps*/ {
   disabled?: boolean
 }
 
-const TextField = (props: TextFieldProps) => {
+const TextComponent: React.SFC<TextFieldProps> = (props: TextFieldProps & RF.FieldComponentProps) => {
+  const { label, help, rows, fieldApi,
+    password, addonBefore, addonAfter, ...passedProps } = props
+  const { setValue, getValue, setTouched } = fieldApi
+
+  const formControl = (
+    <RB.FormControl
+      componentClass={rows ? 'textarea' : undefined}
+      type={password ? 'password' : undefined}
+      rows={rows}
+      {...passedProps}
+      value={getValue('')}
+      onChange={e => setValue((e.target as any).value)}
+      onBlur={() => setTouched()}
+    />
+  )
+
   return (
-    <RF.FormField field={props.name}>
-      {api => {
-        const { label, help, rows,
-          password, addonBefore, addonAfter, ...passedProps } = props
-        const { setValue, getValue, setTouched } = api
-
-        const formControl = (
-          <RB.FormControl
-            componentClass={rows ? 'textarea' : undefined}
-            type={password ? 'password' : undefined}
-            rows={rows}
-            {...passedProps}
-            value={getValue('')}
-            onChange={e => setValue((e.target as any).value)}
-            onBlur={() => setTouched()}
-          />
-        )
-
-        return (
-          <Wrapper {...props} {...api}>
-            {(addonBefore || addonAfter) ? (
-              <RB.InputGroup>
-                {addonBefore}
-                {formControl}
-                {addonAfter}
-              </RB.InputGroup>
-            ) : (
-              formControl
-            )}
-          </Wrapper>
-        )
-      }
-    }
-    </RF.FormField>
+    <Wrapper label={label} help={help} {...fieldApi}>
+      {(addonBefore || addonAfter) ? (
+        <RB.InputGroup>
+          {addonBefore}
+          {formControl}
+          {addonAfter}
+        </RB.InputGroup>
+      ) : (
+        formControl
+      )}
+    </Wrapper>
   )
 }
 
+const TextField = (props: TextFieldProps) => {
+  // https://github.com/react-tools/react-form/issues/133
+  const { addonBefore, addonAfter, ...rest} = props
+  return <RF.FormField field={props.name}>
+    <TextComponent {...rest} />
+  </RF.FormField>
+}
+
 type PasswordFieldProps<V = any> = TextFieldProps<V>
-const PasswordField = <V extends {}>(props: PasswordFieldProps) =>
+const PasswordField = (props: PasswordFieldProps) =>
   <TextField password {...props} />
 
 // url ------------------------------------------------------------------------
@@ -190,56 +194,59 @@ const enhanceUrl = mapPropsStream<EnhancedUrlProps, EnhancedUrlProps>(
   }
 )
 
-const UrlField = (props: UrlFieldProps & WrapperProps) => {
-  const { name, favicoName } = props
-
+const UrlComponent: React.SFC<UrlFieldProps & WrapperProps> = (props: UrlFieldProps & WrapperProps & RF.FieldComponentProps) => {
+  const { name, favicoName, fieldApi } = props
   const FavicoAddon = enhanceUrl(props =>
     <RB.InputGroup.Addon>
       <Favico value={props.favico}/>
     </RB.InputGroup.Addon>
   )
 
-  return (
-    <RF.FormField field={name}>
-      {api =>
-        <Wrapper {...props} {...api}>
-          <RB.InputGroup>
-            <RF.FormField field={favicoName}>
-              {favicoApi =>
-                <FavicoAddon
-                  url={api.getValue('')}
-                  favico={favicoApi.getValue('')}
-                  setFavico={favicoApi.setValue}
-                />
-              }
-            </RF.FormField>
-            <RB.FormControl
-              type='text'
-              value={api.getValue('')}
-              onChange={e => api.setValue((e as any).target.value)}
-              onBlur={() => api.setTouched()}
-            />
-          </RB.InputGroup>
-        </Wrapper>
-      }
-    </RF.FormField>
-  )
+  const FavicoComponent: React.SFC<any> = (favicoProps: RF.FieldComponentProps) => {
+    const favicoApi = favicoProps.fieldApi
+    return <FavicoAddon
+      url={fieldApi.getValue('')}
+      favico={favicoApi.getValue('')}
+      setFavico={favicoApi.setValue}
+    />
+  }
+
+  return <Wrapper {...props} {...fieldApi}>
+    <RB.InputGroup>
+      <RF.FormField field={favicoName}>
+        <FavicoComponent/>
+      </RF.FormField>
+      <RB.FormControl
+        type='text'
+        value={fieldApi.getValue('')}
+        onChange={e => fieldApi.setValue((e as any).target.value)}
+        onBlur={() => fieldApi.setTouched()}
+      />
+    </RB.InputGroup>
+  </Wrapper>
 }
 
+const UrlField = (props: UrlFieldProps & WrapperProps) =>
+  <RF.FormField field={props.name}>
+    <UrlComponent {...props}/>
+  </RF.FormField>
+
 // color ----------------------------------------------------------------------
-interface ColorAddonFieldProps<V> {
+interface ColorAddonFieldProps<V = {}> {
   name: keyof V
 }
-const ColorAddonField = <V extends {}>(props: ColorAddonFieldProps<V>) =>
+
+const ColorAddonComponent: React.SFC<any> = ({fieldApi}: RF.FieldComponentProps) =>
+  <RB.InputGroup.Button>
+    <ColorPicker
+      value={fieldApi.getValue('')}
+      onChange={value => fieldApi.setValue(value)}
+    />
+  </RB.InputGroup.Button>
+
+const ColorAddonField = (props: ColorAddonFieldProps) =>
   <RF.FormField field={props.name}>
-    {api =>
-      <RB.InputGroup.Button>
-        <ColorPicker
-          value={api.getValue('')}
-          onChange={value => api.setValue(value)}
-        />
-      </RB.InputGroup.Button>
-    }
+    <ColorAddonComponent/>
   </RF.FormField>
 
 // select ---------------------------------------------------------------------
@@ -249,7 +256,7 @@ export interface SelectOption {
   disabled?: boolean
 }
 
-type SelectFieldProps<V> = FormField<V> & ReactCreatableSelectProps & {
+type SelectFieldProps<V = {}> = FormField<V> & ReactCreatableSelectProps & {
   createable?: boolean
   parse?: (value: any) => any
   format?: (value: any) => string
@@ -261,8 +268,9 @@ const fixSelectProps = {
   menuContainerStyle: { zIndex: 5 }, // https://github.com/JedWatson/react-select/issues/1076
 }
 
-const SelectField = <V extends {}>(props: SelectFieldProps<V>) => {
+const SelectComponent: React.SFC<SelectFieldProps> = (props: SelectFieldProps & RF.FieldComponentProps) => {
   const Component: typeof Creatable = props.createable ? Creatable : ReactSelect
+  const { fieldApi } = props
 
   const valueOf = (value?: SelectOption): string => {
     if (!value) {
@@ -282,126 +290,140 @@ const SelectField = <V extends {}>(props: SelectFieldProps<V>) => {
     }
   }
 
-  return <RF.FormField field={props.name}>
-    {api =>
-      <Wrapper {...props} {...api}>
-        <Component
-          {...props}
-          {...fixSelectProps}
-          placeholder={props.placeholderMessage &&
-            <FormattedMessage {...props.placeholderMessage}/>
-          }
-          onChange={value => {
-            api.setValue(parse(value))
-            if (props.onChange) {
-              props.onChange(value)
-            }
-          }}
-          onBlur={() => api.setTouched()}
-          value={api.getValue()}
-        />
-      </Wrapper>
-    }
-  </RF.FormField>
+  return <Wrapper {...props} {...fieldApi}>
+    <Component
+      {...props}
+      {...fixSelectProps}
+      placeholder={props.placeholderMessage &&
+        <FormattedMessage {...props.placeholderMessage}/>
+      }
+      onChange={value => {
+        fieldApi.setValue(parse(value))
+        if (props.onChange) {
+          props.onChange(value)
+        }
+      }}
+      onBlur={() => fieldApi.setTouched()}
+      value={fieldApi.getValue()}
+    />
+  </Wrapper>
 }
+
+const SelectField = (props: SelectFieldProps) =>
+  <RF.FormField field={props.name}>
+    <SelectComponent {...props}/>
+  </RF.FormField>
 
 // account --------------------------------------------------------------------
-type AccountFieldProps<V> = FormField<V>
-const AccountField = <V extends {}>(props: AccountFieldProps<V>) => {
-  return <RF.FormField field={props.name}>
-    {api =>
-      <Wrapper {...props} {...api}>
-        <AccountPicker
-          onChange={value => api.setValue(value as any)}
-          value={api.getValue('')}
-          {...fixSelectProps}
-        />
-      </Wrapper>
-    }
-  </RF.FormField>
+type AccountFieldProps<V = {}> = FormField<V>
+
+const AccountComponent: React.SFC<AccountFieldProps> = (props: AccountFieldProps & RF.FieldComponentProps) => {
+  const { fieldApi } = props
+  return <Wrapper {...props} {...fieldApi}>
+    <AccountPicker
+      onChange={value => fieldApi.setValue(value as any)}
+      value={fieldApi.getValue('')}
+      {...fixSelectProps}
+    />
+  </Wrapper>
 }
+
+const AccountField = (props: AccountFieldProps) =>
+  <RF.FormField field={props.name}>
+    <AccountComponent {...props}/>
+  </RF.FormField>
 
 // budget ---------------------------------------------------------------------
-type BudgetFieldProps<V> = FormField<V>
-const BudgetField = <V extends {}>(props: BudgetFieldProps<V>) => {
-  return <RF.FormField field={props.name}>
-    {api =>
-      <Wrapper {...props} {...api}>
-        <BudgetPicker
-          onChange={value => api.setValue(value as any)}
-          value={api.getValue('')}
-          {...fixSelectProps}
-        />
-      </Wrapper>
-    }
-  </RF.FormField>
+type BudgetFieldProps<V = {}> = FormField<V>
+
+const BudgetComponent: React.SFC<BudgetFieldProps> = (props: BudgetFieldProps & RF.FieldComponentProps) => {
+  const { fieldApi } = props
+  return <Wrapper {...props} {...fieldApi}>
+    <BudgetPicker
+      onChange={value => fieldApi.setValue(value as any)}
+      value={fieldApi.getValue('')}
+      {...fixSelectProps}
+    />
+  </Wrapper>
 }
+
+const BudgetField = (props: BudgetFieldProps) =>
+  <RF.FormField field={props.name}>
+    <BudgetComponent {...props}/>
+  </RF.FormField>
 
 // date -----------------------------------------------------------------------
-interface DateFieldProps<V> extends FormField<V>, DatePickerProps {
+interface DateFieldProps<V = {}> extends FormField<V>, DatePickerProps {
 }
-const DateField = <V extends {}>(props: DateFieldProps<V>) => {
-  const { addonBefore, addonAfter } = props
-  return <RF.FormField field={props.name}>
-    {api => {
-      const component = (
-        <DatePicker
-          onChange={value => api.setValue(value)}
-          value={api.getValue('')}
-        />
-      )
 
-      return (
-        <Wrapper {...props} {...api}>
-          {(addonBefore || addonAfter) ? (
-            <RB.InputGroup>
-              {addonBefore}
-              {component}
-              {addonAfter}
-            </RB.InputGroup>
-          ) : (
-            component
-          )}
-        </Wrapper>
-      )
-    }}
-  </RF.FormField>
+const DateComponent: React.SFC<DateFieldProps> = (props: DateFieldProps & RF.FieldComponentProps) => {
+  const { fieldApi, addonBefore, addonAfter } = props
+  const component = (
+    <DatePicker
+      onChange={value => fieldApi.setValue(value)}
+      value={fieldApi.getValue('')}
+    />
+  )
+
+  return (
+    <Wrapper {...props} {...fieldApi}>
+      {(addonBefore || addonAfter) ? (
+        <RB.InputGroup>
+          {addonBefore}
+          {component}
+          {addonAfter}
+        </RB.InputGroup>
+      ) : (
+        component
+      )}
+    </Wrapper>
+  )
 }
+
+const DateField = (props: DateFieldProps) =>
+  <RF.FormField field={props.name}>
+    <DateComponent {...props}/>
+  </RF.FormField>
 
 // checkbox -------------------------------------------------------------------
-interface CheckboxFieldProps<V> extends FormField<V> {
+interface CheckboxFieldProps<V = {}> extends FormField<V> {
   message: FormattedMessage.MessageDescriptor
 }
-const CheckboxField = <V extends {}>(props: CheckboxFieldProps<V>) => {
-  return <RF.FormField field={props.name}>
-    {api =>
-      <Wrapper {...props} {...api}>
-        <RB.Checkbox
-          onChange={e => api.setValue((e.target as any).checked)}
-          checked={api.getValue(false)}
-          onBlur={() => api.setTouched()}
-        >
-          <FormattedMessage {...props.message}/>
-        </RB.Checkbox>
-      </Wrapper>
-    }
-  </RF.FormField>
+
+const CheckboxComponent: React.SFC<CheckboxFieldProps> = (props: CheckboxFieldProps & RF.FieldComponentProps) => {
+  const { fieldApi } = props
+  return <Wrapper {...props} {...fieldApi}>
+    <RB.Checkbox
+      onChange={e => fieldApi.setValue((e.target as any).checked)}
+      checked={fieldApi.getValue(false)}
+      onBlur={() => fieldApi.setTouched()}
+    >
+      <FormattedMessage {...props.message}/>
+    </RB.Checkbox>
+  </Wrapper>
 }
 
+const CheckboxField = (props: CheckboxFieldProps) =>
+  <RF.FormField field={props.name}>
+    <CheckboxComponent {...props}/>
+  </RF.FormField>
+
 // Collapse -------------------------------------------------------------------
-interface CollapseFieldProps<V> extends RB.CollapseProps {
+interface CollapseFieldProps<V = any> extends RB.CollapseProps {
   name: keyof V
 }
-const CollapseField = <V extends {}>(props: CollapseFieldProps<V> & React.Props<any>) => {
-  const { children, ...passedProps } = props
-  return <RF.FormField field={props.name}>
-    {api =>
-      <RB.Collapse {...passedProps} in={api.getValue(false)}>
-        {props.children}
-      </RB.Collapse>
-    }
-  </RF.FormField>
+
+const CollapseComponent: React.SFC<CollapseFieldProps> = (props: CollapseFieldProps & RF.FieldComponentProps & React.Props<any>) => {
+  const { fieldApi, children, ...passedProps } = props
+  return <RB.Collapse {...passedProps} in={fieldApi.getValue(false)}>
+    {props.children}
+  </RB.Collapse>
 }
+
+const CollapseField = (props: CollapseFieldProps & React.Props<any>) =>
+  <RF.FormField field={props.name}>
+    <CollapseComponent {...props}/>
+  </RF.FormField>
 
 // ----------------------------------------------------------------------------
 // formComponent --------------------------------------------------------------
