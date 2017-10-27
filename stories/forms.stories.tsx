@@ -99,13 +99,12 @@ stories.add('normal', () => {
   // console.log('store', store.getState())
   return <Provider store={store}>
     <Form horizontal onSubmit={(values, state, props, instance) => {
-      console.log('onsubmit form2', props)
       action('onSubmit')(values)
     }}>
       {api =>
         <div>
           <TextField name='text' label={messages.text}/>
-          <PasswordField name='text' label={messages.password}/>
+          <PasswordField name='password' label={messages.password}/>
           <UrlField name='url' favicoName='favico' label={messages.url}/>
           <TextField name='textWithColor' label={messages.textWithColor} addonBefore={<ColorAddon name='color'/>} />
           <SelectField name='select' options={selectOptions} label={messages.select} placeholderMessage={messages.selectPlaceholder}/>

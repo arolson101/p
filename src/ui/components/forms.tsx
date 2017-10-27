@@ -132,7 +132,7 @@ const TextComponent: React.SFC<TextFieldProps> = (props: TextFieldProps & RF.Fie
       type={password ? 'password' : undefined}
       rows={rows}
       {...passedProps}
-      value={getValue('')}
+      value={getValue<string>() || ''}
       onChange={e => setValue((e.target as any).value)}
       onBlur={() => setTouched()}
     />
@@ -205,8 +205,8 @@ const UrlComponent: React.SFC<UrlFieldProps & WrapperProps> = (props: UrlFieldPr
   const FavicoComponent: React.SFC<any> = (favicoProps: RF.FieldComponentProps) => {
     const favicoApi = favicoProps.fieldApi
     return <FavicoAddon
-      url={fieldApi.getValue('')}
-      favico={favicoApi.getValue('')}
+      url={fieldApi.getValue() || ''}
+      favico={favicoApi.getValue() || ''}
       setFavico={favicoApi.setValue}
     />
   }
@@ -218,7 +218,7 @@ const UrlComponent: React.SFC<UrlFieldProps & WrapperProps> = (props: UrlFieldPr
       </RF.FormField>
       <RB.FormControl
         type='text'
-        value={fieldApi.getValue('')}
+        value={fieldApi.getValue<string>() || ''}
         onChange={e => fieldApi.setValue((e as any).target.value)}
         onBlur={() => fieldApi.setTouched()}
       />
@@ -239,7 +239,7 @@ interface ColorAddonFieldProps<V = {}> {
 const ColorAddonComponent: React.SFC<any> = ({fieldApi}: RF.FieldComponentProps) =>
   <RB.InputGroup.Button>
     <ColorPicker
-      value={fieldApi.getValue('')}
+      value={fieldApi.getValue() || ''}
       onChange={value => fieldApi.setValue(value)}
     />
   </RB.InputGroup.Button>
@@ -322,7 +322,7 @@ const AccountComponent: React.SFC<AccountFieldProps> = (props: AccountFieldProps
   return <Wrapper {...props} {...fieldApi}>
     <AccountPicker
       onChange={value => fieldApi.setValue(value as any)}
-      value={fieldApi.getValue('')}
+      value={fieldApi.getValue() || ''}
       {...fixSelectProps}
     />
   </Wrapper>
@@ -341,7 +341,7 @@ const BudgetComponent: React.SFC<BudgetFieldProps> = (props: BudgetFieldProps & 
   return <Wrapper {...props} {...fieldApi}>
     <BudgetPicker
       onChange={value => fieldApi.setValue(value as any)}
-      value={fieldApi.getValue('')}
+      value={fieldApi.getValue() || ''}
       {...fixSelectProps}
     />
   </Wrapper>
@@ -361,7 +361,7 @@ const DateComponent: React.SFC<DateFieldProps> = (props: DateFieldProps & RF.Fie
   const component = (
     <DatePicker
       onChange={value => fieldApi.setValue(value)}
-      value={fieldApi.getValue('')}
+      value={fieldApi.getValue() || ''}
     />
   )
 
@@ -395,7 +395,7 @@ const CheckboxComponent: React.SFC<CheckboxFieldProps> = (props: CheckboxFieldPr
   return <Wrapper {...props} {...fieldApi}>
     <RB.Checkbox
       onChange={e => fieldApi.setValue((e.target as any).checked)}
-      checked={fieldApi.getValue(false)}
+      checked={fieldApi.getValue() || false}
       onBlur={() => fieldApi.setTouched()}
     >
       <FormattedMessage {...props.message}/>
@@ -415,7 +415,7 @@ interface CollapseFieldProps<V = any> extends RB.CollapseProps {
 
 const CollapseComponent: React.SFC<CollapseFieldProps> = (props: CollapseFieldProps & RF.FieldComponentProps & React.Props<any>) => {
   const { fieldApi, children, ...passedProps } = props
-  return <RB.Collapse {...passedProps} in={fieldApi.getValue(false)}>
+  return <RB.Collapse {...passedProps} in={fieldApi.getValue() || false}>
     {props.children}
   </RB.Collapse>
 }

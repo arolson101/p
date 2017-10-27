@@ -51,7 +51,7 @@ declare module 'react-form' {
 
   export interface FormAPI<V = FormValues> extends BaseFormAPI<V> {
     setValue: <K extends keyof V>(field: K, value: V[K], noTouch?: boolean) => void
-    getValue: <T extends FieldValue>(field: FieldSpec, fallback?: T) => T
+    getValue: <T extends FieldValue>(field: FieldSpec) => T | undefined
     setNestedError: (field: FieldSpec, value: FieldValue) => void
     getError: (field: FieldSpec) => string | undefined
     setTouched: (field: FieldSpec, value?: boolean) => void
@@ -63,7 +63,7 @@ declare module 'react-form' {
 
   export interface BoundFormAPI<V = FormValues> extends BaseFormAPI<V> {
     setValue: (value: FieldValue, noTouch?: boolean) => void
-    getValue: <T extends FieldValue>(fallback?: T) => T
+    getValue: <T extends FieldValue>() => T | undefined
     setNestedError: (value: FieldValue) => void
     getError: () => string | undefined
     setTouched: (value?: boolean) => void

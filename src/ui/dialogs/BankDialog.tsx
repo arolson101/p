@@ -165,7 +165,6 @@ export const BankDialogComponent = enhance((props) => {
                   labelKey='name'
                   valueKey='id'
                   onChange={(newValue: FI | null) => {
-                    console.log('onChange', newValue)
                     const value = newValue || emptyfi
                     api.setValue('name', value.name)
                     api.setValue('web', value.profile.siteURL)
