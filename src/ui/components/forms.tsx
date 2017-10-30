@@ -154,10 +154,8 @@ const TextComponent: React.SFC<TextFieldProps> = (props: TextFieldProps & RF.Fie
 }
 
 const TextField = (props: TextFieldProps) => {
-  // https://github.com/react-tools/react-form/issues/133
-  const { addonBefore, addonAfter, ...rest} = props
   return <RF.FormField field={props.name}>
-    <TextComponent {...rest} />
+    <TextComponent {...props} />
   </RF.FormField>
 }
 
