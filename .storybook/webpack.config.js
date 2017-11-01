@@ -44,6 +44,12 @@ module.exports = function (config, env) {
         //     manifest: require("../app/dev_electron_dll.json"),
         //     sourceType: "commonsjs2"
         //   }),
+
+        // production defines
+        new webpack.DefinePlugin({
+            __DEVELOPMENT__: true,
+            __TEST__: 1
+        }),
     )
 
     config.externals = {

@@ -30,6 +30,8 @@ const messages = defineMessages({
   }
 })
 
+interface Props {}
+
 interface BillDisplay {
   doc: Bill.Doc
   rrule: RRule
@@ -45,7 +47,7 @@ interface BillDisplayGroup {
   bills: BillDisplay[]
 }
 
-interface ConnectedProps {
+interface StateProps {
   groups: BillDisplayGroup[]
 }
 
@@ -57,26 +59,19 @@ interface Handlers {
   createBill: () => void
 }
 
-type EnhancedProps = Handlers & ConnectedProps & DispatchProps
+type ConnectedProps = StateProps & DispatchProps & Props
+type EnhancedProps = Handlers & StateProps & DispatchProps
 
-const enhance = compose<EnhancedProps, undefined>(
+const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName('Bills'),
-  onlyUpdateForPropTypes,
-  setPropTypes({}),
-  connect<ConnectedProps, DispatchProps, {}>(
-    (state: AppState): ConnectedProps => ({
-      groups: selectBillDisplayGroups(state)
-    }),
-    mapDispatchToProps<DispatchProps>({ showBillDialog })
-  ),
-  withHandlers<ConnectedProps & ConnectedProps & DispatchProps, Handlers>({
+  withHandlers<StateProps & StateProps & DispatchProps, Handlers>({
     createBill: ({ showBillDialog }) => () => {
       showBillDialog({})
     },
   })
 )
 
-export const Bills = enhance((props) => {
+export const BillsComponent = enhance((props) => {
   const { groups, createBill, showBillDialog } = props
 
   return (
@@ -140,6 +135,13 @@ export const Bills = enhance((props) => {
   )
 })
 
+export const Bills = connect<StateProps, DispatchProps, Props>(
+  (state: AppState): StateProps => ({
+    groups: selectBillDisplayGroups(state)
+  }),
+  mapDispatchToProps<DispatchProps>({ showBillDialog })
+)(BillsComponent)
+
 const getGroup = (bill: BillDisplay) => {
   return bill.doc.group
 }
@@ -171,7 +173,7 @@ const getMonthStart = (): Date => {
   return date
 }
 
-const selectBillDisplayGroups = createSelector(
+export const selectBillDisplayGroups = createSelector(
   (state: AppState) => selectBills(state),
   (state: AppState) => getMonthStart(),
   (bills, start): BillDisplayGroup[] => {

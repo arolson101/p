@@ -6,6 +6,7 @@ import * as React from 'react'
 import { IntlProvider, intlShape } from 'react-intl'
 import { Provider } from 'react-redux'
 import { setObservableConfig } from 'recompose'
+import * as RRule from 'rrule-alt'
 import { from } from 'rxjs/observable/from'
 import * as Sinon from 'sinon'
 import { action } from '@storybook/addon-actions'
@@ -14,7 +15,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'font-awesome/css/font-awesome.css'
 
 import { createAppStore, setDocs, FI,
-  DbInfo, Account, Bank, Budget, Category } from 'core'
+  DbInfo, Account, Bank, Budget, Category, Bill } from 'core'
 import createHistory from 'history/createHashHistory'
 export { action }
 export { expect }
@@ -131,6 +132,23 @@ export const dummyBudget = (budgetName: string) => {
 export const dummyBudgetDocs = (budgetName: string) => {
   const { budget, categories } = dummyBudget(budgetName)
   return [budget, ...categories]
+}
+
+export const dummyBillDocs = (billName: string): AnyDocument[] => {
+  const [ bank, account ] = dummyBankDocs(`bank for ${billName}`, ['account 1'])
+  const { budget, categories } = dummyBudget(`budget for ${billName}`)
+  const bill: Bill.Doc = {
+    _id: `bill/${billName}` as Bill.DocId,
+    name: billName,
+    group: `group for ${billName}`,
+    web: `website for ${billName}`,
+    notes: `notes for ${billName}`,
+    amount: 123.45,
+    account: (account as Account.Doc)._id,
+    category: categories[0]._id,
+    rruleString: new RRule({ freq: RRule.MONTHLY }).toString()
+  }
+  return [ bank, account, budget, ...categories, bill ]
 }
 
 const dummyFI = (name: string, id: number): FI => {

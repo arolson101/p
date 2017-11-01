@@ -66,7 +66,7 @@ interface Props {
   bankId: Bank.DocId
 }
 
-interface ConnectedProps {
+interface StateProps {
   bank: Bank.View
   accounts: Account.View[]
 }
@@ -78,7 +78,7 @@ interface DispatchProps {
   showBankDeleteDialog: typeof showBankDeleteDialog
 }
 
-interface State {
+interface LocalStateProps {
   showAll?: boolean
   setShowAll: (showAll: boolean) => void
   showModal?: boolean
@@ -100,15 +100,10 @@ interface Handlers {
   deleteBank: () => void
 }
 
-type EnhancedProps = Handlers
-  & State
-  & ConnectedProps
-  & DispatchProps
-  & IntlProps
-  & RouteProps
-  & Props
+type ConnectedProps = StateProps & DispatchProps & Props
+type EnhancedProps = Handlers & LocalStateProps & ConnectedProps & IntlProps & RouteProps
 
-const enhance = compose<EnhancedProps, Props>(
+const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName('BankView'),
   onlyUpdateForPropTypes,
   setPropTypes({
@@ -116,19 +111,12 @@ const enhance = compose<EnhancedProps, Props>(
   }),
   injectIntl,
   withRouter,
-  connect<ConnectedProps, DispatchProps, IntlProps & RouteProps & Props>(
-    (state: AppState, props) => ({
-      bank: selectBank(state, props && props.bankId)!,
-      accounts: selectBankAccounts(state, props && props.bankId)!,
-    }),
-    mapDispatchToProps<DispatchProps>({ getAccounts, showBankDialog, showAccountDialog, showBankDeleteDialog })
-  ),
   withState('showAll', 'setShowAll', false),
   withState('showModal', 'setShowModal', false),
   withState('working', 'setWorking', false),
   withState('error', 'setError', undefined),
   withState('message', 'setMessage', undefined),
-  withHandlers<State & ConnectedProps & DispatchProps & IntlProps & RouteProps & Props, Handlers>({
+  withHandlers<LocalStateProps & StateProps & DispatchProps & IntlProps & RouteProps & Props, Handlers>({
     toggleEdit: ({ bank: edit, showBankDialog }) => () => {
       showBankDialog({ edit })
     },
@@ -168,12 +156,7 @@ const enhance = compose<EnhancedProps, Props>(
   })
 )
 
-export const BankViewRoute = (props: RouteComponentProps<Bank.Params>) =>
-  <BankView
-    bankId={Bank.docId(props.match.params)}
-  />
-
-export const BankView = enhance((props) => {
+export const BankViewComponent = enhance((props) => {
   const { bank, accounts, history, toggleShowAll, hideModal, getAccountList, toggleEdit, createAccount, deleteBank } = props
   const { working, showModal, message, error, showAll } = props
   return (
@@ -279,6 +262,19 @@ export const BankView = enhance((props) => {
     </div>
   )
 })
+
+export const BankView = connect<StateProps, DispatchProps, Props>(
+  (state: AppState, props) => ({
+    bank: selectBank(state, props && props.bankId)!,
+    accounts: selectBankAccounts(state, props && props.bankId)!,
+  }),
+  mapDispatchToProps<DispatchProps>({ getAccounts, showBankDialog, showAccountDialog, showBankDeleteDialog })
+)(BankViewComponent)
+
+export const BankViewRoute = (props: RouteComponentProps<Bank.Params>) =>
+  <BankView
+    bankId={Bank.docId(props.match.params)}
+  />
 
 const Nl2br = (props: {text: string}) => {
   return (

@@ -21,7 +21,7 @@ const messages = defineMessages({
   }
 })
 
-interface ConnectedProps {
+interface StateProps {
   banks: Bank.View[]
 }
 
@@ -33,18 +33,11 @@ interface Handlers {
   createBank: () => void
 }
 
+type ConnectedProps = StateProps & DispatchProps
 type EnhancedProps = React.Props<any> & ConnectedProps & Handlers
 
-const enhance = compose<EnhancedProps, undefined>(
+const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName('Accounts'),
-  onlyUpdateForPropTypes,
-  setPropTypes({}),
-  connect<ConnectedProps, DispatchProps, {}>(
-    (state: AppState): ConnectedProps => ({
-      banks: selectBanks(state)
-    }),
-    mapDispatchToProps<DispatchProps>({ showBankDialog })
-  ),
   withHandlers({
     createBank: ({ showBankDialog }) => () => {
       showBankDialog({})
@@ -52,7 +45,10 @@ const enhance = compose<EnhancedProps, undefined>(
   })
 )
 
-export const Accounts = enhance(props => {
+export namespace AccountsComponent {
+  export type Props = ConnectedProps
+}
+export const AccountsComponent = enhance(props => {
   const { banks, createBank } = props
 
   return (
@@ -70,6 +66,13 @@ export const Accounts = enhance(props => {
     </div>
   )
 })
+
+export const Accounts = connect<StateProps, DispatchProps, {}>(
+  (state: AppState): StateProps => ({
+    banks: selectBanks(state)
+  }),
+  mapDispatchToProps<DispatchProps>({ showBankDialog })
+)(AccountsComponent)
 
 const BankListItem = (props: { bank: Bank.View }) => {
   const { bank } = props

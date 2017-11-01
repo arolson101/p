@@ -4,26 +4,24 @@ import { Router } from 'react-router'
 import { createMemoryHistory } from 'history'
 import { specs, describe, it } from 'storybook-addon-specifications'
 import { action, storiesOfIntl,
-  dummyStore, dummyBankDocs, dummyBudgetDocs, Provider } from './storybook'
+  dummyStore, dummyBillDocs, Provider } from './storybook'
 
-import { AppStore, selectBudgets } from 'core'
-import { BudgetsComponent } from 'ui/pages/Budgets'
+import { AppStore } from 'core'
+import { BillsComponent, selectBillDisplayGroups } from 'ui/pages/Bills'
 
-const stories = storiesOfIntl(`Pages/Budgets`, module)
+const stories = storiesOfIntl(`Pages/Bills`, module)
 
 const story = <T extends Function>(store: AppStore, functor: (name: string) => T) => {
   const state = store.getState()
+  console.log(state)
   const props = {
-    budgets: selectBudgets(state),
-    categoryCache: state.views.categories,
-    pushChanges: functor('pushChanges') as any,
-    deleteBudget: functor('deleteBudget') as any,
-    showBillDialog: functor('showBillDialog') as any
+    groups: selectBillDisplayGroups(state),
+    showBillDialog: functor('showBillDialog') as any,
   }
   return (
     <Provider store={store}>
       <Router history={createMemoryHistory()}>
-        <BudgetsComponent {...props} />
+        <BillsComponent {...props} />
       </Router>
     </Provider>
   )
@@ -55,10 +53,8 @@ stories.add('empty', () => {
 
 stories.add('normal', () => {
   const store = dummyStore(
-    ...dummyBankDocs('bank 1', ['account 1a', 'account 1b']),
-    ...dummyBankDocs('bank 2', ['account 2a']),
-    ...dummyBudgetDocs('budget 1'),
-    ...dummyBudgetDocs('budget 2')
+    ...dummyBillDocs('netflix'),
+    ...dummyBillDocs('rent')
   )
 
   specs(() => describe('normal', () => {

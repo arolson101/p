@@ -1,6 +1,6 @@
 import { History } from 'history'
 import { routerMiddleware } from 'react-router-redux'
-import { createStore, applyMiddleware, combineReducers, bindActionCreators, Dispatch } from 'redux'
+import { createStore, applyMiddleware, combineReducers, bindActionCreators, Store, Dispatch } from 'redux'
 import ReduxThunk, { ThunkAction } from 'redux-thunk'
 import { composeWithDevTools } from 'redux-devtools-extension'
 
@@ -23,16 +23,16 @@ import { SysSlice } from './sys'
 import { UiSlice } from './ui'
 import { ImportsSlice, ImportsState, importsInit } from './imports'
 
-export type AppState =
-  DbSlice &
-  DialogSlice &
-  FiSlice &
-  I18nSlice &
-  ImportsSlice &
-  RouterSlice &
-  SysSlice &
-  UiSlice &
-  ViewsSlice
+export interface AppState extends
+  DbSlice,
+  DialogSlice,
+  FiSlice,
+  I18nSlice,
+  ImportsSlice,
+  RouterSlice,
+  SysSlice,
+  UiSlice,
+  ViewsSlice {}
 
 export const AppState = combineReducers<AppState>({
   ...DbSlice,
@@ -46,6 +46,7 @@ export const AppState = combineReducers<AppState>({
   ...ViewsSlice,
 })
 
+export type AppStore = Store<AppState>
 export type AppThunk<Args, Ret> = (args: Args) => ThunkAction<Promise<Ret>, AppState, any>
 export type ThunkFcn<Args, Ret> = (args: Args) => Promise<Ret>
 

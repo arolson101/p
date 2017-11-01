@@ -47,10 +47,9 @@ interface Props {
   bankId: Bank.DocId
 }
 
-interface ConnectedProps {
+interface StateProps {
   bank: Bank.View
   account: Account.View
-  db: PouchDB.Database<Transaction.Doc>
 }
 
 interface DispatchProps {
@@ -62,7 +61,8 @@ interface DispatchProps {
 }
 
 // type StreamProps = ConnectedProps & Props
-type EnhancedProps = IntlProps & ConnectedProps & Handlers & DispatchProps
+type ConnectedProps = StateProps & DispatchProps
+type EnhancedProps = IntlProps & Handlers & ConnectedProps
 
 interface Handlers {
   editAccount: () => void
@@ -72,17 +72,9 @@ interface Handlers {
   deleteTransactions: () => void
 }
 
-const enhance = compose<EnhancedProps, Props>(
+const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName('AccountViewComponent'),
   injectIntl,
-  connect<ConnectedProps, DispatchProps, IntlProps & Props>(
-    (state: AppState, props): ConnectedProps => ({
-      bank: selectBank(state, props.bankId)!,
-      account: selectAccount(state, props.accountId)!,
-      db: state.db.current!.db
-    }),
-    mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions, showAccountDialog, showAccountDeleteDialog })
-  ),
   // mapPropsStream(
   //   (props$: Rx.Observable<StreamProps>) => {
   //     const transactions$ = props$
@@ -118,7 +110,7 @@ const enhance = compose<EnhancedProps, Props>(
   //     return props$.combineLatest(transactions$, (props, transactions) => ({ ...props, ...transactions }))
   //   }
   // ),
-  withHandlers<ConnectedProps & DispatchProps & IntlProps, Handlers>({
+  withHandlers<StateProps & DispatchProps & IntlProps, Handlers>({
     editAccount: ({ showAccountDialog, bank, account: edit }) => () => {
       showAccountDialog({ bank, edit })
     },
@@ -164,13 +156,7 @@ const enhance = compose<EnhancedProps, Props>(
   })
 )
 
-export const AccountViewRoute = (props: RouteComponentProps<Account.Params>) =>
-  <AccountView
-    bankId={Bank.docId(props.match.params)}
-    accountId={Account.docId(props.match.params)}
-  />
-
-export const AccountView = enhance((props) => {
+export const AccountViewComponent = enhance((props) => {
   const { account, editAccount, downloadTransactions, addTransactions, deleteTransactions, deleteAccount } = props
   const transactions: Transaction[] = [] // account.transactions
   return (
@@ -260,6 +246,20 @@ export const AccountView = enhance((props) => {
     </div>
   )
 })
+
+export const AccountView = connect<StateProps, DispatchProps, Props>(
+  (state: AppState, props): StateProps => ({
+    bank: selectBank(state, props.bankId)!,
+    account: selectAccount(state, props.accountId)!,
+  }),
+  mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions, showAccountDialog, showAccountDeleteDialog })
+)(AccountViewComponent)
+
+export const AccountViewRoute = (props: RouteComponentProps<Account.Params>) =>
+  <AccountView
+    bankId={Bank.docId(props.match.params)}
+    accountId={Account.docId(props.match.params)}
+  />
 
 const nameCellRenderer = ({ cellData }: TableCellProps) => (
   <div>

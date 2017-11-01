@@ -6,24 +6,30 @@ import { specs, describe, it } from 'storybook-addon-specifications'
 import { action, storiesOfIntl,
   dummyStore, dummyBankDocs, dummyBudgetDocs, Provider } from './storybook'
 
-import { AppStore, selectBudgets } from 'core'
-import { BudgetsComponent } from 'ui/pages/Budgets'
+import { AppStore, selectBanks, selectBankAccounts } from 'core'
+import { BankViewComponent } from 'ui/pages/BankView'
 
-const stories = storiesOfIntl(`Pages/Budgets`, module)
+const stories = storiesOfIntl(`Pages/BankViewComponent`, module)
 
 const story = <T extends Function>(store: AppStore, functor: (name: string) => T) => {
   const state = store.getState()
+  const banks = selectBanks(state)!
+  const bank = banks[0]
+  const bankId = bank.doc._id
+  const accounts = selectBankAccounts(state, bankId)
   const props = {
-    budgets: selectBudgets(state),
-    categoryCache: state.views.categories,
-    pushChanges: functor('pushChanges') as any,
-    deleteBudget: functor('deleteBudget') as any,
-    showBillDialog: functor('showBillDialog') as any
+    bankId,
+    bank,
+    accounts,
+    getAccounts: functor('getAccounts') as any,
+    showAccountDialog: functor('showAccountDialog') as any,
+    showBankDialog: functor('showBankDialog') as any,
+    showBankDeleteDialog: functor('showBankDeleteDialog') as any,
   }
   return (
     <Provider store={store}>
       <Router history={createMemoryHistory()}>
-        <BudgetsComponent {...props} />
+        <BankViewComponent {...props} />
       </Router>
     </Provider>
   )
@@ -31,6 +37,7 @@ const story = <T extends Function>(store: AppStore, functor: (name: string) => T
 
 stories.add('empty', () => {
   const store = dummyStore(
+    ...dummyBankDocs('bank 1', []),
   )
 
   specs(() => describe('empty', () => {
@@ -55,10 +62,7 @@ stories.add('empty', () => {
 
 stories.add('normal', () => {
   const store = dummyStore(
-    ...dummyBankDocs('bank 1', ['account 1a', 'account 1b']),
-    ...dummyBankDocs('bank 2', ['account 2a']),
-    ...dummyBudgetDocs('budget 1'),
-    ...dummyBudgetDocs('budget 2')
+    ...dummyBankDocs('bank 1', ['account 1', 'account 2', 'account 3']),
   )
 
   specs(() => describe('normal', () => {
