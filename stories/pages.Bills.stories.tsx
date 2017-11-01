@@ -13,7 +13,6 @@ const stories = storiesOfIntl(`Pages/Bills`, module)
 
 const story = <T extends Function>(store: AppStore, functor: (name: string) => T) => {
   const state = store.getState()
-  console.log(state)
   const props = {
     groups: selectBillDisplayGroups(state),
     showBillDialog: functor('showBillDialog') as any,

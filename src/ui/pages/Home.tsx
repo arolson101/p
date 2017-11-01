@@ -56,6 +56,8 @@ const messages = defineMessages({
   },
 })
 
+interface Props {}
+
 interface DataPoint {
   date: Date
   value: number
@@ -67,7 +69,7 @@ interface AccountData {
   points: DataPoint[]
 }
 
-interface ConnectedProps {
+interface StateProps {
   budgets: Budget.View[]
   data: AccountData[]
 }
@@ -76,7 +78,7 @@ interface DispatchProps {
   deleteBudget: deleteBudget.Fcn
 }
 
-interface StateProps {
+interface LocalStateProps {
   month?: Date
   setMonth: (month?: Date) => void
 }
@@ -86,7 +88,8 @@ interface Handlers {
   setNextMonth: () => void
 }
 
-type EnhancedProps = Handlers & StateProps & ConnectedProps & DispatchProps & IntlProps
+type ConnectedProps = StateProps & DispatchProps & Props
+type EnhancedProps = Handlers & LocalStateProps & ConnectedProps & IntlProps
 
 // interface CategoryValues {
 //   _id: string
@@ -104,17 +107,10 @@ type EnhancedProps = Handlers & StateProps & ConnectedProps & DispatchProps & In
 //   budgets: BudgetValues[]
 // }
 
-const enhance = compose<EnhancedProps, undefined>(
+const enhance = compose<EnhancedProps, ConnectedProps>(
   injectIntl,
-  connect<ConnectedProps, DispatchProps, IntlProps>(
-    (state: AppState): ConnectedProps => ({
-      budgets: selectBudgets(state),
-      data: selectAccountData(state)
-    }),
-    mapDispatchToProps<DispatchProps>({ deleteBudget })
-  ),
   withState('month', 'setMonth', undefined),
-  withHandlers<StateProps & ConnectedProps & DispatchProps & IntlProps, Handlers>({
+  withHandlers<LocalStateProps & StateProps & DispatchProps & IntlProps, Handlers>({
     setPrevMonth: ({ setMonth, month }) => () => {
       const prev = moment(month).subtract(1, 'month').toDate()
       setMonth(prev)
@@ -127,7 +123,7 @@ const enhance = compose<EnhancedProps, undefined>(
   })
 )
 
-export const Home = enhance(props => {
+export const HomeComponent = enhance(props => {
   // const { budgets, data, intl: { formatDate, formatNumber } } = this.props
   const { budgets, month, setPrevMonth, setNextMonth } = props
 
@@ -243,6 +239,14 @@ export const Home = enhance(props => {
   )
 })
 
+export const Home = connect<StateProps, DispatchProps, Props>(
+  (state: AppState): StateProps => ({
+    budgets: selectBudgets(state),
+    data: selectAccountData(state)
+  }),
+  mapDispatchToProps<DispatchProps>({ deleteBudget })
+)(HomeComponent)
+
 // const CategoryProgress = ({ category }: {category: Category.Doc}) => {
 //   const max = parseFloat(category.amount as any)
 //   const expenses = category.amount / 4
@@ -270,7 +274,7 @@ export const Home = enhance(props => {
 //   }
 // }
 
-const selectAccountData = createSelector(
+export const selectAccountData = createSelector(
   (state: AppState) => selectAccounts(state),
   (state: AppState) => selectBills(state),
   (accounts, bills) => {

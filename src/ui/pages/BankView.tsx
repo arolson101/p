@@ -266,7 +266,7 @@ export const BankViewComponent = enhance((props) => {
 export const BankView = connect<StateProps, DispatchProps, Props>(
   (state: AppState, props) => ({
     bank: selectBank(state, props && props.bankId)!,
-    accounts: selectBankAccounts(state, props && props.bankId)!,
+    accounts: selectBankAccounts(state, props && props.bankId),
   }),
   mapDispatchToProps<DispatchProps>({ getAccounts, showBankDialog, showAccountDialog, showBankDeleteDialog })
 )(BankViewComponent)

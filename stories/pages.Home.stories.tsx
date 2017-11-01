@@ -4,32 +4,24 @@ import { Router } from 'react-router'
 import { createMemoryHistory } from 'history'
 import { specs, describe, it } from 'storybook-addon-specifications'
 import { action, storiesOfIntl,
-  dummyStore, dummyBankDocs, Provider } from './storybook'
+  dummyStore, dummyBillDocs, Provider } from './storybook'
 
-import { AppStore, selectBanks, selectBankAccounts } from 'core'
-import { BankViewComponent } from 'ui/pages/BankView'
+import { AppStore, selectBudgets } from 'core'
+import { HomeComponent, selectAccountData } from 'ui/pages/Home'
 
-const stories = storiesOfIntl(`Pages/BankViewComponent`, module)
+const stories = storiesOfIntl(`Pages/Home`, module)
 
 const story = <T extends Function>(store: AppStore, functor: (name: string) => T) => {
   const state = store.getState()
-  const banks = selectBanks(state)
-  const bank = banks[0]
-  const bankId = bank.doc._id
-  const accounts = selectBankAccounts(state, bankId)
   const props = {
-    bankId,
-    bank,
-    accounts,
-    getAccounts: functor('getAccounts') as any,
-    showAccountDialog: functor('showAccountDialog') as any,
-    showBankDialog: functor('showBankDialog') as any,
-    showBankDeleteDialog: functor('showBankDeleteDialog') as any,
+    budgets: selectBudgets(state),
+    data: selectAccountData(state),
+    deleteBudget: functor('deleteBudget') as any,
   }
   return (
     <Provider store={store}>
       <Router history={createMemoryHistory()}>
-        <BankViewComponent {...props} />
+        <HomeComponent {...props} />
       </Router>
     </Provider>
   )
@@ -37,7 +29,6 @@ const story = <T extends Function>(store: AppStore, functor: (name: string) => T
 
 stories.add('empty', () => {
   const store = dummyStore(
-    ...dummyBankDocs('bank 1', []),
   )
 
   specs(() => describe('empty', () => {
@@ -62,7 +53,8 @@ stories.add('empty', () => {
 
 stories.add('normal', () => {
   const store = dummyStore(
-    ...dummyBankDocs('bank 1', ['account 1', 'account 2', 'account 3']),
+    ...dummyBillDocs('netflix'),
+    ...dummyBillDocs('rent')
   )
 
   specs(() => describe('normal', () => {

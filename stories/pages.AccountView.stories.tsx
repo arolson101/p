@@ -4,7 +4,7 @@ import { Router } from 'react-router'
 import { createMemoryHistory } from 'history'
 import { specs, describe, it } from 'storybook-addon-specifications'
 import { action, storiesOfIntl,
-  dummyStore, dummyBankDocs, dummyBudgetDocs, Provider } from './storybook'
+  dummyStore, dummyBankDocs, Provider } from './storybook'
 
 import { AppStore, selectBanks, selectBankAccounts } from 'core'
 import { AccountViewComponent } from 'ui/pages/AccountView'
@@ -13,7 +13,7 @@ const stories = storiesOfIntl(`Pages/AccountViewComponent`, module)
 
 const story = <T extends Function>(store: AppStore, functor: (name: string) => T) => {
   const state = store.getState()
-  const banks = selectBanks(state)!
+  const banks = selectBanks(state)
   const bank = banks[0]
   const bankId = bank.doc._id
   const accounts = selectBankAccounts(state, bankId)

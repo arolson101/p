@@ -4,7 +4,7 @@ import { Router } from 'react-router'
 import { createMemoryHistory } from 'history'
 import { specs, describe, it } from 'storybook-addon-specifications'
 import { action, storiesOfIntl,
-  dummyStore, dummyBankDocs, dummyBudgetDocs, Provider } from './storybook'
+  dummyStore, dummyBankDocs, Provider } from './storybook'
 
 import { AppStore, selectBanks } from 'core'
 import { AccountsComponent } from 'ui/pages/Accounts'
