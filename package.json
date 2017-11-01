@@ -166,7 +166,7 @@
     "postcss-loader": "^2.0.8",
     "react-addons-test-utils": "^15.6.2",
     "react-dev-utils": "^4.1.0",
-    "react-form": "^2.1.5",
+    "react-form": "^2.2.0",
     "react-hot-loader": "^3.1.1",
     "react-test-renderer": "^16.0.0",
     "rimraf": "^2.6.2",
