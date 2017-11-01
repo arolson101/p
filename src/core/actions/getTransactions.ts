@@ -19,7 +19,7 @@ const messages = defineMessages({
 
 type GetTransactionsArgs = { bank: Bank.View, account: Account.View, start: Date, end: Date, formatMessage: FormatMessage }
 export namespace getTransactions { export type Fcn = ThunkFcn<GetTransactionsArgs, string> }
-export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, account, start, end, formatMessage}) =>
+export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({ bank, account, start, end, formatMessage }) =>
   async (dispatch, getState): Promise<string> => {
     try {
       const service = createConnection(bank, formatMessage)
@@ -33,7 +33,7 @@ export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, ac
           include_docs: true,
           startkey: Transaction.startkeyForAccount(account, start),
           endkey: Transaction.endkeyForAccount(account, end)
-        })).rows.map(result => result.doc! as Transaction.Doc)
+        })).rows.map(result => result.doc as Transaction.Doc)
         const newTransactions = transactionList.getTransactions() || []
         const changes: ChangeSet = new Set()
         for (let newTransaction of newTransactions) {
@@ -58,7 +58,7 @@ export const getTransactions: AppThunk<GetTransactionsArgs, string> = ({bank, ac
         }
         // const balance = bankStatement.getLedgerBalance()
         await current.db.bulkDocs(Array.from(changes))
-        return formatMessage(messages.success, {count: changes.size})
+        return formatMessage(messages.success, { count: changes.size })
       } else {
         return formatMessage(messages.empty)
       }

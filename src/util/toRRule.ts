@@ -1,6 +1,6 @@
 import * as moment from 'moment'
 import * as RRule from 'rrule-alt'
-import { defineMessages, InjectedIntl, FormattedMessage } from 'react-intl'
+import { defineMessages, FormattedMessage } from 'react-intl'
 
 const messages = defineMessages({
   invalidStartDate: {
@@ -49,7 +49,8 @@ const toRRuleFreq = {
 
 const rruleDays = [RRule.SU, RRule.MO, RRule.TU, RRule.WE, RRule.TH, RRule.FR, RRule.SA]
 
-export const toRRule = ({frequency, start, end, until, count, interval, byweekday, bymonth}: toRRule.Values): RRule | RRuleErrorMessage => {
+export const toRRule = (params: toRRule.Values): RRule | RRuleErrorMessage => {
+  const { frequency, start, end, until, count, interval, byweekday, bymonth } = params
   const date = moment(start, 'L')
   if (!date.isValid()) {
     return new RRuleErrorMessage('start', messages.invalidStartDate)

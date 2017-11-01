@@ -15,7 +15,7 @@ const styles = {
   }
 }
 
-export const Favico = ({value, greyscale}: Props) =>
+export const Favico = ({ value, greyscale }: Props) =>
   <img
     width={16}
     height={16}

@@ -37,14 +37,14 @@ const toggleMaximize = () => {
   }
 }
 
-export const AppWindow = ({children, title, onBack, onForward}: React.Props<any> & AppWindowProps) =>
+export const AppWindow = ({ children, title, onBack, onForward }: React.Props<any> & AppWindowProps) =>
   <Window
     chrome
     padding='0px'
   >
     <Helmet
       link={[
-        {rel: 'stylesheet', type: 'text/css', href: 'lib/css/bootstrap.css'},
+        { rel: 'stylesheet', type: 'text/css', href: 'lib/css/bootstrap.css' },
       ]}
     />
 
@@ -65,7 +65,7 @@ export const AppWindow = ({children, title, onBack, onForward}: React.Props<any>
         </Button>
       </Toolbar>
 
-      <Label horizontalAlignment='center' style={{whiteSpace: 'nowrap'}}>{title}</Label>
+      <Label horizontalAlignment='center' style={{ whiteSpace: 'nowrap' }}>{title}</Label>
 
       <Toolbar horizontalAlignment='right'>
         <SearchField

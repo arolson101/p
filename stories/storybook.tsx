@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import * as Enzyme from 'enzyme'
 import * as Adapter from 'enzyme-adapter-react-16'
-import { FinancialInstitution, FinancialInstitutionProfile } from 'filist'
+import { FinancialInstitutionProfile } from 'filist'
 import * as React from 'react'
 import { IntlProvider, intlShape } from 'react-intl'
 import { Provider } from 'react-redux'
@@ -13,9 +13,9 @@ import { Story, storiesOf } from '@storybook/react'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'font-awesome/css/font-awesome.css'
 
-import { createAppStore, AppInit, ImportsState, syncProviders, setDocs, FI } from 'core'
+import { createAppStore, setDocs, FI,
+  DbInfo, Account, Bank, Budget, Category } from 'core'
 import createHistory from 'history/createHashHistory'
-import { DbInfo, Account, Bank, Budget, Category } from 'core'
 export { action }
 export { expect }
 export { specs, describe, it } from 'storybook-addon-specifications'
@@ -55,11 +55,11 @@ export const storiesOfIntl = (name: string, mod: NodeModule): Story => {
 const intlProvider = new IntlProvider({ locale: 'en-US', messages }, {})
 const { intl } = intlProvider.getChildContext()
 
-const mountIntlProps = { context: { intl }, childContextTypes: { intl: intlShape }}
+const mountIntlProps = { context: { intl }, childContextTypes: { intl: intlShape } }
 
 export const mountIntl: typeof Enzyme.mount = (node: any, options: any) => Enzyme.mount(node, mountIntlProps)
 
-export const dummyDbInfo = (name: string): DbInfo => ({name, location: `location://${name}`})
+export const dummyDbInfo = (name: string): DbInfo => ({ name, location: `location://${name}` })
 
 const imports = { db: {} as any, online: {} }
 const history = createHistory()
@@ -115,9 +115,9 @@ export const dummyAccountView = () => {
 export const dummyBudget = (budgetName: string) => {
   const budgetId = `budget/${budgetName}`
   const categories: Category.Doc[] = [
-    {_id: `category/${budgetName}/cat1` as Category.DocId, name: 'category 1', amount: 101},
-    {_id: `category/${budgetName}/cat2` as Category.DocId, name: 'category 2', amount: 102},
-    {_id: `category/${budgetName}/cat3` as Category.DocId, name: 'category 3', amount: 103}
+    { _id: `category/${budgetName}/cat1` as Category.DocId, name: 'category 1', amount: 101 },
+    { _id: `category/${budgetName}/cat2` as Category.DocId, name: 'category 2', amount: 102 },
+    { _id: `category/${budgetName}/cat3` as Category.DocId, name: 'category 3', amount: 103 }
   ]
   const budget: Budget.Doc = {
     _id: budgetId as Budget.DocId,

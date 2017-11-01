@@ -1,8 +1,7 @@
 import * as moment from 'moment'
-import * as R from 'ramda'
 import * as React from 'react'
-import { Row, OverlayTrigger, Popover, Grid, Col, Panel, ButtonToolbar, Button,
-  PageHeader, ListGroup, ListGroupItem, ProgressBar } from 'react-bootstrap'
+import { Panel, ButtonToolbar, Button,
+  PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, withHandlers, withState } from 'recompose'
@@ -10,11 +9,9 @@ import { compose, withHandlers, withState } from 'recompose'
 import { createSelector } from 'reselect'
 // import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis, VictoryStack, VictoryGroup, VictoryVoronoiTooltip } from 'victory'
 import { deleteBudget } from 'core/actions'
-import { Bank, Bill, Account, Budget, Category } from 'core/docs'
+import { Budget } from 'core/docs'
 import { selectAccounts, selectBills, selectBudgets } from 'core/selectors'
 import { AppState, mapDispatchToProps } from 'core/state'
-import { CurrencyDisplay } from '../components/CurrencyDisplay'
-import { Favico } from '../components/Favico'
 
 const messages = defineMessages({
   page: {
@@ -118,12 +115,12 @@ const enhance = compose<EnhancedProps, undefined>(
   ),
   withState('month', 'setMonth', undefined),
   withHandlers<StateProps & ConnectedProps & DispatchProps & IntlProps, Handlers>({
-    setPrevMonth: ({setMonth, month}) => () => {
+    setPrevMonth: ({ setMonth, month }) => () => {
       const prev = moment(month).subtract(1, 'month').toDate()
       setMonth(prev)
     },
 
-    setNextMonth: ({setMonth, month}) => () => {
+    setNextMonth: ({ setMonth, month }) => () => {
       const next = moment(month).add(1, 'month').toDate()
       setMonth(next)
     }
@@ -135,7 +132,7 @@ export const Home = enhance(props => {
   const { budgets, month, setPrevMonth, setNextMonth } = props
 
   return (
-    <div style={{paddingBottom: 10}}>
+    <div style={{ paddingBottom: 10 }}>
 
       <PageHeader>
         <FormattedMessage {...messages.page}/>
@@ -246,32 +243,32 @@ export const Home = enhance(props => {
   )
 })
 
-const CategoryProgress = ({category}: {category: Category.Doc}) => {
-  const max = parseFloat(category.amount as any)
-  const expenses = category.amount / 4
-  const contributions = category.amount / 3
+// const CategoryProgress = ({ category }: {category: Category.Doc}) => {
+//   const max = parseFloat(category.amount as any)
+//   const expenses = category.amount / 4
+//   const contributions = category.amount / 3
 
-  const overlay = (
-    <Popover id={'popover-category-' + category._id}>
-      Contributions: ${contributions}<br/>
-      Expenses: ${expenses}
-    </Popover>
-  )
+//   const overlay = (
+//     <Popover id={'popover-category-' + category._id}>
+//       Contributions: ${contributions}<br/>
+//       Expenses: ${expenses}
+//     </Popover>
+//   )
 
-  if (contributions > expenses) {
-    return <OverlayTrigger trigger={['hover', 'focus']} placement='bottom' overlay={overlay}>
-      <ProgressBar>
-        <ProgressBar max={max} now={expenses} label={`expenses $ ${expenses}`}/>
-        <ProgressBar max={max} now={contributions - expenses} label={`contributed $ ${contributions}`} bsStyle='success'/>
-      </ProgressBar>
-    </OverlayTrigger>
-  } else {
-    return <ProgressBar>
-      <ProgressBar max={max} now={contributions} label={`contributed $ ${contributions}`} bsStyle='success'/>
-      <ProgressBar max={max} now={expenses - contributions} label={`expenses $ ${expenses}`} bsStyle='danger'/>
-    </ProgressBar>
-  }
-}
+//   if (contributions > expenses) {
+//     return <OverlayTrigger trigger={['hover', 'focus']} placement='bottom' overlay={overlay}>
+//       <ProgressBar>
+//         <ProgressBar max={max} now={expenses} label={`expenses $ ${expenses}`}/>
+//         <ProgressBar max={max} now={contributions - expenses} label={`contributed $ ${contributions}`} bsStyle='success'/>
+//       </ProgressBar>
+//     </OverlayTrigger>
+//   } else {
+//     return <ProgressBar>
+//       <ProgressBar max={max} now={contributions} label={`contributed $ ${contributions}`} bsStyle='success'/>
+//       <ProgressBar max={max} now={expenses - contributions} label={`expenses $ ${expenses}`} bsStyle='danger'/>
+//     </ProgressBar>
+//   }
+// }
 
 const selectAccountData = createSelector(
   (state: AppState) => selectAccounts(state),

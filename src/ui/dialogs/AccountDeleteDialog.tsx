@@ -3,12 +3,11 @@ import { Modal, Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { replace } from 'react-router-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers } from 'recompose'
+import { compose, withHandlers } from 'recompose'
 import { deleteAccount } from 'core'
-import { DbInfo, Bank, Account } from 'core/docs'
+import { Bank, Account } from 'core/docs'
 import { AppState, mapDispatchToProps, setDialog } from 'core/state'
 import { forms } from '../components/forms'
-import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({
   title: {
@@ -53,8 +52,8 @@ type EnhancedProps = ConnectedProps & Handlers
 
 const enhance = compose<EnhancedProps, ConnectedProps>(
   withHandlers<StateProps & DispatchProps & Props, Handlers>({
-    handleDelete: ({bank, account, deleteAccount, replace, onHide}) => async () => {
-      const success = await deleteAccount({bank, account})
+    handleDelete: ({ bank, account, deleteAccount, replace, onHide }) => async () => {
+      const success = await deleteAccount({ bank, account })
       if (success) {
         replace(Bank.to.view(bank.doc))
       }
@@ -76,7 +75,7 @@ export const AccountDeleteDialogComponent = enhance(props => {
       </Modal.Header>
 
       <Modal.Body>
-        <FormattedMessage {...messages.text} values={{name: account.doc.name}}/>
+        <FormattedMessage {...messages.text} values={{ name: account.doc.name }}/>
         {error &&
           <Alert bsStyle='danger'>
             {error.message}

@@ -71,11 +71,11 @@ export const incomingDelta = <T>(idoc: Doc<T>, timeFcn = now): VersionedDoc<T> =
   const delta = diffPatcher.diff(prev, next)
   if (delta) {
     const d = dehydrate(delta) as any
-    doc.$deltas.push({t, d})
+    doc.$deltas.push({ t, d })
     // console.log(`doc ${doc._id}: updated: `, doc)
   }
 
-  return doc as VersionedDoc<T>
+  return doc
 }
 
 const mergeDeltas = (a: Delta[], b: Delta[]): Delta[] =>

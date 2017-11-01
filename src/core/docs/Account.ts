@@ -3,8 +3,6 @@ import * as docURI from 'docuri'
 import { defineMessages } from 'react-intl'
 import { makeid, Lookup } from 'util/index'
 import { Bank } from './Bank'
-import { Transaction } from './Transaction'
-import { DocCache } from './'
 
 export interface Account {
   name: string
@@ -51,28 +49,28 @@ export namespace Account {
   })
 
   export const icons = {
-    [Account.Type.CHECKING]: 'fa fa-list-alt',
-    [Account.Type.SAVINGS]: 'fa fa-money',
-    [Account.Type.MONEYMRKT]: 'fa fa-money',
-    [Account.Type.CREDITLINE]: 'fa fa-credit-card-alt',
-    [Account.Type.CREDITCARD]: 'fa fa-credit-card'
+    [Type.CHECKING]: 'fa fa-list-alt',
+    [Type.SAVINGS]: 'fa fa-money',
+    [Type.MONEYMRKT]: 'fa fa-money',
+    [Type.CREDITLINE]: 'fa fa-credit-card-alt',
+    [Type.CREDITCARD]: 'fa fa-credit-card'
   }
 
-  export const generateColor = (type?: Account.Type): string => {
+  export const generateColor = (type?: Type): string => {
     switch (type) {
-      case Account.Type.CHECKING:
-        return randomColor({hue: 'red', luminosity: 'bright'})
-      case Account.Type.SAVINGS:
-        return randomColor({hue: 'green', luminosity: 'bright'})
-      case Account.Type.MONEYMRKT:
-        return randomColor({hue: 'purple', luminosity: 'bright'})
-      case Account.Type.CREDITLINE:
-        return randomColor({hue: 'blue', luminosity: 'bright'})
-      case Account.Type.CREDITCARD:
-        return randomColor({hue: 'orange', luminosity: 'bright'})
+      case Type.CHECKING:
+        return randomColor({ hue: 'red', luminosity: 'bright' })
+      case Type.SAVINGS:
+        return randomColor({ hue: 'green', luminosity: 'bright' })
+      case Type.MONEYMRKT:
+        return randomColor({ hue: 'purple', luminosity: 'bright' })
+      case Type.CREDITLINE:
+        return randomColor({ hue: 'blue', luminosity: 'bright' })
+      case Type.CREDITCARD:
+        return randomColor({ hue: 'orange', luminosity: 'bright' })
 
       default:
-        return randomColor({luminosity: 'bright'})
+        return randomColor({ luminosity: 'bright' })
     }
   }
 
@@ -138,7 +136,7 @@ export namespace Account {
     return { _id, ...account }
   }
 
-  export const getBank = (account: Account.Doc): Bank.DocId => {
+  export const getBank = (account: Doc): Bank.DocId => {
     const aparams = docId(account._id)
     if (!aparams) {
       throw new Error('invalid accountId: ' + account._id)

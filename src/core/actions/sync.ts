@@ -49,7 +49,7 @@ const indexFileName = 'p.key'
 
 type RunSyncArgs = { config: SyncConnection.Doc }
 export namespace runSync { export type Fcn = ThunkFcn<RunSyncArgs, void> }
-export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
+export const runSync: AppThunk<RunSyncArgs, void> = ({ config }) =>
   async (dispatch, getState): Promise<void> => {
     const { db: { current } } = getState()
     if (!current) {
@@ -63,7 +63,7 @@ export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
       if (state === 'OK') {
         doc.lastSuccess = lastAttempt
       }
-      dispatch(pushChanges({docs: [doc]}))
+      void dispatch(pushChanges({ docs: [doc] }))
     }
 
     try {
@@ -184,7 +184,7 @@ export const runSync: AppThunk<RunSyncArgs, void> = ({config}) =>
           .pipe(output)
 
         console.log(`dumping from ${since} to ${info.update_seq}...`)
-        await current.db.dump(memStream, {since})
+        await current.db.dump(memStream, { since })
 
         console.log(`dump completed; waiting for stream to finish...`)
         await finished(output)

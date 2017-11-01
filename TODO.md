@@ -20,3 +20,4 @@ potential solutions
 
 cleanup
 * make actions change app state rather than waiting for actions to complete (remove withRouter)
+* remove pushChanges

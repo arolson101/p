@@ -2,8 +2,7 @@ import * as crypto from 'crypto'
 import PouchDB from 'pouchdb'
 import { ThunkAction } from 'redux-thunk'
 import * as Rx from 'rxjs/Rx'
-import { DocCache, LocalDoc } from '../docs'
-import { AppThunk } from './'
+import { LocalDoc } from '../docs'
 import { ImportsSlice } from './imports'
 import { incomingDelta, resolveConflict } from 'util/delta'
 import { initDocs } from './views'
@@ -86,18 +85,18 @@ const dbChanges = (db: PouchDB.Database, changes: DbChangeInfo[]): DbChangesActi
 
 type CreateDbArgs = { name: string, password: string }
 export namespace createDb { export type Fcn = DbFcn<CreateDbArgs, DbInfo> }
-export const createDb: DbThunk<CreateDbArgs, DbInfo> = ({name, password}) =>
+export const createDb: DbThunk<CreateDbArgs, DbInfo> = ({ name, password }) =>
   async (dispatch, getState) => {
     const { imports } = getState()
     const info: DbInfo = imports.db.createDbInfo(name)
-    await dispatch(loadDb({info, password}))
-    dispatch(DbInit())
+    await dispatch(loadDb({ info, password }))
+    await dispatch(DbInit())
     return info
   }
 
 type PushChangesArgs = { docs: AnyDocument[] }
 export namespace pushChanges { export type Fcn = DbFcn<PushChangesArgs, void> }
-export const pushChanges: DbThunk<PushChangesArgs, void> = ({docs}) =>
+export const pushChanges: DbThunk<PushChangesArgs, void> = ({ docs }) =>
   async (dispatch, getState) => {
     const { db: { current } } = getState()
     if (!current) {
@@ -177,12 +176,12 @@ const safeGet = async <T> (db: PouchDB.Database<any>, id: string): Promise<T | u
 
 type LoadDbArgs = { info: DbInfo, password: string }
 export namespace loadDb { export type Fcn = DbFcn<LoadDbArgs, void> }
-export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
+export const loadDb: DbThunk<LoadDbArgs, void> = ({ info, password }) =>
   async (dispatch, getState) => {
     const { imports } = getState()
     console.log('db: ', info.location)
     const db = imports.db.openDb(info, password)
-    db.transform({incoming: incomingDelta})
+    db.transform({ incoming: incomingDelta })
 
     let localInfo: LocalDbInfo
     try {
@@ -221,7 +220,7 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     observable.subscribe(change$)
     const changeProcessed$ = new Rx.Subject<string>()
 
-    change$
+    void change$
     .buffer(change$.debounceTime(10))
     .forEach((changeInfos) => {
       dispatch(dbChanges(db, changeInfos))
@@ -252,9 +251,9 @@ export const loadDb: DbThunk<LoadDbArgs, void> = ({info, password}) =>
     // const view = DbView.buildView(cache)
 
     const current = { info, db, localInfo, change$, changeProcessed$, local }
-    await dispatch(setDb(current))
+    dispatch(setDb(current))
 
-    await dispatch(initDocs({db}))
+    await dispatch(initDocs({ db }))
     console.timeEnd('load')
     // console.log(`${cache.transactions.size} transactions`)
 
@@ -272,18 +271,18 @@ export const resolveConflicts = (db: PouchDB.Database<any>, ...docs: (AnyDocumen
 
 type DeleteDbArgs = { info: DbInfo }
 export namespace deleteDb { export type Fcn = DbFcn<DeleteDbArgs, void> }
-export const deleteDb: DbThunk<DeleteDbArgs, void> = ({info}) =>
+export const deleteDb: DbThunk<DeleteDbArgs, void> = ({ info }) =>
   async (dispatch, getState) => {
     const { db: { current }, imports } = getState()
 
     // unload db if it's the current one
     if (current && current.info.name === info.name) {
-      await dispatch(unloadDb())
+      dispatch(unloadDb())
     }
 
     // delete file
     imports.db.deleteDb(info)
-    dispatch(DbInit())
+    await dispatch(DbInit())
   }
 
 export namespace unloadDb { export type Fcn = () => void }
@@ -302,7 +301,7 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
 
     case DB_SET_CURRENT:
       if (state.current) {
-        state.current.db.close()
+        void state.current.db.close()
       }
       return { ...state, current: action.current }
 
@@ -316,7 +315,7 @@ const reducer = (state: DbState = initialState, action: Actions): DbState => {
           state.current.changeProcessed$.next(ci.id)
         }
 
-        return { ...state, current: { ...state.current! /*, view: nextView, cache: nextCache*/ } }
+        return { ...state, current: { ...state.current /*, view: nextView, cache: nextCache*/ } }
       } else {
         return state
       }

@@ -1,6 +1,7 @@
 {
   "extends": "tslint-config-standard",
   "rules": {
+    "no-floating-promises": [true, "AxiosPromise"],
     "no-unused-variable": [true, "react"],
     "no-use-before-declare": false,
     "no-shadowed-variable": false,

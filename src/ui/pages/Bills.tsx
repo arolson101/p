@@ -80,7 +80,7 @@ export const Bills = enhance((props) => {
   const { groups, createBill, showBillDialog } = props
 
   return (
-    <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
 
       <PageHeader>
         <SettingsMenu
@@ -125,7 +125,7 @@ export const Bills = enhance((props) => {
                     <CurrencyDisplay amount={bill.doc.amount}/>
                   </Col>
                   <Col xs={1}>
-                    <Button bsStyle='link' onClick={() => showBillDialog({edit: bill})}>
+                    <Button bsStyle='link' onClick={() => showBillDialog({ edit: bill })}>
                       <i className='fa fa-edit'/>
                     </Button>
                   </Col>

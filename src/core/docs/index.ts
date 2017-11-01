@@ -1,5 +1,4 @@
 import * as R from 'ramda'
-import { Lookup } from 'util/index'
 
 export * from './Account'
 export * from './Bank'
@@ -66,7 +65,7 @@ export namespace DocCache {
   }
 
   export const addDocsToCache = (docs: AnyDocument[]) => {
-    const cache = DocCache.create()
+    const cache = create()
     docs.forEach(
       R.cond([
         [Transaction.isDoc, (doc: Transaction.Doc) => cache.transactions.set(doc._id, doc)],
@@ -83,7 +82,7 @@ export namespace DocCache {
   }
 
   export const updateCache = (currentCache: DocCache, changes: PouchDB.ChangeInfo<AnyDocument>[]) => {
-    const nextCache = DocCache.copy(currentCache)
+    const nextCache = copy(currentCache)
     const selectCache = R.cond([
       [Transaction.isDocId, R.always(nextCache.transactions)],
       [Bank.isDocId, R.always(nextCache.banks)],

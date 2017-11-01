@@ -8,17 +8,16 @@ declare namespace PouchDB {
   type DumpOptions = Pick<Replication.ReplicateOptions, DumpReplicateKeys>
 
   interface Database<Content extends {} = {}> {
-    dump(stream: NodeJS.WritableStream, opts?: DumpOptions): Promise<any>
-    load(stream: NodeJS.ReadableStream): Promise<any>
+    dump (stream: NodeJS.WritableStream, opts?: DumpOptions): Promise<any>
+    load (stream: NodeJS.ReadableStream): Promise<any>
   }
 
-
   interface Static {
-      adapter(name: string, adapter: any): any;
+    adapter (name: string, adapter: any): any
   }
 }
 
 declare module 'pouchdb-replication-stream' {
-    const plugin: PouchDB.Plugin;
-    export = plugin;
+    const plugin: PouchDB.Plugin
+    export = plugin
 }

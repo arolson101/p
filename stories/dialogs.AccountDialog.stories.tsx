@@ -3,13 +3,12 @@ import * as React from 'react'
 import { specs, describe, it } from 'storybook-addon-specifications'
 import { mountIntl, expect, stub, action, storiesOfIntl, dummyAccountView } from './storybook'
 
-import { DbInfo, Account, Bank } from 'core'
 import { AccountDialogComponent } from 'ui/dialogs/AccountDialog'
 
 const stories = storiesOfIntl(`Dialogs/AccountDialog`, module)
 
 const dummyProps = <T extends Function>(functor: (name: string) => T) => {
-  const { account, bank } = dummyAccountView()
+  const { bank } = dummyAccountView()
 
   return {
     onHide: functor('onHide'),

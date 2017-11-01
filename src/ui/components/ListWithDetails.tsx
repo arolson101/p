@@ -55,13 +55,13 @@ const enhance = compose<EnhancedProps, Props<any>>(
   withQuerySyncedState('scrollTop', 'setScrollTop', 0, parseFloat),
   withQuerySyncedState('selectedIndex', 'setSelectedIndex', -1, parseFloat),
   withHandlers<State & ConnectedProps & RouteProps & Props<any>, Handlers>({
-    onScroll: ({setScrollTop}) => ({scrollTop}: {scrollTop: number}) => {
+    onScroll: ({ setScrollTop }) => ({ scrollTop }: {scrollTop: number}) => {
       setScrollTop(scrollTop)
     },
-    rowGetter: ({items}) => ({index}: Index) => {
+    rowGetter: ({ items }) => ({ index }: Index) => {
       return items[index]
     },
-    rowClassNameWithSelection: ({selectedIndex}) => ({index}: Index) => {
+    rowClassNameWithSelection: ({ selectedIndex }) => ({ index }: Index) => {
       if (index < 0) {
         return 'headerRow'
       } else if (index === selectedIndex) {
@@ -70,7 +70,7 @@ const enhance = compose<EnhancedProps, Props<any>>(
         return index % 2 === 0 ? 'evenRow' : 'oddRow'
       }
     },
-    onRowClick: ({/*router, toView, items,*/ setSelectedIndex}) => ({index}: RowMouseEventHandlerParams) => {
+    onRowClick: ({ /*router, toView, items,*/ setSelectedIndex }) => ({ index }: RowMouseEventHandlerParams) => {
       setSelectedIndex(index)
     }
   })
@@ -87,13 +87,13 @@ export const ListWithDetails = enhance((props) => {
       defaultSize={300}
       primary='second'
     >
-      <div style={{height: '100%'}}>
+      <div style={{ height: '100%' }}>
         <AutoSizer>
           {(autoSizerProps: Dimensions) => (
             <Table
               onScroll={onScroll}
               scrollTop={scrollTop}
-              style={{flex: 1}}
+              style={{ flex: 1 }}
               headerHeight={20}
               rowCount={items.length}
               rowHeight={50}
@@ -118,11 +118,11 @@ export const ListWithDetails = enhance((props) => {
   )
 })
 
-export const dateCellRenderer = ({cellData}: TableCellProps) => (
+export const dateCellRenderer = ({ cellData }: TableCellProps) => (
   cellData && <FormattedDate value={cellData} />
 )
 
-export const currencyCellRenderer = ({cellData}: TableCellProps) => (
+export const currencyCellRenderer = ({ cellData }: TableCellProps) => (
   cellData && <FormattedNumber
     value={cellData}
     style='currency'

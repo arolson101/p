@@ -1,5 +1,4 @@
 import { InjectedIntl } from 'react-intl'
-import { replace } from 'react-router-redux'
 import { AppThunk, ThunkFcn, FI, pushChanges } from '../state'
 import { Bank } from '../docs'
 import { Validator } from 'util/validator'
@@ -38,7 +37,7 @@ export namespace saveBank {
   }
 }
 
-export const saveBank: AppThunk<Params, Return> = ({edit, formatMessage, values, filist}) =>
+export const saveBank: AppThunk<Params, Return> = ({ edit, formatMessage, values, filist }) =>
   async (dispatch, getState) => {
     const v = new Validator(values, formatMessage)
     v.required('name')
@@ -57,7 +56,7 @@ export const saveBank: AppThunk<Params, Return> = ({edit, formatMessage, values,
         password: password
       }
     })
-    await dispatch(pushChanges({docs: [bank]}))
+    await dispatch(pushChanges({ docs: [bank] }))
 
     return bank
   }

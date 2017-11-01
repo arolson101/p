@@ -4,7 +4,7 @@ import Helmet from 'react-helmet'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
 import { goBack, goForward } from 'react-router-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { DialogContainer, DialogDisplay } from '../dialogs'
 import { AppState, mapDispatchToProps } from 'core/state'
 import * as Mac from '../macOS'
@@ -40,7 +40,7 @@ const enhance = compose<EnhancedProps, {}>(
     (state: AppState) => ({
       ThemeWindow: state.sys.theme === 'macOS' ? Mac.AppWindow : Win.AppWindow
     }),
-    mapDispatchToProps<DispatchProps>({goBack, goForward})
+    mapDispatchToProps<DispatchProps>({ goBack, goForward })
   ),
 )
 
@@ -51,8 +51,8 @@ export const AppWindow = enhance((props) => {
   return <div>
     <Helmet
       link={[
-        {rel: 'stylesheet', type: 'text/css', href: 'lib/css/bootstrap.css'},
-        {rel: 'stylesheet', type: 'text/css', href: 'lib/css/font-awesome.css'},
+        { rel: 'stylesheet', type: 'text/css', href: 'lib/css/bootstrap.css' },
+        { rel: 'stylesheet', type: 'text/css', href: 'lib/css/font-awesome.css' },
       ]}
     />
     <ThemeWindow title={title} onBack={goBack} onForward={goForward}>

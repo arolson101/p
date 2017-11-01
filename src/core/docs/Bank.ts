@@ -1,7 +1,6 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from 'util/index'
 import { Account } from './Account'
-import { DocCache } from './'
 
 export interface Bank {
   fi?: string
@@ -67,7 +66,7 @@ export namespace Bank {
       if (!iparams) {
         throw new Error('not a bank docid: ' + bank._id)
       }
-      return '/' + Account.docId({bankId: iparams.bankId, accountId: 'create'})
+      return '/' + Account.docId({ bankId: iparams.bankId, accountId: 'create' })
     }
   }
 

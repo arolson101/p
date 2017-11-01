@@ -56,21 +56,21 @@ const enhance = compose<EnhancedProps, undefined>(
       try {
         const config = await provider.createConfig()
         const sync = SyncConnection.doc(config)
-        pushChanges({docs: [sync]})
+        await pushChanges({ docs: [sync] })
       } catch (err) {
         console.log(err)
       }
     },
     removeSync: ({ pushChanges }) => async (provider: SyncConnection.Doc) => {
       try {
-        pushChanges({docs: [deleteDoc(provider)]})
+        await pushChanges({ docs: [deleteDoc(provider)] })
       } catch (err) {
         console.log(err)
       }
     },
     runSync: ({ runSync }) => async (provider: SyncConnection.Doc) => {
       try {
-        runSync({config: provider})
+        await runSync({ config: provider })
       } catch (err) {
         console.log(err)
       }
@@ -82,7 +82,7 @@ export const Syncs = enhance(props => {
   const { syncs, runSync, removeSync, addSync } = props
 
   return (
-    <div style={{paddingBottom: 10}}>
+    <div style={{ paddingBottom: 10 }}>
 
       <PageHeader>
         <FormattedMessage {...messages.page}/>

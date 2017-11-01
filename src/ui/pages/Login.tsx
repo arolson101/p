@@ -1,9 +1,9 @@
 import * as React from 'react'
-import { Grid, Button, ButtonGroup, ListGroup, ListGroupItem } from 'react-bootstrap'
+import { Button, ButtonGroup } from 'react-bootstrap'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
+import { compose } from 'recompose'
 import { DbInfo } from 'core/docs'
 import { AppState, mapDispatchToProps } from 'core/state'
 import { showLoginDialog, showCreateDialog } from '../dialogs'
@@ -35,7 +35,7 @@ interface DispatchProps {
 
 type EnhancedProps = ConnectedProps & DispatchProps
 
-const wellStyles = {maxWidth: 400, margin: '0 auto 50px', padding: '50px'}
+const wellStyles = { maxWidth: 400, margin: '0 auto 50px', padding: '50px' }
 
 export const LoginComponent = ({ files, showLoginDialog, showCreateDialog }: EnhancedProps) => (
   <div>
@@ -47,7 +47,7 @@ export const LoginComponent = ({ files, showLoginDialog, showCreateDialog }: Enh
               block
               key={file.name}
               id='open'
-              onClick={() => showLoginDialog({info: file})}
+              onClick={() => showLoginDialog({ info: file })}
             >
               <i {...icons.openDb}/>
               {' '}

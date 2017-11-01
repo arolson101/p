@@ -4,9 +4,8 @@ import { PageHeader } from 'react-bootstrap'
 import { defineMessages, injectIntl } from 'react-intl'
 import { connect } from 'react-redux'
 import { RouteComponentProps } from 'react-router'
-import { Column, ColumnProps, TableCellProps } from 'react-virtualized'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers, mapPropsStream } from 'recompose'
-import * as Rx from 'rxjs/Rx'
+import { TableCellProps } from 'react-virtualized'
+import { compose, setDisplayName, withHandlers } from 'recompose'
 import { getTransactions, deleteAllTransactions } from 'core/actions'
 import { Bank, Account, Transaction } from 'core/docs'
 import { AppState, pushChanges, mapDispatchToProps } from 'core/state'
@@ -62,7 +61,7 @@ interface DispatchProps {
   showAccountDeleteDialog: typeof showAccountDeleteDialog
 }
 
-type StreamProps = ConnectedProps & Props
+// type StreamProps = ConnectedProps & Props
 type EnhancedProps = IntlProps & ConnectedProps & Handlers & DispatchProps
 
 interface Handlers {
@@ -78,8 +77,8 @@ const enhance = compose<EnhancedProps, Props>(
   injectIntl,
   connect<ConnectedProps, DispatchProps, IntlProps & Props>(
     (state: AppState, props): ConnectedProps => ({
-      bank: selectBank(state, props && props.bankId)!,
-      account: selectAccount(state, props && props.accountId)!,
+      bank: selectBank(state, props.bankId)!,
+      account: selectAccount(state, props.accountId)!,
       db: state.db.current!.db
     }),
     mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions, showAccountDialog, showAccountDeleteDialog })
@@ -121,14 +120,14 @@ const enhance = compose<EnhancedProps, Props>(
   // ),
   withHandlers<ConnectedProps & DispatchProps & IntlProps, Handlers>({
     editAccount: ({ showAccountDialog, bank, account: edit }) => () => {
-      showAccountDialog({bank, edit})
+      showAccountDialog({ bank, edit })
     },
 
     deleteAccount: ({ showAccountDeleteDialog, bank, account }) => () => {
-      showAccountDeleteDialog({bank, account})
+      showAccountDeleteDialog({ bank, account })
     },
 
-    addTransactions: (props) => () => {
+    addTransactions: (props) => async () => {
       const { pushChanges, account } = props
       const changes: ChangeSet = new Set()
       let balance = 0
@@ -146,20 +145,20 @@ const enhance = compose<EnhancedProps, Props>(
         balance += tx.amount
       }
 
-      pushChanges({docs: Array.from(changes)})
+      await pushChanges({ docs: Array.from(changes) })
     },
 
     downloadTransactions: (props) => async () => {
       const { getTransactions, bank, account, intl: { formatMessage } } = props
       const start = new Date(2016, 11, 1)
       const end = new Date(2016, 11, 31)
-      await getTransactions({bank, account, start, end, formatMessage})
+      await getTransactions({ bank, account, start, end, formatMessage })
       // TODO: try/catch
     },
 
     deleteTransactions: (props) => async () => {
       const { deleteAllTransactions, account } = props
-      await deleteAllTransactions({account})
+      await deleteAllTransactions({ account })
       // TODO: try/catch
     }
   })
@@ -172,10 +171,10 @@ export const AccountViewRoute = (props: RouteComponentProps<Account.Params>) =>
   />
 
 export const AccountView = enhance((props) => {
-  const { bank, account, editAccount, downloadTransactions, addTransactions, deleteTransactions, deleteAccount } = props
+  const { account, editAccount, downloadTransactions, addTransactions, deleteTransactions, deleteAccount } = props
   const transactions: Transaction[] = [] // account.transactions
   return (
-    <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <PageHeader>
         <SettingsMenu
           items={[
@@ -218,7 +217,7 @@ export const AccountView = enhance((props) => {
         <small>{account.doc.number}</small>
       </PageHeader>
 
-      <div style={{flex: 1}}>
+      <div style={{ flex: 1 }}>
         <ListWithDetails
           items={transactions}
           columns={[
@@ -240,7 +239,7 @@ export const AccountView = enhance((props) => {
               label: 'Amount',
               dataKey: 'amount',
               headerClassName: 'alignRight',
-              style: {textAlign: 'right'},
+              style: { textAlign: 'right' },
               cellDataGetter: R.path(['rowData', 'doc', 'amount']),
               cellRenderer: currencyCellRenderer,
               width: 120
@@ -249,7 +248,7 @@ export const AccountView = enhance((props) => {
               label: 'Balance',
               dataKey: 'balance',
               headerClassName: 'alignRight',
-              style: {textAlign: 'right'},
+              style: { textAlign: 'right' },
               cellRenderer: currencyCellRenderer,
               width: 120
             }
@@ -262,7 +261,7 @@ export const AccountView = enhance((props) => {
   )
 })
 
-const nameCellRenderer = ({cellData}: TableCellProps) => (
+const nameCellRenderer = ({ cellData }: TableCellProps) => (
   <div>
     {cellData.doc.name}<br/>
     <small>{cellData.doc.memo}</small>

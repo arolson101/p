@@ -1,7 +1,4 @@
-import * as docURI from 'docuri'
 import { createSelector } from 'reselect'
-import { RouteComponentProps } from 'react-router'
-import * as RRule from 'rrule-alt'
 import { AppState } from './state'
 import { Bank, Account, Transaction, Bill, Category, Budget, SyncConnection } from './docs'
 
@@ -54,7 +51,7 @@ export const selectAccount = createSelector(
     const doc = accountId && accounts[accountId]
     if (!doc) {
       console.error(`invalid accountId: `, accountId)
-      return
+      return undefined
     }
     return doc
   }
@@ -76,7 +73,7 @@ export const selectBudget = createSelector(
     const doc = budgetId && budgets[budgetId]
     if (!doc) {
       console.error(`invalid budgetId: `, budgetId)
-      return
+      return undefined
     }
     return doc
   }
@@ -99,7 +96,7 @@ export const selectCategory = createSelector(
     const doc = categoryId && categories[categoryId]
     if (!doc) {
       console.error(`invalid categoryId: `, categoryId)
-      return
+      return undefined
     }
     return doc
   }
@@ -146,7 +143,7 @@ export const selectTransaction = createSelector(
     const doc = transactionId && transactions[transactionId]
     if (!doc) {
       console.error(`invalid transactionId: `, transactionId)
-      return
+      return undefined
     }
     return doc
   }
@@ -168,7 +165,7 @@ export const selectSync = createSelector(
     const doc = syncId && syncConnections[syncId]
     if (!doc) {
       console.error(`invalid syncId: `, syncId)
-      return
+      return undefined
     }
     return doc
   }

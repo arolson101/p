@@ -1,6 +1,6 @@
 import * as Rx from 'rxjs/Rx'
 import * as URL from 'url'
-import axios, { AxiosPromise, AxiosResponse, CancelTokenSource, CancelToken } from 'axios'
+import axios, { AxiosResponse, CancelToken } from 'axios'
 const axiosHttpAdapter = require('axios/lib/adapters/http')
 const CancelToken = axios.CancelToken
 
@@ -29,7 +29,7 @@ const isValidUrl = (url: string): boolean => {
   }
 }
 
-const httpGet = (url: string, cancelToken?: CancelToken): AxiosPromise => {
+const httpGet = (url: string, cancelToken?: CancelToken): Promise<AxiosResponse> => {
   return axios.get(fixUrl(url), {
     // force axios to use http adapter because xhr throws ERR_INSECURE_RESPONSE and for favicons I don't care
     adapter: axiosHttpAdapter,
@@ -67,7 +67,7 @@ const getFaviconFromDocument = async (response: AxiosResponse, cancelToken?: Can
   }
   // console.log(`No icon in html; falling back to /favicon.ico`)
   const location = URL.resolve(currentUrl, '/favicon.ico')
-  return await getIconDataURI(location, cancelToken)
+  return getIconDataURI(location, cancelToken)
 }
 
 const getIconDataURI = async (url: string, cancelToken?: CancelToken): Promise<string> => {

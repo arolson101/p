@@ -1,14 +1,13 @@
 import { Bank, Account, Transaction } from '../docs'
-import { selectBankAccounts } from '../selectors'
 import { AppThunk, ThunkFcn, Deletion, deleteDoc, deleteId, pushChanges } from '../state'
 import { uiSetAccountDelete } from '../state/ui'
 
 type DeleteAccountArgs = { bank: Bank.View, account: Account.View }
 export namespace deleteAccount { export type Fcn = ThunkFcn<DeleteAccountArgs, boolean> }
-export const deleteAccount: AppThunk<DeleteAccountArgs, boolean> = ({bank, account}) =>
+export const deleteAccount: AppThunk<DeleteAccountArgs, boolean> = ({ bank, account }) =>
   async (dispatch, getState) => {
     try {
-      dispatch(uiSetAccountDelete({error: undefined, deleting: true}))
+      dispatch(uiSetAccountDelete({ error: undefined, deleting: true }))
 
       const { db: { current } } = getState()
       if (!current) { throw new Error('no db') }
@@ -31,13 +30,13 @@ export const deleteAccount: AppThunk<DeleteAccountArgs, boolean> = ({bank, accou
         docs.push(deleteId(transaction.id, transaction.value.rev))
       }
 
-      await dispatch(pushChanges({docs}))
+      await dispatch(pushChanges({ docs }))
 
-      dispatch(uiSetAccountDelete({deleting: false}))
+      dispatch(uiSetAccountDelete({ deleting: false }))
       return true
 
     } catch (error) {
-      dispatch(uiSetAccountDelete({error, deleting: false}))
+      dispatch(uiSetAccountDelete({ error, deleting: false }))
       return false
     }
   }

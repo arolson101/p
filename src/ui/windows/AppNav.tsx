@@ -10,11 +10,11 @@ type EnhancedProps = NavProps
 const enhance = compose<EnhancedProps, NavProps>(
 )
 
-export const AppNav = enhance(({groups, selectedId, onClick}) =>
+export const AppNav = enhance(({ groups, selectedId, onClick }) =>
   <div>
     {groups.map(group =>
       <div key={group.title}>
-        <em style={{padding: 10}}><small>{group.title}</small></em>
+        <em style={{ padding: 10 }}><small>{group.title}</small></em>
         <Nav bsStyle='pills' stacked>
           {group.items.map(item =>
             <NavItem key={item.title} active={item.id === selectedId} onClick={() => onClick(item)}>

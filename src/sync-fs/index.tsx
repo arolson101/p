@@ -59,7 +59,7 @@ const mkdir = (config: SyncConnectionFS, dir: FileInfo): Promise<FileInfo> => {
       if (err) {
         reject(err)
       } else {
-        resolve({...dir, folderId: dir.folderId, id})
+        resolve({ ...dir, folderId: dir.folderId, id })
       }
     })
   })
@@ -91,7 +91,7 @@ const list = (config: SyncConnectionFS, folderId?: string): Promise<FileInfo[]> 
           const stats = await stat(id)
           const size = stats.size
           const isFolder = stats.isDirectory()
-          fileInfos.push({name, id, folderId: dir, size, isFolder})
+          fileInfos.push({ name, id, folderId: dir, size, isFolder })
         }
         resolve(fileInfos)
       }
@@ -118,7 +118,7 @@ const put = (config: SyncConnectionFS, fileInfo: FileInfo, data: Buffer): Promis
       if (err) {
         reject(err)
       } else {
-        resolve({...fileInfo, id})
+        resolve({ ...fileInfo, id })
       }
     })
   })

@@ -28,7 +28,7 @@ const enhance = compose<EnhancedProps, Props>(
     onChange: PropTypes.func
   } as PropTypes<ColorPickerProps>),
   withHandlers<EnhancedProps, Handlers>({
-    handleChange: ({onChange}) => (color: ColorResult) => {
+    handleChange: ({ onChange }) => (color: ColorResult) => {
       if (onChange) {
         onChange(color.hex)
       }
@@ -59,7 +59,7 @@ export const ColorPicker = enhance(props => {
       placement='bottom'
       rootClose
       overlay={
-        <Popover id='popover-trigger-focus' style={{padding: 0}}>
+        <Popover id='popover-trigger-focus' style={{ padding: 0 }}>
           <SketchPicker color={value} onChange={handleChange} />
         </Popover>
       }

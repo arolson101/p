@@ -68,7 +68,7 @@ export namespace SyncConnection {
     return { _id, ...sync }
   }
 
-  export const inputPassword = (sync: SyncConnection.Doc, password: string): SyncConnection.Doc => {
+  export const inputPassword = (sync: Doc, password: string): Doc => {
     return { ...sync, password, state: 'INIT' }
   }
 

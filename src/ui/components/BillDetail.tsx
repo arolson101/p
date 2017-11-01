@@ -1,7 +1,7 @@
 import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { Button } from 'react-bootstrap'
-import { defineMessages, FormattedDate } from 'react-intl'
+import { FormattedDate } from 'react-intl'
 import { connect } from 'react-redux'
 import { compose, setDisplayName, withHandlers, mapProps, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { AppState, pushChanges, mapDispatchToProps, deleteDoc } from 'core/state'
@@ -46,13 +46,13 @@ const enhance = compose<EnhancedProps, Props>(
     startEdit: ({ item, showBillDialog }) => () => {
       showBillDialog({ edit: item })
     },
-    deleteMe: ({item, pushChanges}) => () => {
-      pushChanges({docs: [deleteDoc(item.doc)]})
+    deleteMe: ({ item, pushChanges }) => () => {
+      void pushChanges({ docs: [deleteDoc(item.doc)] })
     }
   }),
 )
 
-export const BillDetail = enhance(({item, startEdit, deleteMe}) => {
+export const BillDetail = enhance(({ item, startEdit, deleteMe }) => {
   const date = Bill.getDate(item)
   return <div>
     name: {item.doc.name}<br/>

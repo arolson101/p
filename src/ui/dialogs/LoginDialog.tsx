@@ -1,15 +1,13 @@
 import * as React from 'react'
-import { Modal, ModalProps, PageHeader, InputGroup, ButtonToolbar, Button, SplitButton, MenuItem } from 'react-bootstrap'
+import { Modal, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
 import { compose, setDisplayName, withState, withHandlers } from 'recompose'
-import { Dispatch } from 'redux'
 import { DbInfo } from 'core/docs'
-import { AppState, loadDb, deleteDb, setDialog, mapDispatchToProps } from 'core/state'
+import { loadDb, deleteDb, setDialog, mapDispatchToProps } from 'core/state'
 import { Validator } from 'util/index'
 import { typedFields, forms } from '../components/forms'
-import { ContainedModal } from './ContainedModal'
 
 export const LoginDialogStatic = {
   dialog: 'LoginDialog'
@@ -79,7 +77,7 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
       setDeleting(false)
     },
     onDeleteConfirmed: ({ deleteDb, info, onHide }) => async () => {
-      deleteDb({info})
+      await deleteDb({ info })
       onHide()
     }
   }),
@@ -92,7 +90,7 @@ export const LoginDialogComponent = enhance(props => {
     return null as any
   }
   const { onHide, deleting, onCancelDelete,
-    onDelete, onDeleteConfirmed, intl: { formatMessage }, setSubmitting, submitting } = props
+    onDelete, onDeleteConfirmed, setSubmitting, submitting } = props
 
   return (
     <div>
@@ -136,13 +134,13 @@ export const LoginDialogComponent = enhance(props => {
               try {
                 const { password } = values
                 setSubmitting(true)
-                await loadDb({info, password})
+                await loadDb({ info, password })
                 setSubmitting(false)
                 push('/home') // push(DbInfo.to.home())
                 onHide()
               } catch (error) {
                 setSubmitting(false)
-                state.errors = {password: error.message}
+                state.errors = { password: error.message }
                 instance.setAllTouched()
                 return
               }

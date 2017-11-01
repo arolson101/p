@@ -1,2 +1,2 @@
-declare module 'redux-devtools-extension';
-declare module 'redux-devtools-extension/developmentOnly';
+declare module 'redux-devtools-extension'
+declare module 'redux-devtools-extension/developmentOnly'

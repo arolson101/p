@@ -9,7 +9,7 @@ import { AppState, mapDispatchToProps, pushChanges } from 'core/state'
 import { runSync } from 'core/actions'
 import { syncProviders } from 'core/sync'
 import { Validator } from 'util/index'
-import { typedFields, forms } from './forms'
+import { typedFields } from './forms'
 
 const messages = defineMessages({
   password: {
@@ -44,7 +44,7 @@ interface Values {
   password: string
 }
 
-const { Form, TextField } = typedFields<any>()
+const { Form, TextField } = typedFields<Values>()
 
 const enhance = compose<EnhancedProps, Props>(
   setDisplayName('AccountForm'),
@@ -84,8 +84,8 @@ export const SyncStatus = enhance(props => {
                 v.maybeThrowSubmissionError()
 
                 const nextSync = SyncConnection.inputPassword(sync, values.password)
-                await pushChanges({docs: [nextSync]})
-                await runSync({config: nextSync})
+                await pushChanges({ docs: [nextSync] })
+                await runSync({ config: nextSync })
               } catch (err) {
                 Validator.setErrors(err, state, instance)
               }

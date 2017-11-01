@@ -1,10 +1,8 @@
 // tslint:disable:no-unused-expression
 import * as React from 'react'
 import { specs, describe, it } from 'storybook-addon-specifications'
-import { mountIntl, expect, stub, action, storiesOfIntl,
-  dummyStore, dummyBankDocs, dummyBudgetDocs, dummyFiList, Provider } from './storybook'
+import { mountIntl, expect, stub, action, storiesOfIntl, dummyFiList } from './storybook'
 
-import { DbInfo, Account, Bank } from 'core'
 import { BankDialogComponent } from 'ui/dialogs/BankDialog'
 
 const stories = storiesOfIntl(`Dialogs/BankDialog`, module)

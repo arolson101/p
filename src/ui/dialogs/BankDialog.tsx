@@ -4,14 +4,12 @@ import { Modal, ButtonToolbar, Button } from 'react-bootstrap'
 import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
-import { compose, setDisplayName, withPropsOnChange, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { saveBank } from 'core/actions'
 import { Bank } from 'core/docs'
 import { AppState, FI, emptyfi, mapDispatchToProps, setDialog } from 'core/state'
 import { formatAddress } from 'util/index'
-import { Validator } from 'util/index'
 import { typedFields, forms } from '../components/forms'
-import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({
   createTitle: {
@@ -144,7 +142,7 @@ export const BankDialogComponent = enhance((props) => {
         onSubmit={async (values, state, api, instance) => {
           const { edit, filist, onHide, saveBank, intl: { formatMessage }, push } = props
 
-          const doc = await saveBank({edit: edit && edit.doc, filist, formatMessage, values})
+          const doc = await saveBank({ edit: edit && edit.doc, filist, formatMessage, values })
 
           if (!edit) {
             push(Bank.to.view(doc))
@@ -156,7 +154,7 @@ export const BankDialogComponent = enhance((props) => {
         {api =>
           <div>
             <Modal.Body>
-              <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+              <div className='form-horizontal container-fluid' style={{ paddingBottom: 10 }}>
                 <SelectField
                   autofocus
                   name='fi'

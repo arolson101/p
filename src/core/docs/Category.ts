@@ -1,6 +1,6 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from 'util/index'
-import { DocCache, Bill, Budget } from './'
+import { Budget } from './'
 
 export interface Category {
   name: string

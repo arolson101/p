@@ -1,17 +1,16 @@
 import * as PropTypes from 'prop-types'
-import { Modal, PageHeader, InputGroup, ButtonToolbar, Button } from 'react-bootstrap'
+import { Modal, ButtonToolbar, Button } from 'react-bootstrap'
 import * as React from 'react'
-import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
+import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
 import { Bank, Account } from 'core/docs'
 import { Validator } from 'util/index'
 import { AppState, mapDispatchToProps, setDialog } from 'core/state'
 import { saveAccount } from 'core/actions'
 import { selectBankAccounts } from 'core/selectors'
 import { typedFields, forms } from '../components/forms'
-import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({
   createTitle: {
@@ -98,7 +97,6 @@ export const showAccountDialog = (params: Params) => setDialog(AccountDialogStat
 
 type Values = saveAccount.Values
 
-const form = 'AccountDialog'
 const { Form, TextField, SelectField, ColorAddon } = typedFields<Values>()
 
 const enhance = compose<EnhancedProps, ConnectedProps>(
@@ -111,8 +109,6 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
   }),
   injectIntl,
 )
-
-import { FormField } from 'react-form'
 
 export namespace AccountDialogComponent {
   export type Props = ConnectedProps
@@ -140,7 +136,7 @@ export const AccountDialogComponent = enhance((props) => {
             v.required('name', 'number')
             v.maybeThrowSubmissionError()
 
-            const doc = await saveAccount({formatMessage, values, bank, edit})
+            const doc = await saveAccount({ formatMessage, values, bank, edit })
             if (!edit && doc) {
               push(Account.to.view(doc))
             }

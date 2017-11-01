@@ -1,11 +1,10 @@
-import { replace } from 'react-router-redux'
 import { AppThunk, ThunkFcn, deleteDoc, deleteId, Deletion, pushChanges } from '../state'
 import { Bank, Account, Budget, Transaction } from 'core/docs'
 import { selectBankAccounts } from '../selectors'
 
 type DeleteBankArgs = { bank: Bank.View }
 export namespace deleteBank { export type Fcn = ThunkFcn<DeleteBankArgs, string> }
-export const deleteBank: AppThunk<DeleteBankArgs, void> = ({bank}) =>
+export const deleteBank: AppThunk<DeleteBankArgs, void> = ({ bank }) =>
   async (dispatch, getState) => {
     const state = getState()
     const { db: { current } } = state
@@ -24,12 +23,12 @@ export const deleteBank: AppThunk<DeleteBankArgs, void> = ({bank}) =>
       }
     }
     docs.push(deleteDoc(bank.doc))
-    return dispatch(pushChanges({docs}))
+    return dispatch(pushChanges({ docs }))
   }
 
 type DeleteAccountArgs = { bank: Bank.View, account: Account.View }
 export namespace deleteAccount { export type Fcn = ThunkFcn<DeleteAccountArgs, string> }
-export const deleteAccount: AppThunk<DeleteAccountArgs, void> = ({bank, account}) =>
+export const deleteAccount: AppThunk<DeleteAccountArgs, void> = ({ bank, account }) =>
   async (dispatch, getState) => {
     const { db: { current } } = getState()
     if (!current) { throw new Error('no db') }
@@ -52,12 +51,12 @@ export const deleteAccount: AppThunk<DeleteAccountArgs, void> = ({bank, account}
       docs.push(deleteId(transaction.id, transaction.value.rev))
     }
 
-    return dispatch(pushChanges({docs}))
+    return dispatch(pushChanges({ docs }))
   }
 
 type DeleteAllTransactionsArgs = { account: Account.View }
 export namespace deleteAllTransactions { export type Fcn = ThunkFcn<DeleteAllTransactionsArgs, void> }
-export const deleteAllTransactions: AppThunk<DeleteAllTransactionsArgs, void> = ({account}) =>
+export const deleteAllTransactions: AppThunk<DeleteAllTransactionsArgs, void> = ({ account }) =>
   async (dispatch, getState) => {
     const { db: { current } } = getState()
     if (!current) { throw new Error('no db') }
@@ -72,12 +71,12 @@ export const deleteAllTransactions: AppThunk<DeleteAllTransactionsArgs, void> = 
       docs.push(deleteId(transaction.id, transaction.value.rev))
     }
 
-    return dispatch(pushChanges({docs}))
+    return dispatch(pushChanges({ docs }))
   }
 
 type DeleteBudgetArgs = { budget: Budget.Doc }
 export namespace deleteBudget { export type Fcn = ThunkFcn<DeleteBudgetArgs, void> }
-export const deleteBudget: AppThunk<DeleteBudgetArgs, void> = ({budget}) =>
+export const deleteBudget: AppThunk<DeleteBudgetArgs, void> = ({ budget }) =>
   async (dispatch, getState) => {
     const { db: { current }, views: { categories } } = getState()
     if (!current) { throw new Error('no db') }
@@ -91,5 +90,5 @@ export const deleteBudget: AppThunk<DeleteBudgetArgs, void> = ({budget}) =>
     }
     docs.push(deleteDoc(budget))
 
-    return dispatch(pushChanges({docs}))
+    return dispatch(pushChanges({ docs }))
   }

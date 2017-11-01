@@ -130,7 +130,7 @@ const enhance = compose<EnhancedProps, Props>(
   withState('message', 'setMessage', undefined),
   withHandlers<State & ConnectedProps & DispatchProps & IntlProps & RouteProps & Props, Handlers>({
     toggleEdit: ({ bank: edit, showBankDialog }) => () => {
-      showBankDialog({edit})
+      showBankDialog({ edit })
     },
 
     toggleShowAll: ({ showAll, setShowAll }) => () => {
@@ -143,7 +143,7 @@ const enhance = compose<EnhancedProps, Props>(
       setWorking(true),
       setShowModal(true)
       try {
-        const message = await getAccounts({bank, formatMessage})
+        const message = await getAccounts({ bank, formatMessage })
         setWorking(false)
         setMessage(message)
       } catch (ex) {
@@ -159,11 +159,11 @@ const enhance = compose<EnhancedProps, Props>(
     },
 
     createAccount: ({ bank, showAccountDialog }) => () => {
-      showAccountDialog({bank})
+      showAccountDialog({ bank })
     },
 
     deleteBank: ({ bank, showBankDeleteDialog }) => () => {
-      showBankDeleteDialog({bank})
+      showBankDeleteDialog({ bank })
     }
   })
 )
@@ -177,7 +177,7 @@ export const BankView = enhance((props) => {
   const { bank, accounts, history, toggleShowAll, hideModal, getAccountList, toggleEdit, createAccount, deleteBank } = props
   const { working, showModal, message, error, showAll } = props
   return (
-    <div style={{height: '100%', display: 'flex', flexDirection: 'column'}}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
 
       <PageHeader>
         <SettingsMenu
@@ -230,16 +230,16 @@ export const BankView = enhance((props) => {
           <thead>
             <tr>
               {showAll &&
-                <th style={{width: '10%'}}><FormattedMessage {...messages.visible}/></th>
+                <th style={{ width: '10%' }}><FormattedMessage {...messages.visible}/></th>
               }
-              <th style={{width: '20%'}}><FormattedMessage {...messages.type}/></th>
+              <th style={{ width: '20%' }}><FormattedMessage {...messages.type}/></th>
               <th><FormattedMessage {...messages.name}/></th>
               <th><FormattedMessage {...messages.number}/></th>
             </tr>
           </thead>
           <tbody>
             {accounts.filter(account => account.doc.visible || showAll).map(account => account &&
-              <tr key={account.doc._id} {...{href: history.createHref({pathname: Account.to.view(account.doc)})}}>
+              <tr key={account.doc._id} {...{ href: history.createHref({ pathname: Account.to.view(account.doc) }) }}>
                 {showAll &&
                   <td>{account.doc.visible}</td>
                 }

@@ -54,7 +54,7 @@ const getDrive = (config: SyncConnectionToken) => {
   const auth = new google.auth.OAuth2()
   auth.setCredentials(config.token)
 
-  return google.drive({version: 'v3', auth}) as GDrive
+  return google.drive({ version: 'v3', auth })
 }
 
 interface Query {
@@ -168,7 +168,7 @@ const uploadFile = (drive: GDrive, fileInfo: FileInfo, data: Buffer, mimeType: s
 const downloadFile = (drive: GDrive, fileId: string): Promise<Buffer> => {
   return new Promise<Buffer>((resolve, reject) => {
     const req = drive.files.get(
-      {fileId, alt: 'media'} as any,
+      { fileId, alt: 'media' } as any,
       (err, file) => {
         if (err) {
           reject(err)
@@ -176,7 +176,7 @@ const downloadFile = (drive: GDrive, fileId: string): Promise<Buffer> => {
       }
     ) as NodeJS.ReadableStream
 
-    const memStream = new MemoryStream(null, {readable: false})
+    const memStream = new MemoryStream(null, { readable: false })
     req.on('end', () => resolve(memStream.toBuffer()))
     req.on('error', (err: Error) => reject(err))
     req.pipe(memStream)
@@ -244,7 +244,7 @@ const drawConfig = (config: SyncConnectionToken) => {
 
 const mkdir = async (config: SyncConnectionToken, dir: FileInfo): Promise<FileInfo> => {
   const drive = getDrive(config)
-  const files = await findFiles(drive, {name: dir.name, isFolder: true, parent: dir.folderId})
+  const files = await findFiles(drive, { name: dir.name, isFolder: true, parent: dir.folderId })
   if (files.length) {
     return toFileInfo(files[0])
   }
@@ -254,13 +254,13 @@ const mkdir = async (config: SyncConnectionToken, dir: FileInfo): Promise<FileIn
 
 const list = async (config: SyncConnectionToken, folderId?: string): Promise<FileInfo[]> => {
   const drive = getDrive(config)
-  const files = await findFiles(drive, {parent: folderId})
+  const files = await findFiles(drive, { parent: folderId })
   return files.map(toFileInfo)
 }
 
 const get = async (config: SyncConnectionToken, id: string): Promise<Buffer> => {
   const drive = getDrive(config)
-  return await downloadFile(drive, id)
+  return downloadFile(drive, id)
 }
 
 const put = async (config: SyncConnectionToken, fileInfo: FileInfo, data: Buffer): Promise<FileInfo> => {

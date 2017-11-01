@@ -3,12 +3,11 @@ import { Modal, Alert, Button, ButtonToolbar } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { replace } from 'react-router-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers } from 'recompose'
+import { compose, setDisplayName, withState, withHandlers } from 'recompose'
 import { deleteBank } from 'core'
-import { DbInfo, Bank } from 'core/docs'
+import { Bank } from 'core/docs'
 import { AppState, mapDispatchToProps, setDialog } from 'core/state'
 import { forms } from '../components/forms'
-import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({
   title: {
@@ -64,12 +63,12 @@ const enhance = compose<EnhancedProps, Props>(
   withState('error', 'setError', undefined),
   withState('deleting', 'setDeleting', false),
   withHandlers<State & ConnectedProps & DispatchProps & Props, Handlers>({
-    confirmDelete: ({setError, setDeleting, bank, deleteBank, replace, onHide}) => async () => {
+    confirmDelete: ({ setError, setDeleting, bank, deleteBank, replace, onHide }) => async () => {
       try {
         setError(undefined)
         setDeleting(true)
         replace(Bank.to.all())
-        await deleteBank({bank})
+        await deleteBank({ bank })
         setDeleting(false)
         onHide()
       } catch (err) {
@@ -81,7 +80,7 @@ const enhance = compose<EnhancedProps, Props>(
 )
 
 export const BankDeleteDialog = enhance(props => {
-  const { onHide, bank, error, deleting, replace, confirmDelete } = props
+  const { onHide, bank, error, deleting, confirmDelete } = props
   return (
     <div>
       <Modal.Header closeButton>
@@ -91,7 +90,7 @@ export const BankDeleteDialog = enhance(props => {
       </Modal.Header>
 
       <Modal.Body>
-        <FormattedMessage {...messages.text} values={{name: bank.doc.name}}/>
+        <FormattedMessage {...messages.text} values={{ name: bank.doc.name }}/>
         {error &&
           <Alert bsStyle='danger'>
             {error}

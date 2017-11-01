@@ -70,13 +70,13 @@ declare namespace PouchDB {
   }
 
   interface ChangeEmitter {
-    cancel(): any
+    cancel (): any
 
-    on<Content>(event: 'change', handler: (change: ChangeInfo<Content>) => any): ChangeEmitter
-    on<Content>(event: 'complete', handler: (info: CompleteInfo<Content>) => any): ChangeEmitter
-    on(event: 'error', handler: (err: Error) => any): ChangeEmitter
+    on<Content> (event: 'change', handler: (change: ChangeInfo<Content>) => any): ChangeEmitter
+    on<Content> (event: 'complete', handler: (info: CompleteInfo<Content>) => any): ChangeEmitter
+    on (event: 'error', handler: (err: Error) => any): ChangeEmitter
   }
   interface Database<Content extends {} = {}> {
-    changes(options: ChangesOpts): ChangeEmitter
+    changes (options: ChangesOpts): ChangeEmitter
   }
 }

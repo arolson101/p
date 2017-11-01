@@ -4,7 +4,7 @@
 
 interface Measurements {}
 
-declare module NodeJS {
+declare namespace NodeJS {
   interface Global {
     mainWasRun: boolean
   }
@@ -30,36 +30,36 @@ type ChangeSet = Set<AnyDocument>
 declare namespace PouchDB {
     namespace LevelDbAdapter {
         interface LevelDbAdapterConfiguration extends Configuration.LocalDatabaseConfiguration {
-            db: any
+          db: any
         }
     }
 
     namespace Core {
         interface DatabaseInfo {
-            db_name: string
-            doc_count: number
+          db_name: string
+          doc_count: number
         }
     }
 }
 
-declare module google {
-    namespace auth {
-        class OAuth2 {
-            constructor();
-            setCredentials(credentials: Partial<google.oauth2.v2.Tokeninfo>): void;
-        }
+declare namespace google {
+  namespace auth {
+    class OAuth2 {
+      constructor ();
+      setCredentials (credentials: Partial<oauth2.v2.Tokeninfo>): void
     }
-    export interface GoogleApis {
-        auth: {
-            OAuth2: typeof auth.OAuth2
-        }
-        drive(opts: {version: 'v3', auth: any}): drive.v3.Drive;
+  }
+  export interface GoogleApis {
+    auth: {
+      OAuth2: typeof auth.OAuth2
     }
+    drive (opts: { version: 'v3', auth: any }): drive.v3.Drive
+  }
 }
 
 declare type MemoryStream = NodeJS.WritableStream & NodeJS.ReadableStream & {
-    toString(): string
-    toBuffer(): Buffer
+  toString (): string
+  toBuffer (): Buffer
 }
 
 declare type FormatMessageFcn = (messageDescriptor: ReactIntl.FormattedMessage.MessageDescriptor, values?: Object) => string

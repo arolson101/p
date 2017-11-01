@@ -1,4 +1,3 @@
-import { AppThunk } from './'
 
 export interface AccountDeleteState {
   deleting?: boolean

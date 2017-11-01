@@ -62,7 +62,7 @@ export const IconPicker = enhance(props => {
   const { value } = props
   return (
     <DropdownButton
-      style={{minWidth: 50}}
+      style={{ minWidth: 50 }}
       id='icon-picker'
       onSelect={props.onMenuItem}
       title={

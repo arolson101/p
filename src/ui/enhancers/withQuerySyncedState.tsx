@@ -16,7 +16,7 @@ export const withQuerySyncedState = <T extends {}>(name: string, setter: string,
         query.set(name, queryValue as any)
         this.setValue = debounce(
           (value: T) => {
-            this.setState({[name]: value}, () => {
+            this.setState({ [name]: value }, () => {
               const { location, history } = this.props
               const nextLocation = { ...location, search: query.toString() }
               history.replace(nextLocation)
@@ -30,6 +30,6 @@ export const withQuerySyncedState = <T extends {}>(name: string, setter: string,
         this.setValue.cancel()
       }
       render () {
-        return <Component {...this.props} {...this.state} {...{[setter]: this.setValue}} />
+        return <Component {...this.props} {...this.state} {...{ [setter]: this.setValue }} />
       }
     }

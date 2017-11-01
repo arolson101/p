@@ -4,7 +4,6 @@ import { specs, describe, it } from 'storybook-addon-specifications'
 import { mountIntl, expect, stub, action, storiesOfIntl,
   dummyStore, dummyBankDocs, dummyBudgetDocs, Provider } from './storybook'
 
-import { DbInfo, Account, Bank } from 'core'
 import { BillDialogComponent } from 'ui/dialogs/BillDialog'
 
 const stories = storiesOfIntl(`Dialogs/BillDialog`, module)

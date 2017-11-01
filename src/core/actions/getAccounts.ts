@@ -1,5 +1,5 @@
 import { defineMessages, FormattedMessage } from 'react-intl'
-import { AppState, AppThunk, ThunkFcn } from '../state'
+import { AppThunk, ThunkFcn } from '../state'
 import { Bank, Account } from '../docs'
 import { selectBankAccounts } from '../selectors'
 import { createConnection, checkLogin, toAccountType } from 'util/online'
@@ -35,7 +35,7 @@ const messages = defineMessages({
 
 type GetAccountsArgs = { bank: Bank.View, formatMessage: FormatMessage }
 export namespace getAccounts { export type Fcn = ThunkFcn<GetAccountsArgs, string> }
-export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMessage}) =>
+export const getAccounts: AppThunk<GetAccountsArgs, string> = ({ bank, formatMessage }) =>
   async (dispatch, getState) => {
     const res = []
     try {
@@ -79,11 +79,11 @@ export const getAccounts: AppThunk<GetAccountsArgs, string> = ({bank, formatMess
 
           } else if (accountProfile.getInvestmentSpecifics()) {
             // TODO: support investment accounts
-            res.push(formatMessage(messages.investmentAccountNotSupported, {accountName}))
+            res.push(formatMessage(messages.investmentAccountNotSupported, { accountName }))
             continue
 
           } else {
-            res.push(formatMessage(messages.unknownAccountNotSupported, {accountName}))
+            res.push(formatMessage(messages.unknownAccountNotSupported, { accountName }))
             continue
           }
 

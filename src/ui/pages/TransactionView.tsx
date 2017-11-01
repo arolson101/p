@@ -29,9 +29,9 @@ const enhance = compose<EnhancedProps, Props>(
   injectIntl,
   connect<ConnectedProps, {}, Props>(
     (state: AppState, props): ConnectedProps => ({
-      bank: selectBank(state, props && props.bankId)!,
-      account: selectAccount(state, props && props.accountId)!,
-      transaction: selectTransaction(state, props && props.transactionId)!,
+      bank: selectBank(state, props.bankId)!,
+      account: selectAccount(state, props.accountId)!,
+      transaction: selectTransaction(state, props.transactionId)!,
     })
   )
 )

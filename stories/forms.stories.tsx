@@ -2,8 +2,7 @@
 import * as React from 'react'
 import { Button } from 'react-bootstrap'
 import { defineMessages } from 'react-intl'
-import { specs, describe, it } from 'storybook-addon-specifications'
-import { Provider, mountIntl, expect, stub, action, storiesOfIntl, dummyStore, dummyBankDocs, dummyBudgetDocs } from './storybook'
+import { Provider, action, storiesOfIntl, dummyStore, dummyBankDocs, dummyBudgetDocs } from './storybook'
 
 import { typedFields } from 'ui/components/forms'
 
@@ -90,7 +89,7 @@ const { Form, TextField, UrlField, PasswordField,
   ColorAddon, SelectField, CheckboxField, CollapseField, DateField,
   AccountField, BudgetField } = typedFields<Values>()
 
-const opt = (i: number) => ({value: `option ${i}`, label: `Option #${i}`})
+const opt = (i: number) => ({ value: `option ${i}`, label: `Option #${i}` })
 const selectOptions = [opt(1), opt(2), opt(3)]
 const selectCreateableOptions = [...selectOptions]
 const selectMultipleOptions = [...selectOptions]

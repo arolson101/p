@@ -38,7 +38,7 @@ const main = (element: Element, imports: ImportsState) => {
     })
   }
 
-  store.dispatch(AppInit(undefined))
+  void store.dispatch(AppInit(undefined))
   .then(() => {
     render(
       (
@@ -68,4 +68,4 @@ const userData = electron.remote.app.getPath('userData')
 const db = dbLevelcrypt(userData)
 const online = {}
 
-main(root, {online, db})
+main(root, { online, db })

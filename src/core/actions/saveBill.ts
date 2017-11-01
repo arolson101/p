@@ -1,11 +1,6 @@
-import * as moment from 'moment'
 import * as numeral from 'numeral'
-import * as PropTypes from 'prop-types'
-import * as React from 'react'
-import { InjectedIntl, FormattedMessage } from 'react-intl'
-import { replace } from 'react-router-redux'
-import * as Rx from 'rxjs/Rx'
-import { AppThunk, ThunkFcn, FI, pushChanges } from '../state'
+import { InjectedIntl } from 'react-intl'
+import { AppThunk, ThunkFcn, pushChanges } from '../state'
 import { Bill, Account, Budget } from '../docs'
 import { toRRule, RRuleErrorMessage, Validator } from 'util/index'
 
@@ -38,7 +33,7 @@ export namespace saveBill {
   }
 }
 
-export const saveBill: AppThunk<Params, Return> = ({edit, formatMessage, values}) =>
+export const saveBill: AppThunk<Params, Return> = ({ edit, formatMessage, values }) =>
   async (dispatch, getState) => {
     const { db: { current }, views: { budgets } } = getState()
     if (!current) { throw new Error('no db') }
@@ -64,7 +59,7 @@ export const saveBill: AppThunk<Params, Return> = ({edit, formatMessage, values}
       rruleString: rrule.toString()
     })
     docs.push(bill)
-    await dispatch(pushChanges({docs}))
+    await dispatch(pushChanges({ docs }))
 
     return bill
   }

@@ -1,9 +1,6 @@
 import * as PropTypes from 'prop-types'
 import * as React from 'react'
-import * as SplitPane from 'react-split-pane'
 import { compose, setDisplayName, withState, withContext } from 'recompose'
-import { Bank, Account, Budget, Bill, SyncConnection } from 'core/docs'
-import { AppState } from 'core/state'
 
 interface StateProps {
   dialogContainer: any
@@ -26,7 +23,7 @@ export namespace DialogContainer {
     withState('dialogContainer', 'setDialogContainer', undefined),
     withContext<Context, StateProps>(
       ContextTypes,
-      ({dialogContainer}) => ({dialogContainer})
+      ({ dialogContainer }) => ({ dialogContainer })
     ),
   )
 

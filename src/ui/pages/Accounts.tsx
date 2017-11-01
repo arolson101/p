@@ -3,11 +3,11 @@ import { Button, PageHeader } from 'react-bootstrap'
 import { defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState, withHandlers } from 'recompose'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withHandlers } from 'recompose'
 import { Bank, Account } from 'core/docs'
 import { AppState, mapDispatchToProps } from 'core/state'
 import { Favico } from '../components/Favico'
-import { selectBank, selectBanks, selectAccount } from 'core/selectors'
+import { selectBanks, selectAccount } from 'core/selectors'
 import { showBankDialog } from '../dialogs'
 
 const messages = defineMessages({
@@ -91,7 +91,7 @@ const BankListItem = (props: { bank: Bank.View }) => {
 
 const AccountListItem = connect(
   (state: AppState, props: { accountId: Account.DocId }) => ({
-    account: selectAccount(state, props.accountId)!
+    account: selectAccount(state, props.accountId)
   })
 )(props => {
   const { account } = props

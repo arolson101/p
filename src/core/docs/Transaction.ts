@@ -27,9 +27,9 @@ export namespace Transaction {
   export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
   export const startkeyForAccountId = (accountId: Account.DocId, time?: Date) =>
-    docId({ ...accountIdParts(accountId), txId: time ? timeKey(time) : ''})
+    docId({ ...accountIdParts(accountId), txId: time ? timeKey(time) : '' })
   export const endkeyForAccountId = (accountId: Account.DocId, time?: Date) =>
-    docId({ ...accountIdParts(accountId), txId: time ? timeKey(time) : ''}) + '\uffff'
+    docId({ ...accountIdParts(accountId), txId: time ? timeKey(time) : '' }) + '\uffff'
 
   export const startkeyForAccount = (account: Account.View, time?: Date) => startkeyForAccountId(account.doc._id, time)
   export const endkeyForAccount = (account: Account.View, time?: Date) => endkeyForAccountId(account.doc._id, time)

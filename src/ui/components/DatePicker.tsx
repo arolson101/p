@@ -54,7 +54,7 @@ export class DatePicker extends React.Component<Props, State> {
   @autobind
   onValueChange (value: string | undefined) {
     const startDate = (value ? convertToDate(value) : undefined)
-    this.setState({startDate})
+    this.setState({ startDate })
   }
 
   @autobind
@@ -67,11 +67,11 @@ export class DatePicker extends React.Component<Props, State> {
 
   @autobind
   onInputChange (e: React.FormEvent<any>) {
-    const {onChange} = this.props
+    const { onChange } = this.props
     const strValue = (e.target as any).value
     const startDate = convertToDate(strValue)
     if (startDate) {
-      this.setState({startDate})
+      this.setState({ startDate })
     }
     if (onChange) {
       onChange(strValue)

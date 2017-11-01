@@ -4,8 +4,7 @@ import { specs, describe, it } from 'storybook-addon-specifications'
 import { mountIntl, expect, stub, action, storiesOfIntl, dummyDbInfo } from './storybook'
 
 import { LoginComponent } from 'ui/pages/Login'
-import { AccountDeleteDialog } from 'ui/dialogs/AccountDeleteDialog'
-import { DbInfo, Account, Bank } from 'core'
+import { DbInfo } from 'core'
 
 const stories = storiesOfIntl('Pages/Login', module)
 

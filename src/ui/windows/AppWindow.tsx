@@ -15,7 +15,7 @@ const toggleMaximize = () => {
   }
 }
 
-export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps & React.Props<any>) =>
+export const AppWindow = ({ title, onBack, onForward, children }: AppWindowProps & React.Props<any>) =>
   <Window chrome>
     <Helmet
       link={[
@@ -84,7 +84,7 @@ export const AppWindow = ({title, onBack, onForward, children}: AppWindowProps &
               <li><a href=''>Help</a></li>
           </ul>*/}
 
-          <div className='app-bar-element place-right' style={{paddingRight: 5, background: 'transparent'}}>
+          <div className='app-bar-element place-right' style={{ paddingRight: 5, background: 'transparent' }}>
             <div className='input-control text' data-role='input'>
                 <input type='text'/>
                 <button className='button'><span className='mif mif-search' aria-hidden='true' /></button>

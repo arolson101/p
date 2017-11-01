@@ -75,6 +75,6 @@ export const FiInit: AppThunk<void, void> = () =>
   async (dispatch) => {
     // TODO: don't webpack this
     const filist: FinancialInstitution[] = require<FinancialInstitution[]>('filist/filist.json')
-    const fis = filist.map((fi, index) => ({...fi, id: index + 1}))
+    const fis = filist.map((fi, index) => ({ ...fi, id: index + 1 }))
     dispatch(setFi(fis))
   }

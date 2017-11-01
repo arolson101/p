@@ -1,7 +1,7 @@
 import * as numeral from 'numeral'
 import * as R from 'ramda'
 import * as React from 'react'
-import { Row, Grid, Col, Alert, Panel, InputGroup, ButtonToolbar, Button, PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
+import { Row, Grid, Col, Panel, InputGroup, ButtonToolbar, Button, PageHeader, ListGroup, ListGroupItem } from 'react-bootstrap'
 import { FormAPI, FieldSpec } from 'react-form'
 import { injectIntl, FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
@@ -10,7 +10,7 @@ import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 import { compose, withState, shallowEqual } from 'recompose'
 import { deleteBudget } from 'core/actions'
 import { Bill, Budget, Category } from 'core/docs'
-import { selectBudgets, selectCategories, selectBills, selectBillsForCategory, selectCategoriesForBudget } from 'core/selectors'
+import { selectBudgets, selectBills, selectBillsForCategory, selectCategoriesForBudget } from 'core/selectors'
 import { AppState, mapDispatchToProps, pushChanges, Cache } from 'core/state'
 import { Validator } from 'util/index'
 import { showBillDialog } from '../dialogs'
@@ -170,7 +170,7 @@ export const BudgetsComponent = enhance(props => {
               const lastBudget = budgets.find(budget => budget.doc._id === bvalues._id)
               let nextBudget: Budget.Doc = lastBudget
                 ? lastBudget.doc
-                : Budget.doc({name: bvalues.name, categories: [], sortOrder: i})
+                : Budget.doc({ name: bvalues.name, categories: [], sortOrder: i })
 
               nextBudget = {
                 ...nextBudget,
@@ -198,7 +198,7 @@ export const BudgetsComponent = enhance(props => {
                   }
                   return existingCategory._id
                 } else {
-                  const newCategory = Category.doc(nextBudget, {name: bc.name, amount})
+                  const newCategory = Category.doc(nextBudget, { name: bc.name, amount })
                   changes.push(newCategory)
                   return newCategory._id
                 }
@@ -221,7 +221,7 @@ export const BudgetsComponent = enhance(props => {
           v.maybeThrowSubmissionError()
 
           if (changes.length) {
-            await pushChanges({docs: changes})
+            await pushChanges({ docs: changes })
           }
 
           setEditing(false)
@@ -233,7 +233,7 @@ export const BudgetsComponent = enhance(props => {
       {api => {
         const field = ['budgets']
         return (
-          <div className='form-horizontal container-fluid' style={{paddingBottom: 10}}>
+          <div className='form-horizontal container-fluid' style={{ paddingBottom: 10 }}>
             <PageHeader>
               <SettingsMenu
                 items={[
@@ -309,7 +309,7 @@ interface SortableBudgetListProps {
   budgets: BudgetValues[]
   api: FormAPI<Values>
 }
-const SortableBudgetList = SortableContainer<SortableBudgetListProps>(({budgets, field, api}) =>
+const SortableBudgetList = SortableContainer<SortableBudgetListProps>(({ budgets, field, api }) =>
   <div>
     {budgets.map((budget, index) =>
       <SortableBudget
@@ -328,7 +328,7 @@ interface SortableBudgetProps {
   budget: BudgetValues
   api: FormAPI<Values>
 }
-const SortableBudget = SortableElement<SortableBudgetProps>(({budget, field, api}): any => {
+const SortableBudget = SortableElement<SortableBudgetProps>(({ budget, field, api }): any => {
   const header = (
     <TextField
       name={[field, 'name'] as any}
@@ -383,7 +383,7 @@ interface SortableCategoriesListProps {
   api: FormAPI<Values>
   field: FieldSpec
 }
-const SortableCategoriesList = SortableContainer<SortableCategoriesListProps>(({api, categories, field}) =>
+const SortableCategoriesList = SortableContainer<SortableCategoriesListProps>(({ api, categories, field }) =>
   <ListGroup fill>
     {categories.map((category, index) =>
       <SortableCategory
@@ -402,7 +402,7 @@ interface SortableCategoryProps {
   api: FormAPI<Values>
   field: FieldSpec
 }
-const SortableCategory = SortableElement<SortableCategoryProps>(({category, api, field}) => {
+const SortableCategory = SortableElement<SortableCategoryProps>(({ category, api, field }) => {
   return (
     <ListGroupItem>
       <TextField
@@ -502,7 +502,7 @@ const CategoryDisplay = connect(
             {/*<Link to={Bill.to.edit(bill.doc)}>*/}
             <Link to={''} onClick={(e) => {
               e.preventDefault()
-              showBillDialog({edit: bill})
+              showBillDialog({ edit: bill })
             }}>
               <Favico value={bill.doc.favicon}/>
               {' '}

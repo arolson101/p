@@ -14,7 +14,7 @@ export * from './router'
 export * from './sys'
 
 import { DbSlice, DbInit } from './db'
-import { DialogSlice, DialogState } from './dialog'
+import { DialogSlice } from './dialog'
 import { ViewsSlice } from './views'
 import { FiSlice, FiInit } from './fi'
 import { I18nSlice } from './i18n'

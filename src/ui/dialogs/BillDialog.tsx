@@ -1,24 +1,20 @@
 import * as moment from 'moment'
-import * as numeral from 'numeral'
 import * as PropTypes from 'prop-types'
 import * as R from 'ramda'
 import * as React from 'react'
 import * as RRule from 'rrule-alt'
-import * as Rx from 'rxjs/Rx'
 import { Modal, DropdownButton, MenuItem, SelectCallback,
-         InputGroup, PageHeader, ButtonToolbar, Button, Alert } from 'react-bootstrap'
+         InputGroup, ButtonToolbar, Button, Alert } from 'react-bootstrap'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withPropsOnChange, withState } from 'recompose'
-import { Dispatch } from 'redux'
+import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes, withState } from 'recompose'
 import { saveBill, toRRule, RRuleErrorMessage } from 'core/actions'
 import { Account, Budget, Bill } from 'core/docs'
 import { selectBills, selectBudgets } from 'core/selectors'
 import { AppState, mapDispatchToProps, setDialog } from 'core/state'
 import { Validator } from 'util/index'
 import { typedFields, forms, SelectOption } from '../components/forms'
-import { ContainedModal } from './ContainedModal'
 
 const messages = defineMessages({
   editTitle: {
@@ -246,8 +242,7 @@ export namespace BillDialogComponent {
   export type Props = ConnectedProps
 }
 export const BillDialogComponent = enhance((props) => {
-  const { edit, groups, monthOptions, weekdayOptions,
-    frequency, interval, end, onHide } = props
+  const { edit, groups, monthOptions, weekdayOptions, onHide } = props
   const { formatMessage, formatNumber } = props.intl
   const title = edit ? messages.editTitle : messages.createTitle
 
@@ -259,7 +254,7 @@ export const BillDialogComponent = enhance((props) => {
     const rrule = edit.rrule
     defaultValues = {
       ...edit.doc as any,
-      amount: formatNumber(edit.doc.amount, {style: 'currency', currency: 'USD'}),
+      amount: formatNumber(edit.doc.amount, { style: 'currency', currency: 'USD' }),
       start: moment(rrule.options.dtstart).format('L'),
     }
 
@@ -316,8 +311,8 @@ export const BillDialogComponent = enhance((props) => {
         horizontal
         defaultValues={defaultValues}
         validate={(values) => {
-          const v = new Validator(values, props.intl.formatMessage)
           const { edit, bills, intl: { formatMessage } } = props
+          const v = new Validator(values, formatMessage)
           const otherBills = bills.filter((otherBill: Bill.View) => !edit || otherBill.doc._id !== edit.doc._id)
           const otherNames = otherBills.map((acct) => acct.doc.name)
           v.unique('name', otherNames, messages.uniqueName)
@@ -333,7 +328,7 @@ export const BillDialogComponent = enhance((props) => {
             v.required('name')
             v.maybeThrowSubmissionError()
 
-            await saveBill({edit: edit && edit.doc, formatMessage, values})
+            await saveBill({ edit: edit && edit.doc, formatMessage, values })
             return onHide()
           } catch (err) {
             Validator.setErrors(err, state, instance)
@@ -341,7 +336,7 @@ export const BillDialogComponent = enhance((props) => {
         }}
       >
         {api => {
-          const { start, interval, count, frequency, end } = api.values
+          const { start, interval, frequency, end } = api.values
           console.assert(end)
           const rrule = rruleSelector(api.values)
           const generatedValues = rrule ? rrule.all((date, index) => endDate.isAfter(date) && index < maxGenerated) : []
@@ -400,7 +395,7 @@ export const BillDialogComponent = enhance((props) => {
               />
 
               <hr/>
-              <p><em><FormattedMessage {...messages.frequencyHeader} values={{rule: text}}/></em></p>
+              <p><em><FormattedMessage {...messages.frequencyHeader} values={{ rule: text }}/></em></p>
               <DateField
                 name='start'
                 label={messages.start}
@@ -420,7 +415,7 @@ export const BillDialogComponent = enhance((props) => {
                     >
                       {['endCount', 'endDate'].map((et: EndType) =>
                         <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
-                          <FormattedMessage {...messages[et]} values={{interval: interval.toString()}}/>
+                          <FormattedMessage {...messages[et]} values={{ interval: interval.toString() }}/>
                         </MenuItem>
                       )}
                     </DropdownButton>
@@ -444,7 +439,7 @@ export const BillDialogComponent = enhance((props) => {
                     >
                       {['endCount', 'endDate'].map((et: EndType) =>
                         <MenuItem key={et} eventKey={et} onSelect={onEndTypeChange} active={end === et}>
-                          <FormattedMessage {...messages[et]} values={{interval: interval.toString()}}/>
+                          <FormattedMessage {...messages[et]} values={{ interval: interval.toString() }}/>
                         </MenuItem>
                       )}
                     </DropdownButton>
@@ -468,11 +463,11 @@ export const BillDialogComponent = enhance((props) => {
                     pullRight
                     componentClass={InputGroup.Button}
                     id='interval-addon-frequency'
-                    title={formatMessage(messages[frequency], {interval: interval.toString()})}
+                    title={formatMessage(messages[frequency], { interval: interval.toString() })}
                   >
                     {['days', 'weeks', 'months', 'years'].map((cf: Frequency) =>
                       <MenuItem key={cf} eventKey={cf} onSelect={onFrequencyChange} active={frequency === cf}>
-                        <FormattedMessage {...messages[cf]} values={{interval: interval.toString()}}/>
+                        <FormattedMessage {...messages[cf]} values={{ interval: interval.toString() }}/>
                       </MenuItem>
                     )}
                   </DropdownButton>
@@ -598,7 +593,7 @@ const getGroupNames = R.pipe(
 
 const rruleSelector = (values: Values): RRule | undefined => {
   const { frequency, start, end, until, count, interval, byweekday, bymonth } = values
-  const rrule = toRRule({frequency, start, end, until, count, interval, byweekday, bymonth})
+  const rrule = toRRule({ frequency, start, end, until, count, interval, byweekday, bymonth })
   if (rrule instanceof RRuleErrorMessage) {
     return undefined
   }

@@ -1,6 +1,6 @@
 import * as docURI from 'docuri'
 import { makeid, Lookup } from 'util/index'
-import { DocCache, Category } from './'
+import { Category } from './'
 
 export interface Budget {
   name: string
@@ -70,7 +70,7 @@ export namespace Budget {
     return { _id, ...budget }
   }
 
-  export const maybeCreateCategory = (label: string, budgets: Budget.View[], docs: AnyDocument[]): Category.DocId => {
+  export const maybeCreateCategory = (label: string, budgets: View[], docs: AnyDocument[]): Category.DocId => {
     if (Category.isDocId(label)) {
       return label
     }
@@ -89,7 +89,7 @@ export namespace Budget {
     )
     docs.push(newCategory)
 
-    const nextBudget: Budget.Doc = {
+    const nextBudget: Doc = {
       ...budget.doc,
       categories: [
         ...budget.doc.categories,
@@ -102,11 +102,11 @@ export namespace Budget {
   }
 
   export interface CategoryInfo {
-    budget?: Budget.View
+    budget?: View
     category: string
   }
 
-  export const validateNewCategory = (budgets: Budget.View[], label?: string): CategoryInfo => {
+  export const validateNewCategory = (budgets: View[], label?: string): CategoryInfo => {
     const [budgetName, category] = (label || '').split(':').map(x => x.trim())
     const idx = budgets.findIndex(b => b.doc.name.toLocaleLowerCase() === budgetName.toLocaleLowerCase())
     const budget = (idx === -1 ? undefined : budgets[idx])

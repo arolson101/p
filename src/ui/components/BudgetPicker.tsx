@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import { default as Select, Creatable, ReactSelectProps } from 'react-select'
+import { Creatable, ReactSelectProps } from 'react-select'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName, withHandlers } from 'recompose'
@@ -15,7 +15,7 @@ interface ConnectedProps {
 }
 
 interface Handlers {
-  isValidNewOption: ({label}: {label?: string}) => boolean
+  isValidNewOption: ({ label }: {label?: string}) => boolean
   promptTextCreator: (label: string) => string
 }
 
@@ -30,7 +30,7 @@ const enhance = compose<EnhancedProps, ReactSelectProps>(
     })
   ),
   withHandlers<ConnectedProps, Handlers>({
-    isValidNewOption: props => ({label}: {label?: string}): boolean => {
+    isValidNewOption: props => ({ label }: {label?: string}): boolean => {
       const { budget, category } = Budget.validateNewCategory(props.budgets, label)
       return !!budget && !!category
     },

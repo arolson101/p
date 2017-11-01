@@ -1,14 +1,14 @@
 // tslint:disable:no-unused-expression
 import * as React from 'react'
 import { specs, describe, it } from 'storybook-addon-specifications'
-import { mountIntl, expect, stub, action, storiesOfIntl, dummyAccountView } from './storybook'
+import { expect, storiesOfIntl } from './storybook'
 
 import { incomingDelta, resolveConflict } from 'util/delta'
 
 const stories = storiesOfIntl(`util`, module)
 
 const copy = (a: any) => {
-  return ({...a, $deltas: [...a.$deltas]})
+  return ({ ...a, $deltas: [...a.$deltas] })
 }
 
 class Timer {
@@ -26,7 +26,7 @@ stories.add('delta', () => {
   specs(() => describe('delta', () => {
     it('resolve conflicts', () => {
       const timer = new Timer()
-      const a = incomingDelta({_id: 'a', a: 'a', b: 'b'}, timer.increment)
+      const a = incomingDelta({ _id: 'a', a: 'a', b: 'b' }, timer.increment)
       const a2 = incomingDelta({ ...copy(a), a: 'a2' }, timer.increment)
       const a3 = incomingDelta({ ...copy(a2), a: 'a3' }, timer.increment)
 
@@ -40,7 +40,7 @@ stories.add('delta', () => {
 
     it('array conflicts keep both elements', () => {
       const timer = new Timer()
-      const a = incomingDelta({_id: 'a', a: ['a'], b: ['b']}, timer.increment)
+      const a = incomingDelta({ _id: 'a', a: ['a'], b: ['b'] }, timer.increment)
       const a2 = incomingDelta({ ...copy(a), a: [...a.a, 'a2'] }, timer.increment)
       const a3 = incomingDelta({ ...copy(a2), a: [...a2.a, 'a3'] }, timer.increment)
 
@@ -54,7 +54,7 @@ stories.add('delta', () => {
 
     it('change array element order', () => {
       const timer = new Timer()
-      const a = incomingDelta({_id: 'a', a: [1, 2, 3, 4, 5]}, timer.increment)
+      const a = incomingDelta({ _id: 'a', a: [1, 2, 3, 4, 5] }, timer.increment)
       const a2 = incomingDelta({ ...copy(a), a: [2, 1, 3, 4, 5] }, timer.increment)
       const a3 = incomingDelta({ ...copy(a2), a: [3, 2, 1, 4, 5] }, timer.increment)
 

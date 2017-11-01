@@ -1,14 +1,13 @@
-import { Modal, ModalProps, PageHeader, Row, ButtonToolbar, Button } from 'react-bootstrap'
+import { Modal, ButtonToolbar, Button } from 'react-bootstrap'
 import * as React from 'react'
 import { injectIntl, defineMessages, FormattedMessage } from 'react-intl'
 import { connect } from 'react-redux'
 import { push } from 'react-router-redux'
-import { compose, setDisplayName, onlyUpdateForPropTypes, setPropTypes } from 'recompose'
+import { compose, setDisplayName } from 'recompose'
 import { DbInfo } from 'core/docs'
 import { AppState, createDb, setDialog, mapDispatchToProps } from 'core/state'
 import { Validator } from 'util/index'
 import { forms, typedFields } from '../components/forms'
-import { ContainedModal } from './ContainedModal'
 
 export const CreateDbDialogStatic = {
   dialog: 'CreateDbDialog'
@@ -61,7 +60,7 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
 const { Form, TextField, PasswordField } = typedFields<Values>()
 
 export const CreateDbDialogComponent = enhance((props) => {
-  const { onHide, intl: { formatMessage } } = props
+  const { onHide } = props
   return (
     <div>
       <Modal.Header closeButton>
@@ -88,7 +87,7 @@ export const CreateDbDialogComponent = enhance((props) => {
             v.maybeThrowSubmissionError()
 
             const { name, password } = values
-            await createDb({name, password})
+            await createDb({ name, password })
             push('/home') // push(DbInfo.to.home())
             onHide()
           } catch (err) {

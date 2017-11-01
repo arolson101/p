@@ -39,7 +39,7 @@ const allDocsQueries = [
 
 type InitDocsArgs = { db: PouchDB.Database }
 export namespace InitDocs { export type Fcn = ThunkFcn<InitDocsArgs, void> }
-export const initDocs: AppThunk<InitDocsArgs, void> = ({db}) =>
+export const initDocs: AppThunk<InitDocsArgs, void> = ({ db }) =>
   async (dispatch, getState) => {
     const local = await safeGet<LocalDoc.Doc>(db, LocalDoc.DocId) || LocalDoc.create()
     const localDocs: AnyDocument[] = []
@@ -52,7 +52,7 @@ export const initDocs: AppThunk<InitDocsArgs, void> = ({db}) =>
 
     let docs: AnyDocument[] = []
     for (let opts of allDocsQueries) {
-      const allDocs = await db.allDocs({include_docs: true, conflicts: true, ...opts})
+      const allDocs = await db.allDocs({ include_docs: true, conflicts: true, ...opts })
       docs.push(...allDocs.rows.map(row => row.doc!))
     }
     docs.push(local)
@@ -84,7 +84,7 @@ const docReducer = <T>(isDocId: (id: string) => boolean, buildView: (doc: AnyDoc
       case DOCS_SET:
         return action.docs
           .filter(doc => isDocId(doc._id))
-          .reduce((obj, val) => ({...obj, [val._id]: buildView(val)}), {})
+          .reduce((obj, val) => ({ ...obj, [val._id]: buildView(val) }), {})
 
       case DB_CHANGES:
         const changes = action.changes.filter(change => isDocId(change.id))

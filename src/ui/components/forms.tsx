@@ -2,20 +2,16 @@ import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import * as RB from 'react-bootstrap'
 import * as RF from 'react-form'
-import { injectIntl, InjectedIntlProps, defineMessages, FormattedMessage } from 'react-intl'
-import { connect } from 'react-redux'
+import { defineMessages, FormattedMessage } from 'react-intl'
 import { default as ReactSelect, Creatable, ReactCreatableSelectProps } from 'react-select'
 import 'react-select/dist/react-select.css'
 import { compose, mapPropsStream, withContext } from 'recompose'
-import { createSelector } from 'reselect'
 import * as Rx from 'rxjs/Rx'
 import { getFaviconStream } from 'util/index'
-import { mapDispatchToProps } from 'core/state'
 import { AccountPicker } from './AccountPicker'
 import { BudgetPicker } from './BudgetPicker'
 import { ColorPicker } from './ColorPicker'
 import { DatePicker, DatePickerProps } from './DatePicker'
-import { IconPicker } from './IconPicker'
 import { Favico } from './Favico'
 
 import './forms.css'
@@ -109,7 +105,7 @@ const Wrapper: React.SFC<WrapperProps> = (props: WrapperProps, { layout }: Layou
 Wrapper.contextTypes = { layout: PropTypes.object }
 
 // input ----------------------------------------------------------------------
-interface TextFieldProps<V = any> extends FormField /*, RB.FormControlProps*/ {
+interface TextFieldProps<V = any> extends FormField<V> /*, RB.FormControlProps*/ {
   autoFocus?: boolean
   rows?: number
   password?: boolean
@@ -182,7 +178,7 @@ const enhanceUrl = mapPropsStream<EnhancedUrlProps, EnhancedUrlProps>(
       .switchMap(getFaviconStream)
       .withLatestFrom(props$, (icon, props) => {
         icon = icon || ''
-        const { url, favico, setFavico } = props
+        const { favico, setFavico } = props
         if (favico !== icon) {
           setFavico(icon)
         }
@@ -193,7 +189,7 @@ const enhanceUrl = mapPropsStream<EnhancedUrlProps, EnhancedUrlProps>(
 )
 
 const UrlComponent: React.SFC<UrlFieldProps & WrapperProps> = (props: UrlFieldProps & WrapperProps & RF.FieldComponentProps) => {
-  const { name, favicoName, fieldApi } = props
+  const { favicoName, fieldApi } = props
   const FavicoAddon = enhanceUrl(props =>
     <RB.InputGroup.Addon>
       <Favico value={props.favico}/>
@@ -234,7 +230,7 @@ interface ColorAddonFieldProps<V = {}> {
   name: keyof V
 }
 
-const ColorAddonComponent: React.SFC<any> = ({fieldApi}: RF.FieldComponentProps) =>
+const ColorAddonComponent: React.SFC<any> = ({ fieldApi }: RF.FieldComponentProps) =>
   <RB.InputGroup.Button>
     <ColorPicker
       value={fieldApi.getValue() || ''}

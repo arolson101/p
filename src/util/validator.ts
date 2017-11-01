@@ -100,7 +100,7 @@ export class Validator<V extends {}> {
     const strValue = this.values[key]
     const value = numeral(strValue)
     const x = value.value()
-    if (x === null || isNaN(x)) {
+    if (isNaN(x)) {
       this.errors[key] = this.formatMessage(messages.invalidNumber)
     }
   }
@@ -122,7 +122,7 @@ export class Validator<V extends {}> {
           if (!(i in errArray)) {
             errArray[i] = {}
           }
-          errArray[i][subkey] = this.formatMessage(message, {[subkey]: value})
+          errArray[i][subkey] = this.formatMessage(message, { [subkey]: value })
         }
       }
     }

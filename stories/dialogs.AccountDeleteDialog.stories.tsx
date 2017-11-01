@@ -3,7 +3,6 @@ import * as React from 'react'
 import { specs, describe, it } from 'storybook-addon-specifications'
 import { mountIntl, expect, stub, action, storiesOfIntl, dummyAccountView } from './storybook'
 
-import { DbInfo, Account, Bank } from 'core'
 import { AccountDeleteDialogComponent } from 'ui/dialogs/AccountDeleteDialog'
 
 const stories = storiesOfIntl(`Dialogs/AccountDeleteDialog`, module)
@@ -76,7 +75,7 @@ stories.add('deleting', () => {
 
 stories.add('with error', () => {
   const error = new Error('error message')
-  const story = <T extends {}>(props: any) =>
+  const story = (props: any) =>
     <AccountDeleteDialogComponent
       error={error}
       {...props}

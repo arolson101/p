@@ -40,12 +40,12 @@ export const SettingsMenu = enhance((props) => {
       <DropdownButton bsSize='small' id='in-action-menu' title={formatMessage(messages.options)} pullRight>
         {items.map((item, index) => {
           if (!item) {
-            return
+            return undefined
           }
           const { message, to, ...menuItemProps } = item
           const key = message ? (typeof message === 'string' ? message : message.id) : index
           if (to) {
-            menuItemProps.href = history.createHref({pathname: to})
+            menuItemProps.href = history.createHref({ pathname: to })
           }
           return (
             <MenuItem key={key} {...menuItemProps}>
