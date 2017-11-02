@@ -135,6 +135,32 @@ export const selectBillsForCategory = createSelector(
   }
 )
 
+export const selectTransactions = createSelector(
+  (state: AppState, accountId: Account.DocId) => accountId && state.views.accounts[accountId],
+  (state: AppState, accountId: Account.DocId) => state.views.transactions,
+  (account, transactions): Transaction.View[] => {
+    if (!account) {
+      console.error(`invalid accountId`)
+      return []
+    }
+
+    const aparts = Account.docId(account.doc._id)
+    if (!aparts) {
+      console.error(`invalid account docId`)
+      return []
+    }
+
+    const docs = Object.values(transactions)
+      .filter(t => {
+        const tid = Transaction.docId(t.doc._id)
+        return tid && tid.bankId === aparts.bankId && tid.accountId === aparts.accountId
+      })
+      .sort((a, b) => a.time.valueOf() - b.time.valueOf())
+
+    return docs
+  }
+)
+
 export const selectTransaction = createSelector(
   (state: AppState, transactionId: Transaction.DocId | undefined) => state.views.transactions,
   (state: AppState, transactionId: Transaction.DocId | undefined) => transactionId,

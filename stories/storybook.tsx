@@ -15,7 +15,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'font-awesome/css/font-awesome.css'
 
 import { createAppStore, setDocs, FI,
-  DbInfo, Account, Bank, Budget, Category, Bill } from 'core'
+  DbInfo, Account, Bank, Transaction, Budget, Category, Bill } from 'core'
 import createHistory from 'history/createHashHistory'
 export { action }
 export { expect }
@@ -149,6 +149,28 @@ export const dummyBillDocs = (billName: string): AnyDocument[] => {
     rruleString: new RRule({ freq: RRule.MONTHLY }).toString()
   }
   return [ bank, account, budget, ...categories, bill ]
+}
+
+export const dummyBankWithTransactionsDocs = (bankName: string, accountName: string, count: number): AnyDocument[] => {
+  const { bank, accounts } = dummyBank(bankName, [accountName])
+  const baseTime = Date.now()
+  const transactions: Transaction.Doc[] = []
+  for (let i = 0; i < count; i++) {
+    transactions.push(
+      Transaction.doc(
+        Account.buildView(accounts[0]),
+        {
+          time: baseTime + i,
+          name: `transaction ${i}`,
+          type: '',
+          memo: `transaction ${i} memo`,
+          amount: i,
+          split: {}
+        }
+      )
+    )
+  }
+  return [bank, ...accounts, ...transactions]
 }
 
 const dummyFI = (name: string, id: number): FI => {

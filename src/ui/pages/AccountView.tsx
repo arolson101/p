@@ -10,7 +10,7 @@ import { getTransactions, deleteAllTransactions } from 'core/actions'
 import { Bank, Account, Transaction } from 'core/docs'
 import { AppState, pushChanges, mapDispatchToProps } from 'core/state'
 import { ListWithDetails, dateCellRenderer, currencyCellRenderer } from '../components/ListWithDetails'
-import { selectBank, selectAccount } from 'core/selectors'
+import { selectBank, selectAccount, selectTransactions } from 'core/selectors'
 import { showAccountDialog, showAccountDeleteDialog } from '../dialogs'
 import { SettingsMenu } from '../components/SettingsMenu'
 import { TransactionDetail } from '../components/TransactionDetail'
@@ -50,6 +50,7 @@ interface Props {
 interface StateProps {
   bank: Bank.View
   account: Account.View
+  transactions: Transaction.View[]
 }
 
 interface DispatchProps {
@@ -157,8 +158,7 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
 )
 
 export const AccountViewComponent = enhance((props) => {
-  const { account, editAccount, downloadTransactions, addTransactions, deleteTransactions, deleteAccount } = props
-  const transactions: Transaction[] = [] // account.transactions
+  const { account, transactions, editAccount, downloadTransactions, addTransactions, deleteTransactions, deleteAccount } = props
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <PageHeader>
@@ -251,6 +251,7 @@ export const AccountView = connect<StateProps, DispatchProps, Props>(
   (state: AppState, props): StateProps => ({
     bank: selectBank(state, props.bankId)!,
     account: selectAccount(state, props.accountId)!,
+    transactions: selectTransactions(state, props.accountId)
   }),
   mapDispatchToProps<DispatchProps>({ pushChanges, getTransactions, deleteAllTransactions, showAccountDialog, showAccountDeleteDialog })
 )(AccountViewComponent)
