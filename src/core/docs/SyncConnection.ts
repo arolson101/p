@@ -1,6 +1,6 @@
 import * as docURI from 'docuri'
 import * as moment from 'moment'
-import { makeid, Lookup, Token } from 'util/index'
+import { makeid, Token } from 'util/index'
 
 interface SyncConnectionBase {
   provider: string
@@ -30,8 +30,6 @@ export namespace SyncConnection {
   export type Doc = TDocument<SyncConnection, DocId>
   export interface Params { syncId: Id }
   export const docId = docURI.route<Params, DocId>('_local/sync/:syncId')
-  export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
   export const icon = 'fa fa-server'
 

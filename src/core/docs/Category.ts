@@ -1,5 +1,5 @@
 import * as docURI from 'docuri'
-import { makeid, Lookup } from 'util/index'
+import { makeid } from 'util/index'
 import { Budget } from './'
 
 export interface Category {
@@ -13,8 +13,6 @@ export namespace Category {
   export type Doc = TDocument<Category, DocId>
   export interface Params { budgetId: Budget.Id, categoryId: Id }
   export const docId = docURI.route<Params, DocId>('category/:budgetId/:categoryId')
-  export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
   export interface View {
     doc: Doc

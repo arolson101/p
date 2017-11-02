@@ -1,6 +1,5 @@
 import { randomBytes } from 'crypto'
 import * as docURI from 'docuri'
-import { Lookup } from 'util/index'
 import { Bank, Account } from './'
 
 export interface Split {
@@ -23,8 +22,6 @@ export namespace Transaction {
   export type Doc = PouchDB.Core.Document<Transaction> & { _id: DocId; _rev?: string }
   export interface Params { bankId: Bank.Id, accountId: Account.Id, txId: Id }
   export const docId = docURI.route<Params, DocId>('transaction/:bankId/:accountId/:txId')
-  export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
 
   export const startkeyForAccountId = (accountId: Account.DocId, time?: Date) =>
     docId({ ...accountIdParts(accountId), txId: time ? timeKey(time) : '' })

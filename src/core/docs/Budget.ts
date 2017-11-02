@@ -1,5 +1,5 @@
 import * as docURI from 'docuri'
-import { makeid, Lookup } from 'util/index'
+import { makeid } from 'util/index'
 import { Category } from './'
 
 export interface Budget {
@@ -14,8 +14,6 @@ export namespace Budget {
   export type Doc = TDocument<Budget, DocId>
   export interface Params { budgetId: Id }
   export const docId = docURI.route<Params, DocId>('budget/:budgetId')
-  export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
   export const icon = 'fa fa-signal'
   export const compare = (a: View, b: View) => (a.doc.sortOrder - b.doc.sortOrder)
 

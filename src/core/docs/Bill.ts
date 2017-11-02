@@ -1,6 +1,6 @@
 import * as docURI from 'docuri'
 import * as RRule from 'rrule-alt'
-import { makeid, Lookup } from 'util/index'
+import { makeid } from 'util/index'
 import { Account, Category } from './'
 
 export interface Bill {
@@ -22,8 +22,6 @@ export namespace Bill {
   export type Doc = TDocument<Bill, DocId>
   export interface Params { billId: Id }
   export const docId = docURI.route<Params, DocId>('bill/:billId')
-  export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
   export const icon = 'fa fa-envelope'
 
   export interface View {

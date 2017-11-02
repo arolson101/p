@@ -1,7 +1,7 @@
 const randomColor = require<(options?: RandomColorOptions) => string>('randomcolor')
 import * as docURI from 'docuri'
 import { defineMessages } from 'react-intl'
-import { makeid, Lookup } from 'util/index'
+import { makeid } from 'util/index'
 import { Bank } from './Bank'
 
 export interface Account {
@@ -79,8 +79,6 @@ export namespace Account {
   export type Doc = TDocument<Account, DocId>
   export interface Params { bankId: Bank.Id, accountId: Id }
   export const docId = docURI.route<Params, DocId>('account/:bankId/:accountId')
-  export type Cache = Lookup<DocId, Doc>
-  export const createCache = Lookup.create as (docs?: Doc[]) => Lookup<DocId, Doc>
   export const icon = 'fa fa-university'
 
   export const allDocs = {
