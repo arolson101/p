@@ -1,8 +1,37 @@
 import * as React from 'react'
+import * as Blueprint from '@blueprintjs/core'
 import { DateInput } from '@blueprintjs/datetime'
 import { Helmet } from 'react-helmet'
+import { FormattedMessage } from 'react-intl'
 
 import { storiesOfIntl } from './storybook'
+
+import { UI } from 'ui2'
+
+export const BlueprintUI: UI = {
+  Root: ({ children, ...props }) =>
+    <div>
+      <Helmet>
+        <link rel='stylesheet' type='text/css' href='@blueprintjs/core/dist/blueprint.css'/>
+        <link rel='stylesheet' type='text/css' href='@blueprintjs/datetime/dist/blueprint-datetime.css'/>
+      </Helmet>
+      {children}
+    </div>,
+
+  Page: ({ children, id, title }) =>
+  <div>
+    <h1>
+      <FormattedMessage {...title}/>
+      <br/>
+    </h1>
+    {children}
+  </div>,
+
+  Button: ({ children, primary, danger, ...props }) =>
+    <Blueprint.Button intent={primary ? Blueprint.Intent.PRIMARY : danger ? Blueprint.Intent.DANGER : Blueprint.Intent.NONE} {...props}>
+      {children}
+    </Blueprint.Button>
+}
 
 const stories = storiesOfIntl(`Toolkits`, module)
 
