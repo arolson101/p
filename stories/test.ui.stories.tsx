@@ -9,6 +9,7 @@ import { UI, withUI, UIContext, UIContextProps } from 'ui2'
 import { SemanticUI } from './test.semanticui.stories'
 import { BlueprintUI } from './test.blueprint.stories'
 import { Framework7UI } from './test.framework7.stories'
+import { BootstrapUI } from './test.bootstrap.stories'
 
 export const messages = defineMessages({
   pageTitle: {
@@ -27,11 +28,17 @@ const TestPage = withUI(({ UI }) =>
   </UI.Page>
 )
 
+const Root = withUI(({ UI }) =>
+  <UI.Root>
+    <TestPage/>
+  </UI.Root>
+)
+
 const App = ({ UI }: UIContextProps) => {
   return <UIContext UI={UI}>
-    <UI.Root>
+    <Root>
       <TestPage/>
-    </UI.Root>
+    </Root>
   </UIContext>
 }
 
@@ -42,6 +49,7 @@ stories.add('UiContext', () => {
     'framework7': Framework7UI,
     'semantic ui': SemanticUI,
     'blueprint': BlueprintUI,
+    'bootstrap': BootstrapUI,
   }
   const uikeys = Object.keys(uis)
 
