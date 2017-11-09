@@ -4,10 +4,10 @@ import { FormattedMessage } from 'react-intl'
 import { compose, withState, withContext, getContext, setDisplayName } from 'recompose'
 
 export interface UI {
+  links: Array<{rel: 'stylesheet', type?: 'text/css', href: string}>
   Root: React.ComponentType<{
   }>
   Page: React.ComponentType<{
-    id: string
     title: FormattedMessage.MessageDescriptor
   }>
   Button: React.ComponentType<{
@@ -17,22 +17,24 @@ export interface UI {
   }>
 }
 
-export interface UIContextProps {
+export interface UIContext {
   UI: UI
 }
 
-const UIChildContextTypes = { UI: PropTypes.object }
+export namespace UI {
+  export type Context = UIContext
+  export const contextTypes = { UI: PropTypes.object }
+}
 
-const enhanceUIContext = compose<UIContextProps, UIContextProps>(
-  setDisplayName('UIContext'),
-  withContext<UIContextProps, UIContextProps>(
-    UIChildContextTypes,
-    ({ UI }): UIContextProps => ({ UI })
-  )
-)
+export class UIProvider extends React.Component<UIContext> {
+  static childContextTypes = UI.contextTypes
 
-export const UIContext = enhanceUIContext(({ children }) =>
-  children as any
-)
+  getChildContext () {
+    const { UI } = this.props
+    return { UI }
+  }
 
-export const withUI = getContext<UIContextProps>(UIChildContextTypes)
+  render () {
+    return this.props.children as any
+  }
+}

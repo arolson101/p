@@ -8,30 +8,6 @@ import { storiesOfIntl } from './storybook'
 
 import { UI } from 'ui2'
 
-export const BootstrapUI: UI = {
-  Root: ({ children, ...props }) =>
-    <div>
-      <Helmet>
-        <link rel='stylesheet' type='text/css' href='bootstrap/dist/css/bootstrap.css'/>
-      </Helmet>
-      {children}
-    </div>,
-
-  Page: ({ children, id, title }) =>
-    <div>
-      <h1>
-        <FormattedMessage {...title}/>
-        <br/>
-      </h1>
-      {children}
-    </div>,
-
-  Button: ({ children, primary, danger, ...props }) =>
-    <RB.Button bsStyle={primary ? 'primary' : danger ? 'danger' : undefined} {...props}>
-      {children}
-    </RB.Button>
-}
-
 const stories = storiesOfIntl(`Toolkits`, module)
 
 const App = () => (

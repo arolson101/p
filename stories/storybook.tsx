@@ -3,6 +3,7 @@ import * as Enzyme from 'enzyme'
 import * as Adapter from 'enzyme-adapter-react-16'
 import { FinancialInstitutionProfile } from 'filist'
 import * as React from 'react'
+import { Helmet } from 'react-helmet'
 import { IntlProvider, intlShape } from 'react-intl'
 import { Provider } from 'react-redux'
 import { setObservableConfig } from 'recompose'
@@ -10,8 +11,9 @@ import * as RRule from 'rrule-alt'
 import { from } from 'rxjs/observable/from'
 import * as Sinon from 'sinon'
 import { action } from '@storybook/addon-actions'
-import { Story, storiesOf } from '@storybook/react'
-import 'bootstrap/dist/css/bootstrap.css'
+import { withKnobs, select } from '@storybook/addon-knobs'
+import { Story, storiesOf, addDecorator } from '@storybook/react'
+// import 'bootstrap/dist/css/bootstrap.css'
 import 'font-awesome/css/font-awesome.css'
 
 import { createAppStore, setDocs, FI,
@@ -22,6 +24,11 @@ export { expect }
 export { specs, describe, it } from 'storybook-addon-specifications'
 export { storiesOf }
 export { Provider }
+import { UI, UIProvider } from 'ui2'
+import { SemanticUI } from 'ui2/semanticui'
+import { BlueprintUI } from 'ui2/blueprint'
+import { Framework7UI } from 'ui2/framework7'
+import { BootstrapUI } from 'ui2/bootstrap'
 
 setObservableConfig({
   fromESObservable: from,
@@ -41,24 +48,54 @@ const messages = new Proxy({}, {
   }
 })
 
+const uis = {
+  'framework7': Framework7UI,
+  'semantic ui': SemanticUI,
+  'blueprint': BlueprintUI,
+  'bootstrap': BootstrapUI,
+}
+const defaultUI: keyof typeof uis = 'framework7'
+
+const locales = [
+  'en',
+]
+
+const UIRoot: SFC<{}, UI.Context> = ({ children }, { UI }) => <UI.Root>{children}</UI.Root>
+UIRoot.contextTypes = UI.contextTypes
+
+export const StoryRoot: React.SFC<{test?: boolean}> = ({ children, test }) => {
+  const UI = uis[select('UI', Object.keys(uis) as Array<keyof typeof uis>, defaultUI)]
+  const locale = select('locale', locales, locales[0])
+  return <IntlProvider locale={locale}>
+    <UIProvider UI={UI}>
+      {!test && <Helmet link={UI.links}/>}
+      <UIRoot>
+        {children}
+      </UIRoot>
+    </UIProvider>
+  </IntlProvider>
+}
+
+addDecorator(withKnobs)
+
 export const storiesOfIntl = (name: string, mod: NodeModule): Story => {
   const stories = storiesOf(name, mod)
 
   stories.addDecorator(getStory => (
-    <IntlProvider locale={'en'}>
+    <StoryRoot>
       {getStory()}
-    </IntlProvider>
+    </StoryRoot>
   ))
 
   return stories
 }
 
-const intlProvider = new IntlProvider({ locale: 'en-US', messages }, {})
-const { intl } = intlProvider.getChildContext()
-
-const mountIntlProps = { context: { intl }, childContextTypes: { intl: intlShape } }
-
-export const mountIntl: typeof Enzyme.mount = (node: any, options: any) => Enzyme.mount(node, mountIntlProps)
+export const mountIntl: typeof Enzyme.mount = (node: any, options: any) =>
+  Enzyme.mount(
+    <StoryRoot test>
+      {node}
+    </StoryRoot>
+  )
 
 export const dummyDbInfo = (name: string): DbInfo => ({ name, location: `location://${name}` })
 

@@ -5,11 +5,11 @@ import { Button } from 'semantic-ui-react'
 import { withKnobs, select } from '@storybook/addon-knobs'
 
 import { storiesOfIntl } from './storybook'
-import { UI, withUI, UIContext, UIContextProps } from 'ui2'
-import { SemanticUI } from './test.semanticui.stories'
-import { BlueprintUI } from './test.blueprint.stories'
-import { Framework7UI } from './test.framework7.stories'
-import { BootstrapUI } from './test.bootstrap.stories'
+import { UI, UIProvider, UIContext } from 'ui2'
+import { SemanticUI } from 'ui2/semanticui'
+import { BlueprintUI } from 'ui2/blueprint'
+import { Framework7UI } from 'ui2/framework7'
+import { BootstrapUI } from 'ui2/bootstrap'
 
 export const messages = defineMessages({
   pageTitle: {
@@ -20,26 +20,24 @@ export const messages = defineMessages({
 
 const stories = storiesOfIntl(`Toolkits`, module)
 
-const TestPage = withUI(({ UI }) =>
-  <UI.Page id='test' title={messages.pageTitle}>
+const TestPage: SFC<{}, UI.Context> = ({}, { UI }) =>
+  <UI.Page title={messages.pageTitle}>
     <UI.Button primary>primary button</UI.Button>
     <UI.Button>regular button</UI.Button>
     <UI.Button danger>danger button</UI.Button>
   </UI.Page>
-)
 
-const Root = withUI(({ UI }) =>
+const Root: SFC<{}, UI.Context> = ({}, { UI }) =>
   <UI.Root>
     <TestPage/>
   </UI.Root>
-)
 
-const App = ({ UI }: UIContextProps) => {
-  return <UIContext UI={UI}>
+const App = ({ UI }: UI.Context) => {
+  return <UIProvider UI={UI}>
     <Root>
       <TestPage/>
     </Root>
-  </UIContext>
+  </UIProvider>
 }
 
 stories.addDecorator(withKnobs)

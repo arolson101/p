@@ -17,6 +17,15 @@ interface NodeModule {
 declare const __DEVELOPMENT__: boolean
 declare const __TEST__: boolean
 
+type SFC<P = {}, C = {}> = StatelessComponent<P, C>
+interface StatelessComponent<P = {}, C = any> {
+  (props: P & { children?: React.ReactNode }, context: C): React.ReactElement<any> | null
+  propTypes?: React.ValidationMap<P>
+  contextTypes?: React.ValidationMap<any>
+  defaultProps?: Partial<P>
+  displayName?: string
+}
+
 type PropTypes2<T, R extends React.Validator<any>> = { [K in keyof T]: R }
 type PropTypes<T> = PropTypes2<T, React.Validator<any>>
 
