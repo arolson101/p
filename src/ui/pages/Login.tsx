@@ -6,6 +6,7 @@ import { withRouter, RouteComponentProps } from 'react-router'
 import { compose } from 'recompose'
 import { DbInfo } from 'core/docs'
 import { AppState, mapDispatchToProps } from 'core/state'
+import { UI } from 'ui2'
 import { showLoginDialog, showCreateDialog } from '../dialogs'
 
 const icons = {
@@ -18,6 +19,10 @@ const icons = {
 }
 
 const messages = defineMessages({
+  title: {
+    id: 'login.title',
+    defaultMessage: 'Login'
+  },
   newDb: {
     id: 'login.newDb',
     defaultMessage: 'New'
@@ -37,8 +42,8 @@ type EnhancedProps = ConnectedProps & DispatchProps
 
 const wellStyles = { maxWidth: 400, margin: '0 auto 50px', padding: '50px' }
 
-export const LoginComponent = ({ files, showLoginDialog, showCreateDialog }: EnhancedProps) => (
-  <div>
+export const LoginComponent: SFC<EnhancedProps, UI.Context> = ({ files, showLoginDialog, showCreateDialog }, { UI }) => (
+  <UI.Page title={messages.title}>
     <div className='well' style={wellStyles}>
       <ButtonGroup vertical block bsSize='large'>
         {files.map(file => {
@@ -67,8 +72,10 @@ export const LoginComponent = ({ files, showLoginDialog, showCreateDialog }: Enh
         </Button>
       </ButtonGroup>
     </div>
-  </div>
+  </UI.Page>
 )
+
+LoginComponent.contextTypes = UI.contextTypes
 
 export const LoginRoute = compose<EnhancedProps, RouteComponentProps<any>>(
   withRouter,
