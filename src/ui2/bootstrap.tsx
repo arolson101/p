@@ -21,8 +21,16 @@ export const BootstrapUI: UI = {
       {children}
     </div>,
 
-  Button: ({ children, primary, danger, ...props }) =>
-    <RB.Button bsStyle={primary ? 'primary' : danger ? 'danger' : undefined} {...props}>
+  List: ({ children }) => <RB.ListGroup>{children}</RB.ListGroup>,
+
+  ListItem: ({ children }) => <RB.ListGroupItem>{children}</RB.ListGroupItem>,
+
+  Button: ({ children, primary, danger, fullWidth, ...props }) =>
+    <RB.Button
+      bsStyle={primary ? 'primary' : danger ? 'danger' : undefined}
+      block={fullWidth}
+      {...props}
+    >
       {children}
     </RB.Button>
 }

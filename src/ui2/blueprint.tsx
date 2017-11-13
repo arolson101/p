@@ -21,8 +21,16 @@ export const BlueprintUI: UI = {
     {children}
   </div>,
 
-  Button: ({ children, primary, danger, ...props }) =>
-    <Blueprint.Button intent={primary ? Blueprint.Intent.PRIMARY : danger ? Blueprint.Intent.DANGER : Blueprint.Intent.NONE} {...props}>
+  List: ({ children, ...props }) => <ul {...props}>{children}</ul>,
+
+  ListItem: ({ children, ...props }) => <li {...props}>{children}</li>,
+
+  Button: ({ children, primary, danger, fullWidth, ...props }) =>
+    <Blueprint.Button
+      intent={primary ? Blueprint.Intent.PRIMARY : danger ? Blueprint.Intent.DANGER : Blueprint.Intent.NONE}
+      className={fullWidth ? 'pt-fill' : undefined}
+      {...props}
+    >
       {children}
     </Blueprint.Button>
 }

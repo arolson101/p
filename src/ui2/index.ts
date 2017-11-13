@@ -3,18 +3,28 @@ import * as React from 'react'
 import { FormattedMessage } from 'react-intl'
 import { compose, withState, withContext, getContext, setDisplayName } from 'recompose'
 
+interface ReactUniversalProps {
+  id?: string
+}
+type ComponentType<T> = React.ComponentType<T & ReactUniversalProps>
+
 export interface UI {
   links: Array<{rel: 'stylesheet', type?: 'text/css', href: string}>
-  Root: React.ComponentType<{
+  Root: ComponentType<{
   }>
-  Page: React.ComponentType<{
+  Page: ComponentType<{
     title: FormattedMessage.MessageDescriptor
   }>
-  Button: React.ComponentType<{
+  Button: ComponentType<{
     primary?: boolean
     danger?: boolean
+    fullWidth?: boolean
     onClick?: () => void
   }>
+  List: ComponentType<{
+    vertical?: boolean
+  }>
+  ListItem: ComponentType<{}>
 }
 
 export interface UIContext {

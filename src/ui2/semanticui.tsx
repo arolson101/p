@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Helmet } from 'react-helmet'
-import { Button } from 'semantic-ui-react'
+import * as SUI from 'semantic-ui-react'
 import { FormattedMessage } from 'react-intl'
 
 import { UI } from 'ui2'
@@ -21,5 +21,9 @@ export const SemanticUI: UI = {
       {children}
     </div>,
 
-  Button: ({ children, ...props }) => <Button {...props}>{children}</Button>
+  List: ({ children, ...props }) => <ul {...props}>{children}</ul>,
+
+  ListItem: ({ children, ...props }) => <li {...props}>{children}</li>,
+
+  Button: ({ children, ...props }) => <SUI.Button {...props}>{children}</SUI.Button>
 }

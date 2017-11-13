@@ -48,8 +48,8 @@ export const LoginComponent: SFC<EnhancedProps, UI.Context> = ({ files, showLogi
       <ButtonGroup vertical block bsSize='large'>
         {files.map(file => {
           return (
-            <Button
-              block
+            <UI.Button
+              fullWidth
               key={file.name}
               id='open'
               onClick={() => showLoginDialog({ info: file })}
@@ -57,19 +57,19 @@ export const LoginComponent: SFC<EnhancedProps, UI.Context> = ({ files, showLogi
               <i {...icons.openDb}/>
               {' '}
               {file.name}
-            </Button>
+            </UI.Button>
           )
         })}
         <br/>
-        <Button
-          block
+        <UI.Button
+          fullWidth
           id='new'
           onClick={showCreateDialog}
         >
           <i {...icons.openDb}/>
           {' '}
           <FormattedMessage {...messages.newDb}/>
-        </Button>
+        </UI.Button>
       </ButtonGroup>
     </div>
   </UI.Page>

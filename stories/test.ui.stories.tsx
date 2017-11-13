@@ -27,10 +27,14 @@ const TestPage: SFC<{}, UI.Context> = ({}, { UI }) =>
     <UI.Button danger>danger button</UI.Button>
   </UI.Page>
 
+TestPage.contextTypes = UI.contextTypes
+
 const Root: SFC<{}, UI.Context> = ({}, { UI }) =>
   <UI.Root>
     <TestPage/>
   </UI.Root>
+
+Root.contextTypes = UI.contextTypes
 
 const App = ({ UI }: UI.Context) => {
   return <UIProvider UI={UI}>
