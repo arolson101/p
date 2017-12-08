@@ -1,11 +1,8 @@
 import * as React from 'react'
 import { Helmet } from 'react-helmet'
-import { Framework7App, Statusbar, Button, Navbar, Views, View, Page, Pages, Toolbar, Link } from './framework7'
-import { injectIntl } from 'react-intl'
+import { Framework7App, Statusbar, Navbar, Views, View, Page, Pages, Toolbar, Link } from './framework7'
 
 import { storiesOfIntl } from './storybook'
-
-import { UI } from 'ui2'
 
 const stories = storiesOfIntl(`Toolkits`, module)
 

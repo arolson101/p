@@ -1,12 +1,8 @@
 import * as React from 'react'
-import * as Blueprint from '@blueprintjs/core'
 import { DateInput } from '@blueprintjs/datetime'
 import { Helmet } from 'react-helmet'
-import { FormattedMessage } from 'react-intl'
 
 import { storiesOfIntl } from './storybook'
-
-import { UI } from 'ui2'
 
 const stories = storiesOfIntl(`Toolkits`, module)
 

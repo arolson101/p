@@ -123,7 +123,6 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
     addTransactions: (props) => async () => {
       const { pushChanges, account } = props
       const changes: ChangeSet = new Set()
-      let balance = 0
       for (let i = 0; i < 1000; i++) {
         const time = new Date(2016, 11, i, Math.trunc(Math.random() * 24), Math.trunc(Math.random() * 60))
         const tx = Transaction.doc(account, {
@@ -135,7 +134,6 @@ const enhance = compose<EnhancedProps, ConnectedProps>(
           split: {}
         })
         changes.add(tx)
-        balance += tx.amount
       }
 
       await pushChanges({ docs: Array.from(changes) })

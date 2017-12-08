@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 
 export * from './Account'
 export * from './Bank'
@@ -10,12 +9,3 @@ export * from './SyncConnection'
 export * from './Transaction'
 
 export { DbInfo } from '../state/db'
-
-import { Account } from './Account'
-import { Bank } from './Bank'
-import { Bill } from './Bill'
-import { Budget } from './Budget'
-import { Category } from './Category'
-import { LocalDoc } from './LocalDocs'
-import { SyncConnection } from './SyncConnection'
-import { Transaction } from './Transaction'

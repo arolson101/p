@@ -1,11 +1,9 @@
 import * as React from 'react'
-import { Helmet } from 'react-helmet'
-import { defineMessages, FormattedMessage } from 'react-intl'
-import { Button } from 'semantic-ui-react'
+import { defineMessages } from 'react-intl'
 import { withKnobs, select } from '@storybook/addon-knobs'
 
 import { storiesOfIntl } from './storybook'
-import { UI, UIProvider, UIContext } from 'ui2'
+import { UI, UIProvider } from 'ui2'
 import { SemanticUI } from 'ui2/semanticui'
 import { BlueprintUI } from 'ui2/blueprint'
 import { Framework7UI } from 'ui2/framework7'

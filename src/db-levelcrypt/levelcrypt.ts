@@ -177,15 +177,12 @@ const decrypt = (data: any, opts: Options) => {
 
 const serialize = (buffers: any) => {
   let parts: any[] = []
-  let idx = 0
   buffers.forEach((part: any) => {
     let len = Buffer.alloc(4)
     if (typeof part === 'string') { part = Buffer.from(part) }
     len.writeUInt32BE(part.length, 0)
     parts.push(len)
-    idx += len.length
     parts.push(part)
-    idx += part.length
   })
 
   return Buffer.concat(parts).toString('base64')

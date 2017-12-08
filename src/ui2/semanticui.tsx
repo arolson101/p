@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Helmet } from 'react-helmet'
 import * as SUI from 'semantic-ui-react'
 import { FormattedMessage } from 'react-intl'
 

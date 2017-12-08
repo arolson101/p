@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Button, ButtonGroup } from 'react-bootstrap'
+import { ButtonGroup } from 'react-bootstrap'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'

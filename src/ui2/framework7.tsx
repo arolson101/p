@@ -1,6 +1,5 @@
 import * as React from 'react'
 import * as F7 from 'framework7-react'
-import { Helmet } from 'react-helmet'
 import { injectIntl } from 'react-intl'
 import { UI } from 'ui2'
 

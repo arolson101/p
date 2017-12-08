@@ -1,6 +1,5 @@
 import * as React from 'react'
 import * as RB from 'react-bootstrap'
-import { Helmet } from 'react-helmet'
 import { FormattedMessage } from 'react-intl'
 
 import { UI } from 'ui2'

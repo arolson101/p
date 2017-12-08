@@ -4,7 +4,7 @@ import * as Adapter from 'enzyme-adapter-react-16'
 import { FinancialInstitutionProfile } from 'filist'
 import * as React from 'react'
 import { Helmet } from 'react-helmet'
-import { IntlProvider, intlShape } from 'react-intl'
+import { IntlProvider } from 'react-intl'
 import { Provider } from 'react-redux'
 import { setObservableConfig } from 'recompose'
 import * as RRule from 'rrule-alt'
@@ -39,22 +39,13 @@ Enzyme.configure({ adapter: new Adapter() })
 
 export const stub = () => Sinon.stub()
 
-const messages = new Proxy({}, {
-  get: function getter (target, key) {
-    if (key === '__esModule') {
-      return false
-    }
-    return key
-  }
-})
-
 const uis = {
   'framework7': Framework7UI,
   'semantic ui': SemanticUI,
   'blueprint': BlueprintUI,
   'bootstrap': BootstrapUI,
 }
-const defaultUI: keyof typeof uis = 'framework7'
+const defaultUI: keyof typeof uis = 'bootstrap'
 
 const locales = [
   'en',

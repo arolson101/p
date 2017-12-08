@@ -1,10 +1,8 @@
 import * as React from 'react'
 import { Helmet } from 'react-helmet'
 import { Button } from 'semantic-ui-react'
-import { FormattedMessage } from 'react-intl'
 
-import { mountIntl, expect, stub, action, storiesOfIntl,
-  dummyStore, dummyBankDocs, dummyBudgetDocs, Provider } from './storybook'
+import { storiesOfIntl } from './storybook'
 
 const stories = storiesOfIntl(`Toolkits`, module)
 

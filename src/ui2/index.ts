@@ -1,7 +1,6 @@
 import * as PropTypes from 'prop-types'
 import * as React from 'react'
 import { FormattedMessage } from 'react-intl'
-import { compose, withState, withContext, getContext, setDisplayName } from 'recompose'
 
 interface ReactUniversalProps {
   id?: string
