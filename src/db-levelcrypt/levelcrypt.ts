@@ -1,5 +1,6 @@
 import * as crypto from 'crypto'
 import * as levelup from 'levelup'
+import leveldown from 'leveldown'
 import { KeyDoc, createKeyDoc, decryptMasterKeyDoc } from 'util/index'
 
 const updown = require('level-updown')
@@ -121,7 +122,7 @@ export function levelcrypt (location: string) {
     next(array, options, callback)
   }
 
-  const db = levelup(location, {
+  const db = levelup(leveldown(location) as any, {
     keyEncoding: 'binary',
     valueEncoding: 'binary'
   })
