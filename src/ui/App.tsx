@@ -10,6 +10,8 @@ import { Bank, Account, Transaction, Bill, Budget, SyncConnection } from 'core/d
 import { AppState, CurrentDb } from 'core/state'
 import * as Components from './components'
 import * as Pages from './pages'
+import { UI, UIProvider } from 'ui2'
+import { BootstrapUI } from 'ui2/bootstrap'
 
 interface Props {
   store: Redux.Store<AppState>
@@ -22,6 +24,9 @@ interface ConnectedProps {
 }
 
 type EnhancedProps = Props & ConnectedProps
+
+const UIRoot: SFC<{}, UI.Context> = ({ children }, { UI }) => <UI.Root>{children}</UI.Root>
+UIRoot.contextTypes = UI.contextTypes
 
 const enhance = compose<EnhancedProps, Props>(
   connect<ConnectedProps, {}, Props>(
@@ -36,31 +41,33 @@ export const App = enhance(props => {
   const { store, history, locale, current } = props
 
   return (
-    <Provider store={store}>
-      <IntlProvider locale={locale}>
-        <ConnectedRouter history={history}>
-          <Components.AppWindow>
-            <Route exact path='/' component={Pages.LoginRoute}/>
-            {current ? (
-              <Components.AppContent>
-                <Switch>
-                  <Route exact path={'/home'} component={Pages.Home as any} />
-                  <Route exact path={'/' + Bank.routes.all} component={Pages.Accounts as any} />
-                  <Route exact path={'/' + Bank.routes.view} component={Pages.BankViewRoute}/>
-                  <Route exact path={'/' + Account.routes.view} component={Pages.AccountViewRoute}/>
-                  <Route exact path={'/' + Transaction.routes.edit} component={Pages.TransactionEditRoute}/>
-                  <Route exact path={'/' + Transaction.routes.view} component={Pages.TransactionViewRoute}/>
-                  <Route exact path={'/' + Bill.routes.all} component={Pages.Bills as any}/>
-                  <Route exact path={'/' + Budget.routes.all} component={Pages.Budgets as any}/>
-                  <Route exact path={'/' + SyncConnection.routes.all} component={Pages.Syncs as any}/>
-                </Switch>
-              </Components.AppContent>
-            ) : (
-              <Redirect to='/'/>
-            )}
-          </Components.AppWindow>
-        </ConnectedRouter>
-      </IntlProvider>
-    </Provider>
+    <UIProvider UI={BootstrapUI}>
+      <Provider store={store}>
+        <IntlProvider locale={locale}>
+          <ConnectedRouter history={history}>
+            <Components.AppWindow>
+              <Route exact path='/' component={Pages.LoginRoute}/>
+              {current ? (
+                <Components.AppContent>
+                  <Switch>
+                    <Route exact path={'/home'} component={Pages.Home as any} />
+                    <Route exact path={'/' + Bank.routes.all} component={Pages.Accounts as any} />
+                    <Route exact path={'/' + Bank.routes.view} component={Pages.BankViewRoute}/>
+                    <Route exact path={'/' + Account.routes.view} component={Pages.AccountViewRoute}/>
+                    <Route exact path={'/' + Transaction.routes.edit} component={Pages.TransactionEditRoute}/>
+                    <Route exact path={'/' + Transaction.routes.view} component={Pages.TransactionViewRoute}/>
+                    <Route exact path={'/' + Bill.routes.all} component={Pages.Bills as any}/>
+                    <Route exact path={'/' + Budget.routes.all} component={Pages.Budgets as any}/>
+                    <Route exact path={'/' + SyncConnection.routes.all} component={Pages.Syncs as any}/>
+                  </Switch>
+                </Components.AppContent>
+              ) : (
+                <Redirect to='/'/>
+              )}
+            </Components.AppWindow>
+          </ConnectedRouter>
+        </IntlProvider>
+      </Provider>
+    </UIProvider>
   )
 })

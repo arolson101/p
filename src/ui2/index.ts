@@ -44,6 +44,6 @@ export class UIProvider extends React.Component<UIContext> {
   }
 
   render () {
-    return this.props.children as any
+    return this.props.children
   }
 }
