@@ -29,6 +29,14 @@ export namespace Bill {
     rrule: RRule
   }
 
+  export const unDoc = (doc?: Doc): Bill => {
+    if (!doc) {
+      return {} as any
+    }
+    const { _id, _rev, _attachments, _conflicts, _deleted, ...bank } = doc
+    return bank
+  }
+
   export const buildView = (doc: Doc): View => ({
     doc,
     rrule: RRule.fromString(doc.rruleString)
@@ -62,9 +70,9 @@ export namespace Bill {
     return !!docId(doc._id as DocId)
   }
 
-  export const doc = (bank: Bill): Doc => {
+  export const doc = (bill: Bill | Doc): Doc => {
     const _id = docId({ billId: makeid() })
-    return { _id, ...bank }
+    return { _id, ...bill }
   }
 
   export const getDate = (bill: View): Date => {

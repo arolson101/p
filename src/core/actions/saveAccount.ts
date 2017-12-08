@@ -37,7 +37,7 @@ export const saveAccount: AppThunk<Params, Return> = ({ bank, edit, formatMessag
       bank.doc,
       {
         visible: true,
-        ...edit,
+        ...(edit && edit.doc),
         ...values,
       }
     )

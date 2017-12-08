@@ -76,7 +76,7 @@ export namespace Bank {
     return !!docId(doc._id as DocId)
   }
 
-  export const doc = (bank: Bank): Doc => {
+  export const doc = (bank: Bank | Doc): Doc => {
     const _id = docId({ bankId: makeid() })
     return { _id, ...bank }
   }

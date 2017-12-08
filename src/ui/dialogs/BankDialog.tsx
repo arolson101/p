@@ -125,7 +125,8 @@ export const BankDialogComponent = enhance((props) => {
   let defaultValues: Partial<Values> = {}
   if (edit) {
     const fi = filist.findIndex(fiEntry => fiEntry.name === edit.doc.fi) + 1
-    defaultValues = { ...edit.doc, ...edit.doc.login, fi }
+    const { _id, _rev, _deleted, _conflicts, _attachments, accounts, login, ...doc } = edit.doc
+    defaultValues = { ...doc, ...login, fi }
   }
 
   return (

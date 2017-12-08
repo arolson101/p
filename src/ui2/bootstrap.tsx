@@ -10,7 +10,7 @@ export const BootstrapUI: UI = {
     { rel: 'stylesheet', type: 'text/css', href: 'bootstrap/dist/css/bootstrap.css' },
   ],
 
-  Root: ({ children, ...props }) => React.Children.only(children),
+  Root: ({ children, ...props }) => <>{children}</>,
 
   Page: ({ children, title }) =>
     <div>
