@@ -10,7 +10,7 @@ export const SemanticUI: UI = {
     { rel: 'stylesheet', type: 'text/css', href: 'semantic-ui-css/semantic.min.css' },
   ],
 
-  Root: ({ children, ...props }) => React.Children.only(children),
+  Root: ({ children, ...props }) => <>{children}</>,
 
   Page: ({ children, title }) =>
     <div>

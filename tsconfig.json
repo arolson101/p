@@ -7,6 +7,7 @@
 
     "noUnusedParameters": false,
     "noUnusedLocals": false, // https://github.com/Microsoft/TypeScript/issues/11324
+    "allowSyntheticDefaultImports": true,
 
     "jsx": "react",
     "target": "es2017",

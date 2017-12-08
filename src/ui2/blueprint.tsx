@@ -10,7 +10,7 @@ export const BlueprintUI: UI = {
     { rel: 'stylesheet', type: 'text/css', href: '@blueprintjs/datetime/dist/blueprint-datetime.css' },
   ],
 
-  Root: ({ children, ...props }) => React.Children.only(children),
+  Root: ({ children, ...props }) => <>{children}</>,
 
   Page: ({ children, title }) =>
   <div>
