@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import { Creatable, ReactSelectProps } from 'react-select'
+import { Creatable, ReactSelectProps, NewOptionCreatorHandler } from 'react-select'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import { compose, setDisplayName, withHandlers } from 'recompose'
@@ -17,6 +17,7 @@ interface ConnectedProps {
 interface Handlers {
   isValidNewOption: ({ label }: {label?: string}) => boolean
   promptTextCreator: (label: string) => string
+  newOptionCreator: NewOptionCreatorHandler
 }
 
 type EnhancedProps = Handlers & ConnectedProps & ReactSelectProps
