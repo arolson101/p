@@ -1,3 +1,30 @@
+import * as PropTypes from 'prop-types'
+import * as React from 'react'
+import { FormattedMessage } from 'react-intl'
+
+interface ReactUniversalProps {
+  id?: string
+}
+type ComponentType<T> = React.ComponentType<T & ReactUniversalProps>
+
+export interface Components {
+  links: Array<{rel: 'stylesheet', type?: 'text/css', href: string}>
+  Root: ComponentType<{
+  }>
+  Page: ComponentType<{
+    title: FormattedMessage.MessageDescriptor
+  }>
+  Button: ComponentType<{
+    primary?: boolean
+    danger?: boolean
+    fullWidth?: boolean
+    onClick?: () => void
+  }>
+  List: ComponentType<{
+    vertical?: boolean
+  }>
+  ListItem: ComponentType<{}>
+}
 
 export interface AccountDeleteState {
   deleting?: boolean
@@ -5,10 +32,25 @@ export interface AccountDeleteState {
 }
 
 export type UiState = {
+  Components: Components
   accountDelete: AccountDeleteState
 }
 
+const invalidComponent = () => {
+  throw new Error('invalid component')
+}
+
+const invalidComponents: Components = {
+  links: [],
+  Root: invalidComponent,
+  Page: invalidComponent,
+  Button: invalidComponent,
+  List: invalidComponent,
+  ListItem: invalidComponent,
+}
+
 const initialState: UiState = {
+  Components: invalidComponents,
   accountDelete: {}
 }
 

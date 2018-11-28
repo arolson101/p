@@ -3,10 +3,8 @@ import { ButtonGroup } from 'react-bootstrap'
 import { FormattedMessage, defineMessages } from 'react-intl'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router'
-import { compose } from 'recompose'
 import { DbInfo } from 'core/docs'
-import { AppState, mapDispatchToProps } from 'core/state'
-import { UI } from 'ui2'
+import { AppState, Components } from 'core/state'
 import { showLoginDialog, showCreateDialog } from '../dialogs'
 
 const icons = {
@@ -29,60 +27,62 @@ const messages = defineMessages({
   },
 })
 
-interface ConnectedProps {
-  files: DbInfo[]
+export namespace LoginComponent {
+  export interface StateProps {
+    UI: Components
+    files: DbInfo[]
+  }
+
+  export interface DispatchProps {
+    showLoginDialog: typeof showLoginDialog
+    showCreateDialog: typeof showCreateDialog
+  }
+
+  export type ConnectedProps = StateProps & DispatchProps
+  export type EnhancedProps = ConnectedProps
 }
 
-interface DispatchProps {
-  showLoginDialog: typeof showLoginDialog
-  showCreateDialog: typeof showCreateDialog
-}
-
-type EnhancedProps = ConnectedProps & DispatchProps
-
-const wellStyles = { maxWidth: 400, margin: '0 auto 50px', padding: '50px' }
-
-export const LoginComponent: SFC<EnhancedProps, UI.Context> = ({ files, showLoginDialog, showCreateDialog }, { UI }) => (
+export const LoginComponent: React.SFC<LoginComponent.EnhancedProps> = ({ files, showLoginDialog, showCreateDialog, UI }) => (
   <UI.Page title={messages.title}>
-    <div className='well' style={wellStyles}>
-      <ButtonGroup vertical block bsSize='large'>
-        {files.map(file => {
-          return (
-            <UI.Button
-              fullWidth
-              key={file.name}
-              id='open'
-              onClick={() => showLoginDialog({ info: file })}
-            >
-              <i {...icons.openDb}/>
-              {' '}
-              {file.name}
-            </UI.Button>
-          )
-        })}
-        <br/>
-        <UI.Button
-          fullWidth
-          id='new'
-          onClick={showCreateDialog}
-        >
-          <i {...icons.openDb}/>
-          {' '}
-          <FormattedMessage {...messages.newDb}/>
-        </UI.Button>
-      </ButtonGroup>
-    </div>
+    <ButtonGroup vertical block bsSize='large'>
+      {files.map(file => {
+        return (
+          <UI.Button
+            fullWidth
+            key={file.name}
+            id='open'
+            onClick={() => showLoginDialog({ info: file })}
+          >
+            <i {...icons.openDb}/>
+            {' '}
+            {file.name}
+          </UI.Button>
+        )
+      })}
+      <br/>
+      <UI.Button
+        fullWidth
+        id='new'
+        onClick={showCreateDialog}
+      >
+        <i {...icons.openDb}/>
+        {' '}
+        <FormattedMessage {...messages.newDb}/>
+      </UI.Button>
+    </ButtonGroup>
   </UI.Page>
 )
 
-LoginComponent.contextTypes = UI.contextTypes
-
-export const LoginRoute = compose<EnhancedProps, RouteComponentProps<any>>(
-  withRouter,
-  connect<ConnectedProps, DispatchProps, {}>(
-    (state: AppState): ConnectedProps => ({
-      files: state.db.files
-    }),
-    mapDispatchToProps<DispatchProps>({ showLoginDialog, showCreateDialog })
-  ),
+export const Login = connect<LoginComponent.StateProps, LoginComponent.DispatchProps>(
+  (state: AppState) => ({
+    files: state.db.files,
+    UI: state.ui.Components
+  }),
+  ({ showLoginDialog, showCreateDialog })
 )(LoginComponent)
+
+export const LoginRoute = withRouter(Login)
+
+LoginComponent.displayName = 'LoginComponent'
+Login.displayName = 'Login'
+LoginRoute.displayName = 'LoginRoute'

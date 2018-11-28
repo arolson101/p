@@ -1,7 +1,7 @@
 // tslint:disable:no-unused-expression
 import * as React from 'react'
 import { specs, describe, it } from 'storybook-addon-specifications'
-import { mountIntl, expect, stub, action, storiesOfIntl, dummyDbInfo } from './storybook'
+import { mountIntl, SelectedUI, expect, stub, action, storiesOfIntl, dummyDbInfo } from './storybook'
 
 import { LoginComponent } from 'ui/pages/Login'
 import { DbInfo } from 'core'
@@ -10,19 +10,20 @@ const stories = storiesOfIntl('Pages/Login', module)
 
 const dummyProps = <T extends Function>(functor: (name: string) => T) => {
   return {
-    showLoginDialog: functor('showLoginDialog'),
-    showCreateDialog: functor('showCreateDialog'),
+    showLoginDialog: functor('showLoginDialog') as any,
+    showCreateDialog: functor('showCreateDialog') as any,
   }
 }
 
 stories.add('No files', () => {
   const files: DbInfo[] = []
 
-  const story = (props: any) =>
-    <LoginComponent
-      files={files}
-      {...props}
-    />
+  const story = (props: LoginComponent.DispatchProps) =>
+  <LoginComponent
+    files={files}
+    UI={SelectedUI}
+    {...props}
+  />
 
   specs(() => describe('No files', () => {
     it('clicking new should open create dialog', () => {
@@ -41,9 +42,10 @@ stories.add('No files', () => {
 stories.add('One file', () => {
   const files = [dummyDbInfo('file 1')]
 
-  const story = (props: any) =>
+  const story = (props: LoginComponent.DispatchProps) =>
   <LoginComponent
     files={files}
+    UI={SelectedUI}
     {...props}
   />
 
@@ -65,9 +67,10 @@ stories.add('One file', () => {
 stories.add('Multiple files', () => {
   const files = [dummyDbInfo('file 1'), dummyDbInfo('file 2'), dummyDbInfo('file 3')]
 
-  const story = (props: any) =>
+  const story = (props: LoginComponent.DispatchProps) =>
   <LoginComponent
     files={files}
+    UI={SelectedUI}
     {...props}
   />
 

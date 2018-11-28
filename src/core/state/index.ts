@@ -12,6 +12,7 @@ export * from './i18n'
 export * from './imports'
 export * from './router'
 export * from './sys'
+export * from './ui'
 
 import { DbSlice, DbInit } from './db'
 import { DialogSlice } from './dialog'

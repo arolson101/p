@@ -47,6 +47,8 @@ const uis = {
 }
 const defaultUI: keyof typeof uis = 'bootstrap'
 
+export const SelectedUI = uis[select('UI', Object.keys(uis) as Array<keyof typeof uis>, defaultUI)]
+
 const locales = [
   'en',
 ]
