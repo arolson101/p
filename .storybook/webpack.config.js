@@ -49,7 +49,7 @@ module.exports = function (config, env) {
         new webpack.DefinePlugin({
             __DEVELOPMENT__: true,
             __TEST__: 1
-        }),
+        })
     )
 
     config.externals = {

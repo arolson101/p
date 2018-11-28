@@ -38,7 +38,7 @@ type EnhancedProps = React.Props<any> & ConnectedProps & Handlers
 
 const enhance = compose<EnhancedProps, ConnectedProps>(
   setDisplayName('Accounts'),
-  withHandlers({
+  withHandlers<ConnectedProps, Handlers>({
     createBank: ({ showBankDialog }) => () => {
       showBankDialog({})
     }
